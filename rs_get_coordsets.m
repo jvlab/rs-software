@@ -16,7 +16,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 % Output:
 %  data_out: coordinates and metadata
 %    data_out.sets: cell array {1,nsets} of the dataset descriptors, Subfields of data_out.sets{iset}:
-%      type: 'data' (psaychophysical data) or 'qform' (quadratic form model)
+%      type: 'data' (psychophysical data) or 'qform' (quadratic form model)
 %      dim_list: list of available dimensions in data_out.ds, e.g,. [1 2 3 4 5 6 7]
 %      nstims: number of stimuli
 %      label_long: long file name 
