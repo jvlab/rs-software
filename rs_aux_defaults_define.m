@@ -9,9 +9,9 @@ generic=struct; %subfields will be applied to auxiliary parameters for all funct
 generic.opts_read.if_debug=0; %1 to enable debugging
 generic.opts_read.if_uselocal=0; %1 to enable psg_localopts to define local options
 generic.opts_read.if_gui=1; %1 to use gui, 0 not
-
-generic.opts_read.if_uselocal=1; %rs package will typically set this to zero, a value of 1 allows psg routines to run without the wrapper
+%
 %tyically first used in psg_get_coordsets
+%
 generic.opts_read.input_types={'experimental data','qform model'}; %omit qform_model if no quadratic modelling
 generic.opts_read.if_log=1;
 generic.opts_read.if_warn=1;
@@ -25,13 +25,18 @@ generic.opts_read.ui_filter='*coords*.mat';
 generic.opts_read.if_symaug=0;
 generic.opts_read.sym_apply='full';
 generic.opts_read.if_symaug_log=0;
-generic.opts_qpred.qform_datafile_def='../rs/samples/bwtextures/btc_allraysfixedb_avg_100surrs_madj.mat'; %ignored if no quadratic modeling
+%
+generic.opts_qpred.qform_datafile_def='./samples/bwtextures/btc_allraysfixedb_avg_100surrs_madj.mat'; %ignored if no quadratic modeling
 generic.opts_qpred.qform_modeltype=12; %index into substructure of above; full symmetry assumed, ignored if no quadratic modeling
+%
+%do not remove; to verify installation
 %
 generic.opts_test.param1=pi;
 generic.opts_test.param2='param2string';
 generic.opts_test.param3='maybe overridden';
+%
 %typically first used in psg_read_coorddata
+%
 generic.opts_read.if_justsetup=0;
 generic.opts_read.data_fullname_def='./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'; %default full file name for a coordinate dataset
 generic.opts_read.setup_fullname_def='./samples/bwtextures/bgca3pt9.mat'; %default full file name for a setup file
@@ -53,6 +58,10 @@ for k=1:length(sigma_list)
 end
 clear k sigma_list
 %
+%typically first used in psg_write_coorddata
+%
+generic.opts_write.coord_data_fullname_write_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
+%
 %these options override generic defaults when rs_aux_customize is called by a specific function
 %
 specific=struct;  %subfields will be applied to auxiliary parameters when called by a specific function
@@ -60,5 +69,26 @@ specific.rs_get_coordsets=struct;
 %
 specific.rs_dummy=struct;
 specific.rs_dummy.opts_test.param3='overridden';
+%
+%override with setups for hlid (Hong Lab Imaging Data) if requested
+%
+if getinp('1 to use hlid defaults','d',[0 1],0)
+    h=hlid_setup_func;
+    fns=fieldnames(h.opts_read);
+    for ifn=1:length(fns)
+        generic.opts_read.(fns{ifn})=h.opts_read.(fns{ifn});
+    end
+    fns=fieldnames(h.opts_plot);
+    for ifn=1:length(fns)
+        generic.opts_plot.(fns{ifn})=h.opts_plot.(fns{ifn});
+    end
+    fns=fieldnames(h.opts_multm_def);
+    for ifn=1:length(fns)
+        generic.opts_multm_def.(fns{ifn})=h.opts_multm_def.(fns{ifn});
+    end
+    generic.hlid_opts=h.hlid_opts;
+    generic.display_orders=h.display_orders;
+    clear h fns ifn
+end
 %
 disp('Remember to save workspace as rs_aux_defaults.mat.')
