@@ -26,12 +26,17 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed
 %    for other fields, see see psg_get_coordsets.
 %    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
-%      by taking the segment up to the mandatory '_coords' string, and appending opts_read.setup_suffix, which may be empty
+%      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
 %    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
 %      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
 %   aux.nsets: number of datasets to read, if zero (default), then requested at console
 %   aux.opts_rays: options for parsing stimulus descriptors into rays, see psg_findrays
 %   aux.opts_qpred: options for creating model coordinate sets from quadratic form, see psg_qformpred
+%
+% For non-interactive reading, provide fullnames, aux.opts_read.input_type, and set aux_opts_read.if_auto=1 (see rs_get_coordsets_example.m)
+% For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1], and optionally specify aux.nsets
+%
+% If fullnames and aux.nsets are incompatible, a warning is issued; data_out is empty, and warnings are in aux_out.warnings
 %
 % Output:
 %  data_out: coordinates and metadata
@@ -66,24 +71,73 @@ aux=filldefault(aux,'opts_rays',struct);
 aux=filldefault(aux,'nsets',0);
 aux=rs_aux_customize(aux,'rs_get_coordsets');
 %
+aux_out=struct;
+data_out=struct;
+aux_out.warnings=[];
+%
 if ~iscell(fullnames)
     fullnames_list{1}=fullnames;
 else
     fullnames_list=fullnames;
 end
-%If fullnames is not empty, check that its length agrees with nsets and that each contains _coords
-%If fullnames is empty, then set nsets to psg_get_coordsets as positive or negative
-
-[sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
-    psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
-data_out.sets=sets;
-data_out.ds=ds;
-data_out.sas=sas;
-%
-aux_out.opts_read=opts_read_used;
-aux_out.opts_rays=opts_rays_used;
-aux_out.opts_qpred=opts_qpred_used;
-aux_out.rayss=rayss;
-aux_out.syms_list=syms_list;
+nsets=abs(aux.nsets);
+nsets_named=length(fullnames_list);
+if isempty(fullnames) | isempty(fullnames_list)
+    nsets_named=0;
+end
+if nsets_named==0
+    %If fullnames is empty, then set nsets to psg_get_coordsets as positive or negative
+    if nsets>0
+        if aux.opts_read.if_gui>0
+            aux.nsets=-nsets; %flag for psg_get_coordsets to use gui
+        else
+            aux.nsets=nsets;
+        end
+    end
+else %If fullnames is not empty, check that its length agrees with nsets and that each contains _coords
+    if isempty(nsets)
+        nsets=nsets_named;
+        aux.nsets=nsets;
+    end       
+    if nsets_named~=nsets
+        wmsg=sprintf('number of files listed (%3.0f) disagrees with number of files specified (%3.0f)',nsets_named,nsets);
+        warning(wmsg);
+        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    end
+    for iset=1:nsets_named
+        if ~contains(fullnames{iset},aux.opts_read.coord_string)
+            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames{iset},aux.opts_read.coord_string);
+            warning(wmsg);
+            aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+        end
+    end
+    %attempt to read automatically
+    aux.opts_read.data_fullnames=fullnames_list;
+    %create setup files
+    aux.opts_read.setup_fullnames=cell(1,nsets_named);
+    for iset=1:nsets_named
+        setup_file=fullnames{iset};
+        cpos=min(strfind(setup_file,aux.opts_read.coord_string));
+        if ~isempty(cpos)
+            setup_file=setup_file(1:cpos-1);
+        end
+        setup_file=strrep(setup_file,'.mat','');
+        setup_file=cat(2,setup_file,aux.opts_read.setup_suffix,'.mat');
+        aux.opts_read.setup_fullnames{iset}=setup_file;
+    end
+end
+if isempty(aux_out.warnings)
+    [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
+        psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
+    data_out.sets=sets;
+    data_out.ds=ds;
+    data_out.sas=sas;
+    %
+    aux_out.opts_read=opts_read_used;
+    aux_out.opts_rays=opts_rays_used;
+    aux_out.opts_qpred=opts_qpred_used;
+    aux_out.rayss=rayss;
+    aux_out.syms_list=syms_list;
+    end
 return
 end
