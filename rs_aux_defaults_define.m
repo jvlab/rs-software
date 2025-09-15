@@ -10,7 +10,7 @@ generic.opts_read.if_debug=0; %1 to enable debugging
 generic.opts_read.if_uselocal=0; %1 to enable psg_localopts to define local options
 generic.opts_read.if_gui=1; %1 to use gui, 0 not
 %
-%tyically first used in psg_get_coordsets
+%typically first used in psg_get_coordsets
 %
 generic.opts_read.input_types={'experimental data','qform model'}; %omit qform_model if no quadratic modelling
 generic.opts_read.if_log=1;
