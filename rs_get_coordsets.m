@@ -3,15 +3,35 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %    handles experimental data and (for binary texture experiments) quadratic form models
 % 
 % Input:
-% fullnames: a single file name (with path), or a cell array of file names; if empty, it will be reque3sted interactively
+% fullnames: a single file name (with path), or a cell array of file names; if empty, it will be requested interactively
+%      File names must contain the string '_coords'.  Setup file names are automatically generated.
 % aux: structure of auxiliary inputs
 %   aux.opts_read:
 %     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
-%                 other fields: see see psg_get_coordsets
+%     if_log: 1 to log (log=0 still shows warnings)
+%     if_warn: 1 to show warnings (defaults to 0)
+%     if_auto: 1 not to ask for confirmations, and to use all defaults for model specifications
+%     nfiles_max: maximum number of files to read (defaults to 100)
+%     input_type: 0 data or model, 1 forces experimental data, 2 forces quadratic form model, can be a scalar, or an array that is cycled through for each dataset
+%     data_fullnames: cell array of data file full names; if empty, will be requested
+%     setup_fullnames: cell array of setup file full names; if empty, will be requested
+%    The need for a setup file is determined as follows:
+%    A 'type class' is determined from the data file name in psg_read_coorddata.
+%     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
+%     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
+%     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
+%     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
+%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup
+%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed
+%    for other fields, see see psg_get_coordsets.
+%    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
+%      by taking the segment up to the mandatory '_coords' string, and appending opts_read.setup_suffix, which may be empty
+%    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
+%      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
+%   aux.nsets: number of datasets to read, if zero (default), then requested at console
 %   aux.opts_rays: options for parsing stimulus descriptors into rays, see psg_findrays
 %   aux.opts_qpred: options for creating model coordinate sets from quadratic form, see psg_qformpred
-%   aux.nsets: number of datasets to read, if zero (default), then requested at console
 %
 % Output:
 %  data_out: coordinates and metadata
@@ -51,6 +71,9 @@ if ~iscell(fullnames)
 else
     fullnames_list=fullnames;
 end
+%If fullnames is not empty, check that its length agrees with nsets and that each contains _coords
+%If fullnames is empty, then set nsets to psg_get_coordsets as positive or negative
+
 [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
     psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
 data_out.sets=sets;
