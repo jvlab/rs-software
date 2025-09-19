@@ -46,7 +46,7 @@ ifdif=cell(1,ntests);
 for itest=1:ntests
     [data_out,aux_out]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    save(cat(2,'tests',filesep,fns{itest}),'data_out','aux_out');
+    save('-v7', cat(2,'tests',filesep,fns{itest}, '.mat'),'data_out','aux_out');
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');

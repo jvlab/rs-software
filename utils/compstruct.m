@@ -205,7 +205,7 @@ else ~any((size(x1)==size(x2))==0);               %lengths of x1 and x2 are the 
                         dtxt2=sprintf('%s(%i).%s',parent2,i,c{ii});
                         txt=comparestruct(dtxt1,eval(txt1),dtxt2,eval(txt2),tol,fid);   %send to comparestruct function
                         ifdif=strvcat(ifdif,txt);
-                     elseif isnumeric(eval(txt1)) || isstr(eval(txt1)) || ischar(eval(txt1)) || islogical(eval(txt1));  %if values in the fieldnames of x1 and x2
+                     elseif isnumeric(eval(txt1)) || ischar(eval(txt1)) || ischar(eval(txt1)) || islogical(eval(txt1));  %if values in the fieldnames of x1 and x2
                                                                                                                     %numerics, strings, logicals, or chars
                         dtxt1=sprintf('%s(%i).%s',parent1,i,c{ii});
                         dtxt2=sprintf('%s(%i).%s',parent2,i,c{ii});

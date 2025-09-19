@@ -82,7 +82,7 @@ else
 end
 nsets=abs(aux.nsets);
 nsets_named=length(fullnames_list);
-if isempty(fullnames) | isempty(fullnames_list)
+if isempty(fullnames) || isempty(fullnames_list)
     nsets_named=0;
 end
 if nsets_named==0
