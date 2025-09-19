@@ -2,8 +2,9 @@
 %
 % Data input and ouptut
 %   rs_get_coordsets: read one or more coordinate sets from files
+%   rs_save_mat: save a mat-file
 %
-% Utilities
+% Customization and testing
 %   rs_aux_customize: customize defaults for auxiliary inputs
 %   rs_aux_customize_test: text for above
 %   rs_aux_defaults_define: set up a file with default values for auxiliary parameters

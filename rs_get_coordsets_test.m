@@ -1,6 +1,6 @@
 % rs_get_coordsets_test: test rs_get_coordsets
 %
-%  See also:  RS_GET_COORDSETS, RS_BENCHMARK_COMPARE.
+%  See also:  RS_GET_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='get_coordsets';
 %
@@ -46,7 +46,10 @@ ifdif=cell(1,ntests);
 for itest=1:ntests
     [data_out,aux_out]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    save(cat(2,'tests',filesep,fns{itest}),'data_out','aux_out');
+    s=struct;
+    s.data_out=data_out;
+    s.aux_out=aux_out;
+    rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');

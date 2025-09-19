@@ -1,6 +1,6 @@
 %rs_aux_customize_test: test rs_aux_customize
 %
-%  See also:  RS_AUX_CUSTOMIZE, RS_AUX_DEFAULTS_DEFINE, RS_BENCHMARK_COMPARE.
+%  See also:  RS_AUX_CUSTOMIZE, RS_AUX_DEFAULTS_DEFINE, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 %
 rs_module='aux_customize';
@@ -24,7 +24,9 @@ ifdif=cell(1,ntests);
 for itest=1:ntests
     aux_out=rs_aux_customize(auxs{itest},callers{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    save(cat(2,'tests',filesep,fns{itest}),'aux_out');
+    s=struct;
+    s.aux_out=aux_out;
+    rs_save_mat(cat(2,'tests',filesep,fns{itest}),s,setfield(struct,'ver',[]));
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
