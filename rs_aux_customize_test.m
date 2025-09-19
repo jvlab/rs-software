@@ -24,7 +24,8 @@ ifdif=cell(1,ntests);
 for itest=1:ntests
     aux_out=rs_aux_customize(auxs{itest},callers{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    save(cat(2,'tests',filesep,fns{itest}),'aux_out');
+    %save(cat(2,'tests',filesep,fns{itest}),'aux_out');
+    save(cat(2,'tests',filesep,fns{itest}, '.mat'),'aux_out', '-v7')
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');

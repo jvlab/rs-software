@@ -46,10 +46,10 @@ elseif nargin==5;
         error('Incorrect usage of Compare');
     end;
 elseif nargin==6;
-    if strcmp(class(varargin{1}),'char') & strcmp(class(varargin{2}),'double');
+    if strcmp(class(varargin{1}),'char') && strcmp(class(varargin{2}),'double');
         fid=fopen(varargin{1},'w');
         tol=varargin{2};
-    elseif strcmp(class(varargin{2}),'char') & strcmp(class(varargin{1}),'double');
+    elseif strcmp(class(varargin{2}),'char') && strcmp(class(varargin{1}),'double');
         fid=fopen(varargin{2},'w');
         tol=varargin{1};
     else;
@@ -59,12 +59,12 @@ elseif nargin>6;
     error('Incorrect usage of Compare');
 end;
 
-if ishandle(x1) & ishandle(x2);
+if ishandle(x1) && ishandle(x2);
     x1=get(x1);
     x2=get(x2);
 end;
 
-if ~isequal(x1,x2) & strcmp(class(x1),class(x2));   %if x1 is not equal to x2 and they are the same class
+if ~isequal(x1,x2) && strcmp(class(x1),class(x2));   %if x1 is not equal to x2 and they are the same class
     if isstruct(x1);                                %if x1 a structure send to function comparestruct
         ifdif=comparestruct(parent1,x1,parent2,x2,tol,fid);
     elseif iscell(x1);                              %if x1 a cell send to function comparecell
@@ -85,7 +85,7 @@ end;
 
 function ifdif=comparenum(parent1,x1,parent2,x2,tol,fid);     %function to compare numerics, strings, logicals, & chars
 ifdif=[];
-if isnumeric(x1) & ~strcmp(class(x1),'double');
+if isnumeric(x1) && ~strcmp(class(x1),'double');
     x1=double(x1);
     x2=double(x2);
 end;
@@ -166,7 +166,7 @@ else ~any((size(x1)==size(x2))==0);               %lengths of x1 and x2 are the 
 	f1=fieldnames(x1);                      %get fieldnames for x1
 	f2=fieldnames(x2);                      %get fieldnames for x2
     [c, i1, i2]=setxor(f1,f2);              %find fieldnames that are not in both x1 and x2
-    if ~isempty(i1) & ~isempty(i2);     %different fieldnames in both x1 and x2
+    if ~isempty(i1) && ~isempty(i2);     %different fieldnames in both x1 and x2
         tmp11=sprintf('%s ',f1{i1});
         tmp12=sprintf('%s ',f2{i2});
         txt1=['fieldnames different: ' parent2 ' does not contain fieldname(s)\n\t' tmp11];
@@ -197,7 +197,7 @@ else ~any((size(x1)==size(x2))==0);               %lengths of x1 and x2 are the 
             for ii=1:length(c);        %loop through fieldnames
                 txt1=sprintf('x1(%i).%s',i,c{ii});
                 txt2=sprintf('x2(%i).%s',i,c{ii});
-                if ~isequal(eval(txt1),eval(txt2)) & strcmp(class(eval(txt1)),class(eval(txt2)));   %if the values in the fieldnames of x1 and x2
+                if ~isequal(eval(txt1),eval(txt2)) && strcmp(class(eval(txt1)),class(eval(txt2)));   %if the values in the fieldnames of x1 and x2
                                                                                                     %are not the same and the classes of x1 and x2
                                                                                                     %are the same, then
                     if isstruct(eval(txt1));                                        %if values in the fieldnames of x1 and x2 are structs
@@ -205,7 +205,7 @@ else ~any((size(x1)==size(x2))==0);               %lengths of x1 and x2 are the 
                         dtxt2=sprintf('%s(%i).%s',parent2,i,c{ii});
                         txt=comparestruct(dtxt1,eval(txt1),dtxt2,eval(txt2),tol,fid);   %send to comparestruct function
                         ifdif=strvcat(ifdif,txt);
-                     elseif isnumeric(eval(txt1)) | isstr(eval(txt1)) | ischar(eval(txt1)) | islogical(eval(txt1));  %if values in the fieldnames of x1 and x2
+                     elseif isnumeric(eval(txt1)) || isstr(eval(txt1)) || ischar(eval(txt1)) || islogical(eval(txt1));  %if values in the fieldnames of x1 and x2
                                                                                                                     %numerics, strings, logicals, or chars
                         dtxt1=sprintf('%s(%i).%s',parent1,i,c{ii});
                         dtxt2=sprintf('%s(%i).%s',parent2,i,c{ii});
