@@ -59,6 +59,11 @@ for k=1:length(sigma_list)
 end
 clear k sigma_list
 %
+%typically first used in psg_findrays
+%
+generic.opts_rays.ray_reorder_ring=1; %standardize ray order
+generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
+%
 %typically first used in psg_write_coorddata
 %
 generic.opts_write.coord_data_fullname_write_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
