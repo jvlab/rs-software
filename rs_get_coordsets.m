@@ -14,26 +14,24 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %     if_auto: 1 not to ask for confirmations, and to use all defaults for model specifications
 %     nfiles_max: maximum number of files to read (defaults to 100)
 %     input_type: 0 data or model, 1 forces experimental data, 2 forces quadratic form model, can be a scalar, or an array that is cycled through for each dataset
-%     data_fullnames: cell array of data file full names; if empty, will be requested
-%     setup_fullnames: cell array of setup file full names; if empty, will be requested
 %    The need for a setup file is determined as follows:
-%    A 'type class' is determined from the data file name in psg_read_coorddata.
+%     A 'type class' is determined from the data file name in psg_read_coorddata.
 %     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
 %     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
 %     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
 %     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
 %     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup
 %     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed
-%    for other fields, see see psg_get_coordsets.
+%    For other fields, see see psg_get_coordsets.
 %    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
 %      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
 %    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
-%      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
+%      by this package), it may contain an embedded setup file, in which case, an external setup file is not read.
 %   aux.nsets: number of datasets to read, if zero (default), then requested at console
 %   aux.opts_rays: options for parsing stimulus descriptors into rays, see psg_findrays
 %   aux.opts_qpred: options for creating model coordinate sets from quadratic form, see psg_qformpred
 %
-% For non-interactive reading, provide fullnames, aux.opts_read.input_type, and set aux_opts_read.if_auto=1 (see rs_get_coordsets_example.m)
+% For non-interactive reading, provide fullnames, aux.opts_read.input_type, and set aux_opts_read.if_auto=1.
 % For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1], and optionally specify aux.nsets
 %
 % If fullnames and aux.nsets are incompatible, a warning is issued; data_out is empty, and warnings are in aux_out.warnings
@@ -48,7 +46,6 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %      label: shortened file name
 %      pipeline: structure describing geometric processing leading to this file
 %         (e.g., Procrustes, other geometric transformations).  Empty if no processing done
-% 
 %    data_out.ds: cell array {1,nsets} of coordinates.
 %      data_out.ds{iset}{nd} is a structure of coordinates (nstims x nd),
 %    data_out.sas: cell array {1,nsets} of metadata. Subfields of data_out.sas{iset}:
@@ -57,8 +54,8 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %      *LL*(1,ndims): log likelihoods
 %      btc_specoords(istim,:): stimulus coordinates to be used for finding rays
 %      sigma_*: information about MDS settings for internal error (sigma)
-% 
 %  aux_out: auxiliary parameter values used
+%      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
 %  See also: PSG_GET_COORDSETS, RS_AUX_CUSTOMIZE.
 %
