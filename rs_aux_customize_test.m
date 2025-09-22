@@ -11,6 +11,8 @@ test_descs=cell(1,ntests);
 auxs=cell(1,ntests);
 callers=cell(1,ntests);
 %
+aux_outs=cell(1,ntests);
+%
 test_descs{1}='some options overridden';
 auxs{1}.opts_test.param1=7;
 callers{1}='rs_dummy';
@@ -22,10 +24,10 @@ callers{2}='rs_get_coordsets';
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    aux_out=rs_aux_customize(auxs{itest},callers{itest});
+    aux_outs{itest}=rs_aux_customize(auxs{itest},callers{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     s=struct;
-    s.aux_out=aux_out;
+    s.aux_out=aux_outs{itest};
     rs_save_mat(cat(2,'tests',filesep,fns{itest}),s,setfield(struct,'ver',[]));
 end
 %

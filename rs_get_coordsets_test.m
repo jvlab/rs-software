@@ -12,6 +12,9 @@ auxs=cell(1,ntests);
 signflips=cell(1,ntests);
 opts_used=cell(1,ntests);
 %
+data_outs=cell(1,ntests);
+aux_outs=cell(1,ntests);
+%
 test_descs{1}='non-interactive reading of three binary texture coordinate files, no logging';
 filenames_examples{1}={'./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_NF_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_SN_sess01_10.mat'};
 auxs{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
@@ -51,11 +54,11 @@ end
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    [data_out,aux_out]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
+    [data_outs{itest},aux_outs{itest}]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     s=struct;
-    s.data_out=data_out;
-    s.aux_out=aux_out;
+    s.data_out=data_outs{itest};
+    s.aux_out=aux_outs{itest};
     rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
 end
 %
