@@ -15,8 +15,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
 %     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
 %     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
-%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup
-%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed
+%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup (these are in samples/animals)
+%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed (these are the in samples/bwtextures, type class is 'btc')
 %    For other fields, see see psg_read_coorddata.
 %    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
 %      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
@@ -30,8 +30,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %   * Only reads one file
 %      input is a full file name not a cell array of file names
 %      output is a singleton cell array of data structures
-%   * Does not create the ray structure ??????????maybe change this
-%   * Does not support augmentation by symmetry [only applicable to binary texture data]
+%   * Does not create the ray structure *********maybe change this
+%   * Does not support augmentation by symmetry (thisoption is only available for binary texture data]
 %   * Does not read quadratic form models [only applicable to binary texture data]
 %
 % Output:
@@ -94,9 +94,7 @@ sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fulln
 data_out.ds{1}=d;
 data_out.sas{1}=sa;
 data_out.sets{1}=sets;
-aux_out.opts_read=opts_read_used;
-%internally generate sets_fullname?
-%later convert ds, sas, sets to cell arrays?
+aux_out.opts_read{1}=opts_read_used;
 return
 
 % function [d,sa,opts_used,pipeline]=psg_read_coorddata(data_fullname,setup_fullname,opts)
