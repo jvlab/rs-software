@@ -57,7 +57,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  See also: PSG_GET_COORDSETS, RS_AUX_CUSTOMIZE.
+%  See also: RS_AUX_CUSTOMIZE, PSG_GET_COORDSETS.
 %
 if (nargin<=1)
     aux=struct;

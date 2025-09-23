@@ -1,5 +1,6 @@
 function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 % [data_out,aux_out]=rs_read_coorddata(fullname,aux) get a single set of coordinates and metadata
+% and, if stimulus coordinate data are available, creates a ray structure
 %
 % Input:
 % fullname: a single file name (with path); if empty, it will be requested interactively.  String or singleton cell array
@@ -30,7 +31,6 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %   * Only reads one file
 %      input is a full file name not a cell array of file names
 %      output is a singleton cell array of data structures
-%   * Does not create the ray structure *********maybe change this
 %   * Does not support augmentation by symmetry (thisoption is only available for binary texture data]
 %   * Does not read quadratic form models [only applicable to binary texture data]
 %
@@ -55,13 +55,13 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  See also: PSG_READ_COORDDATA, RS_AUX_CUSTOMIZE, PSG_MAKE_SETSTRUCT.
+%  See also: RS_AUX_CUSTOMIZE, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS.
 %
 if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
-aux=rs_aux_customize(aux,'rs_read_coorddata');
+aux=filldefault(aux,'opts_rays',struct);
 aux=rs_aux_customize(aux,'rs_read_coorddata');
 %
 aux_out=struct;
@@ -95,9 +95,24 @@ if isempty(fullname)
         end
     end
 end
+opts_rays_used=struct; %in case psg_findrays is not called
+rays=struct;
 if aux.opts_read.if_justsetup==0
     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,[],aux.opts_read);
     sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,struct());
+    stim_coords=[];
+    if isfield(sa,'btc_specoords')
+        stim_coords=sa.btc_specoords;
+    elseif isfield(sa,'btc_augcoords')
+        stim_coords=sa.btc_augcoords;
+    end
+    if ~isempty(stim_coords)
+        [rays,opts_rays_used]=psg_findrays(stim_coords,aux.opts_rays);
+    else
+        wmsg=sprintf('cannot find stimulus coordinates, so cannot identify rays');
+        warning(wmsg);
+        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    end
 else
     setup_fullname=fullname;
     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,setup_fullname,aux.opts_read);
@@ -109,7 +124,11 @@ data_out.ds{1}=d;
 data_out.sas{1}=sa;
 data_out.sets{1}=sets;
 aux_out.opts_read{1}=opts_read_used;
+aux_out.opts_rays{1}=opts_rays_used;
+aux_out.rayss{1}=rays;
+aux_out.syms_list{1}=struct(); %for compatibility with rs_get_coordsets;
 return
+
 
 % function [d,sa,opts_used,pipeline]=psg_read_coorddata(data_fullname,setup_fullname,opts)
 % % [d,sa,opts_used,pipeline]=psg_read_coorddata(data_fullname,setup_fullname,opts) reads
