@@ -76,10 +76,18 @@ end
 if isempty(fullname)
     if aux.opts_read.if_gui
         if_manual=0;
-        ui_prompt='Select a coordinate file';
+        if aux.opts_read.if_justsetup
+            ui_prompt='Select a setup file';
+            ui_filter={cat(2,'*',aux.opts_read.setup_suffix,'.mat'),'setup file'};
+        else
+            ui_prompt='Select a coordinate file';
+            ui_filter={aux.opts_read.ui_filter,'coordinate file'};
+        end
         while (if_manual==0 & isempty(fullname))
-            [filename_short,pathname,filter_index]=uigetfile(aux.opts_read.ui_filter,ui_prompt,'Multiselect','off');
-            if filter_index==0
+%            [filename_short,pathname,filter_index]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
+%            if filter_index==0
+            [filename_short,pathname]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
+            if  (isequal(filename_short,0) | isequal(pathname,0)) %use Matlab's suggested way to detect cancel
                 if_manual=getinp('1 to return to selection from console','d',[0 1]);
             else
                 fullname=cat(2,pathname,filename_short);
@@ -87,9 +95,15 @@ if isempty(fullname)
         end
     end
 end
-setup_fullname=[];
-[d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,setup_fullname,aux.opts_read);
-sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,struct());
+if aux.opts_read.if_justsetup==0
+    [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,[],aux.opts_read);
+    sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,struct());
+else
+    setup_fullname=fullname;
+    [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,setup_fullname,aux.opts_read);
+    d=struct;
+    sets=struct;
+end
 %
 data_out.ds{1}=d;
 data_out.sas{1}=sa;
