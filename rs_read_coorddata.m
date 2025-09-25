@@ -55,7 +55,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS.
+%  See also: RS_AUX_CUSTOMIZE, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETUPTS, PSG_FINDRAYS.
 %
 if (nargin<=1)
     aux=struct;
@@ -107,6 +107,7 @@ if aux.opts_read.if_justsetup==0
         stim_coords=sa.btc_augcoords;
     end
     if ~isempty(stim_coords)
+        aux.opts_rays=psg_findray_setopts(opts_read_used.setup_fullname,aux.opts_rays);
         [rays,opts_rays_used]=psg_findrays(stim_coords,aux.opts_rays);
     else
         wmsg=sprintf('cannot find stimulus coordinates, so cannot identify rays');
