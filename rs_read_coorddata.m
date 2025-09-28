@@ -25,7 +25,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
 %
 % For non-interactive reading, provide fullname, set aux_opts_read.if_auto=1 (see rs_get_coordsets_example.m)
-% For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1], and optionally specify aux.nsets
+% For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1]
 %
 % Comparison with rs_get_coordsets:
 %   * Only reads one file
@@ -44,9 +44,9 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      label: shortened file name
 %      pipeline: structure describing geometric processing leading to this file
 %         (e.g., Procrustes, other geometric transformations).  Empty if no processing done
-%    data_out.ds: cell array {1,nsets} of coordinates.
+%    data_out.ds: cell array {1,1} of coordinates.
 %      data_out.ds{iset}{nd} is a structure of coordinates (nstims x nd),
-%    data_out.sa: cell array {1,nsets} of metadata. Subfields of data_out.sa:
+%    data_out.sa: cell array {1,1} of metadata. Subfields of data_out.sa:
 %      nstims: number of stimuli
 %      typenames: stimulus labels
 %      *LL*(1,ndims): log likelihoods
@@ -67,7 +67,6 @@ aux=rs_aux_customize(aux,'rs_read_coorddata');
 aux_out=struct;
 data_out=struct;
 aux_out.warnings=[];
-aux_out.nsets=1; %for compatibility with rs_get_coordsets
 %
 if iscell(fullname)
     fullname=fullname{1};
@@ -99,6 +98,9 @@ opts_rays_used=struct; %in case psg_findrays is not called
 rays=struct;
 if aux.opts_read.if_justsetup==0
     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,[],aux.opts_read);
+    opts_read_used.data_fullnames={opts_read_used.data_fullname}; %for compatibility with rs_get_coordsets
+    opts_read_used.setup_fullnames={opts_read_used.setup_fullname}; %for compatibility with rs_get_coordsets
+    opts_read_used.input_type_desc=aux.opts_read.input_types{1}; %rs_read_coorddata only reads experimental data, which is type 1
     sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,struct());
     stim_coords=[];
     if isfield(sa,'btc_specoords')
@@ -127,7 +129,9 @@ data_out.sets{1}=sets;
 aux_out.opts_read{1}=opts_read_used;
 aux_out.opts_rays{1}=opts_rays_used;
 aux_out.rayss{1}=rays;
-aux_out.syms_list{1}=struct(); %for compatibility with rs_get_coordsets;
+%for compatibility with rs_get_coordsets;
+aux_out.opts_qpred{1}=struct;
+aux_out.syms_list=struct();
 return
 
 

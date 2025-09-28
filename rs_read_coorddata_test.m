@@ -1,10 +1,12 @@
 % rs_read_coorddata_test: test rs_read_coorddata
 %
+%  Compares with benchmarks and also compares with results of rs_get_coordsets
+%
 %  See also:  RS_READ_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='read_coorddata';
 %
-ntests=4;
+ntests=5;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -26,9 +28,13 @@ test_descs{3}='reading binary texture coordinate file, bcpm24 stimulus set';
 filenames_examples{3}={'./samples/bwtextures/bcpm24pt_coords_BL_sess01_10.mat'};
 auxs{3}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 %
-test_descs{4}='reading animal-domain file';
-filenames_examples{4}={'./samples/animals/image_coords_S3'};
+test_descs{4}='reading binary texture coordinate file, bdce stimulus set';
+filenames_examples{4}={'./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
 auxs{4}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+%
+test_descs{5}='reading animal-domain file';
+filenames_examples{5}={'./samples/animals/image_coords_S3'};
+auxs{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 %
 disp('Suggest ''enter'' to accept the default for interactive responses.');
 if_ok=0;
@@ -45,6 +51,8 @@ for itest=1:ntests
     s.data_out=data_outs{itest};
     s.aux_out=aux_outs{itest};
     rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+%compare with rs_get_coordsets
+    [data_outs_gsets{itest},aux_outs_gsets{itest}]=rs_get_coordsets(filenames_examples{itest},setfield(auxs{itest},'nsets',1));
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');

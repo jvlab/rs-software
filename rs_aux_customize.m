@@ -7,6 +7,8 @@ function aux_out=rs_aux_customize(aux,caller)
 % aux: a structure, typically with many opts subfields, e.g., opts_read, opts_plot
 % caller: string, name of calling function
 %
+%  See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE_TEST.
+%
 aux_defaults_filename='rs_aux_defaults.mat';
 s=load(aux_defaults_filename);
 aux_fields=fieldnames(aux);

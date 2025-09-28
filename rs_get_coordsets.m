@@ -135,6 +135,6 @@ if isempty(aux_out.warnings)
     aux_out.opts_qpred=opts_qpred_used;
     aux_out.rayss=rayss;
     aux_out.syms_list=syms_list;
-    end
+end
 return
 end
