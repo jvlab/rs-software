@@ -101,7 +101,7 @@ if aux.opts_read.if_justsetup==0
     opts_read_used.data_fullnames={opts_read_used.data_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.setup_fullnames={opts_read_used.setup_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.input_type_desc=aux.opts_read.input_types{1}; %rs_read_coorddata only reads experimental data, which is type 1
-    sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,struct());
+    sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,pipeline,struct());
     stim_coords=[];
     if isfield(sa,'btc_specoords')
         stim_coords=sa.btc_specoords;
