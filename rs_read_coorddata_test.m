@@ -61,3 +61,8 @@ for itest=1:ntests
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest});
 end
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+disp('comparing with rs_get_coordsets')
+ifdif2_aux=compstruct('gsets',data_outs_gsets,'coords',data_outs)
+ifdif2_data=compstruct('gsets',data_outs_gsets,'coords',data_outs)
+
