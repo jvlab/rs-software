@@ -15,8 +15,8 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %     nfiles_max: maximum number of files to read (defaults to 100)
 %     input_type: 0 data or model, 1 forces experimental data, 2 forces quadratic form model, can be a scalar, or an array that is cycled through for each dataset
 %    The need for a setup file is determined as follows:
-%     A 'type class' is determined from the data file name in psg_read_coorddata.
-%     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
+%     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
+%     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
 %     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
 %     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
 %     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup

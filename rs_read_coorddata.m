@@ -11,7 +11,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
 %     if_log: 1 to log (log=0 still shows warnings)
 %    The need for a setup file is determined as follows:
-%     A 'type class' is determined from the data file name in psg_read_coorddata.
+%     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
+%     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
 %     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
 %     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
 %     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
@@ -83,8 +84,6 @@ if isempty(fullname)
             ui_filter={aux.opts_read.ui_filter,'coordinate file'};
         end
         while (if_manual==0 & isempty(fullname))
-%            [filename_short,pathname,filter_index]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
-%            if filter_index==0
             [filename_short,pathname]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
             if  (isequal(filename_short,0) | isequal(pathname,0)) %use Matlab's suggested way to detect cancel
                 if_manual=getinp('1 to return to selection from console','d',[0 1]);
