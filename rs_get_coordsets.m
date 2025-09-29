@@ -57,7 +57,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_GET_COORDSETS.
+%  See also: RS_AUX_CUSTOMIZE, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
 %
 if (nargin<=1)
     aux=struct;
@@ -113,14 +113,8 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
     %create setup files
     aux.opts_read.setup_fullnames=cell(1,nsets_named);
     for iset=1:nsets_named
-        setup_file=fullnames{iset};
-        cpos=min(strfind(setup_file,aux.opts_read.coord_string));
-        if ~isempty(cpos)
-            setup_file=setup_file(1:cpos-1);
-        end
-        setup_file=strrep(setup_file,'.mat','');
-        setup_file=cat(2,setup_file,aux.opts_read.setup_suffix,'.mat');
-        aux.opts_read.setup_fullnames{iset}=setup_file;
+        parsed=psg_coorddata_parsename(fullnames{iset},aux.opts_read);
+        aux.opts_read.setup_fullnames{iset}=parsed.setup_fullname_def;
     end
 end
 if isempty(aux_out.warnings)
