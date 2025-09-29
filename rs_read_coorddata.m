@@ -9,7 +9,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %   aux.opts_read:
 %     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
-%     if_log: 1 to log (log=0 still shows warnings)
+%     if_log: 1 (default) to log (0 still shows warnings)
+%     if_auto: 1 not to ask confirmations, defaults to 0
 %    The need for a setup file is determined as follows:
 %     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
 %     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
