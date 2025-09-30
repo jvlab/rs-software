@@ -64,8 +64,10 @@ end
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
+    aux_ins{itest}.opts_read.if_log=0;
     [data_reads{itest},aux_read{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
     %
+    auxs{itest}.opts_align.if_log=1;
     [data_outs{itest},aux_outs{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
     %
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
