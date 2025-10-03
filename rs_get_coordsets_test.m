@@ -3,6 +3,9 @@
 %  See also:  RS_GET_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='get_coordsets';
+if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
+    if_auto_skip=0;
+end
 %
 ntests=5;
 %
@@ -45,26 +48,32 @@ auxs{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log','if_gui'},
 auxs{5}.nsets=1;
 signflips{5}=cell(0);
 %
-disp('Suggest ''enter'' to accept the default for interactive responses.');
-if_ok=0;
-while (if_ok==0)
-    if_ok=getinp('1 if OK to proceed','d',[0 1],1);
+if if_auto_skip==0
+    disp('Suggest ''enter'' to accept the default for interactive responses.');
+    if_ok=0;
+    while (if_ok==0)
+        if_ok=getinp('1 if OK to proceed','d',[0 1],1);
+    end
 end
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    [data_outs{itest},aux_outs{itest}]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
-    fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    s=struct;
-    s.data_out=data_outs{itest};
-    s.aux_out=aux_outs{itest};
-    rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+    if ((auxs{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
+        [data_outs{itest},aux_outs{itest}]=rs_get_coordsets(filenames_examples{itest},auxs{itest});
+        fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
+        s=struct;
+        s.data_out=data_outs{itest};
+        s.aux_out=aux_outs{itest};
+        rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+    end
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 %
 for itest=1:ntests
-    disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
-    [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
+    if ~isempty(data_outs{itest})
+        disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
+        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
+    end
 end

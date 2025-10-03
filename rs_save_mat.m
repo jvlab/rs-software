@@ -6,19 +6,13 @@ function opts_used=rs_save_mat(fullname,s,opts)
 % opts: options, 
 %   opts.ver: defaults to '-v7'
 %
+%  See also:  PSG_SAVE_MAT.
+%
 % opts_used: options used
 %
 if (nargin<=2)
     opts=struct;
 end
-opts=filldefault(opts,'ver','-v7');
-fullname=cat(2,fullname,'.mat');
-fullname=strrep(fullname,'.mat.mat','.mat');
-if ~isempty(opts.ver)
-    save(fullname,'-struct','s',opts.ver);
-else
-    save(fullname,'-struct','s');
-end
-opts_used=opts;
+opts_used=psg_save_mat(fullname,s,opts);
 return
 end

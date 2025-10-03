@@ -3,6 +3,9 @@
 %  See also:  RS_ALIGN_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='align_coordsets';
+if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
+    if_auto_skip=0;
+end
 %
 ntests=6;
 %
@@ -55,31 +58,37 @@ auxs{6}.opts_align.min=1;
 aux_ins{6}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{6}.nsets=2;
 %
-disp('Suggest ''enter'' to accept the default for interactive responses.');
-if_ok=0;
-while (if_ok==0)
-    if_ok=getinp('1 if OK to proceed','d',[0 1],1);
+if if_auto_skip==0
+    disp('Suggest ''enter'' to accept the default for interactive responses.');
+    if_ok=0;
+    while (if_ok==0)
+        if_ok=getinp('1 if OK to proceed','d',[0 1],1);
+    end
 end
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    aux_ins{itest}.opts_read.if_log=0;
-    [data_reads{itest},aux_read{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
-    %
-    auxs{itest}.opts_align.if_log=1;
-    [data_outs{itest},aux_outs{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
-    %
-    fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-    s=struct;
-    s.data_out=data_outs{itest};
-    s.aux_out=aux_outs{itest};
-    rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+    if ((aux_ins{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
+        aux_ins{itest}.opts_read.if_log=0;
+        [data_reads{itest},aux_read{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
+        %
+        auxs{itest}.opts_align.if_log=1;
+        [data_outs{itest},aux_outs{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
+        %
+        fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
+        s=struct;
+        s.data_out=data_outs{itest};
+        s.aux_out=aux_outs{itest};
+        rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+    end
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 %
 for itest=1:ntests
-    disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
-    [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest});
+    if ~isempty(data_outs{itest})
+        disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
+        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest});
+    end
 end
