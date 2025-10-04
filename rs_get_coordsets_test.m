@@ -22,7 +22,6 @@ test_descs{1}='non-interactive reading of three binary texture coordinate files,
 filenames_examples{1}={'./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_NF_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_SN_sess01_10.mat'};
 auxs{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 auxs{1}.nsets=3;
-signflips{1}=cell(0);
 %
 test_descs{2}='non-interactive reading of three binary texture coordinate files, second file is a model, logging';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_NF-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
@@ -34,19 +33,16 @@ test_descs{3}='non-interactive reading of two binary texture coordinate files, s
 filenames_examples{3}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
 auxs{3}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 auxs{3}.nsets=2;
-signflips{3}=cell(0);
 %
 test_descs{4}='non-interactive reading of four animal-domain files';
 filenames_examples{4}={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 auxs{4}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 auxs{4}.nsets=4;
-signflips{4}=cell(0);
 %
 test_descs{5}='interactive reading of one coordinate file';
 filenames_examples{5}={};
 auxs{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log','if_gui'},{1,0,1,0});
 auxs{5}.nsets=1;
-signflips{5}=cell(0);
 %
 if if_auto_skip==0
     disp('Suggest ''enter'' to accept the default for interactive responses.');

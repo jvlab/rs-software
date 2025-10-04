@@ -12,6 +12,7 @@ ntests=6;
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
 auxs=cell(1,ntests);
+signflips=cell(1,ntests);
 aux_ins=cell(1,ntests);
 data_reads=cell(1,ntests);
 aux_reads=cell(1,ntests);
@@ -31,6 +32,8 @@ filenames_examples{2}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat'
 auxs{2}=struct;
 aux_ins{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{[1 2],1,1});
 aux_ins{2}.nsets=3;
+auxs{2}.nsets=3;
+signflips{2}={{'data_out','ds'}};
 %
 test_descs{3}='non-interactive reading of two binary texture coordinate files, stimuli disagree, logging, keep only if stimuli present in both';
 filenames_examples{3}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
@@ -89,6 +92,6 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 for itest=1:ntests
     if ~isempty(data_outs{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
-        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest});
+        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
     end
 end

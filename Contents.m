@@ -7,7 +7,12 @@
 %   rs_read_coorddata_test: test for above
 %   rs_save_mat: save a mat-file
 %
+% Data processing: coordinates
+%   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
+%   rs_align_coordsets_test: test for above
+%
 % Customization and testing
+%   rs_auto_test: run all tests ion automatic mode
 %   rs_aux_customize: customize defaults for auxiliary inputs
 %   rs_aux_customize_test: test for above
 %   rs_aux_defaults_define: set up a file with default values for auxiliary parameters
