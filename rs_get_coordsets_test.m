@@ -71,5 +71,9 @@ for itest=1:ntests
     if ~isempty(data_outs{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
+        if ~isempty(aux_outs{itest}.warnings)
+            disp('warnings encountered during test:')
+            disp(aux_outs{itest}.warnings)
+        end
     end
 end

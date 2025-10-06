@@ -10,16 +10,25 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % aux.opts_align.min: minimum number of datasets that must contain a stimulus, in order for the stimulus to be included
 %   default is 1 (legacy behavior: all stimuli used), can also be 'any'; 
 %   'all': stimuli must be present in all datasets to be kept
-%
+% aux.opts_align.if_btc_specoords_remake:  this usually can be ignored or set to [].
+%   Setting to 0 forces a merging of the stimulus cooredinates, thisis
+%     appropriate if the stimuli have meaningful a priori coordinates in the setup file, and then in btc_specoords
+%     (e.g., binary textures, faces)
+%   Setting to 1 forces btc_specoords of the aligned data to be remade as unique rows of an identity matrix
+%     this is appropriate if the stimuli do NOT have meaningful a priori coordinates in the setup file,
+%     and then in sa.btc_specoords (e.g, animals)
+%   An empty entry (default) determines the behavior from the coordinates of the component datasets: 
+%     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
+%   The behavior used is reported in aux_out.opts_align.if_btc_specoords_remake
+% 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
 % aux_out.ovlp_array: each row is a stimulus in data_out, kth column is a 1 if stimulus is present in dataset k
 % aux_out.sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
 %    This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
-% aux_out.opts_align: optoins used in psg_align_coordsets
-% 
+% aux_out.opts_align: options used in psg_align_coordsets
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_ALIGN_COORDSETS.
+%  See also: RS_AUX_CUSTOMIZE, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL.
 %
 if (nargin<=1)
     aux=struct;
@@ -80,8 +89,10 @@ if isempty(aux_out.warnings)
     aux_out.ovlp_array=ovlp_array;
     aux_out.sa_pooled=sa_pooled;
     aux_out.opts_align=opts_align_used;
+    %
+    for iset=1:nsets
+        data_out.sets{iset}.pipeline=psg_coord_pipe_util('aligned',opts_align_used,data_in.sets);
+    end
 end
 return
 end
-%need to determine if_btc_specoordss_remake
-%need to fix pipeline field in data_out.sets
