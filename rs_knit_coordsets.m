@@ -13,7 +13,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  allow_offset: 1 to allow offset (default=1) 
 %  allow_scale: 1 to allow scale, (default=0)opts_pcon=filldefault(opts_pcon,'allow_scale',0);
 %  if_normscale: 1 to normalize consensus to size of data (default=0)
-%  if_c2p:  1 to rotate consensus into PCA space (default=0)
+%  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
 %  pcon_dim_max: maximum dimension for the consensus alignment dataset to be created, defaults to max available across all datasets
 %  pcon_dim_max_comp: maximum dimension for component datasets to use; higher dimensions will be zero-padded, defaults to max available across all datasets
@@ -38,7 +38,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_offset',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',0);
-aux.opts_knit=filldefault(aux.opts_knit,'if_c2p',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_pca',0);
 aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max_comp',Inf);
@@ -103,9 +103,9 @@ if aux_out.warn_bad==0
     if aux.opts_knit.if_log
         disp(sprintf('knitting %3.0f stimuli across %3.0f datasets, dimensions %s',nstims_all,nsets,sprintf(' %2.0f',dim_list_all))); 
         disp(sprintf('  allow reflection: %1.0f, allow offset: %1.0f, allow scale: %1.0f, normalize scale: %1.0f, rotate to pcs: %1.0f',...
-            aux.opts_knit.allow_reflection,aux.opts_knit.allow_offset,aux.opts_knit.allow_scale,aux.opts_knit.if_normscale,aux.opts_knit.if_c2p));
+            aux.opts_knit.allow_reflection,aux.opts_knit.allow_offset,aux.opts_knit.allow_scale,aux.opts_knit.if_normscale,aux.opts_knit.if_pca));
     end
-    if aux.opts_knit.if_c2p
+    if aux.opts_knit.if_pca
         c2p_string='-pc';
     else
         c2p_string='';
@@ -168,7 +168,7 @@ if aux_out.warn_bad==0
     %
     %implement PCA rotation if requested:  note that this is applied both to consenus and componetns
     %
-    if aux.opts_knit.if_c2p
+    if aux.opts_knit.if_pca
         for ip=1:pcon_dim_max
             knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
             [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
