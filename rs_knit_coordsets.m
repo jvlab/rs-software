@@ -19,12 +19,11 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  pcon_dim_max_comp: maximum dimension for component datasets to use; higher dimensions will be zero-padded, defaults to max available across all datasets
 %  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
 % 
-% data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
+% data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
+% aux_out.opts_knit: overall options used
+% aux_out.opts_pcon{id}: options used in Procrustes alignment for model dimension id
+% aux_out.components.ds{k},sas{k},sets{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %    coordinates will be NaN if not present
-% aux_out.ovlp_array: each row is a stimulus in data_out, kth column is a 1 if stimulus is present in dataset k
-% aux_out.sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
-%    This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
-% aux_out.opts_align: options used in psg_align_coordsets
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_ALIGN_COORDSETS, PROCRUSTES_CONSENSUS.
 %
@@ -32,7 +31,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 if (nargin<=1)
     aux=struct;
 end
-aux=filldefault(aux,'opts_align',struct);
+aux=filldefault(aux,'opts_knit',struct);
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_knit=filldefault(aux.opts_knit,'if_log',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
@@ -44,6 +43,10 @@ aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max_comp',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
+%
+aux=filldefault(aux,'opts_pca',struct);
+aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
+aux.opts_pca=filldefault(aux.opts_pca,'nd_max',Inf);
 %
 data_out=struct;
 aux_out=struct;
@@ -119,135 +122,78 @@ if aux_out.warn_bad==0
         aux.opts_knit.pcon_initialize_set='pca_nocenter';
     end
     %
+    pcon_dim_max=aux.opts_knit.pcon_dim_max;
+    pcon_dim_max_comp=aux.opts_knit.pcon_dim_max_comp;
+    consensus=cell(pcon_dim_max,1);
+    z=cell(pcon_dim_max,1);
+    znew=cell(pcon_dim_max,1);
+    ts=cell(pcon_dim_max,1);
+    details=cell(pcon_dim_max,1);
+    opts_pcon_used=cell(pcon_dim_max,1);
+    ds_knitted=cell(1,pcon_dim_max);
+    ds_components=cell(1,nsets); %partial datasets, aligned via Procrustes
+    %
+    %inspect input data to see where data are missing
+    %note that a NaN can indicate that stimulus was present and response
+    %was missing, OR, that the stimulus was not presented
+    %
+    coords_isnan=zeros(nstims_all,nsets);
+    for iset=1:nsets
+        for kd=dim_list_each{iset}
+            coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimenison, it's missing
+        end
+        if aux.opts_knit.if_log
+            disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
+        end
+    end
+    %
+    %do a consensus on each model-dimension separately
+    %
+    for ip=1:pcon_dim_max
+        z{ip}=zeros(nstims_all,ip,nsets);
+        pcon_dim_use=min(ip,pcon_dim_max_comp); %pad above pcon_dim_pad
+        for iset=1:nsets
+            z{ip}(:,1:pcon_dim_use,iset)=data_in.ds{iset}{ip}(:,[1:pcon_dim_use]); %only include data up to pcon_dim_use
+            z{ip}(coords_isnan(:,iset)>0,:,iset)=NaN; % pad with NaN's if data are missing
+        end
+        [ds_knitted{ip},znew{ip},ts{ip},details{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},aux.opts_knit);
+        if aux.opts_knit.if_log
+            disp(sprintf(' creating Procrustes consensus for dim %2.0f based on component datasets up to dimension %2.0f, iterations: %4.0f, final total rms dev: %8.5f',...
+                ip,pcon_dim_max_comp,length(details{ip}.rms_change),sqrt(sum(details{ip}.rms_dev(:,end).^2))));
+        end
+        for iset=1:nsets
+            ds_components{iset}{1,ip}=znew{ip}(:,:,iset);
+        end
+    end
+    %
+    %implement PCA rotation if requested:  note that this is applied both to consenus and componetns
+    %
+    if aux.opts_knit.if_c2p
+        for ip=1:pcon_dim_max
+            knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
+            [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
+    %        qu=opts_used_pca.qu;
+    %        qs=opts_used_pca.qs;
+            v=opts_used_pca.qv;
+    %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+            for iset=1:nsets
+                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
+                ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
+            end
+        end %ip
+    end
+    data_out.ds{1}=ds_knitted;
+    aux_out.components.ds=ds_components;
+    %%%need to add sets, sas, pipeline
+    %
     aux_out.opts_knit=aux.opts_knit;
+    aux_out.opts_pcon=opts_pcon_used;
 else
     disp('cannot proceed');
 end
 return
 end
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% %psg_align_knit_demo: demonstration of alignment and knitting together of multiple datasets
-% % that have partially overlapping stimuli
-% %
-% % After like stimuli are aligned, this computes a consensus of the aligned sets, to create a 
-% % 'knitted'  dataset with all stimuli, and then optionally writes this consensus data and metadata file.
-% % Assumes that this is a raw data or model file, no previous entries in pipeline
-% % 
-% % all datasets must have dimension lists beginning at 1 and without gaps
-% % aligned datasets (ds_align, ds_components) and metadata (sas_align) will have a NaN where there is no stimulus match
-% %
-% % 13Feb24: fix permute_raynums in opts_rays_knitted to be empty unless all agree in opts_rays_used; minor doc typos
-% % 16Feb24: begin mods to dissociate dimension of individual datasets and fitted dimension, and more flexible plotting
-% % 26Feb24: modularize psg_coord_pipe_util
-% % 06May24: allow for NaN's in input datasets; allow for invoking a dialog box for data input
-% % 25May24: adjust overlap array to take into account NaNs in input data
-% % 21Nov24: add a check that merged datasets have same number of rays as components, before permuting ray labels
-% % 29Nov24: added if_normscale (disabled by default)
-% % 21Jan25: added option to write original datasets after alignment (ds_components, ds_align)
-% % 23May25: option to embed the setup metadata in the data file; option for shorter pipeline by omitting details of procrustes_consensus
-% % 25May25: allow for psg_btcremz to be invoked to simplify coords
-% % 09Jun25: add options for not plotting components, and rotating into PC space
-% %
-% %  See also: PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_PROC, PSG_GET_COORDSETS, PSG_READ_COORDDATA,
-% %    PROCRUSTES_CONSENSUS, PROCRUSTES_CONSENSUS_PTL_TEST, PSG_FINDRAYS, PSG_WRITE_COORDDATA, 
-% %    PSG_CONSENSUS_DEMO, PSG_COORD_PIPE_UTIL, PSG_ALIGN_STATS_DEMO, PSG_BTCREMZ, BTC_DEFINE, PSG_PCAOFFSET.
-% %
-% 
-% %main structures and workflow:
-% %ds{nsets},            sas{nsets}: original datasets and metadata
-% %ds_align{nsets},      sas_align{nsets}: datasets with NaN's inserted to align the stimuli
-% %ds_knitted,            sa_pooled: consensus rotation of ds_align, all stimuli, and metadata
-% %ds_components{nsets}, sas_align{nsets}: components of ds_knitted, corresponding to original datasets, but with NaNs -- these are Procrustes transforms of ds_align
-% %ds_nonan{nsets}       sas_nonan{nsets}: components stripped of NaNs.  NaN's in the ds are removed, as are NaN's inserted for alignment
-% % 
-% if ~exist('opts_read') opts_read=struct();end %for psg_read_coord_data
-% if ~exist('opts_rays') opts_rays=struct(); end %for psg_findrays
-% if ~exist('opts_align') opts_align=struct(); end %for psg_align_coordsets
-% if ~exist('opts_nonan') opts_nonan=struct(); end %for psg_remnan_coordsets
-% if ~exist('opts_pcon') opts_pcon=struct(); end % for procrustes_consensus
-% if ~exist('opts_btcremz') opts_btcremz=struct(); end % for psg_btcremz
-% if ~exist('opts_pca') opts_pca=struct(); end % for psg_pcaoffset
-% if ~exist('pcon_dim_max') pcon_dim_max=3; end %dimensions for alignment
-% %
-% if ~exist('color_list') color_list='rmbcg'; end
-% %
-% disp('This will attempt to knit together two or more coordinate datasets.');
-% %
-% opts_read=filldefault(opts_read,'input_type',0); %either experimental data or model
-% opts_align=filldefault(opts_align,'if_log',1);
-% opts_nonan=filldefault(opts_nonan,'if_log',1);
-% %
-% opts_pcon=filldefault(opts_pcon,'allow_reflection',1);
-% opts_pcon=filldefault(opts_pcon,'allow_offset',1);
-% opts_pcon=filldefault(opts_pcon,'allow_scale',0);
-% opts_pcon=filldefault(opts_pcon,'max_niters',1000); %nonstandard max
-% %
-% opts_btcremz=filldefault(opts_btcremz,'tol_spec',10^-4);
-% opts_btcremz=filldefault(opts_btcremz,'tol_aug',10^-2);
-% %
-% opts_pca=filldefault(opts_pca,'if_log',0);
-% opts_pca.nd_max=Inf;
-
-% consensus=cell(pcon_dim_max,1);
-% z=cell(pcon_dim_max,1);
-% znew=cell(pcon_dim_max,1);
-% ts=cell(pcon_dim_max,1);
-% details=cell(pcon_dim_max,1);
-% opts_pcon_used=cell(pcon_dim_max,1);
-% %
-% ds_knitted=cell(1,pcon_dim_max); %reverse order of dimensions, 21Nov24
-% ds_components=cell(1,nsets); %partial datasets, aligned via Procrustes
-% %
-% disp('overlap matrix from stimulus matches (NaN values considered to be present')
-% disp(ovlp_array'*ovlp_array);
-% coords_isnan=zeros(nstims_all,nsets);
-% for iset=1:nsets
-%     coords_isnan(:,iset)=isnan(ds_align{iset}{1});
-% end
-% disp(sprintf('number of overlapping stimuli in component removed because coordinates are NaN'));
-% disp(sum(coords_isnan.*ovlp_array,1));
-% ovlp_array=ovlp_array.*(1-coords_isnan); %adjust overlap array to take into account NaNs (25May24)
-% opts_pcon.overlaps=ovlp_array;
-% disp('overlap matrix after excluding NaN coords in component data files')
-% disp(opts_pcon.overlaps'*opts_pcon.overlaps);
-% %
-% for ip=1:pcon_dim_max
-%     z{ip}=zeros(nstims_all,ip,nsets);
-%     pcon_dim_use=min(ip,pcon_dim_max_comp); %pad above pcon_dim_pad
-%     for iset=1:nsets
-%         z{ip}(:,1:pcon_dim_use,iset)=ds_align{iset}{ip}(:,[1:pcon_dim_use]); %only include data up to pcon_dim_use
-%         z{ip}(opts_align_used.which_common_kept(:,iset)==0,:,iset)=NaN; % pad with NaN's if no data %changed from which_common to allow for more general behavior of psg_align_coordsets when opts_align.min>1
-%     end
-%     [consensus{ip},znew{ip},ts{ip},details{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},opts_pcon);
-%     disp(sprintf(' creating Procrustes consensus for dim %2.0f based on datasets up to dimension %2.0f, iterations: %4.0f, final total rms dev: %8.5f',...
-%         ip,pcon_dim_max_comp,length(details{ip}.rms_change),sqrt(sum(details{ip}.rms_dev(:,end).^2))));
-%     ds_knitted{ip}=consensus{ip};
-%     for iset=1:nsets
-%         ds_components{iset}{1,ip}=znew{ip}(:,:,iset);
-%     end
-% end
-% %
-% %implement PCA rotation if requested:  note that this is applied both to consensus{ip} and to ds_components{ip}
-% %
-% ds_knitted_orig=ds_knitted;
-% ds_components_orig=ds_components;
-% if if_c2p
-%     for ip=1:pcon_dim_max
-%         knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
-%         [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,opts_pca);
-% %        qu=opts_used_pca.qu;
-% %        qs=opts_used_pca.qs;
-%         v=opts_used_pca.qv;
-%         % coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
-%         for iset=1:nsets
-%             consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
-%             ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
-%         end
-%     end %ip
-% end
 % %
 % %find the ray descriptors but first make sure that arguments for permuting ray labels agree,
 % %otherwise do not permute ray labels
@@ -286,101 +232,7 @@ end
 % end
 % disp('created ray descriptors for knitted and nonan datasets');
 % %
-% %plot knitted data and individual sets
-% dim_con=1;
-% while max(dim_con)>0
-%     dim_con_signed=getinp('knitted data dimension to plot (0 to end, - to skip plotting components)','d',[-pcon_dim_max pcon_dim_max]);
-%     dim_con=abs(dim_con_signed);
-%     if max(dim_con)>0
-%         dims_to_plot=getinp('dimensions to plot','d',[1 dim_con]);
-%         tstring=sprintf('consensus dim %1.0f [%s]',dim_con,sprintf('%1.0f ',dims_to_plot));
-%         opts_plot=struct;
-%         figure;
-%         set(gcf,'Position',[100 100 1200 800]);
-%         set(gcf,'Name',cat(2,'knitted ',tstring));
-%         set(gcf,'NumberTitle','off');
-%         opts_plot_used=psg_plotcoords(ds_knitted{dim_con},dims_to_plot,sa_pooled,rays_knitted,opts_plot);
-%         axis equal;
-%         axis vis3d;
-%         xlims=get(gca,'XLim');
-%         ylims=get(gca,'YLim');
-%         zlims=get(gca,'ZLim');
-%         axes('Position',[0.01,0.05,0.01,0.01]); %for text
-%         text(0,0,cat(2,'knitted ',tstring,c2p_string),'Interpreter','none','FontSize',10);
-%         axis off;
-%         %
-%         opts_rays_nonan_used=cell(nsets,1);
-%         opts_plot_nonan_used=cell(nsets,1);
-%         if dim_con_signed>0
-%             for iset=1:nsets
-%                 tstringc=sprintf(' component set %1.0f: %s, %s',iset,sets{iset}.label);
-%                 figure;
-%                 set(gcf,'Position',[100 100 1200 800]);
-%                 set(gcf,'Name',cat(2,tstringc,' ',tstring));
-%                 set(gcf,'NumberTitle','off');
-%                 opts_plot_nonan_used{iset}=psg_plotcoords(ds_nonan{iset}{dim_con},dims_to_plot,sas_nonan{iset},rays_nonan{iset},opts_plot);
-%                 axis equal
-%                 axis vis3d
-%                 set(gca,'XLim',xlims);
-%                 set(gca,'YLim',ylims);
-%                 set(gca,'ZLim',zlims);
-%                 axes('Position',[0.01,0.05,0.01,0.01]); %for text
-%                 text(0,0,cat(2,tstringc,' ',tstring,c2p_string),'Interpreter','none','FontSize',10);
-%                 axis off;
-%             end
-%         end %dim_con_signed
-%         %plot knitted with components, with black for composite and color order for each component
-%         %method 1: rays removed
-%         %method 2: using rays and colors_anymatch
-%         for im=1:2
-%             figure;
-%             set(gcf,'Position',[100 100 1200 800]);
-%             set(gcf,'Name',cat(2,'composite ',tstring));
-%             set(gcf,'NumberTitle','off');
-%             %
-%             opts_plot_components=cell(1,nsets);
-%             %plot, on same axes, each component using color_order
-%             opts_plot_knitted=struct;
-%             rays_knitted_use=rays_knitted;
-%             switch im
-%                 case 1
-%                     opts_plot_knitted.marker_noray='';
-%                     opts_plot_knitted.color_origin='k';
-%                     opts_plot_knitted.color_nearest_nbr='k';
-%                     opts_plot_knitted.noray_connect=0;
-%                     rays_knitted_use.nrays=0;
-%                     rayflag='no';
-%                 case 2
-%                     opts_plot_knitted.colors_anymatch='k';
-%                     rayflag='with';
-%             end
-%             opts_plot_knitted_used{im}=psg_plotcoords(ds_knitted{dim_con},dims_to_plot,sa_pooled,rays_knitted_use,opts_plot_knitted);
-%             for iset=1:nsets
-%                 rays_nonan_use=rays_nonan{iset};
-%                 pcolor=color_list(1+mod(iset-1,length(color_list)));
-%                 opts_plot_components=opts_plot_knitted;
-%                 opts_plot_components.axis_handle=opts_plot_knitted_used{im}.axis_handle;
-%                 switch im
-%                     case 1
-%                         opts_plot_components.color_origin=pcolor;
-%                         opts_plot_components.color_nearest_nbr=pcolor;
-%                         rays_nonan_use.nrays=0;
-%                     case 2
-%                         opts_plot_components.colors_anymatch=pcolor;
-%                 end
-%                 opts_plot_components_used{im,iset}=psg_plotcoords(ds_nonan{iset}{dim_con},dims_to_plot,sas_nonan{iset},rays_nonan_use,opts_plot_components);
-%             end
-%             legend off;
-%             axis equal
-%             axis vis3d
-%             set(gca,'XLim',xlims);
-%             set(gca,'YLim',ylims);
-%             set(gca,'ZLim',zlims);
-%             axes('Position',[0.01,0.05,0.01,0.01]); %for text
-%             text(0,0,cat(2,'composite [',rayflag,'rays] ',tstring,c2p_string),'Interpreter','none','FontSize',10);
-%             axis off;
-%         end %next method
-%     end
+
 % end
 % if getinp('1 to write files: "knitted" (with new setup metadata), "aligned", "components" (aligned and transformed)','d',[0 1])
 %     opts_write=struct;
