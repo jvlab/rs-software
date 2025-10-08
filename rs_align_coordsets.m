@@ -70,7 +70,7 @@ for iset=1:nsets
     end
 end
 if paradigm_match==0
-    wmsg=sprintf('paradigm types disagree, cannot proceed');
+    wmsg=sprintf('paradigm types disagree');
     warning(wmsg);
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
     aux_out.warn_bad=aux_out.warn_bad+1;
@@ -78,7 +78,7 @@ if paradigm_match==0
         disp([types paradigm_types])
     end
 end
-if isempty(aux_out.warnings)
+if aux_out.warn_bad==0
     paradigm_type=paradigm_types{1};
     if aux.opts_align.if_log
         disp(sprintf('proceeding with alignment of %3.0f datasets, paradigm type %s, stimuli must be present in %s',nsets,paradigm_type,min_string));
@@ -95,6 +95,8 @@ if isempty(aux_out.warnings)
     for iset=1:nsets
         data_out.sets{iset}.pipeline=psg_coord_pipe_util('aligned',opts_align_used,data_in.sets);
     end
+else
+    disp('cannot proceed');
 end
 return
 end
