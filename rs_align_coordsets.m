@@ -22,6 +22,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %   An empty entry (default) determines the behavior from the coordinates of the component datasets: 
 %     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
 %   The behavior used is reported in aux_out.opts_align.if_btc_specoords_remake
+% aux.opts_align.if_btcremz: set to 1 (default) to simplify augmented coordinates
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
@@ -30,7 +31,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %    This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
 % aux_out.opts_align: options used in psg_align_coordsets
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL.
+%  See also: RS_AUX_CUSTOMIZE, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ.
 %
 if (nargin<=1)
     aux=struct;
@@ -39,6 +40,7 @@ aux=filldefault(aux,'opts_align',struct);
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_align=filldefault(aux.opts_align,'if_log',1);
 aux.opts_align=filldefault(aux.opts_align,'min',1);
+aux.opts_align=filldefault(aux.opts_align,'if_btcremz',1);
 %
 if isnumeric(aux.opts_align.min)
     min_string=sprintf('%1.0f',aux.opts_align.min);
@@ -68,6 +70,21 @@ for iset=1:nsets
             end
         end
     end
+    if strcmp(paradigm_type,'btc')
+        if aux.opts_align.if_btcremz
+            [sas_new,change_list,opts_btcremz_used]=psg_btcremz(data_in.sas{iset});
+            aux_out.opts_btcremz{iset}=opts_btcremz_used;
+            if aux.opts_align.if_log
+            disp(sprintf(' set %3.0f: simplification attempted, %3.0f coords simplified (label: %s)',iset,length(change_list),data_in.sets{iset}.label));
+            if length(change_list)>0
+                for k=1:length(change_list)
+                    kch=change_list(k);
+                    disp(sprintf('%15s -> %15s',data_in.sas{iset}.typenames{kch},sas_new.typenames{kch}));
+                end
+                data_in.sas{iset}=sas_new;
+            end
+        end
+    end %paradigm type=btc
 end
 if paradigm_match==0
     wmsg=sprintf('paradigm types disagree');

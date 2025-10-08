@@ -7,7 +7,17 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   These could be returned by rs_get_coordsets or rs_read_coorddata, or,
 %   after alignment by rs_align_coordsets
 %
-% aux.opts_knit.if_log: 1 to log progress
+% aux.opts_knit:
+%  if_log: 1 to log progress
+%  allow_reflection: 1 to allow reflection (default=1)
+%  allow_offset: 1 to allow offset (default=1) 
+%  allow_scale: 1 to allow scale, (default=0)opts_pcon=filldefault(opts_pcon,'allow_scale',0);
+%  if_normscale: 1 to normalize consensus to size of data (default=0)
+%  if_c2p:  1 to rotate consensus into PCA space (default=0)
+%  max_iters: max iterations for Procrustes consensus, default=1000
+%  pcon_dim_max: maximum dimension for the consensus alignment dataset to be created, defaults to max available across all datasets
+%  pcon_dim_max_comp: maximum dimension for component datasets to use; higher dimensions will be zero-padded, defaults to max available across all datasets
+%  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
@@ -25,6 +35,15 @@ end
 aux=filldefault(aux,'opts_align',struct);
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_knit=filldefault(aux.opts_knit,'if_log',1);
+aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
+aux.opts_knit=filldefault(aux.opts_knit,'allow_offset',1);
+aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_c2p',0);
+aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
+aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max',Inf);
+aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max_comp',Inf);
+aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
 %
 data_out=struct;
 aux_out=struct;
@@ -43,37 +62,67 @@ for iset=1:nsets
     typenames_each{iset}=data_in.sas{iset}.typenames;
     dim_list_each{iset}=data_in.sets{iset}.dim_list;
     if iset==1
-        nstims_inter=nstims_each(iset);
         typenames_inter=typenames_each{iset};
         dim_list_inter=dim_list_each{iset};
     end
     typenames_union=union(typenames_union,typenames_each{iset});
-    typenames_inter=union(typenames_inter,typenames_each{iset});
+    typenames_inter=intersect(typenames_inter,typenames_each{iset});
     dim_list_union=union(dim_list_union(:)',dim_list_each{iset});
     dim_list_inter=intersect(dim_list_inter,dim_list_each{iset});
 end
-nstims_each
-typenames_union
-typenames_inter
-dim_list_union
-dim_list_inter
-%dim list can disagree (issue warning), bu tnstims and typenames cannot
-%disagree
-
-% disp(sprintf('total stimuli: %3.0f',nstims_all));
-% %
-% for iset=1:nsets
-%     if (iset==1)
-%         dim_list_all=sets{iset}.dim_list;
-%     else
-%         dim_list_all=intersect(dim_list_all,sets{iset}.dim_list);
-%     end
-%     if length(dim_list_all)~=length(1:max(dim_list_all))
-%         disp(sprintf('some dimensions are missing in set %1.0f',iset))
-%     end
-% end
-
-
+if min(nstims_each)~=max(nstims_each)
+    wmsg=sprintf('number of stimuli do not agree across files (min: %3.0f, max: %3.0f)',min(nstims_each),max(nstims_each));
+    warning(wmsg);
+    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;
+end
+if length(typenames_inter)~=length(typenames_union)
+    wmsg=sprintf('stimulus names do not agree across files');
+    warning(wmsg);
+    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;
+    disp('discrepancies')
+    disp(setdiff(typenames_union,typenames_inter));
+end
+if length(dim_list_union)~=length(dim_list_inter)
+    wmsg=sprintf('dimension lists do not agree across files'); %this is OK, process the intersection
+    warning(wmsg);
+    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    disp('discrepancies')
+    disp(setdiff(dim_list_union,dim_list_inter));
+end
+%
+if aux_out.warn_bad==0
+%process
+    nstims_all=min(nstims_each);
+    typenames_all=typenames_inter;
+    dim_list_all=dim_list_inter;
+    if aux.opts_knit.if_log
+        disp(sprintf('knitting %3.0f stimuli across %3.0f datasets, dimensions %s',nstims_all,nsets,sprintf(' %2.0f',dim_list_all))); 
+        disp(sprintf('  allow reflection: %1.0f, allow offset: %1.0f, allow scale: %1.0f, normalize scale: %1.0f, rotate to pcs: %1.0f',...
+            aux.opts_knit.allow_reflection,aux.opts_knit.allow_offset,aux.opts_knit.allow_scale,aux.opts_knit.if_normscale,aux.opts_knit.if_c2p));
+    end
+    if aux.opts_knit.if_c2p
+        c2p_string='-pc';
+    else
+        c2p_string='';
+    end
+    aux.opts_knit.pcon_dim_max=min(aux.opts_knit.pcon_dim_max,max(dim_list_inter));
+    aux.opts_knit.pcon_dim_max_comp=min(aux.opts_knit.pcon_dim_max_comp,max(dim_list_inter));
+    if aux.opts_knit.pcon_init_method>0
+        aux.opts_knit.initiailze_set=aux.opts_knit.pcon_init_method;
+    elseif aux.opts_knit.pcon_init_method==0
+        aux.opts_knit.pcon_initialize_set='pca';
+    elseif aux.opts_knit.pcon_init_method==-1
+        aux.opts_knit.pcon_initialize_set='pca_center';
+    else
+        aux.opts_knit.pcon_initialize_set='pca_nocenter';
+    end
+    %
+    aux_out.opts_knit=aux.opts_knit;
+else
+    disp('cannot proceed');
+end
 return
 end
 
@@ -141,66 +190,7 @@ end
 % %
 % opts_pca=filldefault(opts_pca,'if_log',0);
 % opts_pca.nd_max=Inf;
-% %
-% [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used]=psg_get_coordsets(opts_read,opts_rays,[],0); %get the datasets
-% nsets=length(sets); %number of files actually read
-% if getinp('1 to simplify coords with small values of augmented coordinates','d',[0 1],0);
-%     btc_dict=btc_define();
-%     change_list=cell(1,nsets);
-%     for iset=1:nsets
-%         [sas_new,change_list{iset},opts_btcremz_used]=psg_btcremz(sas{iset},opts_btcremz,btc_dict);
-%         disp(sprintf(' set %3.0f; %3.0f coords simplified (label: %s)',iset,length(change_list{iset}),sets{iset}.label));
-%         if length(change_list{iset})>0
-%             for k=1:length(change_list{iset})
-%                 kch=change_list{iset}(k);
-%                 disp(sprintf('%15s -> %15s',sas{iset}.typenames{kch},sas_new.typenames{kch}));
-%             end
-%             sas{iset}=sas_new;
-%         end
-%     end
-% end
-% [sets_align,ds_align,sas_align,ovlp_array,sa_pooled,opts_align_used]=psg_align_coordsets(sets,ds,sas,opts_align); %align the stimulus names
-% nstims_all=sets_align{1}.nstims;
-% disp(sprintf('total stimuli: %3.0f',nstims_all));
-% %
-% for iset=1:nsets
-%     if (iset==1)
-%         dim_list_all=sets{iset}.dim_list;
-%     else
-%         dim_list_all=intersect(dim_list_all,sets{iset}.dim_list);
-%     end
-%     if length(dim_list_all)~=length(1:max(dim_list_all))
-%         disp(sprintf('some dimensions are missing in set %1.0f',iset))
-%     end
-% end
-% pcon_dim_max=getinp('maximum dimension for the consensus alignment dataset to be created','d',[1 max(dim_list_all)],pcon_dim_max);
-% pcon_dim_max_comp=getinp('maximum dimension for component datasets to use (higher dimensions will be zero-padded)','d',[1 pcon_dim_max],pcon_dim_max);
-% pcon_init_method=getinp('method to use for initialization (>0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering','d',[-2 nsets],0);
-% if pcon_init_method>0
-%     opts_pcon.initiailze_set=pcon_init_method;
-% else
-%     if pcon_init_method==0
-%         opts_pcon.initialize_set='pca';
-%     elseif pcon_init_method==-1
-%         opts_pcon.initialize_set='pca_center';
-%     else
-%         opts_pcon.initialize_set='pca_nocenter';
-%     end
-% end
-% opts_pcon.allow_scale=getinp('1 to allow scaling for consensus','d',[0 1],opts_pcon.allow_scale);
-% if (opts_pcon.allow_scale==1)
-%     opts_pcon.if_normscale=getinp('1 to normalize consensus with scaling to size of data','d',[0 1],0);
-% else
-%     opts_pcon.if_normscale=0;
-% end
-% if_c2p=getinp('1 to rotate consensus into PCA space','d',[0 1]); %09Jun25
-% %
-% if if_c2p
-%     c2p_string='-pc';
-% else
-%     c2p_string='';
-% end
-% %
+
 % consensus=cell(pcon_dim_max,1);
 % z=cell(pcon_dim_max,1);
 % znew=cell(pcon_dim_max,1);
