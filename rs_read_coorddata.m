@@ -69,6 +69,7 @@ aux=rs_aux_customize(aux,'rs_read_coorddata');
 aux_out=struct;
 data_out=struct;
 aux_out.warnings=[];
+aux_out.warn_bad=0;
 %
 if iscell(fullname)
     fullname=fullname{1};

@@ -3,9 +3,11 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % data_in.sas{k}.typenames is used to establish stimulus identity
 % 
 % for each entry in data_in, there is an entry in data_out, listed in alphabetical order (evenif no alignment is needed)
-% coordinates for missing stimuli are NaN
+% * this only aligns the datasets so that the stimuli are in identical order, it does not change the coordinates
+% * coordinates for missing stimuli are NaN
+% * see rs_knit_coordsets for finding a consensus set of coordinates 
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returnd by rs_get_coordsets or rs_read_coorddata
+% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returned by rs_get_coordsets or rs_read_coorddata
 % aux.opts_align.if_log: 1 to log progress
 % aux.opts_align.min: minimum number of datasets that must contain a stimulus, in order for the stimulus to be included
 %   default is 1 (legacy behavior: all stimuli used), can also be 'any'; 
@@ -45,10 +47,9 @@ else
 end
 %
 data_out=struct;
-%
 aux_out=struct;
-data_out=struct;
 aux_out.warnings=[];
+aux_out.warn_bad=0;
 %check that data paradigms are the same (model paradigms may differ)
 nsets=length(data_in.sets);
 paradigm_types=cell(1,nsets);
@@ -69,9 +70,10 @@ for iset=1:nsets
     end
 end
 if paradigm_match==0
-    wmsg=sprintf('paradigm types disagree');
+    wmsg=sprintf('paradigm types disagree, cannot proceed');
     warning(wmsg);
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;
     if aux.opts_align.if_log
         disp([types paradigm_types])
     end

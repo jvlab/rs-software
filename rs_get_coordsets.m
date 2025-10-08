@@ -71,6 +71,7 @@ aux=rs_aux_customize(aux,'rs_get_coordsets');
 aux_out=struct;
 data_out=struct;
 aux_out.warnings=[];
+aux_out.warn_bad=0;
 %
 if ~iscell(fullnames)
     fullnames_list{1}=fullnames;
@@ -97,15 +98,17 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
         aux.nsets=nsets;
     end       
     if nsets_named~=nsets
-        wmsg=sprintf('number of files listed (%3.0f) disagrees with number of files specified (%3.0f)',nsets_named,nsets);
+        wmsg=sprintf('number of files listed (%3.0f) disagrees with number of files specified (%3.0f), cannot proceed',nsets_named,nsets);
         warning(wmsg);
         aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+        aux_out.warn_bad=aux_out.warn_bad+1;
     end
     for iset=1:nsets_named
         if ~contains(fullnames{iset},aux.opts_read.coord_string)
-            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames{iset},aux.opts_read.coord_string);
+            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s'', cannot proceed',iset,fullnames{iset},aux.opts_read.coord_string);
             warning(wmsg);
             aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+            aux_out.warn_bad=aux_out.warn_bad+1;
         end
     end
     %attempt to read automatically
@@ -117,7 +120,7 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
         aux.opts_read.setup_fullnames{iset}=parsed.setup_fullname_def;
     end
 end
-if isempty(aux_out.warnings)
+if aux_out.warn_bad==0
     [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
         psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
     data_out.sets=sets;
