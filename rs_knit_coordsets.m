@@ -22,6 +22,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out.opts_knit: overall options used
 % aux_out.opts_pcon{id}: options used in Procrustes alignment for model dimension id
+% aux_out.coords_havedata: [stims x sets] is 1 where data are present
 % aux_out.components.ds{k},sas{k},sets{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %    coordinates will be NaN if not present
 %
@@ -94,10 +95,34 @@ if length(dim_list_union)~=length(dim_list_inter)
     disp('discrepancies')
     disp(setdiff(dim_list_union,dim_list_inter));
 end
+%inspect input data to see where data are missing
+%note that a NaN can indicate that stimulus was present and response
+%was missing, OR, that the stimulus was not presented
+%
+nstims_all=min(nstims_each);
+coords_isnan=zeros(nstims_all,nsets);
+for iset=1:nsets
+    for kd=dim_list_each{iset}
+        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimenison, it's missing
+    end
+    if aux.opts_knit.if_log
+        disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
+    end
+end
+aux_out.coords_havedata=1-coords_isnan;
+if aux.opts_knit.if_log
+    disp('overlap table')
+    disp(aux_out.coords_havedata'*aux_out.coords_havedata)
+end
+if any(all(coords_isnan,2))
+    wmsg=sprintf('one or more stimuli never appear');
+    warning(wmsg);
+    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;
+end
 %
 if aux_out.warn_bad==0
 %process
-    nstims_all=min(nstims_each);
     typenames_all=typenames_inter;
     dim_list_all=dim_list_inter;
     if aux.opts_knit.if_log
@@ -133,20 +158,7 @@ if aux_out.warn_bad==0
     ds_knitted=cell(1,pcon_dim_max);
     ds_components=cell(1,nsets); %partial datasets, aligned via Procrustes
     %
-    %inspect input data to see where data are missing
-    %note that a NaN can indicate that stimulus was present and response
-    %was missing, OR, that the stimulus was not presented
-    %
-    coords_isnan=zeros(nstims_all,nsets);
-    for iset=1:nsets
-        for kd=dim_list_each{iset}
-            coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimenison, it's missing
-        end
-        if aux.opts_knit.if_log
-            disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
-        end
-    end
-    %
+     %
     %do a consensus on each model-dimension separately
     %
     for ip=1:pcon_dim_max
@@ -184,7 +196,9 @@ if aux_out.warn_bad==0
     end
     data_out.ds{1}=ds_knitted;
     aux_out.components.ds=ds_components;
-    %%%need to add sets, sas, pipeline
+    %%%deal with rays
+    %%%need add to sets, sas, pipeline
+    %%%%put in overlap matrix
     %
     aux_out.opts_knit=aux.opts_knit;
     aux_out.opts_pcon=opts_pcon_used;
