@@ -27,10 +27,10 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
 % aux_out: auxiliary outputs and parameter values used
-%    ovlp_array: each row is a stimulus in data_out, kth column is a 1 if
-%    stimulus is present in dataset k, even if the response is NaN
+%    ovlp_array: [stims x sets] each row is a stimulus in data_out, kth column is a 1 if
+%       stimulus is present in dataset k, even if the response is NaN
 %    sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
-%      This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
+%       This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
 %    opts*: values used for opts_align, opts_rays
 %    warnings: warnings generated in creating arguments for psg_get_coordsets
 %    rayss{k}: ray structure for dataset k

@@ -185,7 +185,7 @@ if aux_out.warn_bad==0
         end
     end
     %
-    %implement PCA rotation if requested:  note that this is applied both to consenus and componetns
+    %implement PCA rotation if requested:  note that this is applied both to consesnus and components
     %
     if aux.opts_knit.if_pca
         for ip=1:pcon_dim_max
