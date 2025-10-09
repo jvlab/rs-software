@@ -66,11 +66,13 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
+%
 aux=filldefault(aux,'opts_rays',struct);
+%
 aux=rs_aux_customize(aux,'rs_read_coorddata');
 %
-aux_out=struct;
 data_out=struct;
+aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %

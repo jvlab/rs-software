@@ -40,12 +40,21 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 if (nargin<=1)
     aux=struct;
 end
-aux=filldefault(aux,'opts_rays',struct);
+%
 aux=filldefault(aux,'opts_align',struct);
 aux.opts_align=filldefault(aux.opts_align,'if_log',1);
 aux.opts_align=filldefault(aux.opts_align,'min',1);
 aux.opts_align=filldefault(aux.opts_align,'if_btcremz',1);
+%
+aux=filldefault(aux,'opts_rays',struct);
+%
 aux=rs_aux_customize(aux,'rs_align_coordsets');
+%
+data_out=struct;
+aux_out=struct;
+aux_out.warnings=[];
+aux_out.warn_bad=0;
+%
 %
 if isnumeric(aux.opts_align.min)
     min_string=sprintf('%1.0f',aux.opts_align.min);
@@ -53,10 +62,6 @@ else
     min_string=aux.opts_align.min;
 end
 %
-data_out=struct;
-aux_out=struct;
-aux_out.warnings=[];
-aux_out.warn_bad=0;
 %check that data paradigms are the same (model paradigms may differ)
 nsets=length(data_in.sets);
 paradigm_types=cell(1,nsets);

@@ -56,17 +56,17 @@ aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
 aux.opts_pca=filldefault(aux.opts_pca,'nd_max',Inf);
 %
 aux=filldefault(aux,'opts_rays',struct);
+%
 aux=filldefault(aux,'opts_align',struct);
 %
 aux=rs_aux_customize(aux,'rs_knit_coordsets');
-%
-%
-set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
 data_out=struct;
 aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
+%
+set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
 nsets=length(data_in.sets);
 nstims_each=zeros(1,nsets);
