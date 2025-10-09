@@ -34,13 +34,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS, PROCRUSTES_CONSENSUS.
+%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS, PSG_REMNAN_COORDSETS, PROCRUSTES_CONSENSUS.
 %
 if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_knit',struct);
-aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_knit=filldefault(aux.opts_knit,'if_log',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_offset',1);
@@ -55,6 +54,14 @@ aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
 aux.opts_pca=filldefault(aux.opts_pca,'nd_max',Inf);
+%
+aux=filldefault(aux,'opts_rays',struct);
+aux=filldefault(aux,'opts_align',struct);
+%
+aux=rs_aux_customize(aux,'rs_knit_coordsets');
+%
+%
+set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
 data_out=struct;
 aux_out=struct;
@@ -128,6 +135,32 @@ if any(all(coords_isnan,2))
     aux_out.warn_bad=aux_out.warn_bad+1;
 end
 %
+%if aux.sa_pooled is present, use it, otherwise, re=create
+if isfield(aux,'sa_pooled')
+    if (aux.opts_knit.if_log)
+        disp('sa_pooled is supplied.');
+    end
+    sa_pooled=aux.sa_pooled;
+else
+    if (aux.opts_knit.if_log)
+        disp('sa_pooled will be created.');
+    end
+    %redo the alignment, but first remove the nans in the aligned file; this would confuse if realigned
+    [sets_nonan,ds_nonan,sas_nonan]=psg_remnan_coordsets(data_in.sets,data_in.ds,data_in.sas,[],setfield(struct,'if_log',aux.opts_knit.if_log));
+    data_in_nonan=struct;
+    data_in_nonan.ds=ds_nonan;
+    data_in_nonan.sas=sas_nonan;
+    data_in_nonan.sets=sets_nonan;
+    [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux);
+    sa_pooled=aux_align.sa_pooled;
+end
+if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
+    wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
+    aux_out.warn_bad=aux_out.warn_bad+1;
+    disp('discrepancies')
+    disp(setdiff(typenames_union,sa_pooled.typenames));
+end
+%
 if aux_out.warn_bad==0
 %process
     typenames_all=typenames_inter;
@@ -165,23 +198,24 @@ if aux_out.warn_bad==0
     ds_knitted=cell(1,pcon_dim_max);
     ds_components=cell(1,nsets); %partial datasets, aligned via Procrustes
     %
-     %
     %do a consensus on each model-dimension separately
     %
     for ip=1:pcon_dim_max
-        z{ip}=zeros(nstims_all,ip,nsets);
-        pcon_dim_use=min(ip,pcon_dim_max_comp); %pad above pcon_dim_pad
-        for iset=1:nsets
-            z{ip}(:,1:pcon_dim_use,iset)=data_in.ds{iset}{ip}(:,[1:pcon_dim_use]); %only include data up to pcon_dim_use
-            z{ip}(coords_isnan(:,iset)>0,:,iset)=NaN; % pad with NaN's if data are missing
-        end
-        [ds_knitted{ip},znew{ip},ts{ip},details{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},aux.opts_knit);
-        if aux.opts_knit.if_log
-            disp(sprintf(' creating Procrustes consensus for dim %2.0f based on component datasets up to dimension %2.0f, iterations: %4.0f, final total rms dev: %8.5f',...
-                ip,pcon_dim_max_comp,length(details{ip}.rms_change),sqrt(sum(details{ip}.rms_dev(:,end).^2))));
-        end
-        for iset=1:nsets
-            ds_components{iset}{1,ip}=znew{ip}(:,:,iset);
+        if ismember(ip,dim_list_inter)
+            z{ip}=zeros(nstims_all,ip,nsets);
+            pcon_dim_use=min(ip,pcon_dim_max_comp); %pad above pcon_dim_pad
+            for iset=1:nsets
+                z{ip}(:,1:pcon_dim_use,iset)=data_in.ds{iset}{ip}(:,[1:pcon_dim_use]); %only include data up to pcon_dim_use
+                z{ip}(coords_isnan(:,iset)>0,:,iset)=NaN; % pad with NaN's if data are missing
+            end
+            [ds_knitted{ip},znew{ip},ts{ip},details{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},aux.opts_knit);
+            if aux.opts_knit.if_log
+                disp(sprintf(' creating Procrustes consensus for dim %2.0f based on component datasets up to dimension %2.0f, iterations: %4.0f, final total rms dev: %8.5f',...
+                    ip,pcon_dim_max_comp,length(details{ip}.rms_change),sqrt(sum(details{ip}.rms_dev(:,end).^2))));
+            end
+            for iset=1:nsets
+                ds_components{iset}{1,ip}=znew{ip}(:,:,iset);
+            end
         end
     end
     %
@@ -189,22 +223,56 @@ if aux_out.warn_bad==0
     %
     if aux.opts_knit.if_pca
         for ip=1:pcon_dim_max
-            knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
-            [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
-    %        qu=opts_used_pca.qu;
-    %        qs=opts_used_pca.qs;
-            v=opts_used_pca.qv;
-    %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
-            for iset=1:nsets
-                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
-                ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
+            if ismember(ip,dim_list_inter)
+                knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
+                [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
+        %        qu=opts_used_pca.qu;
+        %        qs=opts_used_pca.qs;
+                v=opts_used_pca.qv;
+        %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+                for iset=1:nsets
+                    consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
+                    ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
+                end
             end
         end %ip
     end
+    sas_knitted=sa_pooled;
+    %
+    %knitted set structure
+    sets_knitted=struct;
+    sets_knitted.nstims=nstims_all;
+    sets_knitted.dim_list=dim_list_inter;
+    for ifn=1:length(set_knit_strings)
+        fn=set_knit_strings{ifn};
+        sets_knitted.(fn)=[];
+        for iset=1:nsets
+            if isfield(data_in.sets{iset},fn)
+                sets_knitted.(fn)=cat(2,sets_knitted.(fn),data_in.sets{iset}.(fn),'+');
+            end
+        end
+        if length(sets_knitted.(fn))>1
+            sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
+        end
+    end
+    %find rays
+    [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
+    if ~isempty(wmsg)
+        wmsg=cat(2,sprintf('set %2.0f: ',iset),wmsg);
+        warning(wmsg);
+        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    end
     data_out.ds{1}=ds_knitted;
+    data_out.sas{1}=sas_knitted;
+    data_out.sets{1}=sets_knitted;
+    aux_out.opts_rays{1}=opts_rays_used;
+    aux_out.rayss{1}=rays;
+    %
     aux_out.components.ds=ds_components;
-    %%%deal with rays
-    %%%need add to sets, sas, pipeline
+    aux_out.components.sas=data_in.sas;
+    aux_out.components.sets=data_in.sets;
+    %
+    %%%need add to sets, sas, pipeline to data_out.sets{1}
     %
     aux_out.opts_knit=aux.opts_knit;
     aux_out.opts_pcon=opts_pcon_used;

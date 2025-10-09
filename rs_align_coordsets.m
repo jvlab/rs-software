@@ -42,15 +42,15 @@ if (nargin<=1)
 end
 aux=filldefault(aux,'opts_rays',struct);
 aux=filldefault(aux,'opts_align',struct);
-aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_align=filldefault(aux.opts_align,'if_log',1);
 aux.opts_align=filldefault(aux.opts_align,'min',1);
 aux.opts_align=filldefault(aux.opts_align,'if_btcremz',1);
+aux=rs_aux_customize(aux,'rs_align_coordsets');
 %
 if isnumeric(aux.opts_align.min)
     min_string=sprintf('%1.0f',aux.opts_align.min);
 else
-    mins_tring=aux.opts_align.min;
+    min_string=aux.opts_align.min;
 end
 %
 data_out=struct;
@@ -124,7 +124,6 @@ if aux_out.warn_bad==0
     aux_out.ovlp_array=ovlp_array;
     aux_out.sa_pooled=sa_pooled;
     aux_out.opts_align=opts_align_used;
-    %
     for iset=1:nsets
         data_out.sets{iset}.pipeline=psg_coord_pipe_util('aligned',opts_align_used,data_in.sets);
     end
