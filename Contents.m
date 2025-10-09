@@ -10,6 +10,9 @@
 % Data processing: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
 %   rs_align_coordsets_test: test for above
+%   rs_findrays: find rays from coordinates
+%   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli
+%   rs_knit_coordsets_test: test for above
 %
 % Customization and testing
 %   rs_auto_test: run all tests ion automatic mode

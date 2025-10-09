@@ -54,10 +54,13 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      *LL*(1,ndims): log likelihoods
 %      btc_specoords(istim,:): stimulus coordinates to be used for finding rays
 %      sigma_*: information about MDS settings for internal error (sigma)
-%  aux_out: auxiliary parameter values used
+%  aux_out: auxiliary outputs and parameter values used
+%      opts*: values used for opts_read, opts_rays
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
+%      aux_out.rayss{1}: ray structure
+%      
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETUPTS, PSG_FINDRAYS.
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETUPTS, PSG_FINDRAYS.
 %
 if (nargin<=1)
     aux=struct;
@@ -95,25 +98,15 @@ if isempty(fullname)
         end
     end
 end
-opts_rays_used=struct; %in case psg_findrays is not called
-rays=struct;
 if aux.opts_read.if_justsetup==0
     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,[],aux.opts_read);
     opts_read_used.data_fullnames={opts_read_used.data_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.setup_fullnames={opts_read_used.setup_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.input_type_desc=aux.opts_read.input_types{1}; %rs_read_coorddata only reads experimental data, which is type 1
     sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,pipeline,struct());
-    stim_coords=[];
-    if isfield(sa,'btc_specoords')
-        stim_coords=sa.btc_specoords;
-    elseif isfield(sa,'btc_augcoords')
-        stim_coords=sa.btc_augcoords;
-    end
-    if ~isempty(stim_coords)
-        aux.opts_rays=psg_findray_setopts(opts_read_used.setup_fullname,aux.opts_rays);
-        [rays,opts_rays_used]=psg_findrays(stim_coords,aux.opts_rays);
-    else
-        wmsg=sprintf('cannot find stimulus coordinates, so cannot identify rays');
+    %
+    [rays,wmsg,opts_rays_used]=rs_findrays(sa,opts_read_used.setup_fullname,aux.opts_rays);
+    if ~isempty(wmsg)
         warning(wmsg);
         aux_out.warnings=strvcat(aux_out.warnings,wmsg);
     end

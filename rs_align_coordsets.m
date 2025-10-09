@@ -26,16 +26,21 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
-% aux_out.ovlp_array: each row is a stimulus in data_out, kth column is a 1 if stimulus is present in dataset k
-% aux_out.sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
-%    This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
-% aux_out.opts_align: options used in psg_align_coordsets
+% aux_out: auxiliary outputs and parameter values used
+%    ovlp_array: each row is a stimulus in data_out, kth column is a 1 if
+%    stimulus is present in dataset k, even if the response is NaN
+%    sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
+%      This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
+%    opts*: values used for opts_align, opts_rays
+%    warnings: warnings generated in creating arguments for psg_get_coordsets
+%    rayss{k}: ray structure for dataset k
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ.
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ.
 %
 if (nargin<=1)
     aux=struct;
 end
+aux=filldefault(aux,'opts_rays',struct);
 aux=filldefault(aux,'opts_align',struct);
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 aux.opts_align=filldefault(aux.opts_align,'if_log',1);
@@ -102,6 +107,17 @@ if aux_out.warn_bad==0
     end
     [sets_align,ds_align,sas_align,ovlp_array,sa_pooled,opts_align_used]=...
         psg_align_coordsets(data_in.sets,data_in.ds,data_in.sas,aux.opts_align);
+    %
+    for iset=1:nsets
+        [rays,wmsg,opts_rays_used]=rs_findrays(sas_align{iset},sets_align{iset}.label,aux.opts_rays);
+        if ~isempty(wmsg)
+            wmsg=cat(2,sprintf('set %2.0f: ',iset),wmsg);
+            warning(wmsg);
+            aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+        end
+        aux_out.opts_rays{iset}=opts_rays_used;
+        aux_out.rayss{iset}=rays;
+    end
     data_out.ds=ds_align;
     data_out.sas=sas_align;
     data_out.sets=sets_align;

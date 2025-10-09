@@ -4,8 +4,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % data_in.sas{k}.typenames is used to establish stimulus identity
 % 
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These could be returned by rs_get_coordsets or rs_read_coorddata, or,
-%   after alignment by rs_align_coordsets
+%   These are typically created by rs_align_coordsets, but could also be directly from 
+%   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
+%   datasets, as listed in data_in.sas{k}.typenames
 %
 % aux.opts_knit:
 %  if_log: 1 to log progress
@@ -20,15 +21,21 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
-% aux_out.opts_knit: overall options used
-% aux_out.opts_pcon{id}: options used in Procrustes alignment for model dimension id
-% aux_out.coords_havedata: [stims x sets] is 1 where data are present
-% aux_out.components.ds{k},sas{k},sets{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
-%    coordinates will be NaN if not present
+% aux_out: auxiliary outputs and parameter values used
+%    opts_knit: overall options used
+%    opts_pcon{id}: options used in Procrustes alignment for model dimension id
+%    coords_havedata: [stims x sets] is 1 where data are present.
+%       Note that this may differ from aux_out.ovlp_array in rs_align_coordsets,
+%       in that if an input file lists a stimulus but the response is NaN, then
+%       it will appear as prseent in rs_align_coordsets output aux_out.ovlp_array,
+%       but as absent in rs_knit_coordsets.aux_out.coords_havedata
+%   warnings: warnings generated in creating arguments for psg_get_coordsets
+%   rayss{1}: ray structure for knitted datasets
+%   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
+%       coordinates will be NaN if not present
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_ALIGN_COORDSETS, PROCRUSTES_CONSENSUS.
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS, PROCRUSTES_CONSENSUS.
 %
-
 if (nargin<=1)
     aux=struct;
 end
@@ -111,7 +118,7 @@ for iset=1:nsets
 end
 aux_out.coords_havedata=1-coords_isnan;
 if aux.opts_knit.if_log
-    disp('overlap table')
+    disp('data table')
     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
 end
 if any(all(coords_isnan,2))
@@ -198,7 +205,6 @@ if aux_out.warn_bad==0
     aux_out.components.ds=ds_components;
     %%%deal with rays
     %%%need add to sets, sas, pipeline
-    %%%%put in overlap matrix
     %
     aux_out.opts_knit=aux.opts_knit;
     aux_out.opts_pcon=opts_pcon_used;
