@@ -129,8 +129,11 @@ if aux_out.warn_bad==0
     aux_out.ovlp_array=ovlp_array;
     aux_out.sa_pooled=sa_pooled;
     aux_out.opts_align=opts_align_used;
+    %
+    pipeline_opts=struct;
+    pipeline_opts.opts_align=opts_align_used;
     for iset=1:nsets
-        data_out.sets{iset}.pipeline=psg_coord_pipe_util('aligned',opts_align_used,data_in.sets);
+        data_out.sets{iset}.pipeline=psg_coord_pipe_util('align',pipeline_opts,data_in.sets{iset},[],data_in.sets);
     end
 else
     disp('cannot proceed');

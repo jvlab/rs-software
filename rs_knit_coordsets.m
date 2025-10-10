@@ -33,8 +33,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   rayss{1}: ray structure for knitted datasets
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
+%   details: details of the convergence towards knitting
 %
-%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS, PSG_REMNAN_COORDSETS, PROCRUSTES_CONSENSUS.
+%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS
+%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
 %
 if (nargin<=1)
     aux=struct;
@@ -255,6 +257,10 @@ if aux_out.warn_bad==0
             sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
         end
     end
+    pipeline_opts=struct;
+    pipeline_opts.opts_knit=aux.opts_knit;
+    pipeline_opts.opts_pcon=opts_pcon_used;
+    sets_knitted.pipeline=psg_coord_pipe_util('knit',pipeline_opts,[],[],data_in.sets);
     %find rays
     [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
     if ~isempty(wmsg)
@@ -262,120 +268,26 @@ if aux_out.warn_bad==0
         warning(wmsg);
         aux_out.warnings=strvcat(aux_out.warnings,wmsg);
     end
+    %pipeline for component sets
+    for iset=1:nsets
+        data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);
+    end
     data_out.ds{1}=ds_knitted;
     data_out.sas{1}=sas_knitted;
     data_out.sets{1}=sets_knitted;
-    aux_out.opts_rays{1}=opts_rays_used;
+    %
     aux_out.rayss{1}=rays;
+    aux_out.opts_rays{1}=opts_rays_used;
+    aux_out.opts_knit=aux.opts_knit;
+    aux_out.opts_pcon=opts_pcon_used;
     %
     aux_out.components.ds=ds_components;
     aux_out.components.sas=data_in.sas;
     aux_out.components.sets=data_in.sets;
     %
-    %%%need add to sets, sas, pipeline to data_out.sets{1}
-    %
-    aux_out.opts_knit=aux.opts_knit;
-    aux_out.opts_pcon=opts_pcon_used;
+    aux_out.details=details;
 else
     disp('cannot proceed');
 end
 return
 end
-
-% %
-% %find the ray descriptors but first make sure that arguments for permuting ray labels agree,
-% %otherwise do not permute ray labels
-% %
-% opts_rays_knitted=rmfield(opts_rays_used{1},'ray_permute_raynums');
-% if_match=1;
-% for iset=1:nsets
-%     disp(sprintf('for original set %1.0f, ray number permutation is:',iset))
-%     disp(opts_rays_used{iset}.permute_raynums);
-%     if length(opts_rays_knitted.permute_raynums)~=length(opts_rays_used{iset}.permute_raynums)
-%         if_match=0;
-%     else
-%         if any(opts_rays_knitted.permute_raynums~=opts_rays_used{iset}.permute_raynums)
-%             if_match=0;
-%         end
-%     end
-%     %added 21Nov24 in case number of rays in knitted dataset is greater than
-%     %any of the components, e.g., merging bgca with dgea
-%     rays_knitted_prelim=psg_findrays(sa_pooled.btc_specoords);
-%     if max(rays_knitted_prelim.whichray)>length(opts_rays_knitted.permute_raynums)
-%         if_match=0;
-%     end
-%     if (if_match==0)
-%         opts_rays_knitted.permute_raynums=[];
-%     end
-% end
-% disp('for knitted set, ray number permutation is:')
-% disp(opts_rays_knitted.permute_raynums);
-% [rays_knitted,opts_rays_knitted_used]=psg_findrays(sa_pooled.btc_specoords,opts_rays_knitted); %ray parameters based on first dataset; finding rays only depends on metadata
-% %
-% [sets_nonan,ds_nonan,sas_nonan,opts_nonan_used]=psg_remnan_coordsets(sets_align,ds_components,sas_align,ovlp_array,opts_nonan); %remove the NaNs
-% %find the rays for sets with nan's removed (since the order has been changed) and use these to plot
-% rays_nonan=cell(nsets,1);
-% for iset=1:nsets
-%     [rays_nonan{iset},opts_rays_nonan_used{iset}]=psg_findrays(sas_nonan{iset}.btc_specoords,opts_rays_used{iset});
-% end
-% disp('created ray descriptors for knitted and nonan datasets');
-% %
-
-% end
-% if getinp('1 to write files: "knitted" (with new setup metadata), "aligned", "components" (aligned and transformed)','d',[0 1])
-%     opts_write=struct;
-%     opts_write.data_fullname_def='[paradigm]pooled_coords_ID.mat';
-%     %
-%     sout_knitted=struct;
-%     sout_knitted.stim_labels=strvcat(sa_pooled.typenames);
-%     %
-%     opts=struct;
-%     opts.pcon_dim_max=pcon_dim_max; %maximum consensus dimension created   
-%     opts.pcon_dim_max_comp=pcon_dim_max_comp; %maximum component dimension used
-%     opts.details=details; %details of Procrustes alignment
-%     opts.opts_read_used=opts_read_used; %file-reading options
-%     opts.opts_qpred_used=opts_qpred_used; %quadratic form model prediction options
-%     opts.opts_align_used=opts_align_used; %alignment options
-%     opts.opts_nonan_used=opts_nonan_used; %nan removal options
-%     opts.opts_pcon_used=opts_pcon_used; %options for consensus calculation for each dataset
-%     if_write_knitted=getinp('1 to write "knitted" dataset -- all stimuli combined and transformed into consensus (-1 to embed setup metadata)','d',[-1 1]);
-%     if if_write_knitted~=0
-%         if if_write_knitted==-1
-%             sout_knitted.setup=sa_pooled;
-%         end
-%         sout_knitted.pipeline=psg_coord_pipe_util(cat(2,'knitted',c2p_string),opts,sets);
-%         if getinp('1 to remove details from pipeline to shorten output file','d',[0 1])
-%             sout_knitted.pipeline.opts=rmfield(sout_knitted.pipeline.opts,'details');
-%         end
-%         opts_write_used=psg_write_coorddata([],ds_knitted,sout_knitted,opts_write);
-%     end
-%     if getinp('1 to write individual datasets, "aligned" (stimuli lined up but not transformed into consensus; uses original setup file)','d',[0 1])
-%         for iset=1:nsets
-%             disp(sprintf(' set %2.0f',iset));
-%             %ds_align{nsets},      sas_align{nsets}: datasets with NaN's inserted to align the stimuli
-%             sas_align{iset}.pipeline=psg_coord_pipe_util('aligned',opts,sets);
-%             sas_align{iset}.pipeline.opts.source_file=iset;
-%             opts_write_used=psg_write_coorddata([],ds_align{iset},sout_knitted,opts_write);
-%         end
-%     end
-%     if getinp('1 to write individual datasets, "components" (stimuli lined up and transformed into consensus; uses original setup file)','d',[0 1])
-%         for iset=1:nsets
-%             disp(sprintf(' set %2.0f',iset));
-%             %ds_components{nsets}, sas_align{nsets}: components of ds_knitted, correcsponding to original datasets, but with NaNs -- these are Procrustes transforms of ds_align
-%             sas_align{iset}.pipeline=psg_coord_pipe_util(cat(2,'components',c2p_string),opts,sets);
-%             sas_align{iset}.pipeline.opts.source_file=iset;
-%             opts_write_used=psg_write_coorddata([],ds_components{iset},sout_knitted,opts_write);
-%         end
-%     end
-%     %
-%     if getinp('1 to write metadata (setup file) for "knitted" dataset','d',[0 1])
-%         metadata_fullname_def=opts_write_used.data_fullname;
-%         metadata_fullname_def=metadata_fullname_def(1:-1+min(strfind(cat(2,metadata_fullname_def,'_coords'),'_coords')));
-%         if isfield(sa_pooled,'nsubsamp')
-%             metadata_fullname_def=cat(2,metadata_fullname_def,sprintf('%1.0f',sa_pooled.nsubsamp));
-%         end
-%         metadata_fullname=getinp('metadata file name','s',[],metadata_fullname_def);
-%         s=sa_pooled;
-%         save(metadata_fullname,'s');
-%     end
-% end %write files
