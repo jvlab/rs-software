@@ -57,7 +57,7 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %    details.zz_check_diff is a check for the difference between
 %       transformed points computed by Procrustes and by hand
 %    details.warnings: warnings if not enough overlaps
-%    details.overlap_pairs(nsets,nsets: number of pairwise overlaps
+%    details.overlap_pairs(nsets,nsets): number of pairwise overlaps
 %    details.overlap_totals(npts,1): number of overlaps for each data point
 %    details.initialize_use(npts,1): which dataset is used to initialize each point
 %
