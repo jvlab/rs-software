@@ -15,6 +15,11 @@ aux.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 [data_align,aux_align]=rs_align_coordsets(data_read,aux);
 %knit
 [data_knit,aux_knit]=rs_knit_coordsets(data_align,aux);
+%also knit with allowing a scaling between datasets
+aux_allowscale=aux;
+aux_allowscale.opts_knit.allow_scale=1;
+aux_allowscale.opts_knit.if_normscale=1;
+[data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
 %
 dim_list=data_knit.sets{1}.dim_list; %list of dimensions of coordinate sets
 paradigm_names=cell(1,nsets); %retrieve paradigm names
@@ -36,56 +41,58 @@ ylabel('paradigms');
 set(gca,'YTick',[1:nsets]);
 set(gca,'YTickLabel',paradigm_names);
 %
-%also knit with allowing a scaling between datasets
-aux_allowscale=aux;
-aux_allowscale.opts_knit.allow_scale=1;
-aux_allowscale.opts_knit.if_normscale=1;
-[data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
-
-%retrieve and plot scaling
+%retrieve and plot convergence and scaling
+%
 scalings=cell(1,max(dim_list));
-niters=zeros(1,max(dim_list));
+rmsdev=cell(2,max(dim_list)); %d1 is 1 for standard, 2 for allow scale
+niters=zeros(2,max(dim_list));
 for idim=dim_list
-    details=aux_knit_allowscale.details{idim};
-    niters(idim)=length(details.ts_cum);
+    details=aux_knit.details{idim};
+    details_as=aux_knit_allowscale.details{idim};
+    niters(1,idim)=length(details.ts_cum);
+    niters(2,idim)=length(details_as.ts_cum);
+    rmsdev{1,idim}=details.rms_dev;
+    rmsdev{2,idim}=details_as.rms_dev;
     scalings{idim}=ones(nsets,niters(idim));
-    for iter=1:niters(idim)
-        for iset=1:nsets
-            scalings{idim}(iset,iter)=details.ts_cum{iter}{iset}.scaling;
+    for iter=1:niters(2,idim)
+        for iset=1:nsets           
+            scalings{idim}(iset,iter)=details_as.ts_cum{iter}{iset}.scaling;
         end
     end
 end
 figure;
-set(gcf,'Position',[100 100 1200 800]);
+set(gcf,'Position',[100 100 1200 900]);
+ncols=3;
+ias_label={'no scaling','scaling'};
 for idim=dim_list
-    subplot(max(dim_list),1,idim)
+    %
+    for ias=1:2
+        subplot(max(dim_list),3,ncols*(idim-1)+ias)
+        plot(rmsdev{ias,idim}');
+        xlabel('iter');
+        set(gca,'XLim',[0 max(niters(:))]);
+        ylabel('rms dev');
+        set(gca,'YLim',[0 max(max(rmsdev{1,idim}(:)),max(rmsdev{2,idim}(:)))]);
+        title(sprintf('rms dev, %s, dim %1.0f',ias_label{ias},idim));
+        legend(paradigm_names,'Location','NorthEast');
+    end
+    subplot(max(dim_list),3,ncols*(idim-1)+3)
     plot(scalings{idim}');
-    set(gca,'XLim',[0 max(niters)]);
-    title(sprintf(' dim %1.0f',idim));
+    xlabel('iter');
+    set(gca,'XLim',[0 max(niters(:))]);
+    ylabel('scale factor');
+    set(gca,'YLim',[0.5 1.5]);
+    hold on;
+    plot([0 max(niters(:))],[1 1],'k');
+    title(sprintf('scale factors, dim %1.0f',idim));
 end
-%%%show scaling and how it progresses over time
-% aux_knit.details{3}.ts_cum{4}
-% ans =
-%   1×3 cell array
-%     {1×1 struct}    {1×1 struct}    {1×1 struct}
-% aux_knit.details{3}.ts_cum{4}{1}
-% ans = 
-%   struct with fields:
-% 
-%         scaling: 1
-%          orthog: [3×3 double]
-%     translation: [0.3063 0.2145 0.1489]
-% aux_knit.details{3}.ts_cum{end}{1}
-% ans = 
-%   struct with fields:
-% 
-%         scaling: 1
-%          orthog: [3×3 double]
-%     translation: [0.3823 0.2738 0.2724]
-% aux_knit_allowscale.details{3}.ts_cum{end}{1}
-% ans = 
-%   struct with fields:
-% 
-%         scaling: 1.0971
-%          orthog: [3×3 double]
-%     translation: [0.3804 0.2652 0.2848]
+%
+%show pipelines
+%
+disp('%%%%%%%%%%%%%%%%%%%');
+disp('pipeline for knitted dataset, no scaling');
+rs_showpipeline(data_knit.sets{1}.pipeline);
+disp('%%%%%%%%%%%%%%%%%%%');
+disp('pipeline for knitted dataset, scaling');
+rs_showpipeline(data_knit_allowscale.sets{1}.pipeline);
+disp('%%%%%%%%%%%%%%%%%%%');
