@@ -6,6 +6,7 @@
 %   rs_read_coorddata: read one coordinate set from a file
 %   rs_read_coorddata_test: test for above
 %   rs_save_mat: save a mat-file
+%   rs_showpipeline: show the processing pipeline for a coordinate dataset
 %
 % Data processing: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
