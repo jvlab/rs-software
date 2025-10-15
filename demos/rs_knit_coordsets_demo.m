@@ -21,6 +21,16 @@ aux_allowscale.opts_knit.allow_scale=1;
 aux_allowscale.opts_knit.if_normscale=1;
 [data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
 %
+%show pipelines
+%
+disp('%%%%%%%%%%%%%%%%%%%');
+disp('pipeline for knitted dataset, no scaling');
+rs_showpipeline(data_knit.sets{1}.pipeline);
+disp('%%%%%%%%%%%%%%%%%%%');
+disp('pipeline for knitted dataset, scaling');
+rs_showpipeline(data_knit_allowscale.sets{1}.pipeline);
+disp('%%%%%%%%%%%%%%%%%%%');
+%
 dim_list=data_knit.sets{1}.dim_list; %list of dimensions of coordinate sets
 paradigm_names=cell(1,nsets); %retrieve paradigm names
 for iset=1:nsets
@@ -86,13 +96,3 @@ for idim=dim_list
     plot([0 max(niters(:))],[1 1],'k');
     title(sprintf('scale factors, dim %1.0f',idim));
 end
-%
-%show pipelines
-%
-disp('%%%%%%%%%%%%%%%%%%%');
-disp('pipeline for knitted dataset, no scaling');
-rs_showpipeline(data_knit.sets{1}.pipeline);
-disp('%%%%%%%%%%%%%%%%%%%');
-disp('pipeline for knitted dataset, scaling');
-rs_showpipeline(data_knit_allowscale.sets{1}.pipeline);
-disp('%%%%%%%%%%%%%%%%%%%');
