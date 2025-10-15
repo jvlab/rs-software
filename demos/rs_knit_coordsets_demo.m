@@ -21,14 +21,15 @@ aux_allowscale.opts_knit.allow_scale=1;
 aux_allowscale.opts_knit.if_normscale=1;
 [data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
 %
-%show pipelines
+%show pipelines, also expanding the contents of sets and sets_combined
 %
+fields_expand={'opts','file_list','sets','sets_combined'};
 disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, no scaling');
-rs_showpipeline(data_knit.sets{1}.pipeline);
+rs_showpipeline(data_knit.sets{1}.pipeline,setfield(struct(),'fields_expand',fields_expand));
 disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, scaling');
-rs_showpipeline(data_knit_allowscale.sets{1}.pipeline);
+rs_showpipeline(data_knit_allowscale.sets{1}.pipeline,setfield(struct(),'fields_expand',fields_expand));
 disp('%%%%%%%%%%%%%%%%%%%');
 %
 dim_list=data_knit.sets{1}.dim_list; %list of dimensions of coordinate sets
