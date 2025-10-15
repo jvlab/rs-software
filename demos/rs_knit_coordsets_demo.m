@@ -40,8 +40,7 @@ end
 %show which paradigms contain which stimuli
 %
 figure;
-imagesc(aux_knit.coords_havedata');
-colormap gray;
+spy(aux_knit.coords_havedata');
 nstims=data_knit.sas{1}.nstims;
 typenames=data_knit.sas{1}.typenames;
 xlabel('stimuli');
