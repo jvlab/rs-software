@@ -2,7 +2,8 @@
 %
 %  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS
 %
-filenames={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
+verbosity=getinp('pipeline display verbosity','d',[0 2],0);
+filenames={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
 nsets=length(filenames);
 aux=struct;
 aux.nsets=nsets;
@@ -23,13 +24,17 @@ aux_allowscale.opts_knit.if_normscale=1;
 %
 %show pipelines, also expanding the contents of sets and sets_combined
 %
-fields_expand={'opts','file_list','sets','sets_combined'};
+if verbosity<=1
+    fields_expand={};
+else
+    fields_expand={'opts','file_list','sets','sets_combined'};
+end
 disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, no scaling');
-rs_showpipeline(data_knit.sets{1}.pipeline,setfield(struct(),'fields_expand',fields_expand));
+rs_showpipeline(data_knit.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, scaling');
-rs_showpipeline(data_knit_allowscale.sets{1}.pipeline,setfield(struct(),'fields_expand',fields_expand));
+rs_showpipeline(data_knit_allowscale.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
 %
 dim_list=data_knit.sets{1}.dim_list; %list of dimensions of coordinate sets
