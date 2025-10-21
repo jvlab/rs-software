@@ -4,6 +4,8 @@ function depth_max=rs_showpipeline(pipeline,opts)
 % pipeline: structure indicating processing path, typically a field of sets
 % opts: (can be omitted)
 %   depth_limit: maximum depth (processing stages) to show, defaults to Inf
+%   breadth_limit: maximum breadth (number of branches) to show, defaults to Inf
+%   verbosity: 0 (brief), 1, or 2, defaults to 1
 %   fields_expand: names of fields to expand, if present, defaults to {'opts','file_list'}
 %     could add 'sets','sets_combined'
 %
@@ -14,6 +16,10 @@ function depth_max=rs_showpipeline(pipeline,opts)
 if nargin<=1
     opts=struct;
 end
+opts=filldefault(opts,'depth_limit',Inf);
+opts=filldefault(opts,'breadth_limit',Inf);
+opts=filldefault(opts,'verbosity',1);
+opts=filldefault(opts,'fields_expand',{'opts','file_list'});
 depth_max=psg_showpipeline(pipeline,opts);
 return
 end
