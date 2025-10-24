@@ -33,6 +33,9 @@ disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, no scaling');
 rs_showpipeline(data_knit.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
+%
+if getinp('write the knitted set','d',[0 1])
+ end
 disp('pipeline for knitted dataset, scaling');
 rs_showpipeline(data_knit_allowscale.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
