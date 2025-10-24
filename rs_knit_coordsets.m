@@ -30,6 +30,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       it will appear as prseent in rs_align_coordsets output aux_out.ovlp_array,
 %       but as absent in rs_knit_coordsets.aux_out.coords_havedata
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
+%    warn_bad: count of warnings that prevent further processing
 %   rayss{1}: ray structure for knitted datasets
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present

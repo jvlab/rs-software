@@ -4,16 +4,18 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % 
 % for each entry in data_in, there is an entry in data_out, listed in alphabetical order (evenif no alignment is needed)
 % * this only aligns the datasets so that the stimuli are in identical order, it does not change the coordinates
+% * stimulus identity is determined by typenames
 % * coordinates for missing stimuli are NaN
 % * see rs_knit_coordsets for finding a consensus set of coordinates 
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returned by rs_get_coordsets or rs_read_coorddata
+%      sas{k}.typenames is a strvcat, and is used to determine stimulus identity
 % aux.opts_align.if_log: 1 to log progress
 % aux.opts_align.min: minimum number of datasets that must contain a stimulus, in order for the stimulus to be included
 %   default is 1 (legacy behavior: all stimuli used), can also be 'any'; 
 %   'all': stimuli must be present in all datasets to be kept
 % aux.opts_align.if_btc_specoords_remake:  this usually can be ignored or set to [].
-%   Setting to 0 forces a merging of the stimulus cooredinates, thisis
+%   Setting to 0 forces a merging of the stimulus coordinates, this is
 %     appropriate if the stimuli have meaningful a priori coordinates in the setup file, and then in btc_specoords
 %     (e.g., binary textures, faces)
 %   Setting to 1 forces btc_specoords of the aligned data to be remade as unique rows of an identity matrix
@@ -33,6 +35,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %       This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
 %    opts*: values used for opts_align, opts_rays
 %    warnings: warnings generated in creating arguments for psg_get_coordsets
+%    warn_bad: count of warnings that prevent further processing
 %    rayss{k}: ray structure for dataset k
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ.

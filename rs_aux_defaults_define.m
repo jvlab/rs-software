@@ -22,6 +22,7 @@ generic.opts_read.setup_fullnames=cell(0);
 generic.opts_read.if_auto=0;
 generic.opts_read.if_data_only=0;
 generic.opts_read.ui_filter='*_coords*.mat'; %token in gui for file input
+generic.opts_read.if_gui=1; % 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 generic.opts_read.if_symaug=0;
 generic.opts_read.sym_apply='full';
 generic.opts_read.if_symaug_log=0;
@@ -67,7 +68,10 @@ generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
 %
 %typically first used in psg_write_coorddata
 %
-generic.opts_write.coord_data_fullname_write_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
+generic.opts_write.coord_data_fullname_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
+generic.opts_write.if_log=1;
+generic.opts_write.ui_filter='*_coords*.mat'; %token in gui for file output
+generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %
 %these options override generic defaults when rs_aux_customize is called by a specific function
 %
@@ -85,6 +89,7 @@ if getinp('1 to use hlid defaults','d',[0 1],0)
     for ifn=1:length(fns)
         generic.opts_read.(fns{ifn})=h.opts_read.(fns{ifn});
     end
+    generic.opts_write.coord_data_fullname_write_def='./*.mat';
     fns=fieldnames(h.opts_plot);
     for ifn=1:length(fns)
         generic.opts_plot.(fns{ifn})=h.opts_plot.(fns{ifn});
@@ -93,6 +98,7 @@ if getinp('1 to use hlid defaults','d',[0 1],0)
     for ifn=1:length(fns)
         generic.opts_multm_def.(fns{ifn})=h.opts_multm_def.(fns{ifn});
     end
+    generic.opts_write.coord_data_fullname_def='./*_coords*.mat';
     generic.hlid_opts=h.hlid_opts;
     generic.display_orders=h.display_orders;
     clear h fns ifn
