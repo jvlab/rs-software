@@ -89,7 +89,6 @@ if getinp('1 to use hlid defaults','d',[0 1],0)
     for ifn=1:length(fns)
         generic.opts_read.(fns{ifn})=h.opts_read.(fns{ifn});
     end
-    generic.opts_write.coord_data_fullname_write_def='./*.mat';
     fns=fieldnames(h.opts_plot);
     for ifn=1:length(fns)
         generic.opts_plot.(fns{ifn})=h.opts_plot.(fns{ifn});
