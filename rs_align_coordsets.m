@@ -73,6 +73,7 @@ paradigm_type=[];
 paradigm_match=1;
 for iset=1:nsets
     types{iset}=data_in.sets{iset}.type;
+    data_in.sets{iset}=filldefault(data_in.sets{iset},'paradigm_type','[unknown]');
     paradigm_types{iset}=data_in.sets{iset}.paradigm_type;
     if strcmp(types{iset},'data')
         if isempty(paradigm_type)
