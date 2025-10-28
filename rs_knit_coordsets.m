@@ -19,6 +19,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  pcon_dim_max: maximum dimension for the consensus alignment dataset to be created, defaults to max available across all datasets
 %  pcon_dim_max_comp: maximum dimension for component datasets to use; higher dimensions will be zero-padded, defaults to max available across all datasets
 %  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
+%  keep_details: 1 to keep details field (default)
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out: auxiliary outputs and parameter values used
@@ -27,7 +28,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %    coords_havedata: [stims x sets] is 1 where data are present.
 %       Note that this may differ from aux_out.ovlp_array in rs_align_coordsets,
 %       in that if an input file lists a stimulus but the response is NaN, then
-%       it will appear as prseent in rs_align_coordsets output aux_out.ovlp_array,
+%       it will appear as present in rs_align_coordsets output aux_out.ovlp_array,
 %       but as absent in rs_knit_coordsets.aux_out.coords_havedata
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
@@ -53,6 +54,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max_comp',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
+aux.opts_knit=filldefault(aux.opts_knit,'keep_details',1);
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -286,7 +288,9 @@ if aux_out.warn_bad==0
     aux_out.components.sas=data_in.sas;
     aux_out.components.sets=data_in.sets;
     %
-    aux_out.details=details;
+    if aux.opts_knit.keep_details
+        aux_out.details=details;
+    end
 else
     disp('cannot proceed');
 end
