@@ -24,6 +24,11 @@ r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
 r.(rs_module).aux_outs=aux_outs;
 %
+rs_knit_coordsets_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).data_outs=data_outs;
+r.(rs_module).aux_outs=aux_outs;
+%
 disp('%%%%%%%')
 disp('summary')
 disp('%%%%%%%')
