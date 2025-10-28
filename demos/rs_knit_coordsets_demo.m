@@ -9,6 +9,7 @@ aux=struct;
 aux.nsets=nsets;
 aux.opts_align.min=1;
 aux.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux.opts_knit.keep_details=1;
 %
 %read the data
 [data_read,aux_read]=rs_get_coordsets(filenames,aux);
