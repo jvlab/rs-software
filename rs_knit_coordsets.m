@@ -2,7 +2,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
 % with partially overlapping stimuli
 % data_in.sas{k}.typenames is used to establish stimulus identity
-% 
+%
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   These are typically created by rs_align_coordsets, but could also be directly from 
 %   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
@@ -16,10 +16,19 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  if_normscale: 1 to normalize consensus to size of data (default=0)
 %  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
-%  pcon_dim_max: maximum dimension for the consensus alignment dataset to be created, defaults to max available across all datasets
-%  pcon_dim_max_comp: maximum dimension for component datasets to use; higher dimensions will be zero-padded, defaults to max available across all datasets
+%  if_stats: 1 to do statistics via shuffling labels (0 is default)
+%  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
+%  if_plot: 1 to plot statistics, defaults to if_stats
+%  dim_max_in: maximum dimension of the component set to use, defaults to max available across all datasets
+%  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
+%  dim_aug: number of dimensions to augment by, defaults to 0
+%  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
+%
+%
 %  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
-%  keep_details: 1 to keep details field (default)
+%  if_initpca_rot: (if pcon_init_method<=0) whether to rotate
+%     initialization to match data (1), or not (0), defaults to 1 unless any of dim_list_out> dim_list_in
+%  keep_details: 1 to keep details field (defaults to 0)
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out: auxiliary outputs and parameter values used
@@ -36,9 +45,18 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
+%   knit_stats: statistics of knitting
+%   knit_stats_setup: statistics parameters 
+%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
+%     but also knit_stats_setup can be customized by setting 
+%         knit_stats_setup.dataset_labels
+%         knit_stats_setup.stimulus_labels
+%         knit_stats_setup.shuff_quantiles
+%   knit_stats_fig: handle to figure, if stats are plotted
 %
-%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_ALIGN_COORDSETS
-%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
+%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS,
+%  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
+%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
 %
 if (nargin<=1)
     aux=struct;
@@ -51,10 +69,16 @@ aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_pca',0);
 aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
-aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max',Inf);
-aux.opts_knit=filldefault(aux.opts_knit,'pcon_dim_max_comp',Inf);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
-aux.opts_knit=filldefault(aux.opts_knit,'keep_details',1);
+aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_stats',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_plot',aux.opts_knit.if_stats);
+%
+if aux.opts_knit.if_stats
+    aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',500);
+else
+    aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',0);
+end
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -166,12 +190,28 @@ if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_poole
     disp(setdiff(typenames_union,sa_pooled.typenames));
 end
 %
+%set up dimension defaults
+%
+dim_list_all=dim_list_inter;
+aux.opts_knit=filldefault(aux.opts_knit,'dim_max_in',max(dim_list_all));
+aux.opts_knit=filldefault(aux.opts_knit,'dim_list_in',[1:aux.opts_knit.dim_max_in]);
+aux.opts_knit=filldefault(aux.opts_knit,'dim_aug',0);
+aux.opts_knit=filldefault(aux.opts_knit,'dim_list_out',aux.opts_knit.dim_aug+aux.opts_knit.dim_list_in);
+if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
+    wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
+    aux_out.warn_bad=aux_out.warn_bad+1;
+else
+    if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
+    aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
+end
 if aux_out.warn_bad==0
 %process
     typenames_all=typenames_inter;
-    dim_list_all=dim_list_inter;
+    dim_list_in=aux.opts_knit.dim_list_in;
+    dim_list_out=aux.opts_knit.dim_list_out;
+    %
     if aux.opts_knit.if_log
-        disp(sprintf('knitting %3.0f stimuli across %3.0f datasets, dimensions %s',nstims_all,nsets,sprintf(' %2.0f',dim_list_all))); 
+        disp(sprintf('knitting %3.0f stimuli across %3.0f datasets, dimensions %s',nstims_all,nsets,sprintf(' %2.0f',dim_list_in))); 
         disp(sprintf('  allow reflection: %1.0f, allow offset: %1.0f, allow scale: %1.0f, normalize scale: %1.0f, rotate to pcs: %1.0f',...
             aux.opts_knit.allow_reflection,aux.opts_knit.allow_offset,aux.opts_knit.allow_scale,aux.opts_knit.if_normscale,aux.opts_knit.if_pca));
     end
@@ -180,65 +220,62 @@ if aux_out.warn_bad==0
     else
         c2p_string='';
     end
-    aux.opts_knit.pcon_dim_max=min(aux.opts_knit.pcon_dim_max,max(dim_list_inter));
-    aux.opts_knit.pcon_dim_max_comp=min(aux.opts_knit.pcon_dim_max_comp,max(dim_list_inter));
     if aux.opts_knit.pcon_init_method>0
-        aux.opts_knit.initiailze_set=aux.opts_knit.pcon_init_method;
+        aux.opts_knit.initialize_set=aux.opts_knit.pcon_init_method;
     elseif aux.opts_knit.pcon_init_method==0
-        aux.opts_knit.pcon_initialize_set='pca';
+        aux.opts_knit.initialize_set='pca';
     elseif aux.opts_knit.pcon_init_method==-1
-        aux.opts_knit.pcon_initialize_set='pca_center';
+        aux.opts_knit.initialize_set='pca_center';
     else
-        aux.opts_knit.pcon_initialize_set='pca_nocenter';
+        aux.opts_knit.initialize_set='pca_nocenter';
     end
-    %
-    pcon_dim_max=aux.opts_knit.pcon_dim_max;
-    pcon_dim_max_comp=aux.opts_knit.pcon_dim_max_comp;
-    consensus=cell(pcon_dim_max,1);
-    z=cell(pcon_dim_max,1);
-    znew=cell(pcon_dim_max,1);
-    ts=cell(pcon_dim_max,1);
-    details=cell(pcon_dim_max,1);
-    opts_pcon_used=cell(pcon_dim_max,1);
-    ds_knitted=cell(1,pcon_dim_max);
-    ds_components=cell(1,nsets); %partial datasets, aligned via Procrustes
     %
     %do a consensus on each model-dimension separately
     %
-    for ip=1:pcon_dim_max
-        if ismember(ip,dim_list_inter)
-            z{ip}=zeros(nstims_all,ip,nsets);
-            pcon_dim_use=min(ip,pcon_dim_max_comp); %pad above pcon_dim_pad
-            for iset=1:nsets
-                z{ip}(:,1:pcon_dim_use,iset)=data_in.ds{iset}{ip}(:,[1:pcon_dim_use]); %only include data up to pcon_dim_use
-                z{ip}(coords_isnan(:,iset)>0,:,iset)=NaN; % pad with NaN's if data are missing
-            end
-            [ds_knitted{ip},znew{ip},ts{ip},details{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},aux.opts_knit);
-            if aux.opts_knit.if_log
-                disp(sprintf(' creating Procrustes consensus for dim %2.0f based on component datasets up to dimension %2.0f, iterations: %4.0f, final total rms dev: %8.5f',...
-                    ip,pcon_dim_max_comp,length(details{ip}.rms_change),sqrt(sum(details{ip}.rms_dev(:,end).^2))));
-            end
-            for iset=1:nsets
-                ds_components{iset}{1,ip}=znew{ip}(:,:,iset);
-            end
+    opts_pcon=aux.opts_knit;
+    [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
+    if ~isempty(warnings)
+        wmsg=strvcat(wmsg,warnings);
+    end
+    ds_knitted=ra.ds_knitted;
+    ds_components=ra.ds_components;
+    opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
+    details=details'; %make a column for consistency
+    %
+    %if statistics, keep them
+    %
+    if aux.opts_knit.if_stats
+        knit_stats_setup.nsets=nsets;
+        knit_stats_setup.dim_list_in_max=max(dim_list_in);
+        knit_stats_setup.dataset_labels=cell(1,nsets);
+        for iset=1:nsets
+            knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+        end
+        knit_stats_setup.stimulus_labels=typenames_all;
+        knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;
+        knit_stats_setup.nstims=nstims_all;
+        %
+        aux_out.knit_stats=ra;
+        aux_out.knit_stats_setup=knit_stats_setup;
+        if aux.opts_knit.if_plot
+            aux_out.knit_stats_fig=psg_knit_stats_plot(aux_out.knit_stats,aux_out.knit_stats_setup);
         end
     end
     %
     %implement PCA rotation if requested:  note that this is applied both to consesnus and components
     %
     if aux.opts_knit.if_pca
-        for ip=1:pcon_dim_max
-            if ismember(ip,dim_list_inter)
-                knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
-                [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
-        %        qu=opts_used_pca.qu;
-        %        qs=opts_used_pca.qs;
-                v=opts_used_pca.qv;
-        %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
-                for iset=1:nsets
-                    consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
-                    ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
-                end
+        for dptr=1:length(dim_list_out)
+            ip=dim_list_out(dptr);
+            knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
+            [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
+    %        qu=opts_used_pca.qu;
+    %        qs=opts_used_pca.qs;
+            v=opts_used_pca.qv;
+    %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+            for iset=1:nsets
+                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
+                ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
             end
         end %ip
     end
@@ -247,7 +284,7 @@ if aux_out.warn_bad==0
     %knitted set structure
     sets_knitted=struct;
     sets_knitted.nstims=nstims_all;
-    sets_knitted.dim_list=dim_list_inter;
+    sets_knitted.dim_list=dim_list_all;
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=[];
@@ -271,7 +308,8 @@ if aux_out.warn_bad==0
         warning(wmsg);
         aux_out.warnings=strvcat(aux_out.warnings,wmsg);
     end
-    %pipeline for component sets
+    %
+    % %pipeline for component sets
     for iset=1:nsets
         data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);
     end
