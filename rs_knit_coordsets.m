@@ -23,7 +23,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
 %  dim_aug: number of dimensions to augment by, defaults to 0
 %  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
-%
+%    optional, if both are not supplied, they will be computed here
+%  aux.sa_pooled, aux_out.sa_pooled, from rs_align_coordsets
+%  aux.data_align: data_out, from rs_align_coordsets
 %
 %  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
 %  if_initpca_rot: (if pcon_init_method<=0) whether to rotate
@@ -165,14 +167,15 @@ if any(all(coords_isnan,2))
 end
 %
 %if aux.sa_pooled is present, use it, otherwise, re=create
-if isfield(aux,'sa_pooled')
+if (isfield(aux,'sa_pooled') & isfield(aux,'data_align'))
     if (aux.opts_knit.if_log)
-        disp('sa_pooled is supplied.');
+        disp('sa_pooled and data_align are supplied.');
     end
     sa_pooled=aux.sa_pooled;
+    data_align=aux.data_align;
 else
     if (aux.opts_knit.if_log)
-        disp('sa_pooled will be created.');
+        disp('sa_pooled and data_align will be created.');
     end
     %redo the alignment, but first remove the nans in the aligned file; this would confuse if realigned
     [sets_nonan,ds_nonan,sas_nonan]=psg_remnan_coordsets(data_in.sets,data_in.ds,data_in.sas,[],setfield(struct,'if_log',aux.opts_knit.if_log));
@@ -247,6 +250,7 @@ if aux_out.warn_bad==0
     if aux.opts_knit.if_stats
         knit_stats_setup.nsets=nsets;
         knit_stats_setup.dim_list_in_max=max(dim_list_in);
+        knit_stats_setup.dim_list_in=dim_list_in;
         knit_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
             knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
