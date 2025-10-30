@@ -1,4 +1,4 @@
-function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
+function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)tsts
 % [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
 % with partially overlapping stimuli
 % data_in.sas{k}.typenames is used to establish stimulus identity
@@ -47,9 +47,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformatoins used
+%   knit_stats: statistics of knitting, and the transformations used
 %       see the ra field of psg_[knig|align]_stats for details
-%       Note that the transformatoin, knit_stats.ts, does not take into account the transformaton by if_pca
+%       Note that the transformation, knit_stats.ts, does not take into account the transformaton by if_pca
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
 %   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
 %     but also knit_stats_setup can be customized by setting 
