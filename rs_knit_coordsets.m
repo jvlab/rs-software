@@ -1,4 +1,4 @@
-function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)tsts
+function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
 % with partially overlapping stimuli
 % data_in.sas{k}.typenames is used to establish stimulus identity
