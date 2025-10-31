@@ -47,9 +47,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformations used
-%       see the ra field of psg_[knig|align]_stats for details
-%       Note that the transformation, knit_stats.ts, does not take into account the transformaton by if_pca
+%   knit_stats: statistics of knitting, and the transformations used from the component sets daat_in.ds{iset} to consensus data_out.ds{1}
+%       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
+%          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
+%       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
+%       This does *not* take into account the further rotation of the consensus carried out if if_pca=1.
+%       For this, see aux_out.ts_pca{ip}{iset} 
+%       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
 %   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
 %     but also knit_stats_setup can be customized by setting 
@@ -57,6 +61,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         knit_stats_setup.stimulus_labels
 %         knit_stats_setup.shuff_quantiles
 %   knit_stats_fig: handle to figure, if stats are plotted
+%   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
 %
 %  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
@@ -247,6 +252,32 @@ if aux_out.warn_bad==0
     opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
     details=details'; %make a column for consistency
     %
+    %implement PCA rotation if requested:  note that this is applied both
+    %to consensus and components in output, but not in knit_stats.components
+    %
+    if aux.opts_knit.if_pca
+        ts_pca=cell(1,max(dim_list_in));
+        for dptr=1:length(dim_list_out)
+            ip=dim_list_in(dptr);
+            ip_out=dim_list_out(dptr);
+            knitted_centroid=mean(ds_knitted{ip_out},1,'omitnan');
+            [ds_knitted{ip_out},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip_out},knitted_centroid,aux.opts_pca);
+    %        qu=opts_used_pca.qu;
+    %        qs=opts_used_pca.qs;
+            v=opts_used_pca.qv;
+    %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+            for iset=1:nsets
+                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip_out},1,'omitnan'),nstims_all,1);
+                ds_components{iset}{1,ip_out}=consensus_centroid_rep+(ds_components{iset}{1,ip_out}-consensus_centroid_rep)*v(1:ip_out,:);
+                %determine transformation to consensus followed by pca
+                ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
+                ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
+                ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
+            end
+        end %dptr
+        aux_out.ts_pca=ts_pca;
+    end
+    %
     %if statistics, keep them
     %
     if aux.opts_knit.if_stats
@@ -266,24 +297,6 @@ if aux_out.warn_bad==0
         if aux.opts_knit.if_plot
             aux_out.knit_stats_fig=psg_knit_stats_plot(aux_out.knit_stats,aux_out.knit_stats_setup);
         end
-    end
-    %
-    %implement PCA rotation if requested:  note that this is applied both to consesnus and components
-    %
-    if aux.opts_knit.if_pca
-        for dptr=1:length(dim_list_out)
-            ip=dim_list_out(dptr);
-            knitted_centroid=mean(ds_knitted{ip},1,'omitnan');
-            [ds_knitted{ip},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip},knitted_centroid,aux.opts_pca);
-    %        qu=opts_used_pca.qu;
-    %        qs=opts_used_pca.qs;
-            v=opts_used_pca.qv;
-    %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
-            for iset=1:nsets
-                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip},1,'omitnan'),nstims_all,1);
-                ds_components{iset}{1,ip}=consensus_centroid_rep+(ds_components{iset}{1,ip}-consensus_centroid_rep)*v(1:ip,:);
-            end
-        end %ip
     end
     sas_knitted=sa_pooled;
     %
