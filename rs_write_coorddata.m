@@ -1,8 +1,6 @@
 function aux_out=rs_write_coorddata(fullname,data_in,aux)
 % aux_out=rs_write_coorddata(fullname,data_in,aux) writes a coordinate structure
 %
-%****will need to handle embedded setup
-%
 % fullname: a single file name (with path); if empty, it will be requested interactively.  String or singleton cell array
 %      File names should contain the string '_coords'.
 % data_in.ds{iset}: coordinates.   data_in.ds{iset} has size [nstims k]
@@ -13,6 +11,7 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %
 % aux.opts_write:
 %     set_no: which dataset to write, defaults to 1
+%     if_embed: 0 to embed the setup metadata in the output file (so that future reads will not require a separate setup)
 %     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
 %     if_log: 1 (default) to log (0 still shows warnings)
@@ -33,6 +32,7 @@ end
 %
 aux=filldefault(aux,'opts_write',struct);
 aux.opts_write=filldefault(aux.opts_write,'set_no',1);
+aux.opts_write=filldefault(aux.opts_write,'if_embed',1);
 aux=rs_aux_customize(aux,'rs_write_coorddata'); %sets if_log, if_gui, data_fullname_def, data_ui_filter
 %
 aux_out=aux;
@@ -63,6 +63,9 @@ end
 iset=aux.opts_write.set_no;
 sout=struct;
 sout.stim_labels=data_in.sas{iset}.typenames;
+if aux.opts_write.if_embed
+    sout.setup=data_in.sets{iset}; %embedded setup
+end
 data_in.sets{iset}=filldefault(data_in.sets{iset},'pipeline',struct());
 sout.pipeline=data_in.sets{iset}.pipeline;
 [opts_write_used,s_written]=psg_write_coorddata(fullname,data_in.ds{iset},sout,aux.opts_write);
