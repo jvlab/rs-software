@@ -68,7 +68,8 @@ generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
 %
 %typically first used in psg_write_coorddata
 %
-generic.opts_write.coord_data_fullname_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
+generic.opts_write.if_uselocal=0; %1 to enable psg_localopts to define local options
+generic.opts_write.coord_data_fullname_write_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
 generic.opts_write.if_log=1;
 generic.opts_write.ui_filter='*_coords*.mat'; %token in gui for file output
 generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
