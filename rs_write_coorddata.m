@@ -32,7 +32,7 @@ end
 %
 aux=filldefault(aux,'opts_write',struct);
 aux.opts_write=filldefault(aux.opts_write,'set_no',1);
-aux.opts_write=filldefault(aux.opts_write,'if_embed',1);
+aux.opts_write=filldefault(aux.opts_write,'if_embed',0);
 aux=rs_aux_customize(aux,'rs_write_coorddata'); %sets if_log, if_gui, data_fullname_def, data_ui_filter
 %
 aux_out=aux;
