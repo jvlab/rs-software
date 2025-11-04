@@ -5,7 +5,7 @@
 %  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS
 %
 verbosity=getinp('pipeline display verbosity','d',[0 2],0);
-if_write=getinp('1 to write the knitted set','d',[0 1],0);
+if_write=getinp('1 to write the knitted sets','d',[0 1]);
 nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);
 %
 filenames={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
@@ -27,6 +27,8 @@ aux_allowscale=aux;
 aux_allowscale.opts_knit.allow_scale=1;
 aux_allowscale.opts_knit.if_normscale=1;
 [data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
+%
+
 %
 %show pipelines, also expanding the contents of sets and sets_combined
 %
@@ -149,7 +151,14 @@ if nshuffs>0
     psg_knit_stats_plot(knit_allowscale_stats,knit_stats_setup); %plot allowscale stats in second row
 end %nshuffs
 %
-%write datasets?
+%write datasets if requested
 %
 if if_write
+    aux.opts_write=struct;
+    aux.opts_write.if_gui=0;
+    aux_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_noscale',data_knit,aux);
+    %
+    aux_allowscale.opts_write=struct;
+    aux_allowscale.opts_write.if_gui=0;
+    aux_allowscale_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_scale',data_knit_allowscale,aux_allowscale);
 end
