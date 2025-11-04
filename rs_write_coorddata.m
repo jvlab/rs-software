@@ -11,13 +11,13 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %
 % aux.opts_write:
 %     set_no: which dataset to write, defaults to 1
-%     if_embed: 1 to embed the setup metadata in the output file (so that future reads will not require a separate setup)
-%         This is the default option, the metadata is taken to be
-%         data_in.sas{set_no}, which is created by rs_[get|align|knit]_coordsets, rs_read_coorddata
+%     if_embed: 1 (default) to embed the setup metadata in the output file (so that future reads will not require a separate setup)
+%         The metadata is taken to be data_in.sas{set_no}, which is created by rs_[get|align|knit]_coordsets, rs_read_coorddata
+%     ui_prompt: User interface prompt, defaults to ,'Select a coordinate file to write
 %     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
 %     if_log: 1 (default) to log (0 still shows warnings)
-%     data_fullname_def: default file name to write, used as a prompt if fullname is not provided
+%     data_fullname_def: default file name to write, used as a prompt if if_gui=0, if fullname is not provided
 %
 % aux_out:
 %  fullname: file name written
@@ -34,7 +34,9 @@ end
 %
 aux=filldefault(aux,'opts_write',struct);
 aux.opts_write=filldefault(aux.opts_write,'set_no',1);
-aux.opts_write=filldefault(aux.opts_write,'if_embed',0);
+aux.opts_write=filldefault(aux.opts_write,'if_embed',1);
+aux.opts_write=filldefault(aux.opts_write,'ui_prompt','Select a coordinate file to write');
+%
 aux=rs_aux_customize(aux,'rs_write_coorddata'); %sets if_log, if_gui, data_fullname_def, data_ui_filter
 %
 aux_out=aux;
@@ -53,7 +55,7 @@ if isempty(fullname)
         ui_prompt='Select a coordinate file to write';
         ui_filter={aux.opts_write.ui_filter,'coordinate file'};
         while (if_manual==0 & isempty(fullname))
-            [filename_short,pathname]=uiputfile(ui_filter,ui_prompt);
+            [filename_short,pathname]=uiputfile(ui_filter,aux.opts_write.ui_prompt);
             if  (isequal(filename_short,0) | isequal(pathname,0)) %use Matlab's suggested way to detect cancel
                 if_manual=getinp('1 to return to selection from console','d',[0 1]);
             else
