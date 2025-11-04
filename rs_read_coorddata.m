@@ -60,7 +60,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      aux_out.rayss{1}: ray structure
 %      
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETUPTS, PSG_FINDRAYS.
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETOPTS, PSG_FINDRAYS.
 %
 if (nargin<=1)
     aux=struct;

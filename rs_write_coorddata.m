@@ -11,7 +11,9 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %
 % aux.opts_write:
 %     set_no: which dataset to write, defaults to 1
-%     if_embed: 0 to embed the setup metadata in the output file (so that future reads will not require a separate setup)
+%     if_embed: 1 to embed the setup metadata in the output file (so that future reads will not require a separate setup)
+%         This is the default option, the metadata is taken to be
+%         data_in.sas{set_no}, which is created by rs_[get|align|knit]_coordsets, rs_read_coorddata
 %     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
 %     if_log: 1 (default) to log (0 still shows warnings)
@@ -64,7 +66,7 @@ iset=aux.opts_write.set_no;
 sout=struct;
 sout.stim_labels=data_in.sas{iset}.typenames;
 if aux.opts_write.if_embed
-    sout.setup=data_in.sets{iset}; %embedded setup
+    sout.setup=data_in.sas{iset}; %embedded setup
 end
 data_in.sets{iset}=filldefault(data_in.sets{iset},'pipeline',struct());
 sout.pipeline=data_in.sets{iset}.pipeline;
