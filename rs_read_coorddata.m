@@ -59,8 +59,10 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %      aux_out.rayss{1}: ray structure
 %      
+%  06Nov25: check internal consistency of data files with rs_check_coordsets.
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETOPTS, PSG_FINDRAYS.
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_CHECK_COORDSETS,
+%   PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETOPTS, PSG_FINDRAYS.
 %
 if (nargin<=1)
     aux=struct;
@@ -128,4 +130,13 @@ aux_out.rayss{1}=rays;
 %for compatibility with rs_get_coordsets;
 aux_out.opts_qpred{1}=struct;
 aux_out.syms_list=struct();
+%
+%check consistency
+%
+check=rs_check_coordsets(data_out);
+if ~isempty(check.warnings) %since strvcat([],[])~=[]
+    aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
+    disp(check.warnings);
+end
+aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
 return

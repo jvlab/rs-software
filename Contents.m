@@ -22,6 +22,7 @@
 %   rs_aux_customize_test: test for above
 %   rs_aux_defaults_define: set up a file with default values for auxiliary parameters
 %   rs_benchmark_compare: compare a test output with benchmarks
+%   rs_check_coordsets: check consistency among several coordinate sets
 %   rs_template: a template for modules with an input and an output
 % 
 %   Copyright (c) 2025 by J. Victor

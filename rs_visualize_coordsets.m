@@ -1,6 +1,42 @@
-function [data_out,aux_out]=rs_template(data_in,aux)
-% [data_out,aux_out]=rs_template(data_in,aux) is a template for rs modules
-% that accept one or more input datasets, process it, and produce one or more output datasets
+function [data_out,aux_out]=rs_visualze_coordsets(data_in,aux)
+% [data_out,aux_out]=rs_visualize_coordsets(data_in,aux) is a visualization tool for
+% one or more datasets
+%
+% input data are plotted together
+% This needs to be accompanied by a module that specifies a transofrmation (based on datasets),
+% and a module that applies a transformation
+%
+%       The transformation is  [output]=ts.scaling*[input]*ts.orthog+ts.translation
+%
+% see also function coords_new=psg_geomodels_apply(model_class,coords,transform)
+% coords_new=psg_geomodels_apply(model_class,coords,transform) applies any of several
+%   transform.b=ts.scaling, transform.T=ts.orthog, transform.c=ts.translation
+%      and projective parameters p (see psg_pwaffine_apply, psg_pwprojective_apply)
+%
+%
+%
+% aux give the following:
+%  optional handle to figure
+%  optional handle to subplots
+% select a model dimension to plot (k)
+%  optionally rotate:  to PCA, w.r.t. 0, or the centroid, do this for each dataset or globally
+%  optionally center each dataset:  to the centroid, to a specific stimulus,
+%    or to a value and this for each dataset or globally
+%  Now select how many dimensions are plotted together: 2,3, or possibly 4
+%  Select how these subsets are chosen:  each subset is a new subplot,
+%  modes as in psg*
+%
+%  Choose how labels are created
+%  Choose how axes are labeled (pc, or dim)
+%  Choose marker, marker color,marker size for each set
+%  Choose line color, width, style for each set if any connections within set
+%  Choose how to connect between sets (modes as in psg_*)
+%  Legend
+%  Label on figure
+%  
+% data_out shows the coordinates actually plotted, both at the level of
+% after rotation and centering, and, for each subplot
+% aux_out gives the transformations and handles to the plots and subplots
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   These are typically created by rs_align_coordsets, but could also be directly from 
@@ -18,9 +54,6 @@ function [data_out,aux_out]=rs_template(data_in,aux)
 %    *may have additional fields, typically
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
-%
-%
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS.
 %
 if (nargin<=1)
     aux=struct;
@@ -42,32 +75,6 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-%invoke rs_check_coordsets to check input data, either file by file
-% (as in rs_align_coordsets), or across files (as in rs_knit_coordsets)
-%
-%
-%check internal consistency
-%
-for iset=1:nsets
-    data_check=struct;
-    data_check.ds{1}=data_in.ds{iset};
-    data_check.sas{1}=data_in.sas{iset};
-    data_check.sets{1}=data_in.sets{iset};
-    check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
-    if ~isempty(check.warnings) %since strvcat([],[])~=[]
-        aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
-        disp(check.warnings);
-    end
-    aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
-end
-
-%
-%check consistency and get available stimuli, dimensions, typenames
-%
-check=rs_check_coordsets(data_in,setfield(struct(),'if_warn',1));
-%
-
-%
 %validate input parameters for consistency, etc.
 %
 if (condition)
@@ -88,6 +95,5 @@ if aux_out.warn_bad==0
 else
     disp('cannot proceed');
 end
-%consider checking consistency of outputs with rs_check_coordsets
 return
 end

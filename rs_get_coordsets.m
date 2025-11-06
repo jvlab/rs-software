@@ -57,7 +57,9 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  See also: RS_AUX_CUSTOMIZE, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
+%  06Nov25: check internal consistency of data files with rs_check_coordsets.
+%
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
 %
 if (nargin<=1)
     aux=struct;
@@ -136,6 +138,22 @@ if aux_out.warn_bad==0
     aux_out.opts_qpred=opts_qpred_used;
     aux_out.rayss=rayss;
     aux_out.syms_list=syms_list;
+    %
+    %check internal consistency
+    %
+    for iset=1:nsets
+        data_check=struct;
+        data_check.ds{1}=data_out.ds{iset};
+        data_check.sas{1}=data_out.sas{iset};
+        data_check.sets{1}=data_out.sets{iset};
+        check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
+        if ~isempty(check.warnings) %since strvcat([],[])~=[]
+            aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
+            disp(check.warnings);
+        end
+        aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
+    end
+    %
 else
     disp('cannot proceed');
 end

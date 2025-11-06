@@ -38,7 +38,9 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %    warn_bad: count of warnings that prevent further processing
 %    rayss{k}: ray structure for dataset k
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ.
+%  06Nov25: check internal consistency of data files with rs_check_coordsets.
+%
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
 if (nargin<=1)
     aux=struct;
@@ -65,8 +67,24 @@ else
     min_string=aux.opts_align.min;
 end
 %
-%check that data paradigms are the same (model paradigms may differ)
 nsets=length(data_in.sets);
+%
+%check internal consistency
+%
+for iset=1:nsets
+    data_check=struct;
+    data_check.ds{1}=data_in.ds{iset};
+    data_check.sas{1}=data_in.sas{iset};
+    data_check.sets{1}=data_in.sets{iset};
+    check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
+    if ~isempty(check.warnings) %since strvcat([],[])~=[]
+        aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
+        disp(check.warnings);
+    end
+    aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
+end
+%
+%check that data paradigms are the same (model paradigms may differ)
 paradigm_types=cell(1,nsets);
 types=cell(1,nsets);
 paradigm_type=[];

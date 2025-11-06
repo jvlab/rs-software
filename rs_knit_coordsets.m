@@ -63,7 +63,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   knit_stats_fig: handle to figure, if stats are plotted
 %   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
 %
-%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS,
+%  06Nov25: modularize consistency checking into RS_CHECK_COORDSETS
+%
+%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
 %  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
 %
@@ -101,52 +103,24 @@ aux=rs_aux_customize(aux,'rs_knit_coordsets');
 %
 data_out=struct;
 aux_out=struct;
-aux_out.warnings=[];
-aux_out.warn_bad=0;
 %
 set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
-nsets=length(data_in.sets);
-nstims_each=zeros(1,nsets);
-dim_list_each=cell(1,nsets);
-dim_list_union=[];
-typenames_each=cell(1,nsets);
-typenames_union=[];
-%validate the datasets
-for iset=1:nsets
-    nstims_each(iset)=data_in.sets{iset}.nstims;
-    typenames_each{iset}=data_in.sas{iset}.typenames;
-    dim_list_each{iset}=data_in.sets{iset}.dim_list;
-    if iset==1
-        typenames_inter=typenames_each{iset};
-        dim_list_inter=dim_list_each{iset};
-    end
-    typenames_union=union(typenames_union,typenames_each{iset});
-    typenames_inter=intersect(typenames_inter,typenames_each{iset});
-    dim_list_union=union(dim_list_union(:)',dim_list_each{iset});
-    dim_list_inter=intersect(dim_list_inter,dim_list_each{iset});
-end
-if min(nstims_each)~=max(nstims_each)
-    wmsg=sprintf('number of stimuli do not agree across files (min: %3.0f, max: %3.0f)',min(nstims_each),max(nstims_each));
-    warning(wmsg);
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
-end
-if length(typenames_inter)~=length(typenames_union)
-    wmsg=sprintf('stimulus names do not agree across files');
-    warning(wmsg);
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
-    disp('discrepancies')
-    disp(setdiff(typenames_union,typenames_inter));
-end
-if length(dim_list_union)~=length(dim_list_inter)
-    wmsg=sprintf('dimension lists do not agree across files'); %this is OK, process the intersection
-    warning(wmsg);
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-    disp('discrepancies')
-    disp(setdiff(dim_list_union,dim_list_inter));
-end
+%check consistency and get available stimuli, dimensions, typenames
+%
+check=rs_check_coordsets(data_in,setfield(struct(),'if_warn',1));
+%
+aux_out.warnings=check.warnings;
+aux_out.warn_bad=check.warn_bad;
+nsets=check.nsets;
+nstims_each=check.nstims_each;
+dim_list_each=check.dim_list_each;
+dim_list_union=check.dim_list_union;
+dim_list_inter=check.dim_list_inter;
+typenames_each=check.typenames_each;
+typenames_union=check.typenames_union;
+typenames_inter=check.typenames_inter;
+%
 %inspect input data to see where data are missing
 %note that a NaN can indicate that stimulus was present and response
 %was missing, OR, that the stimulus was not presented
