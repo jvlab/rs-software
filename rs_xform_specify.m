@@ -121,15 +121,6 @@ if (if_ok==0)
 end
 aux.opts_xform=x;
 %
-% if centering_specifier='value', then value must be a vector or a cell array of vectors, one for each dataset
-%if it is typename, then check that the typename exists, otherwise warn
-
-% if (condition)
-%     wmsg=sprintf('xxx');
-%     warning(wmsg);
-%     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-%     aux_out.warn_bad=aux_out.warn_bad+1;
-% end'
 xforms.pipeline.type='xform';
 xforms.pipeline.opts.opts_xform=aux.opts_xform;
 xforms.pipeline.sets_combined=cell(1,nsets);
@@ -169,7 +160,7 @@ if aux_out.warn_bad==0
                         coords_each(:,:,is)=data_in.ds{source(is)}{idim};
                     end
                     coords=mean(coords_each,3,'omitnan');
-                    switch x.centering_specifier
+                    switch x.centering_specifier % none','centroid','index','typename','value'
                         case 'none'
                             cvec=zeros(1,idim);
                         case 'centroid'
@@ -185,10 +176,23 @@ if aux_out.warn_bad==0
                         case 'value'
                             cvec=x.centering_value(1:idim);
                     end
-                    %aux.opts_xform=filldefault(aux.opts_xform,'mode','none'); %'none', 'translate', 'offset_pca', 'translate_then_pca';
-                    switch x.mode
+                    %handle rotation
+                    switch x.mode % 'none', 'translate', 'offset_pca', 'translate_then_pca';
+                        case 'none'
                         case 'translate'
                             ts.translation=-cvec;
+                        case 'offset_pca'
+                            if (iset==1) | ~strcmp(x.source,'global')
+                                % function [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_used]=psg_pcaoffset(coords,offset,opts)
+                            else
+                                ts=xforms.ts{1}{idim}; %no need to redo PCA
+                            end
+                        case 'translate_then_pca'
+                            if (iset==1) | ~strcmp(x.source,'global')
+                                % function [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_used]=psg_pcaoffset(coords,offset,opts)
+                            else
+                                ts=xforms.ts{1}{idim}; %no need to redo PCA
+                            end
                     end
                 else
                     ts=struct;
