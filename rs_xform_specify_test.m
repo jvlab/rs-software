@@ -71,7 +71,7 @@ auxs{6}.opts_xform.source='global';
 auxs{6}.opts_xform.centering_specifier='index';
 auxs{6}.opts_xform.centering_index=17;
 %
-test_descs{7}='four animal-domain files, centering by index, global, translate then pca';
+test_descs{7}='four animal-domain files, centering by index, global, translate_then_pca';
 filenames_examples{7}=filenames_examples{3};
 aux_ins{7}=aux_ins{3};
 auxs{7}=struct;
