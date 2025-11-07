@@ -15,11 +15,11 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 %  warnings: strvcat of warning strings
 %  warn_bad: count of serious warnings that will prevent processing
 %  nsets: number of datasets
-%  nstims_each: (1,nsets): number of stimuli in each datast
+%  nstims_each: (1,nsets): number of stimuli in each dataset
 %  dim_list_each: cell(1,nsets): list of dimensions available in each dataset
 %  dim_list_union: union of dim_list_each
 %  dim_list_inter: intersection of dim_list_each
-%  typenames_each: cell(1,nsets); typenames in each dataset
+%  typenames_each: cell(1,nsets); typenames in each dataset, in original order
 %  typenames_union: union of typenames_each, alphabetized
 %  typenames_inter: cell(1,nsets); intersection of typenames_each, alphabetized
 %
