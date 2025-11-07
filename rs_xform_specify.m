@@ -181,15 +181,17 @@ if aux_out.warn_bad==0
                         case 'none'
                         case 'translate'
                             ts.translation=-cvec;
-                        case 'offset_pca'
+                        case {'offset_pca','translate_then_pca'}
                             if (iset==1) | ~strcmp(x.source,'global')
-                                % function [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_used]=psg_pcaoffset(coords,offset,opts)
-                            else
-                                ts=xforms.ts{1}{idim}; %no need to redo PCA
-                            end
-                        case 'translate_then_pca'
-                            if (iset==1) | ~strcmp(x.source,'global')
-                                % function [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_used]=psg_pcaoffset(coords,offset,opts)
+                                %cvec+(coords-cvec)*qv is the reconstruction in the PC space.
+                                [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_offset_pca]=psg_pcaoffset(coords,cvec);
+                                qv=opts_offset_pca.qv;
+                                ts.orthog=qv;
+                                if strcmp(x.mode,'offset_pca')
+                                    ts.translation=-cvec*qv+cvec;
+                                else
+                                    ts.translation=-cvec*qv;
+                                end
                             else
                                 ts=xforms.ts{1}{idim}; %no need to redo PCA
                             end

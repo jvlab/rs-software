@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=6;
+ntests=7;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -62,15 +62,23 @@ auxs{5}.opts_xform.source='global';
 auxs{5}.opts_xform.centering_specifier='value';
 auxs{5}.opts_xform.centering_value=0.1*[1:10];
 %
-test_descs{6}='four animal-domain files, centering by index, global';
+test_descs{6}='four animal-domain files, centering by index, global, offset_pca';
 filenames_examples{6}=filenames_examples{3};
 aux_ins{6}=aux_ins{3};
 auxs{6}=struct;
-auxs{6}.opts_xform.mode='translate';
+auxs{6}.opts_xform.mode='offset_pca';
 auxs{6}.opts_xform.source='global';
 auxs{6}.opts_xform.centering_specifier='index';
 auxs{6}.opts_xform.centering_index=17;
-auxs{6}.opts_xform.source='global';
+%
+test_descs{7}='four animal-domain files, centering by index, global, translate then pca';
+filenames_examples{7}=filenames_examples{3};
+aux_ins{7}=aux_ins{3};
+auxs{7}=struct;
+auxs{7}.opts_xform.mode='translate_then_pca';
+auxs{7}.opts_xform.source='local';
+auxs{7}.opts_xform.centering_specifier='index';
+auxs{7}.opts_xform.centering_index=17;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
