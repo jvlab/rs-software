@@ -66,66 +66,16 @@ typenames_inter=check.typenames_inter;
 %
 if_ok=1;
 x=aux.opts_xform; %for convenience
-%%%%%%%%%%%%%%%%%%%%%%%% check lengths
-%apply transforms
-%set up data_out.sets, sas
-switch x.centering_specifier
-    case {'none','centroid'} %nothing to check
-    case 'index'
-        if ((x.centering_index~=round(x.centering_index)) | (x.centering_index>min(nstims_each)) | (x.centering_index<=0))
-            wmsg=sprintf('centering index (%8.3f) not valid (non-integer or out of range); no centering applied',x.centering_index);
-            if_ok_centering=0;
-        else
-            idx=x.centering_index;
-        end
-    case 'value'
-        if length(x.centering_value)<max(dim_list_union)
-            wmsg=sprintf('centering value vector length (%3.0f) less than max dimension needed (%3.0f); no centering applied',length(x.centering_value),max(dim_list_union));
-           if_ok_centering=0;
-        else
-            x.centering_value=x.centering_value(:)';
-        end
-    case 'typename'
-         idx_check=strmatch(x.centering_typename,typenames_inter,'exact');
-         if length(idx_check)~=1
-             wmsg=sprintf('centering typename (%s) not found or not unique in all datasets; no centering applied',x.centering_typename);
-             if_ok_centering=0;
-         end
-    otherwise
-        wmsg=sprintf('centering specifier (%s) not recognized; no centering applied',x.centering_specifier);
-       if_ok_centering=0;
-end
-switch x.source
-    case {'global','local'}
-    otherwise
-        if isnumeric(x.source)
-            if ((x.source~=round(x.source)) | (x.source>nsets) | (x.source<=0))
-               wmsg=sprintf('source (%8.3f) not valid (non-integer or out of range); no centering applied',x.source);
-               if_ok_centering=0;
-            end
-        else
-            wmsg=sprintf('centering source (%s) not recognized; no centering applied',x.source);
-           if_ok_centering=0;
-        end
-end
-switch x.mode
-    case {'none','translate','offset_pca','translate_then_pca'}
-    otherwise
-        wmsg=sprintf('mode  (%s) not recognized; no transformation applied',x.mode);
-        if_ok_mode=0;
-end
-if (if_ok==0)
+%
+nsets_xform=length(xforms.ts);
+if (nsets_xform~=nsets) & (nsets_xform~=1)
+    wmsg=sprintf('number of transform sets specified (%2.0f) differs from number of datasets (%2.0f)',nsets_xform,nsets);
     if aux.opts_xform.if_warn
         warning(wmsg);
     end
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
 end
-if (if_ok_centering==0)
-    x.centering_specifier='none';
-end
-if (if_ok_mode==0)
-    x.mode='none';
-end
+%%%%%%%%%%%
 aux.opts_xform=x;
 %
 xforms.pipeline.type='xform';

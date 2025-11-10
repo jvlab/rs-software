@@ -94,19 +94,22 @@ typenames_inter=check.typenames_inter;
 if_ok_centering=1;
 if_ok_mode=1;
 x=aux.opts_xform; %for convenience
+wmsg_all=[];
 switch x.centering_specifier
     case {'none','centroid'} %nothing to check
     case 'index'
         if ((x.centering_index~=round(x.centering_index)) | (x.centering_index>min(nstims_each)) | (x.centering_index<=0))
             wmsg=sprintf('centering index (%8.3f) not valid (non-integer or out of range); no centering applied',x.centering_index);
             if_ok_centering=0;
+            wmsg_all=strvcat(wmsg_all,wmsg);
         else
             idx=x.centering_index;
         end
     case 'value'
         if length(x.centering_value)<max(dim_list_union)
             wmsg=sprintf('centering value vector length (%3.0f) less than max dimension needed (%3.0f); no centering applied',length(x.centering_value),max(dim_list_union));
-           if_ok_centering=0;
+            if_ok_centering=0;
+            wmsg_all=strvcat(wmsg_all,wmsg);
         else
             x.centering_value=x.centering_value(:)';
         end
@@ -115,10 +118,12 @@ switch x.centering_specifier
          if length(idx_check)~=1
              wmsg=sprintf('centering typename (%s) not found or not unique in all datasets; no centering applied',x.centering_typename);
              if_ok_centering=0;
+             wmsg_all=strvcat(wmsg_all,wmsg);
          end
     otherwise
         wmsg=sprintf('centering specifier (%s) not recognized; no centering applied',x.centering_specifier);
-       if_ok_centering=0;
+        if_ok_centering=0;
+        wmsg_all=strvcat(wmsg_all,wmsg);
 end
 switch x.source
     case {'global','local'}
@@ -127,10 +132,12 @@ switch x.source
             if ((x.source~=round(x.source)) | (x.source>nsets) | (x.source<=0))
                wmsg=sprintf('source (%8.3f) not valid (non-integer or out of range); no centering applied',x.source);
                if_ok_centering=0;
+               wmsg_all=strvcat(wmsg_all,wmsg);
             end
         else
            wmsg=sprintf('centering source (%s) not recognized; no centering applied',x.source);
            if_ok_centering=0;
+           wmsg_all=strvcat(wmsg_all,wmsg);
         end
 end
 switch x.mode
@@ -138,12 +145,15 @@ switch x.mode
     otherwise
         wmsg=sprintf('mode  (%s) not recognized; no transformation applied',x.mode);
         if_ok_mode=0;
+        wmsg_all=strvcat(wmsg_all,wmsg);
 end
 if (if_ok_centering==0) | (if_ok_mode==0)
     if aux.opts_xform.if_warn
-        warning(wmsg);
+        for k=1:size(wmsg_all,1)
+            warning(wmsg_all(k,:));
+        end
     end
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out.warnings=strvcat(aux_out.warnings,wmsg_all);
 end
 if (if_ok_centering==0)
     x.centering_specifier='none';
