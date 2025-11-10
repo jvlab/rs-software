@@ -31,6 +31,10 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %      pca_center: replace NaNs by mean and then center
 %      pca_nocenter: replace NaN's by mean and do not center
 %      pca: as above, center if allow_offset=1, nocenter if allow_offset=0
+%     If pca, pca_center,pca_nocenter:  then if_initpca_rot is relevant.
+%      A value of 1 (default) rotates match the datasets
+%      A value of 0 does NOT rotate.  This should be used if the data are
+%       zero-padded to access higher dimensions.
 %   overlaps: [npts nsets]: binary array, indicating which points should be used in the calculation
 %     If omitted and opts_pcon.exclude_nan=1, [default] computed to be ones where data are present and 0 for NaN's
 %     If omitted and opts_pcon.exclude_nan=0, computed to be ones(npts,nsets)
@@ -75,10 +79,12 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %     of the dilation factors of transformations of the components to 1 (default is 0)
 % 29Nov24: fixed bug in no-offset option (offset now properly removed from consensus)
 % 27Jan25: if initial guess is empty and initialization type = 0, then it is generated, and also used for alignment
+% 27Oct25: added if_initpca_rot
+% 10Nov25: use isgraphc to determine whether graph of overlaps is connected, rather than routines in matlab's graph toolbox
 %
 % See also:  PROCRUSTES_CONSENSUS_TEST, PROCRUSTES, PSG_PROCRUSTES_DEMO, FILLDEFAULT, PROCRUSTES_CONSENSUS_PTL_TEST,
 %    CONNCOMP, PSG_ALIGN_KNIT_DEMO, PSG_ALIGN_STATS_DEMO,, PSG_ALIGN_VARA_DEMO, GRAPH, PROCRUSTES_COMPAT,
-%    PSG_GEOMODELS_APPLY.
+%    PSG_GEOMODELS_APPLY, ISGRAPHC.
 %
 if (nargin<2)
     opts_pcon=struct;
@@ -95,6 +101,7 @@ opts_pcon=filldefault(opts_pcon,'alignment',opts_pcon.initial_guess);
 opts_pcon=filldefault(opts_pcon,'overlaps',[]);
 opts_pcon=filldefault(opts_pcon,'if_justcheck',0);
 opts_pcon=filldefault(opts_pcon,'exclude_nan',1);
+opts_pcon=filldefault(opts_pcon,'if_initpca_rot',1);
 %
 opts_pcon_used=opts_pcon;
 %
@@ -132,9 +139,11 @@ if any(details.overlap_totals==0)
     details.warnings=strvcat(details.warnings,wmsg);
 end
 any_ovlp=double(details.overlap_pairs>0);
-graph_ovlp=graph(any_ovlp-diag(diag(any_ovlp)));
-conncomps=conncomp(graph_ovlp); %is the overlap graph connected?
-if any(conncomps>1)
+% graph_ovlp=graph(any_ovlp-diag(diag(any_ovlp)));
+% conncomps=conncomp(graph_ovlp); %is the overlap graph connected?
+% if any(conncomps>1)
+if_connected=isgraphc(any_ovlp-diag(diag(any_ovlp)));
+if if_connected~=1
     wmsg='overlap graph is not connected';
     details.warnings=strvcat(details.warnings,wmsg);
 end
@@ -180,7 +189,11 @@ if ischar(opts_pcon.initialize_set)
             details.pca.s=diag(s);
             details.pca.v=v;
             details.if_mean=if_mean;
-            initial_guess=u(:,1:nds)*s(1:nds,1:nds)*v(1:nds,1:nds)';
+            if opts_pcon.if_initpca_rot
+                initial_guess=u(:,1:nds)*s(1:nds,1:nds)*v(1:nds,1:nds)';
+            else
+                initial_guess=u(:,1:nds)*s(1:nds,1:nds); %do not rotate
+            end
             alignment=initial_guess;
         otherwise
             error(sprintf('unrecognized initialization option: %s'));
