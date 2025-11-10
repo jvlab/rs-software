@@ -6,12 +6,29 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %
 % aux: auxiliary inputs
 %  aux.opts_xform: a structure to specify the transformation, consisting of a rotation (possibly with reflection) and a translation
-%  The translation is specified the point that should be translated to the origin.
-%  The rotation is specified by principal components, either separately for each dataset, or, the average across datasets,
-%  and can be carried out with respect to zero or the centroid, after the
-%  above (optinal) centering.
-%  
-%  
+%      The translation is specified the point that should be translated to the origin.
+%      The rotation is specified by principal components, either separately for each dataset, or, the average across datasets,
+%      and can be carried out with respect to zero or the centroid, after the above (optinal) centering.
+%   aux.opts_xform.mode: 'none', 'translate','offset_pca','translate_then_pca'
+%      none (default): no transformation is carried out
+%      translate: the specified point (see 'centering specifier') is translated to the origin, no rotation is done
+%      offset_pca: a pca rotation is performed around the point specified by the centering specifier, so that
+%          the first coordinate explains the most variance around that point, the second coordinate explains the next-most-variance, etc.
+%          the point specified by the centerind specifier is not moved
+%      translate_then_pca: the specified point (see 'centering specifier') is translated to the origin, and then standard pca is done
+%   aux.opts_xform.source: 'global','local', or an integer in [1:length(data_in.ds)]
+%      global (default): the centering specifier is determined from the mean all datasets; pca is computed after pooling across datasets;
+%          the transformations specified for all datasets are identical
+%      local: the centering specifieer and pca is computed separately for each dataset; tranformations for each dataset typically differ
+%      an integer: the specified datast is used for the centering specifieer and pca;  transformations specfied for all datasets are identical
+%   aux.opts_xform.centering_specifier: 'none','centroid','index','typename','value'
+%      none (default): no centering id done
+%      centroid: the centroid of the dataset is used
+%      index: the value in aux.opts_xform.centering_index, is the index number of the stimulus whose coordinates are to be used for centering
+%      typename: the string in aux.opts_xform.centering_typename is the label of the stimulus whose coordinates are to be used for centering
+%      value: the coordinates in aux.opts_xform.centering_value are to be used for centering; for coordinate sets of dimension k, only the first k are used
+%   aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specfier
+%  If inconsistent or unrecognized options are used, opts_xform.mode is set to 'none' and warnings are generated.
 % 
 % The transformation is [output]=ts.scaling*[input]*ts.orthog+ts.translation,
 %  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
@@ -24,10 +41,11 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %   xforms.ts are the transformations
 %   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
 % aux_out: auxiliary outputs and parameter values used
+%   aux_out.opts_xforms: values of aux.opts_xforms as used
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST.
 %
 if (nargin<=1)
     aux=struct;
@@ -73,51 +91,63 @@ typenames_inter=check.typenames_inter;
 %
 %validate input parameters for consistency, etc.
 %
-if_ok=1;
+if_ok_centering=1;
+if_ok_mode=1;
 x=aux.opts_xform; %for convenience
 switch x.centering_specifier
     case {'none','centroid'} %nothing to check
     case 'index'
         if ((x.centering_index~=round(x.centering_index)) | (x.centering_index>min(nstims_each)) | (x.centering_index<=0))
-            wmsg=sprintf('centering index (%8.3f) not valid (non-integer or out of range); no centering used',x.centering_index);
-            if_ok=0;
+            wmsg=sprintf('centering index (%8.3f) not valid (non-integer or out of range); no centering applied',x.centering_index);
+           if_ok_centering=0;
         else
             idx=x.centering_index;
         end
     case 'value'
         if length(x.centering_value)<max(dim_list_union)
-            wmsg=sprintf('centering value vector length (%3.0f) less than max dimension needed (%3.0f); no centering used',length(x.centering_value),max(dim_list_union));
-            if_ok=0;
+            wmsg=sprintf('centering value vector length (%3.0f) less than max dimension needed (%3.0f); no centering applied',length(x.centering_value),max(dim_list_union));
+           if_ok_centering=0;
         else
             x.centering_value=x.centering_value(:)';
         end
     case 'typename'
          idx_check=strmatch(x.centering_typename,typenames_inter,'exact');
          if length(idx_check)~=1
-             wmsg=sprintf('centering typename (%s) not found or not unique in all datasets; no centering used',x.centering_typename);
-             if_ok=0;
+             wmsg=sprintf('centering typename (%s) not found or not unique in all datasets; no centering applied',x.centering_typename);
+            if_ok_centering=0;
          end
     otherwise
-        wmsg=sprintf('centering specifier (%s) not recognized; no centering used',x.centering_specifier);
-        if_ok=0;
+        wmsg=sprintf('centering specifier (%s) not recognized; no centering applied',x.centering_specifier);
+       if_ok_centering=0;
 end
 switch x.source
     case {'global','local'}
     otherwise
         if isnumeric(x.source)
             if ((x.source~=round(x.source)) | (x.source>nsets) | (x.source<=0))
-                wmsg=sprintf('source (%8.3f) not valid (non-integer or out of range); no centering used',x.source);
-                if_ok=0;
+               wmsg=sprintf('source (%8.3f) not valid (non-integer or out of range); no centering applied',x.source);
+               if_ok_centering=0;
             end
         else
-            wmsg=sprintf('centering source (%s) not recognized; no centering used',x.source);
-            if_ok=0;
+            wmsg=sprintf('centering source (%s) not recognized; no centering applied',x.source);
+           if_ok_centering=0;
         end
 end
-if (if_ok==0)
+switch x.mode
+    case {'none','translate','offset_pca','translate_then_pca'}
+    otherwise
+        wmsg=sprintf('mode  (%s) not recognized; no transformation applied',x.mode);
+        if_ok_mode=0;
+end
+if (if_ok_centering==0) | (if_ok_mode==0)
     warning(wmsg);
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+end
+if (if_ok_centering==0)
     x.centering_specifier='none';
+end
+if (if_ok_mode==0)
+    x.mode='none';
 end
 aux.opts_xform=x;
 %
