@@ -30,6 +30,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %   aux.nsets: number of datasets to read, if zero (default), then requested at console
 %   aux.opts_rays: options for parsing stimulus descriptors into rays, see psg_findrays
 %   aux.opts_qpred: options for creating model coordinate sets from quadratic form, see psg_qformpred
+%   aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
 % For non-interactive reading, provide fullnames, aux.opts_read.input_type, and set aux_opts_read.if_auto=1.
 % For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1], and optionally specify aux.nsets
@@ -66,11 +67,14 @@ if (nargin<=1)
 end
 aux=filldefault(aux,'opts_read',struct);
 %
-aux=filldefault(aux,'opts_qpred',struct);
-%
 aux=filldefault(aux,'opts_rays',struct);
 %
+aux=filldefault(aux,'opts_qpred',struct);
+%
 aux=filldefault(aux,'nsets',0);
+%
+aux=filldefault(aux,'opts_check',struct);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=rs_aux_customize(aux,'rs_get_coordsets');
 %
@@ -146,7 +150,7 @@ if aux_out.warn_bad==0
         data_check.ds{1}=data_out.ds{iset};
         data_check.sas{1}=data_out.sas{iset};
         data_check.sets{1}=data_out.sets{iset};
-        check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
+        check=rs_check_coordsets(data_check,setfield(aux.opts_check,'set_num_offset',iset-1));
         if ~isempty(check.warnings) %since strvcat([],[])~=[]
             aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
             disp(check.warnings);

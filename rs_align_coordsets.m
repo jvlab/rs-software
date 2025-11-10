@@ -25,6 +25,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
 %   The behavior used is reported in aux_out.opts_align.if_btc_specoords_remake
 % aux.opts_align.if_btcremz: set to 1 (default) to simplify augmented coordinates
+% aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
 %    coordinates will be NaN if not present
@@ -51,6 +52,9 @@ aux.opts_align=filldefault(aux.opts_align,'if_log',1);
 aux.opts_align=filldefault(aux.opts_align,'min',1);
 aux.opts_align=filldefault(aux.opts_align,'if_btcremz',1);
 %
+aux=filldefault(aux,'opts_check',struct);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
+%
 aux=filldefault(aux,'opts_rays',struct);
 %
 aux=rs_aux_customize(aux,'rs_align_coordsets');
@@ -76,7 +80,7 @@ for iset=1:nsets
     data_check.ds{1}=data_in.ds{iset};
     data_check.sas{1}=data_in.sas{iset};
     data_check.sets{1}=data_in.sets{iset};
-    check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
+    check=rs_check_coordsets(data_check,setfield(aux.opts_check,'set_num_offset',iset-1));
     if ~isempty(check.warnings) %since strvcat([],[])~=[]
         aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
         disp(check.warnings);

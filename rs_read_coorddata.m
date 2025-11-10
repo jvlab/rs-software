@@ -26,6 +26,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
 %      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
 %
+%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%
 % For non-interactive reading, provide fullname, set aux_opts_read.if_auto=1 (see rs_get_coordsets_example.m)
 % For interactive reading, leave fullnames empty, specify aux.opts_read.if_gui [0 1]
 %
@@ -70,6 +72,9 @@ end
 aux=filldefault(aux,'opts_read',struct);
 %
 aux=filldefault(aux,'opts_rays',struct);
+%
+aux=filldefault(aux,'opts_check',struct);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=rs_aux_customize(aux,'rs_read_coorddata');
 %
@@ -133,7 +138,7 @@ aux_out.syms_list=struct();
 %
 %check consistency
 %
-check=rs_check_coordsets(data_out);
+check=rs_check_coordsets(data_out,aux.opts_check);
 if ~isempty(check.warnings) %since strvcat([],[])~=[]
     aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
     disp(check.warnings);

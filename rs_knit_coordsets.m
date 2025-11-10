@@ -24,6 +24,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  dim_aug: number of dimensions to augment by, defaults to 0
 %  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
 %    optional, if both are not supplied, they will be computed here
+%
+%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%
 %  aux.sa_pooled, aux_out.sa_pooled, from rs_align_coordsets
 %  aux.data_align: data_out, from rs_align_coordsets
 %
@@ -85,6 +88,9 @@ aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_stats',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_plot',aux.opts_knit.if_stats);
 %
+aux=filldefault(aux,'opts_check',struct);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
+%
 if aux.opts_knit.if_stats
     aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',500);
 else
@@ -108,7 +114,7 @@ set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long'
 %
 %check consistency and get available stimuli, dimensions, typenames
 %
-check=rs_check_coordsets(data_in,setfield(struct(),'if_warn',1));
+check=rs_check_coordsets(data_in,aux.opts_check);
 %
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;

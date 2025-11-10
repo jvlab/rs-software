@@ -8,7 +8,7 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 %    it checks internal consistency
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 % opts: options
-%    opts.if_warn: defaults to 0, 1 to display warnings
+%    opts.if_warn: defaults to 1, 0 to suppress display of warnings
 %    opts.set_num_offset: number to add to set number in warnings
 %
 % check: a structure with  fields:
@@ -30,7 +30,7 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 if (nargin<=1)
     opts=struct;
 end
-opts=filldefault(opts,'if_warn',0);
+opts=filldefault(opts,'if_warn',1);
 opts=filldefault(opts,'set_num_offset',0);
 opts_used=opts;
 check=struct;
