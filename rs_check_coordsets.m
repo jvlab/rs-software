@@ -8,7 +8,7 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 %    it checks internal consistency
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 % opts: options
-%    opts.if_warn: defaults to 1, 0 to suppress display of warnings
+%    opts.if_warn: defaults to 0, 1 to display warnings
 %    opts.set_num_offset: number to add to set number in warnings
 %
 % check: a structure with  fields:
@@ -30,25 +30,42 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 if (nargin<=1)
     opts=struct;
 end
-opts=filldefault(opts,'if_warn',1);
+opts=filldefault(opts,'if_warn',0);
 opts=filldefault(opts,'set_num_offset',0);
 opts_used=opts;
 check=struct;
 check.warn_bad=0;
 check.warnings=[];
 %
-nsets=length(data_in.sets);
+nsets=length(data_in.ds);
 nstims_each=zeros(1,nsets);
 dim_list_each=cell(1,nsets);
 dim_list_union=[];
 typenames_each=cell(1,nsets);
 typenames_union=[];
+%check that ds, sas, sets is consistent
+if length(data_in.sas)~=nsets
+    wmsg=sprintf('number of entries in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sas),nsets);
+    if opts.if_warn
+        warning(wmsg);
+    end
+    check.warnings=strvcat(check.warnings,wmsg);
+    check.warn_bad=check.warn_bad+1;
+end
+if length(data_in.sets)~=nsets
+    wmsg=sprintf('number of entries in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sets),nsets);
+    if opts.if_warn
+        warning(wmsg);
+    end
+    check.warnings=strvcat(check.warnings,wmsg);
+    check.warn_bad=check.warn_bad+1;
+end
 %check that number of stimuli is internally consistent
 for iset=1:nsets
     nstims_each(iset)=data_in.sets{iset}.nstims;
     typenames_each{iset}=data_in.sas{iset}.typenames;
     if nstims_each(iset)~=data_in.sas{iset}.nstims
-        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and sas (%3.0f) is inconsistent',iset+opts.set_num_offset,nstims_each(iset),data_in.sas{iset}.nstims);
+        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and sas (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),data_in.sas{iset}.nstims);
         if opts.if_warn
             warning(wmsg);
         end
@@ -56,7 +73,7 @@ for iset=1:nsets
         check.warn_bad=check.warn_bad+1;
     end
     if nstims_each(iset)~=length(typenames_each{iset})
-        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) is inconsistent',iset+opts.set_num_offset,nstims_each(iset),length(typenames_each{iset}));
+        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),length(typenames_each{iset}));
         if opts.if_warn
             warning(wmsg);
         end

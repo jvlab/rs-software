@@ -1,37 +1,23 @@
-function [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% [xforms,aux_out]=rs_xform_specify(data_in,aux) specifies transformation(s) of datasets
+function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
+% [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
+%
+% These transformations all preserve the number of dimensions, and consist of a translation and rotation, typically specified by rs_xform_specify.
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   Stimuli should be identical across datasets
-%
+% xforms: typically an output structure from rs_xform_specify
+%   xforms.ts are the transformations
+%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
 % aux: auxiliary inputs
-%  aux.opts_xform: a structure to specify the transformation, consisting of a rotation (possibly with reflection) and a translation
-%      The translation is specified the point that should be translated to the origin.
-%      The rotation is specified by principal components, either separately for each dataset, or, the average across datasets,
-%      and can be carried out with respect to zero or the centroid, after the above (optinal) centering.
-%   aux.opts_xform.mode: 'none', 'translate','offset_pca','translate_then_pca'
-%      none (default): no transformation is carried out
-%      translate: the specified point (see 'centering specifier') is translated to the origin, no rotation is done
-%      offset_pca: a pca rotation is performed around the point specified by the centering specifier, so that
-%          the first coordinate explains the most variance around that point, the second coordinate explains the next-most-variance, etc.
-%          the point specified by the centerind specifier is not moved
-%      translate_then_pca: the specified point (see 'centering specifier') is translated to the origin, and then standard pca is done
-%   aux.opts_xform.source: 'global','local', or an integer in [1:length(data_in.ds)]
-%      global (default): the centering specifier is determined from the mean all datasets; pca is computed after pooling across datasets;
-%          the transformations specified for all datasets are identical
-%      local: the centering specifieer and pca is computed separately for each dataset; tranformations for each dataset typically differ
-%      an integer: the specified datast is used for the centering specifieer and pca;  transformations specfied for all datasets are identical
-%   aux.opts_xform.centering_specifier: 'none','centroid','index','typename','value'
-%      none (default): no centering id done
-%      centroid: the centroid of the dataset is used
-%      index: the value in aux.opts_xform.centering_index, is the index number of the stimulus whose coordinates are to be used for centering
-%      typename: the string in aux.opts_xform.centering_typename is the label of the stimulus whose coordinates are to be used for centering
-%      value: the coordinates in aux.opts_xform.centering_value are to be used for centering; for coordinate sets of dimension k, only the first k are used
-%   aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specifier
-%   aux.opts_xform.if_warn: 1 (default) to show warnings
-%   If inconsistent or unrecognized options are used, opts_xform.mode is set to 'none' and warnings are generated.
+%  aux.opts_xform.if_warn: 1 (default) to show warnings
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
-% 
+%
+% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) after the transformation
+% aux_out: auxiliary outputs and parameter values used
+%   aux_out.opts_xforms: values of aux.opts_xforms as used
+%   warnings: warnings generated in creating arguments for psg_get_coordsets
+%   warn_bad: count of warnings that prevent further processing
+%
 % The transformation is [output]=ts.scaling*[input]*ts.orthog+ts.translation,
 %  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
 %  (data_in.da{k} should be nstims x idim)
@@ -39,40 +25,27 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % The transformation is the same as Matlab's procrustes.m, but with other field names
 %  (see procrustes_compat), and with the translation replicated for each data point
 %
-% xforms:
-%   xforms.ts are the transformations
-%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
-% aux_out: auxiliary outputs and parameter values used
-%   aux_out.opts_xforms: values of aux.opts_xforms as used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+% If a dimension is present in data_in{k}{ip} but not xforms.ts{k}{ip} is empty, then the
+%   data_out{k}{ip} will be empty, and a warning is generated.
+% If length(xforms.ts) = 1, then it is applied to all datasets.  If length
+% is not 1, then it should match length(data_in.ds)
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY.
 %
 if (nargin<=1)
     aux=struct;
 end
 %
 aux=filldefault(aux,'opts_xform',struct); 
-%
-aux.opts_xform=filldefault(aux.opts_xform,'mode','none'); %'none', 'translate', 'offset_pca', 'translate_then_pca'; 
-aux.opts_xform=filldefault(aux.opts_xform,'source','global'); %options: global: calculation based on mean across datasets, 'local', use each dataset's value, or a number (specify the dataset to use)
-aux.opts_xform=filldefault(aux.opts_xform,'centering_specifier','none'); %'none','centroid','index','typename','value'
-aux.opts_xform=filldefault(aux.opts_xform,'centering_typename','rand'); %specify the typename to move to the origin
-aux.opts_xform=filldefault(aux.opts_xform,'centering_index',1); %specify the stimulus index to move to the origin
-aux.opts_xform=filldefault(aux.opts_xform,'centering_value',[]); %specify coordinate value to move to the origin
-aux.opts_xform=filldefault(aux.opts_xform,'if_warn',1); %show warnings
+aux.opts_xform=filldefault(aux.opts_xform,'if_warn',1);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
-aux=rs_aux_customize(aux,'rs_xform_specify');
-%
-xforms=struct;
-xforms.ts=cell(0);
-xforms.pipeline=struct;
+aux=rs_aux_customize(aux,'rs_xform_apply');
 %
 aux_out=struct;
+data_out=struct;
 %
 %check consistency and get available stimuli, dimensions, typenames
 %
@@ -91,9 +64,11 @@ typenames_inter=check.typenames_inter;
 %
 %validate input parameters for consistency, etc.
 %
-if_ok_centering=1;
-if_ok_mode=1;
+if_ok=1;
 x=aux.opts_xform; %for convenience
+%%%%%%%%%%%%%%%%%%%%%%%% check lengths
+%apply transforms
+%set up data_out.sets, sas
 switch x.centering_specifier
     case {'none','centroid'} %nothing to check
     case 'index'
@@ -129,7 +104,7 @@ switch x.source
                if_ok_centering=0;
             end
         else
-           wmsg=sprintf('centering source (%s) not recognized; no centering applied',x.source);
+            wmsg=sprintf('centering source (%s) not recognized; no centering applied',x.source);
            if_ok_centering=0;
         end
 end
@@ -139,7 +114,7 @@ switch x.mode
         wmsg=sprintf('mode  (%s) not recognized; no transformation applied',x.mode);
         if_ok_mode=0;
 end
-if (if_ok_centering==0) | (if_ok_mode==0)
+if (if_ok==0)
     if aux.opts_xform.if_warn
         warning(wmsg);
     end
