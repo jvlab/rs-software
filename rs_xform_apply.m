@@ -1,7 +1,9 @@
 function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
 %
-% These transformations all preserve the number of dimensions, and consist of a translation and rotation, typically specified by rs_xform_specify.
+% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a rotation
+% The transformation is typically specified by rs_xform_specify, in which case the linear component (in ts.orthog) is guaranteed to be 
+%   orthogonal, but this will also work if the linear component is not orthogonal
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   Stimuli should be identical across datasets
@@ -10,6 +12,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
+%  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
+%                         1 for a general transformatoin 
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) after the transformation
@@ -18,8 +22,10 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-% The transformation is [output]=ts.scaling*[input]*ts.orthog+ts.translation,
-%  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
+% The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
+% if aux.opts_xform.if_gen=0: [output]=ts.scaling*[input]*ts.orthog+ts.translation,
+% if aux.opts_xform.if_gen=1: [output]=      ts.b*[input]*ts.T     +ts.c,
+%  
 %  (data_in.da{k} should be nstims x idim)
 % Note that the output dimension is always equal to the input dimension.
 % The transformation is the same as Matlab's procrustes.m, but with other field names
@@ -39,6 +45,7 @@ end
 %
 aux=filldefault(aux,'opts_xform',struct); 
 aux.opts_xform=filldefault(aux.opts_xform,'if_warn',1);
+aux.opts_xform=filldefault(aux.opts_xform,'if_gen',0);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -87,7 +94,13 @@ for k=1:nsets
         if ~isempty(xforms.ts{k_xform})
             ts=xforms.ts{k_xform}{ip};
             if ~isempty(coords) & ~isempty(ts)
-                coords_new=psg_geomodels_apply('procrustes',coords,procrustes_compat(ts));
+                switch aux.opts_xform.if_gen
+                   case 0
+                        ts_use=procrustes_compat(ts);
+                    case 1
+                        ts_use=ts;
+                end
+                coords_new=psg_geomodels_apply('procrustes',coords,ts_use);
                 data_out.ds{k}{1,ip}=coords_new;
                 dim_list_out=[dim_list_out,ip];
             end
