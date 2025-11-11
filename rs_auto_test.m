@@ -29,6 +29,13 @@ r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
 r.(rs_module).aux_outs=aux_outs;
 %
+rs_xform_specify_apply_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).data_reads=data_reads;
+r.(rs_module).xforms=xforms;
+r.(rs_module).data_outs=data_outs;
+r.(rs_module).aux_outs=aux_outs;
+%
 disp('%%%%%%%')
 disp('summary')
 disp('%%%%%%%')
@@ -39,13 +46,13 @@ ver
 rs_modules=fieldnames(r);
 for irs=1:length(rs_modules)
     rs_module=rs_modules{irs};
-    diff_list=zeros(1,length(r.(rs_module).ifdif));
-    run_list=zeros(1,length(r.(rs_module).ifdif));
-    for id=1:length(r.(rs_module).ifdif)
+    diff_list=zeros(1,length(r.(rs_module).ifdif(:)));
+    run_list=zeros(1,length(r.(rs_module).ifdif(:)));
+    for id=1:length(r.(rs_module).ifdif(:))
         diff_list(id)=~isempty(r.(rs_module).ifdif{id});
         run_list(id)=~isempty(r.(rs_module).aux_outs{id});
     end
-    r.(rs_module).diff_list=diff_list;
+    r.(rs_module).diff_list=reshape(diff_list,size(r.(rs_module).ifdif));
     disp(sprintf('%20s: %3.0f tests of %3.0f show differences (%3.0f skipped in auto mode)',rs_module,sum(diff_list),sum(run_list),length(run_list)-sum(run_list)));
     if sum(diff_list)>0
         for idiff=find(diff_list>0)

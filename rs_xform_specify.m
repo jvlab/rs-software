@@ -47,7 +47,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST, RS_XFORM_APPLY.
 %
 if (nargin<=1)
     aux=struct;
@@ -239,7 +239,7 @@ if aux_out.warn_bad==0
                             end
                     end
                 else
-                    ts=struct;
+                    ts=[]; %better than struct(), which is not empty
                 end
             end %mode
             xforms.ts{iset}{idim}=ts;

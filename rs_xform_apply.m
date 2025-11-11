@@ -30,7 +30,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % Entries in length(xforms.ts) are cycled through (so if length is 1, xforms.ts{1} is applied to all datasets).
 %   If length is not 1, then it should match length(data_in.ds); otherwise warning is issued. 
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY, PSG_GEOMODELS_APPLY, PROCRUSTES_COMPAT.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY, RS_FORM_SPECIFY_APPLY_TEST,
+%  PSG_GEOMODELS_APPLY, PROCRUSTES_COMPAT.
 %
 if (nargin<=1)
     aux=struct;
@@ -81,13 +82,15 @@ for k=1:nsets
     k_xform=mod(k-1,nsets_xform)+1;
     dim_list_out=[];
     data_out.ds{k}=cell(1,0);
-    for ip=1:length(data_in.da{k})
-        coords=data_in.da{k}{ip};
-        ts=xforms.ts{k_xform};
-        if ~isempty(coords) & ~isempty(ts)
-            coords_new=psg_geomodels_apply('procrustes',coords,procrustes_compat(ts));
-            data_out.ds{k}.ip=coords_new;
-            dim_list_out=[dim_list_out,ip];
+    for ip=1:length(data_in.ds{k})
+        coords=data_in.ds{k}{ip};
+        if ~isempty(xforms.ts{k_xform})
+            ts=xforms.ts{k_xform}{ip};
+            if ~isempty(coords) & ~isempty(ts)
+                coords_new=psg_geomodels_apply('procrustes',coords,procrustes_compat(ts));
+                data_out.ds{k}{1,ip}=coords_new;
+                dim_list_out=[dim_list_out,ip];
+            end
         end
     end
     data_out.sas{k}=data_in.sas{k};
