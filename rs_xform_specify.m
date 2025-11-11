@@ -17,7 +17,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %          the point specified by the centerind specifier is not moved
 %      translate_then_pca: the specified point (see 'centering specifier') is translated to the origin, and then standard pca is done
 %   aux.opts_xform.source: 'global','local', or an integer in [1:length(data_in.ds)]
-%      global (default): the centering specifier is determined from the mean all datasets; pca is computed after pooling across datasets;
+%      global (default): the centering specifier is determined from the mean all datasets; pca is computed after mean across datasets;
 %          the transformations specified for all datasets are identical
 %      local: the centering specifieer and pca is computed separately for each dataset; tranformations for each dataset typically differ
 %      an integer: the specified datast is used for the centering specifieer and pca;  transformations specfied for all datasets are identical
