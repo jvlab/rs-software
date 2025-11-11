@@ -39,7 +39,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY, RS_FORM_SPECIFY_APPLY_TEST,
 %  PSG_GEOMODELS_APPLY, PROCRUSTES_COMPAT.
 %
-if (nargin<=1)
+if (nargin<=2)
     aux=struct;
 end
 %
