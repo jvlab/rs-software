@@ -25,8 +25,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % The transformation is the same as Matlab's procrustes.m, but with other field names
 %  (see procrustes_compat), and with the translation replicated for each data point
 %
-% If a dimension is present in data_in{k}{ip} but not xforms.ts{k}{ip} is empty, then the
-%   data_out{k}{ip} will be empty, and a warning is generated.
+% If a dimension is present in data_in.ds{k}{ip} but not xforms.ts{k}{ip} is empty, then the
+%   data_out.ds{k}{ip} will be empty, and a warning is generated.
 % If length(xforms.ts) = 1, then it is applied to all datasets.  If length
 % is not 1, then it should match length(data_in.ds)
 %
@@ -62,10 +62,7 @@ typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
 %
-%validate input parameters for consistency, etc.
-%
-if_ok=1;
-x=aux.opts_xform; %for convenience
+%check number of transform sets
 %
 nsets_xform=length(xforms.ts);
 if (nsets_xform~=nsets) & (nsets_xform~=1)
@@ -75,7 +72,15 @@ if (nsets_xform~=nsets) & (nsets_xform~=1)
     end
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
 end
-%%%%%%%%%%%
+%
+%create pipeline -- to be fixed
+%
+%also need to check that xforms.pipeline exists
+for k=1:nsets
+    data_out.sets{k}=data_in.sets{k};
+    data_out.sets{k}.pipeline=xforms.pipeline;
+    data_out.sets{k}.pipeline.set=data_in.sets{k};
+end
 aux.opts_xform=x;
 %
 xforms.pipeline.type='xform';
