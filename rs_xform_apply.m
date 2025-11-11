@@ -27,10 +27,10 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %
 % If a dimension is present in data_in.ds{k}{ip} but not xforms.ts{k}{ip} is empty, then the
 %   data_out.ds{k}{ip} will be empty, and a warning is generated.
-% If length(xforms.ts) = 1, then it is applied to all datasets.  If length
-% is not 1, then it should match length(data_in.ds)
+% Entries in length(xforms.ts) are cycled through (so if length is 1, xforms.ts{1} is applied to all datasets).
+%   If length is not 1, then it should match length(data_in.ds); otherwise warning is issued. 
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY, PSG_GEOMODELS_APPLY, PROCRUSTES_COMPAT.
 %
 if (nargin<=1)
     aux=struct;
@@ -72,101 +72,32 @@ if (nsets_xform~=nsets) & (nsets_xform~=1)
     end
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
 end
+data_out.ds=cell(1,nsets);
+data_out.sas=cell(1,nsets);
+data_out.sets=cell(1,nsets);
+%create pipeline -- need to add the dimension list
 %
-%create pipeline -- to be fixed
-%
-%also need to check that xforms.pipeline exists
 for k=1:nsets
+    k_xform=mod(k-1,nsets_xform)+1;
+    dim_list_out=[];
+    data_out.ds{k}=cell(1,0);
+    for ip=1:length(data_in.da{k})
+        coords=data_in.da{k}{ip};
+        ts=xforms.ts{k_xform};
+        if ~isempty(coords) & ~isempty(ts)
+            coords_new=psg_geomodels_apply('procrustes',coords,procrustes_compat(ts));
+            data_out.ds{k}.ip=coords_new;
+            dim_list_out=[dim_list_out,ip];
+        end
+    end
+    data_out.sas{k}=data_in.sas{k};
+    %sets is taken from input, other than pipeline and dimensions present   
     data_out.sets{k}=data_in.sets{k};
-    data_out.sets{k}.pipeline=xforms.pipeline;
-    data_out.sets{k}.pipeline.set=data_in.sets{k};
-end
-aux.opts_xform=x;
-%
-xforms.pipeline.type='xform';
-xforms.pipeline.opts.opts_xform=aux.opts_xform;
-xforms.pipeline.sets_combined=cell(1,nsets);
-for iset=1:nsets
-    xforms.pipeline.sets_combined{iset}=data_in.sets{iset};
-end
-%
-if aux_out.warn_bad==0
-    %process
-    xforms.ts=cell(nsets,1);
-    nstims=min(nstims_each);
-    for iset=1:nsets
-        xforms.ts{iset}=cell(1,max(dim_list_each{iset}));
-        for dim_ptr=1:length(dim_list_each{iset});
-            idim=dim_list_each{iset}(dim_ptr);
-            %
-            ts=struct;
-            ts.scaling=1;
-            ts.orthog=eye(idim);
-            ts.translation=zeros(1,idim);
-            if ~strcmp(x.mode,'none')
-                switch x.source
-                    case 'local'
-                        source=iset;
-                        have_data=ismember(idim,dim_list_each{iset});
-                    case 'global'
-                        source=[1:nsets];
-                        have_data=ismember(idim,dim_list_inter);
-                    otherwise
-                        source=x.source;
-                        have_data=1;
-                end
-                if have_data
-                    %determine centering
-                    coords_each=zeros(nstims,idim,length(source));
-                    for is=1:length(source)
-                        coords_each(:,:,is)=data_in.ds{source(is)}{idim};
-                    end
-                    coords=mean(coords_each,3,'omitnan');
-                    switch x.centering_specifier % none','centroid','index','typename','value'
-                        case 'none'
-                            cvec=zeros(1,idim);
-                        case 'centroid'
-                            cvec=mean(coords,1,'omitnan');
-                        case 'index'
-                            cvec=coords(idx,:);
-                        case 'typename'
-                            cvec_each=zeros(1,idim,length(source));
-                            for is=1:length(source)
-                                cvec_each(1,:,is)=coords_each(strmatch(x.centering_typename,typenames_each{source(is)},'exact'),:,is);
-                            end
-                            cvec=mean(cvec_each,3,'omitnan');
-                        case 'value'
-                            cvec=x.centering_value(1:idim);
-                    end
-                    %handle rotation
-                    switch x.mode % 'none', 'translate', 'offset_pca', 'translate_then_pca';
-                        case 'none'
-                        case 'translate'
-                            ts.translation=-cvec;
-                        case {'offset_pca','translate_then_pca'}
-                            if (iset==1) | ~strcmp(x.source,'global')
-                                %cvec+(coords-cvec)*qv is the reconstruction in the PC space.
-                                [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_offset_pca]=psg_pcaoffset(coords,cvec);
-                                qv=opts_offset_pca.qv;
-                                ts.orthog=qv;
-                                if strcmp(x.mode,'offset_pca')
-                                    ts.translation=-cvec*qv+cvec;
-                                else
-                                    ts.translation=-cvec*qv;
-                                end
-                            else
-                                ts=xforms.ts{1}{idim}; %no need to redo PCA
-                            end
-                    end
-                else
-                    ts=struct;
-                end
-            end %mode
-            xforms.ts{iset}{idim}=ts;
-        end %dim_ptr
-    end %each set
-else
-    disp('cannot proceed');
+    if isfield(xforms,'pipeline')
+        data_out.sets{k}.pipeline=xforms.pipeline;
+    end
+    data_out.sets{k}.pipeline.sets=data_in.sets{k};
+    data_out.sets{k}.dim_list=dim_list_out;
 end
 return
 end

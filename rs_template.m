@@ -8,8 +8,10 @@ function [data_out,aux_out]=rs_template(data_in,aux)
 %   datasets, as listed in data_in.sas{k}.typenames
 %
 % aux:
-%  a structure with substructures such as opts_knit, opts_pca, opts_read, opts_write
-%  aux.opts_knit.if_log: 1 to log progress
+%  a structure with substructures such as opts_temp, opts_othr,
+%  aux.opts_temp.if_log: 1 to log progress
+%  aux.opts_othr.if_log: 1 to log progress
+%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %  *may also have some bare options
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates after processing
@@ -32,9 +34,8 @@ aux.opts_knit=filldefault(aux.opts_knit,'if_log',1);
 aux=filldefault(aux,'opts_othr',struct); %options for other modules called
 aux.opts_othr=filldefault(aux.opts_othr,'if_log',0);
 aux.opts_othr=filldefault(aux.opts_othr,'nd_max',Inf);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
-aux=filldefault(aux,'opts_oth2',struct);
-%fill in any other options with default values, naming this module
 aux=rs_aux_customize(aux,'rs_template');
 %
 data_out=struct;
@@ -53,7 +54,7 @@ for iset=1:nsets
     data_check.ds{1}=data_in.ds{iset};
     data_check.sas{1}=data_in.sas{iset};
     data_check.sets{1}=data_in.sets{iset};
-    check=rs_check_coordsets(data_check,setfield(struct(),'set_num_offset',iset-1));
+    check=rs_check_coordsets(data_check,setfield(aux.opts_check,'set_num_offset',iset-1));
     if ~isempty(check.warnings) %since strvcat([],[])~=[]
         aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
         disp(check.warnings);
@@ -64,7 +65,7 @@ end
 %
 %check consistency and get available stimuli, dimensions, typenames
 %
-check=rs_check_coordsets(data_in,setfield(struct(),'if_warn',1));
+check=rs_check_coordsets(data_in,aux.opts_check);
 %
 
 %
