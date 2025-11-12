@@ -17,7 +17,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   fig_handle: handle to figure, will be created if empty or not provided
 %   fig_position: position params for new figure to be created
 %   fig_name: title for figure 
-%   subplot_handles: handle to subplots, will be created if not supplied
+%   axis_handles: handle to axes, one for each subplot, will be created if not supplied
 %   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3, must be at least 2
 %   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,3)
@@ -28,10 +28,15 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %      'onlylowest': only the lowest dimensions                              [dim_select,coord_group_size] yields [1 2 3]
 %      'list': specify a list in opts_disp.coord_groups
-%    Note correspondences to opts_vis:
-%      model_dim=dim_select
-%      opts_vis.which_dimcombs=coord_group_method,
-%      plotformats=[dim_select,coord_group_size]
+%      By default, each dataset is plotted with its own style, with points disconnected.
+%      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
+%      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
+%      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
+%   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
+%   set_markers marker assigned to each set, defaults to {'.'};
+%   set__markersizes: marker assigned to each set, defaults to 8
+%   set_linewidths: line widths assigned to each set, defaults to 1
+%   set_linestyles: line styles assigned to each set, defaults to {'.'} (disconnected)
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
@@ -49,7 +54,14 @@ end
 aux=filldefault(aux,'opts_disp',struct); %options for this module (psg_template)
 aux.opts_disp=filldefault(aux.opts_disp,'fig_handle',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'fig_position',[100 100 1200 700]);
-aux.opts_disp=filldefault(aux.opts_disp,'subplot_handles',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'axis_handles',[]);
+%
+aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
+aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
+aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
+aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
+aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'.'});
+%
 aux.opts_disp=filldefault(aux.opts_disp,'if_warn',1);
 %
 aux=filldefault(aux,'opts_check',struct);
@@ -104,6 +116,16 @@ switch x.coord_group_method
         x.coord_groups=[1:x.coord_group_size];
         wmsg_all=strvcat(wmsg_all,wmsg);
 end
+if x.coord_group_size~=size(x.coord_groups,2)
+    wmsg=sprintf('specified coordinate group size (%3.0f) and list of coord groups is inconsistent',x.coord_group_size);
+    wmsg_all=strvcat(wmsg_all,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;  
+end
+if ~ismember(x.coord_group_size,coords_together_allowed)
+    wmsg=sprintf('cannot plot groups of %3.0f coordinates on same axis',x.coord_group_size);
+    wmsg_all=strvcat(wmsg_all,wmsg);
+    aux_out.warn_bad=aux_out.warn_bad+1;  
+end
 if any(x.coord_groups(:)<=0) | any(x.coord_groups(:)>x.dim_select)
     wmsg=sprintf('some specified dimensions are out of bounds for the dimension plotted (%2.0f)',x.dim_select);
     wmsg_all=strvcat(wmsg_all,wmsg);
@@ -112,9 +134,10 @@ end
 aux.opts_disp=x;
 ngroups=size(x.coord_groups,1);
 %
-nsubplot_handles=length(aux.opts_disp.subplot_handles);
-if nsubplot_handles>0 & nsubplot_handles~=ngroups
-    wmsg=sprintf('number of subplots (%3.0f) does not match number of groups (%3.0f)',nsubplot_handles,ngroups);
+naxis_handles=length(aux.opts_disp.axis_handles);
+if naxis_handles>0 & naxis_handles~=ngroups
+    wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of groups (%3.0f)',naxis_handles,ngroups);
+    wmsg_all=strvcat(wmsg_all,wmsg);
     aux_out.warn_bad=aux_out.warn_bad+1;
 end
 %
@@ -128,27 +151,72 @@ if ~isempty(wmsg_all)
 end
 %
 if aux_out.warn_bad==0
-    if isempty(aux.opts_disp.fig_handle)
-        aux.opts_disp.fig_handle=figure;
-        set(gcf,'Position',aux.opts_disp.fig_position);
+    if isempty(x.fig_handle)
+        x.fig_handle=figure;
+        set(gcf,'Position',x.fig_position);
         set(gcf,'NumberTitle','off');
-        set(gcf,'Name',aux.opts_disp.fig_name);
+        set(gcf,'Name',x.fig_name);
     end
-    if nsubplot_handles==0
+    if naxis_handles==0
         fig_posit=get(gcf,'Position');
         [nrows,ncols]=nicesubp(ngroups,fig_posit(4)/fig_posit(3)); %find an arrangement of rows and columns that fits the aspect ratio
         for igp=1:ngroups
-            aux.opts_disp.subplot_handles{igp}=subplot(nrows,ncols,igp);
+            x.axis_handles{igp}=subplot(nrows,ncols,igp);
         end
     end
+    for igp=1:ngroups
+        subplot(nrows,ncols,igp);
+        for isetptr=1:length(x.set_select)
+            k=x.set_select(isetptr);
+            hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,x,'data_points');
+        end
+        %set up view, scale, axis labels
+    end
 end
+% options from psg_plotcoords 
+% opts=filldefault(opts,'line_width',1); %0 to omit lines
+% opts=filldefault(opts,'line_width_ring',1);
+% opts=filldefault(opts,'line_type',[]); %line type
+% opts=filldefault(opts,'line_type_connect_neg','--'); %line type for negative directions for connections
+% opts=filldefault(opts,'line_type_ring',':');
+% opts=filldefault(opts,'marker_sign','*+'); %symbols for negative and postive values on rays
+% opts=filldefault(opts,'marker_origin','o'); %symbol for origin
+% opts=filldefault(opts,'marker_noray','.'); %symbol if no ray
+% opts=filldefault(opts,'marker_size',8); %marker size
+% opts=filldefault(opts,'color_rays',{[.3 .3 .3],[1 0 0],[0 .7 0],[0 0 1]}); %colors to cycle through for each ray, supplanted by psg_typenames2colors
+% opts=filldefault(opts,'color_origin',[0 0 0]); %color used for origin
+% opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
+% opts=filldefault(opts,'color_ring',[0 0 0]);
+% opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
+
 %
 %labels
-%connections
+%connections withn and between sets
 %legends
 %figure label on figure
 %view
 %
 aux_out.opts_disp=aux.opts_disp;
+return
+end
+% 
+% aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
+% aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
+% aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
+% aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
+% aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'.'});
+
+function hline=rs_disp_doplot(coords,index,opts,tag)
+%plot the data (rows of coords) into the current plot, using index into
+%opts.set* to determine the style, and giving the line a tag
+switch size(coords,2)
+    case 2
+        hline=plot(coords(:,1),coords(:,2),'k.');
+    case 3
+        hline=plot3(coords(:,1),coords(:,2),coords(:,3),'k.');
+end
+hold on;
+index_color=mod(index-1,length(opts.set_colors))+1;
+set(hline,'Color',opts.set_colors{index});
 return
 end

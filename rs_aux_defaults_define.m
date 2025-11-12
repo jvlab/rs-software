@@ -54,8 +54,8 @@ generic.opts_read.need_setup_file=1; %assume need setup file
 generic.opts_read.domain_list_def={'texture','intermediate_texture','intermediate_object','image','word'}; %domain names for animals experiment
 generic.opts_read.type_class_def='btc'; % default type class
 % sigma (std dev in the error model) for individual subjects in 5-domain animal experiments, anonymized
-% Coordinates in data file are relative to sigma, which was 0.18 for first 5 subjects.
-sigma_list=[repmat(0.18,1,5),repmat(1,1,8)];
+% Coordinates in data file are relative to sigma, which was 0.18 for first 9 subjects %fixed 12Nov25, was 0.18 x 5
+sigma_list=[repmat(0.18,1,9),repmat(1,1,4)];
 for k=1:length(sigma_list)
     generic.opts_read.domain_sigma.(sprintf('S%1.0f',k))=sigma_list(k);
 end

@@ -1,6 +1,7 @@
 %rs_auto_test: run all tests in automatic mode
-clear;
-if_auto_skip=1;
+if ~exist('if_auto_skip')
+    if_auto_skip=1;
+end
 r=struct;
 %
 rs_aux_customize_test;
