@@ -15,7 +15,7 @@
 %   rs_findrays: find rays from coordinates
 %   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli
 %   rs_knit_coordsets_test: test for above
-%   rs_xform_specify: specify a transformation (rotation and translation)
+%   rs_xform_specify: specify a transformation (linear and translation)
 %   rs_xform_specify_test: test rs_xform_specify
 %   rs_xform_apply: apply a transformation from rs_xform_specify
 %   rs_xform_specify_apply_test: test rs_xform_[specify|apply]

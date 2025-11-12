@@ -1,6 +1,9 @@
 % rs_xform_specify_apply_test: test rs_xform_specify and rs_xform_apply
 %
-%  See also:  RS_XFORM_SPECIFY, RS_XFORM_APPLY, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
+% Note that for any nontrivial transformation, no btc model is used,
+% to avoid system-dependent variations in the results of svd when qform models are created
+%
+%  See also:  RS_XFORM_SPECIFY, RS_XFORM_SPECIFY_TEST, RS_XFORM_APPLY, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='xform_specify_apply';
 rs_submodules={'xform_specify','xform_apply'};
@@ -9,11 +12,12 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=7;
+ntests=8;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
 auxs=cell(1,ntests);
+signflips=cell(1,ntests);
 data_reads=cell(1,ntests);
 aux_ins=cell(1,ntests);
 xforms=cell(1,ntests);
@@ -22,43 +26,44 @@ auxs=cell(1,ntests);
 data_outs=cell(1,ntests);
 %
 test_descs{1}='three binary texture coordinate files, second file is a model, no centering';
-filenames_examples{1}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_NF-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
+filenames_examples{1}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
 aux_ins{1}=struct;
 aux_ins{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{[1 2],1,1});
 aux_ins{1}.nsets=3;
 auxs{1}=struct;
+signflips{1}={{'data_read','ds'},{'data_out','ds'}};
 %
-test_descs{2}='three binary texture coordinate files, second file is a model, centering by typename, global, translate';
-filenames_examples{2}=filenames_examples{1};
-aux_ins{2}=aux_ins{1};
+test_descs{2}='four animal-domain files, centering by typename, global, translate';
+filenames_examples{2}={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
+aux_ins{2}=struct;
+aux_ins{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_ins{2}.nsets=4;
 auxs{2}=struct;
 auxs{2}.opts_xform.mode='translate';
 auxs{2}.opts_xform.source='global';
 auxs{2}.opts_xform.centering_specifier='typename';
-auxs{2}.opts_xform.centering_typename='bp0600';
+auxs{2}.opts_xform.centering_typename='ant';
 %
-test_descs{3}='four animal-domain files, centering by typename, local';
-filenames_examples{3}={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
-aux_ins{3}=struct;
-aux_ins{3}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
-aux_ins{3}.nsets=4;
+test_descs{3}='four animal-domain files, centering by typename, local, translate';
+filenames_examples{3}=filenames_examples{2};
+aux_ins{3}=aux_ins{2};
 auxs{3}=struct;
 auxs{3}.opts_xform.mode='translate';
 auxs{3}.opts_xform.source='local';
 auxs{3}.opts_xform.centering_specifier='typename';
 auxs{3}.opts_xform.centering_typename='ant';
 %
-test_descs{4}='four animal-domain files, centering by centroid, source = set 2';
-filenames_examples{4}=filenames_examples{3};
-aux_ins{4}=aux_ins{3};
+test_descs{4}='four animal-domain files, centering by centroid, source = set 2, translate';
+filenames_examples{4}=filenames_examples{2};
+aux_ins{4}=aux_ins{2};
 auxs{4}=struct;
 auxs{4}.opts_xform.mode='translate';
 auxs{4}.opts_xform.source=2;
 auxs{4}.opts_xform.centering_specifier='centroid';
 %
-test_descs{5}='four animal-domain files, centering by fixed value';
-filenames_examples{5}=filenames_examples{3};
-aux_ins{5}=aux_ins{3};
+test_descs{5}='four animal-domain files, centering by fixed value, translate';
+filenames_examples{5}=filenames_examples{2};
+aux_ins{5}=aux_ins{2};
 auxs{5}=struct;
 auxs{5}.opts_xform.mode='translate';
 auxs{5}.opts_xform.source='global';
@@ -66,8 +71,8 @@ auxs{5}.opts_xform.centering_specifier='value';
 auxs{5}.opts_xform.centering_value=0.1*[1:10];
 %
 test_descs{6}='four animal-domain files, centering by index, global, offset_pca';
-filenames_examples{6}=filenames_examples{3};
-aux_ins{6}=aux_ins{3};
+filenames_examples{6}=filenames_examples{2};
+aux_ins{6}=aux_ins{2};
 auxs{6}=struct;
 auxs{6}.opts_xform.mode='offset_pca';
 auxs{6}.opts_xform.source='global';
@@ -75,13 +80,24 @@ auxs{6}.opts_xform.centering_specifier='index';
 auxs{6}.opts_xform.centering_index=17;
 %
 test_descs{7}='four animal-domain files, centering by index, global, translate_then_pca';
-filenames_examples{7}=filenames_examples{3};
-aux_ins{7}=aux_ins{3};
+filenames_examples{7}=filenames_examples{2};
+aux_ins{7}=aux_ins{2};
 auxs{7}=struct;
 auxs{7}.opts_xform.mode='translate_then_pca';
 auxs{7}.opts_xform.source='local';
 auxs{7}.opts_xform.centering_specifier='index';
 auxs{7}.opts_xform.centering_index=17;
+%
+test_descs{8}='three binary texture coordinate files, no models, centering by typename, local, translate_then_pca';
+filenames_examples{8}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
+aux_ins{8}=struct;
+aux_ins{8}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_ins{8}.nsets=3;
+auxs{8}=struct;
+auxs{8}.opts_xform.mode='translate_then_pca';
+auxs{8}.opts_xform.source='local';
+auxs{8}.opts_xform.centering_specifier='typename';
+auxs{8}.opts_xform.centering_typname='bp0600';
 %
 fns=cell(nsubmodules,ntests);
 ifdif=cell(nsubmodules,ntests);
@@ -118,7 +134,7 @@ for itest=1:ntests
     if ~isempty(data_reads{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         for isub=1:nsubmodules
-            [ifdif{isub,itest},opts_used{isub,itest}]=rs_benchmark_compare(fns{isub,itest});
+            [ifdif{isub,itest},opts_used{isub,itest}]=rs_benchmark_compare(fns{isub,itest},setfield(struct,'signflips',signflips{itest}));
             if ~isempty(aux_outs{isub,itest}.warnings)
                 disp('warnings encountered during test:')
                 disp(aux_outs{isub,itest}.warnings)
