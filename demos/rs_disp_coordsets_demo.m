@@ -51,43 +51,78 @@ for igroup=1:length(group_size_list)
     end
 end
 %
-%large 3-d plot,adding the consensus, and showing connections to the consensus 
+%large  plot, adding the consensus, and showing connections to the consensus 
 % first, append the components to the consensus
 %
+%customize the display options
+opts_disp_conn=struct;
+for ifile=1:nfiles
+    opts_disp_conn.set_labels{ifile}=data_read.sets{ifile}.subj_id;
+end
+opts_disp_conn.set_labels{nfiles+1}='consensus';
+opts_disp_conn.coord_group_method='onlylowest';
+opts_disp_conn.set_markers=cellstr(strvcat(repmat('.',nfiles,1),'x'))'; %consensus plotted with x
+opts_disp_conn.connect_method='star_last';
+opts_disp_conn.connect_color_mode='split';
+%
+%3-d coord sets
 hfig=figure;
+opts_disp_conn.dim_select=3;
 set(hfig,'Position',[100 100 1400 800]);
-set(hfig,'Name','comparison');
+set(hfig,'Name','comparison, 3 dims');
 set(hfig,'NumberTitle','off');
-for isub=1:2
+%
+ncols=3; %eventually, noscale, scale, scale and restore
+%
+for iscale=1:ncols
+    switch iscale
+        case 1
+            data_all=data_components;
+            data_c=data_consensus;
+            subtitle='no scaling';
+        case {2,3}
+            data_all=data_components_scale;
+            data_c=data_consensus_scale;
+            subtitle='scaling';
+    end
+    data_all.ds{nfiles+1}=data_c.ds{1};
+    data_all.sas{nfiles+1}=data_c.sas{1};
+    data_all.sets{nfiles+1}=data_c.sets{1};
+    opts_disp_conn.fig_handle=hfig;
+    opts_disp_conn.axis_handles{1}=subplot(1,ncols,iscale);
+    aux_out_conn=rs_disp_coordsets(data_all,setfield(aux_nocust,'opts_disp',opts_disp_conn));
+    subplot(1,ncols,iscale);
+    title(subtitle);
+end
+%
+%4-d coord sets
+hfig=figure;
+opts_disp_conn.dim_select=4;
+set(hfig,'Position',[100 100 1400 800]);
+set(hfig,'Name','comparison, 4 dims');
+set(hfig,'NumberTitle','off');
+ncols=3; %third col for scaled, and restore 
+for isub=1:ncols
     switch isub
         case 1
             data_all=data_components;
-            data_all.ds{nfiles+1}=data_consensus.ds{1};
-            data_all.sas{nfiles+1}=data_consensus.sas{1};
-            data_all.sets{nfiles+1}=data_consensus.sets{1};
+            data_c=data_consensus;
             subtitle='no scaling';
-        case 2
+        case {2,3}
             data_all=data_components_scale;
-            data_all.ds{nfiles+1}=data_consensus_scale.ds{1};
-            data_all.sas{nfiles+1}=data_consensus_scale.sas{1};
-            data_all.sets{nfiles+1}=data_consensus_scale.sets{1};
+            data_c=data_consensus_scale;
             subtitle='scaling';
     end
-    %customize the display options
-    opts_disp_conn=struct;
+    data_all.ds{nfiles+1}=data_c.ds{1};
+    data_all.sas{nfiles+1}=data_c.sas{1};
+    data_all.sets{nfiles+1}=data_c.sets{1};
     opts_disp_conn.fig_handle=hfig;
-    opts_disp_conn.axis_handles{1}=subplot(1,2,isub);
-    for ifile=1:nfiles
-        opts_disp_conn.set_labels{ifile}=data_read.sets{ifile}.subj_id;
-    end
-    opts_disp_conn.set_labels{ifile+1}='consensus';
-    opts_disp_conn.dim_select=3;
-    opts_disp_conn.coord_group_method='onlylowest';
-    opts_disp_conn.set_markers=cellstr(strvcat(repmat('.',nfiles,1),'x'))'; %consensus plotted with x
-    opts_disp_conn.connect_method='star_last';
-    opts_disp_conn.connect_color_mode='split';
+    opts_disp_conn.axis_handles{1}=subplot(2,ncols,isub);
+    opts_disp_conn.axis_handles{2}=subplot(2,ncols,isub+ncols);
+    opts_disp_conn.coord_group_method='list';
+    opts_disp_conn.coord_groups=[[1 2 3];[1 2 4]];
     aux_out_conn=rs_disp_coordsets(data_all,setfield(aux_nocust,'opts_disp',opts_disp_conn));
-    subplot(1,2,isub);
+    subplot(2,ncols,isub);
     title(subtitle);
 end
 %
