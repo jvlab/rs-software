@@ -15,12 +15,16 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %  aux.opts_disp
 %   if_warn: 1 to display warnings
 %   fig_handle: handle to figure, will be created if empty or not provided
-%   fig_position: position params for new figure to be created
+%   fig_position: position params for new figure to be created (modifiable in rs_aux_defaults_define)
 %   fig_name: title for figure 
 %   axis_handles: handle to axes, one for each subplot, will be created if not supplied
-%   set_select: datasets to show, defaults to [1:length(data_in.da)]
-%   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3, must be at least 2
-%   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,3)
+%   axis_font_size: font size, defaults to 8 (modifiable in rs_aux_defaults_define)
+%   axis_label_prefix: prefix for axis label, defaults to 'dim' (modifiable in rs_aux_defaults_define)
+%   axis_label_font_size: font size, defaults to axis_font_size
+%   set_select: datasets to show, defaults to [1:length(data_in.da)
+%   dim_select: dimension to display, i.e.,
+%   data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
+%   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,max(number of dimensions available in all sets)
 %   coord_group_method: method of selecting coordinates (corresponds to opts_vis.which_dimcombs in psg_visualize)
 %      'all': (default) plot all combinations
 %      'keeplow': keep all but one dimensions low and only step the highest; [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5]
@@ -28,15 +32,18 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %      'onlylowest': only the lowest dimensions                              [dim_select,coord_group_size] yields [1 2 3]
 %      'list': specify a list in opts_disp.coord_groups
-%      By default, each dataset is plotted with its own style, with points disconnected.
+%   By default, each dataset is plotted with its own style, with points disconnected.
 %      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
 %      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers marker assigned to each set, defaults to {'.'};
-%   set__markersizes: marker assigned to each set, defaults to 8
+%   set_markersizes: marker assigned to each set, defaults to 8
+%   set_linestyles: line styles assigned to each set, defaults to {'none'} (disconnected)
 %   set_linewidths: line widths assigned to each set, defaults to 1
-%   set_linestyles: line styles assigned to each set, defaults to {'.'} (disconnected)
+%   set_labels: labels for each dataset, defaults to 'set 1', etc.
+%   if_box: 1 (default) to include a box in a 3d plot
+%   if_grid: 1 (default) to include the grid 
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
@@ -50,28 +57,17 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 if (nargin<=1)
     aux=struct;
 end
-%set up sub-structure options
-aux=filldefault(aux,'opts_disp',struct); %options for this module (psg_template)
-aux.opts_disp=filldefault(aux.opts_disp,'fig_handle',[]);
-aux.opts_disp=filldefault(aux.opts_disp,'fig_position',[100 100 1200 700]);
-aux.opts_disp=filldefault(aux.opts_disp,'axis_handles',[]);
-%
-aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
-aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
-aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
-aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
-aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'.'});
-%
-aux.opts_disp=filldefault(aux.opts_disp,'if_warn',1);
+%fields that will be made into cells if singletons
+make_cell={'set_colors','set_markers','set_linestyles','set_labels'};
+coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
+coords_together_default=[2 3]; %how many coords are plotted together by default
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
-aux=rs_aux_customize(aux,'rs_disp_coordsets');
+%check consistency and get available stimuli, dimensions, typenames
 %
 aux_out=struct;
-%
-%check consistency and get available stimuli, dimensions, typenames
 %
 check=rs_check_coordsets(data_in,aux.opts_check);
 aux_out.warnings=check.warnings;
@@ -85,13 +81,31 @@ typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
 %
-coords_together_allowed=[2 3];
+%set up sub-structure options
+aux=filldefault(aux,'opts_disp',struct); %options for this module (psg_template)
+aux.opts_disp=filldefault(aux.opts_disp,'if_warn',1);
+%
+aux.opts_disp=filldefault(aux.opts_disp,'fig_handle',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'axis_handles',[]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
-aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_allowed,dim_list_inter)));
-aux.opts_disp=filldefault(aux.opts_disp,'coord_group_size',min(aux.opts_disp.dim_select,max(coords_together_allowed)));
+aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_default,dim_list_inter)));
+aux.opts_disp=filldefault(aux.opts_disp,'coord_group_size',min(aux.opts_disp.dim_select,max(coords_together_default)));
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_method','all');
 aux.opts_disp=filldefault(aux.opts_disp,'fig_name',sprintf('dimension %2.0f',aux.opts_disp.dim_select));
+%
+aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
+aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
+aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
+aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'none'});
+aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
+%
+aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
+aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
+%
+aux=rs_aux_customize(aux,'rs_disp_coordsets');
+%quantities dependent omn overall defaults
+aux.opts_disp=filldefault(aux.opts_disp,'axis_label_font_size',aux.opts_disp.axis_font_size);
 %
 wmsg_all=[];
 %
@@ -131,6 +145,20 @@ if any(x.coord_groups(:)<=0) | any(x.coord_groups(:)>x.dim_select)
     wmsg_all=strvcat(wmsg_all,wmsg);
     aux_out.warn_bad=aux_out.warn_bad+1;
 end
+if ~isfield(x,'set_labels')
+    x.set_labels=cell(nsets,1);
+    for k=1:nsets
+        x.set_labels{k}=sprintf('set %1.0f',k);
+    end
+end
+%force cells
+for imc=1:length(make_cell)
+    mc=make_cell{imc};
+    if ~iscell(x.(mc))
+        x.(mc)={x.(mc)};
+    end
+end
+%
 aux.opts_disp=x;
 ngroups=size(x.coord_groups,1);
 %
@@ -165,13 +193,50 @@ if aux_out.warn_bad==0
         end
     end
     for igp=1:ngroups
-        subplot(nrows,ncols,igp);
+        haxis=subplot(nrows,ncols,igp);
+        set(gca,'FontSize',x.axis_font_size);
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
-            hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,x,'data_points');
+            hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,x);
+            set(hline,'tag',sprintf('ds %2.0f',k));
         end
-        %set up view, scale, axis labels
+        %set up view, scale, , box, grid, axis labels, limits
+        if x.coord_group_size<=3
+            hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,1)));
+            set(hl,'FontSize',x.axis_label_font_size);
+            hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,2)));
+            set(hl,'FontSize',x.axis_label_font_size);
+        end
+        if x.if_grid
+            grid on;
+        else
+            grid off;
+        end
+        if (x.coord_group_size==3)
+            hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,3)));
+            set(hl,'FontSize',x.axis_label_font_size);
+            axis vis3d;
+            if x.if_box
+                box on;
+            else
+                box off;
+            end
+        end
+         % if (ndplot==2)
+       %      if ~isempty(opts.lims)
+       %          axis square;
+       %      else
+       %          axis equal;
+       %      end
+       %  end
+
+        %create legend
+        hc=get(haxis,'Children');
+        hc_keeps=psg_legend_keep(hc);
+        legend(hc(hc_keeps.ds),x.set_labels(x.set_select));
+
     end
+
 end
 % options from psg_plotcoords 
 % opts=filldefault(opts,'line_width',1); %0 to omit lines
@@ -206,7 +271,7 @@ end
 % aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
 % aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'.'});
 
-function hline=rs_disp_doplot(coords,index,opts,tag)
+function hline=rs_disp_doplot(coords,index,opts)
 %plot the data (rows of coords) into the current plot, using index into
 %opts.set* to determine the style, and giving the line a tag
 switch size(coords,2)
@@ -217,6 +282,19 @@ switch size(coords,2)
 end
 hold on;
 index_color=mod(index-1,length(opts.set_colors))+1;
-set(hline,'Color',opts.set_colors{index});
+set(hline,'Color',opts.set_colors{index_color});
+%
+index_marker=mod(index-1,length(opts.set_markers))+1;
+set(hline,'Marker',opts.set_markers{index_marker});
+%
+index_markersize=mod(index-1,length(opts.set_markersizes))+1;
+set(hline,'MarkerSize',opts.set_markersizes(index_markersize));
+%
+index_linestyle=mod(index-1,length(opts.set_linestyles))+1;
+set(hline,'LineStyle',opts.set_linestyles{index_linestyle});
+%
+index_linewidth=mod(index-1,length(opts.set_linewidths))+1;
+set(hline,'LineWidth',opts.set_linewidths(index_linewidth));
+%
 return
 end

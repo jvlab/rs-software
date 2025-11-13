@@ -74,6 +74,12 @@ generic.opts_write.if_log=1;
 generic.opts_write.ui_filter='*_coords*.mat'; %token in gui for file output
 generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
 %
+%typically first used in psg_disp_coorddata
+%
+generic.opts_disp.fig_position=[100 100 1200 800]; %default position for figures
+generic.opts_disp.axis_font_size=8; %font size for figure labels
+generic.opts_disp.axis_label_prefix='dim'; %prefix for axis label
+%
 %these options override generic defaults when rs_aux_customize is called by a specific function
 %
 specific=struct;  %subfields will be applied to auxiliary parameters when called by a specific function
