@@ -25,8 +25,6 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %      none (default): no centering id done
 %      centroid: the centroid of the dataset is used
 %      index: the value in aux.opts_xform.centering_index, is the index number of the stimulus whose coordinates are to be used for centering
-%        Caution: the index refers to the position of the stimulus in data_in.sas{k}, and stimulus order may differ across datasets. 
-%        To avoid this, use typename.
 %      typename: the string in aux.opts_xform.centering_typename is the label of the stimulus whose coordinates are to be used for centering
 %      value: the coordinates in aux.opts_xform.centering_value are to be used for centering; for coordinate sets of dimension k, only the first k are used
 %   aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specifier
@@ -98,10 +96,7 @@ if_ok_mode=1;
 x=aux.opts_xform; %for convenience
 wmsg_all=[];
 switch x.centering_specifier
-    case {'none','centroid'} 
-        x.centering_index=[];
-        x.centering_value=[];
-        x.centering_typename=[];
+    case {'none','centroid'} %nothing to check
     case 'index'
         if ((x.centering_index~=round(x.centering_index)) | (x.centering_index>min(nstims_each)) | (x.centering_index<=0))
             wmsg=sprintf('centering index (%8.3f) not valid (non-integer or out of range); no centering applied',x.centering_index);
@@ -110,8 +105,6 @@ switch x.centering_specifier
         else
             idx=x.centering_index;
         end
-        x.centering_value=[];
-        x.centering_typename=[];
     case 'value'
         if length(x.centering_value)<max(dim_list_union)
             wmsg=sprintf('centering value vector length (%3.0f) less than max dimension needed (%3.0f); no centering applied',length(x.centering_value),max(dim_list_union));
@@ -120,8 +113,6 @@ switch x.centering_specifier
         else
             x.centering_value=x.centering_value(:)';
         end
-        x.centering_index=[];
-        x.centering_typename=[];
     case 'typename'
          idx_check=strmatch(x.centering_typename,typenames_inter,'exact');
          if length(idx_check)~=1
@@ -129,15 +120,10 @@ switch x.centering_specifier
              if_ok_centering=0;
              wmsg_all=strvcat(wmsg_all,wmsg);
          end
-        x.centering_index=[];
-        x.centering_value=[];
     otherwise
         wmsg=sprintf('centering specifier (%s) not recognized; no centering applied',x.centering_specifier);
         if_ok_centering=0;
         wmsg_all=strvcat(wmsg_all,wmsg);
-        x.centering_index=[];
-        x.centering_value=[];
-        x.centering_typename=[];
 end
 switch x.source
     case {'global','local'}
@@ -175,6 +161,7 @@ end
 if (if_ok_mode==0)
     x.mode='none';
 end
+aux.opts_xform=x;
 aux_out.opts_xform=x;
 %
 xforms.pipeline.type='xform';
