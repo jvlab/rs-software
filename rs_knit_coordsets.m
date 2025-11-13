@@ -12,7 +12,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  if_log: 1 to log progress
 %  allow_reflection: 1 to allow reflection (default=1)
 %  allow_offset: 1 to allow offset (default=1) 
-%  allow_scale: 1 to allow scale, (default=0)opts_pcon=filldefault(opts_pcon,'allow_scale',0);
+%  allow_scale: 1 to allow scale, (default=0)
 %  if_normscale: 1 to normalize consensus to size of data (default=0)
 %  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
