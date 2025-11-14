@@ -202,31 +202,9 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
         wmsg_all=strvcat(wmsg_all,wmsg);
 end
 %set up connect method
-switch x.connect_method
-    case 'none'
-        x.connect_sets=[];
-    case 'all'
-        x.connect_sets=nchoosek([1:nsets],2);
-    case 'chain'
-        x.connect_sets=1+mod([[0:nsets-2];[1:nsets-1]],nsets)';
-    case 'circuit'
-        x.connect_sets=1+mod([[0:nsets-1];[1:nsets]],nsets)';
-    case {'star','star_first'}
-        x.connect_sets=[repmat(1,1,nsets-1);[2:nsets]]';
-    case {'star_last'}
-        x.connect_sets=[repmat(nsets,1,nsets-1);[1:nsets-1]]';
-    case 'list'
-    otherwise
-        wmsg=sprintf('connect method (%s) not recognized, connections ignored',x.connect_method);
-        x.connect_sets=[];
-        wmsg_all=strvcat(wmsg_all,wmsg);
-end
-if size(x.connect_sets,1)>0
-    if (size(x.connect_sets,2)~=2 | any(x.connect_sets(:))<=0 | any(x.connect_sets(:))>nsets)
-        wmsg=sprintf('list of sets to connect exceeds bounds ([0 %1.0f]), or is not two columns, connections ignored',nsets);
-        x.connect_sets=[];
-        wmsg_all=strvcat(wmsg_all,wmsg);
-    end
+[x.connect_sets,wmsg]=rs_disp_parsemethod(x.connect_method,nsets,x.connect_sets,'specification of sets to connect');
+if ~isempty(wmsg)
+    wmsg_all=strvcat(wmsg_all,wmsg);
 end
 %set up labels
 if ~isfield(x,'set_labels')
@@ -441,3 +419,35 @@ set(hline,'LineWidth',opts.linewidths(index_linewidth));
 %
 return
 end
+
+function [list,wmsg]=rs_disp_parsemethod(method,n,list_specified,msg);
+wmsg=[];
+list=[];
+switch method
+    case 'none'
+    case 'all'
+        list=nchoosek([1:n],2);
+    case 'chain'
+        list=1+mod([[0:n-2];[1:n-1]],n)';
+    case 'circuit'
+        list=1+mod([[0:n-1];[1:n]],n)';
+    case {'star','star_first'}
+        list=[repmat(1,1,n-1);[2:n]]';
+    case {'star_last'}
+        list=[repmat(n,1,n-1);[1:n-1]]';
+    case 'list'
+        list=list_specified;
+    otherwise
+        wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
+end
+if ~isempty(list)
+    if ((size(list,2)~=2) | any(list(:)<=0) | any(list(:)>n) | any(floor(list(:))~=list(:)))
+        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([0 %1.0f]), or is not integer, or is not two columns; none used',msg,n));
+    end
+end
+if ~isempty(wmsg)
+    list=[];
+end
+return
+end
+
