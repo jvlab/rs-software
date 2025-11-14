@@ -65,8 +65,8 @@ end
 opts_disp_conn.set_labels{nfiles+1}='consensus';
 opts_disp_conn.coord_group_method='onlylowest';
 opts_disp_conn.set_markers=cellstr(strvcat(repmat('.',nfiles,1),'x'))'; %consensus plotted with x
-opts_disp_conn.connect_method='star_last';
-opts_disp_conn.connect_color_mode='split';
+opts_disp_conn.connect_sets_method='star_last';
+opts_disp_conn.connect_sets_color_mode='split';
 %
 %3-d coord sets
 hfig=figure;
