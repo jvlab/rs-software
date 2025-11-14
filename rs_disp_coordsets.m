@@ -201,7 +201,7 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
         x.axis_scales=[NaN NaN];
         wmsg_all=strvcat(wmsg_all,wmsg);
 end
-%set up connect method
+%set up method for connecting points across sets
 [x.connect_sets,wmsg]=rs_disp_parsemethod(x.connect_method,nsets,x.connect_sets,'specification of sets to connect');
 if ~isempty(wmsg)
     wmsg_all=strvcat(wmsg_all,wmsg);
