@@ -47,6 +47,13 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
+%
+%   data_label_method: which data points should be labeled, 'all' (default),'none', 'first', 'last', 'list'
+%   data_label_list: list of labels (if data_label_method='list')
+%   data_label_setsel_method: which sets should be labeled, 'all','none', 'first' (default: first set displayed), or 'list'
+%   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
+%   data_label_font_size; font size for data labels, defaults to axis_font_size
+%
 %   connect_data_linestyles: line styles assigned to connections within each set, defaults to {'none'} (disconnected)
 %   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
 %
@@ -78,11 +85,24 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% connections within a set -- this should use connect_data_method,
-% connect_data_linestyles, connect_data_linewidth
-% labeling of points
-% rays, i.e., choice of markers or colors depending on btc_coords, etc
+% connect_data_linestyles, connect_data_linewidth for connection within a set
+% rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
 % tetrahedral/barycentric plots
+% options from psg_plotcoords  related to rays
+% opts=filldefault(opts,'line_width_ring',1);
+% opts=filldefault(opts,'line_type',[]); %line type
+% opts=filldefault(opts,'line_type_connect_neg','--'); %line type for negative directions for connections
+% opts=filldefault(opts,'line_type_ring',':');
+% opts=filldefault(opts,'marker_sign','*+'); %symbols for negative and postive values on rays
+% opts=filldefault(opts,'marker_origin','o'); %symbol for origin
+% opts=filldefault(opts,'marker_noray','.'); %symbol if no ray
+% opts=filldefault(opts,'marker_size',8); %marker size
+% opts=filldefault(opts,'color_rays',{[.3 .3 .3],[1 0 0],[0 .7 0],[0 0 1]}); %colors to cycle through for each ray, supplanted by psg_typenames2colors
+% opts=filldefault(opts,'color_origin',[0 0 0]); %color used for origin
+% opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
+% opts=filldefault(opts,'color_ring',[0 0 0]);
+% opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
+
 %
 if (nargin<=1)
     aux=struct;
@@ -134,6 +154,11 @@ aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g
 aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
 %
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_method','all');
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
+%
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linestyles',{'none'});
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linewidths',1);
 %
@@ -153,6 +178,7 @@ aux=rs_aux_customize(aux,'rs_disp_coordsets');
 %quantities dependent on overall defaults
 aux.opts_disp=filldefault(aux.opts_disp,'axis_label_font_size',aux.opts_disp.axis_font_size);
 aux.opts_disp=filldefault(aux.opts_disp,'legend_font_size',aux.opts_disp.axis_font_size);
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_font_size',aux.opts_disp.axis_font_size);
 %
 wmsg_all=[];
 %
@@ -208,8 +234,17 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
         x.axis_scales=[NaN NaN];
         wmsg_all=strvcat(wmsg_all,wmsg);
 end
-%set up method for connecting points across sets
-[x.connect_sets_list,wmsg]=rs_disp_parsemethod(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
+%set up data label params
+[x.data_label_list,wmsg]=rs_disp_parse_label(x.data_label_method,[1:nstims_each],x.data_label_list,'specification of data points to label');
+if ~isempty(wmsg)
+    wmsg_all=strvcat(wmsg_all,wmsg);
+end
+[x.data_label_setsel_list,wmsg]=rs_disp_parse_label(x.data_label_setsel_method,x.set_select,x.data_label_setsel_list,'specification of sets to label');
+if ~isempty(wmsg)
+    wmsg_all=strvcat(wmsg_all,wmsg);
+end
+%set up params for connecting points across sets
+[x.connect_sets_list,wmsg]=rs_disp_parse_connect(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
     wmsg_all=strvcat(wmsg_all,wmsg);
 end
@@ -311,12 +346,27 @@ if aux_out.warn_bad==0
         igp=mod(igp_aug-1,ngroups)+1; %if igp_aug=ngroup+1 (if_legend=-1) then igp=1 but it is plotted in a new subplot
         subplot(haxis);
         set(gca,'FontSize',x.axis_font_size);
+        %plot points
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
             %plot with no line, later connect
             hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,set_styles);
             set(hline,'Tag',sprintf('ds %2.0f',k));
             set(hline,'DisplayName',x.set_labels{k});
+            %label?
+            if ismember(k,x.data_label_setsel_list)
+                vals=data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:));
+                typenames=data_in.sas{k}.typenames;
+                for ipt=x.data_label_list(:)'
+                    switch x.coord_group_size
+                        case 2
+                            ht=text(vals(ipt,1),vals(ipt,2),typenames{ipt});
+                        case 3
+                            ht=text(vals(ipt,1),vals(ipt,2),vals(ipt,3),typenames{ipt});
+                    end %coord group size
+                    set(ht,'FontSize',x.data_label_font_size);
+                end %ipt
+            end %set to label?
         end
         %set up view, box, grid, axis labels
         if x.coord_group_size<=3
@@ -396,25 +446,6 @@ if aux_out.warn_bad==0
         end
     end
 end
-% options from psg_plotcoords 
-% opts=filldefault(opts,'line_width_ring',1);
-% opts=filldefault(opts,'line_type',[]); %line type
-% opts=filldefault(opts,'line_type_connect_neg','--'); %line type for negative directions for connections
-% opts=filldefault(opts,'line_type_ring',':');
-% opts=filldefault(opts,'marker_sign','*+'); %symbols for negative and postive values on rays
-% opts=filldefault(opts,'marker_origin','o'); %symbol for origin
-% opts=filldefault(opts,'marker_noray','.'); %symbol if no ray
-% opts=filldefault(opts,'marker_size',8); %marker size
-% opts=filldefault(opts,'color_rays',{[.3 .3 .3],[1 0 0],[0 .7 0],[0 0 1]}); %colors to cycle through for each ray, supplanted by psg_typenames2colors
-% opts=filldefault(opts,'color_origin',[0 0 0]); %color used for origin
-% opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
-% opts=filldefault(opts,'color_ring',[0 0 0]);
-% opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
-%
-%labels
-%connections within sets
-%legends
-%figure label on figure
 %
 aux_out.opts_disp=x;
 return
@@ -448,7 +479,8 @@ set(hline,'LineWidth',opts.linewidths(index_linewidth));
 return
 end
 
-function [list,wmsg]=rs_disp_parsemethod(method,n,list_specified,msg);
+function [list,wmsg]=rs_disp_parse_connect(method,n,list_specified,msg)
+%parse a method token that specifies a list of pairs
 wmsg=[];
 list=[];
 switch method
@@ -470,7 +502,7 @@ switch method
 end
 if ~isempty(list)
     if ((size(list,2)~=2) | any(list(:)<=0) | any(list(:)>n) | any(floor(list(:))~=list(:)))
-        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([0 %1.0f]), or is not integer, or is not two columns; none used',msg,n));
+        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not two columns; none used',msg,n));
     end
 end
 if ~isempty(wmsg)
@@ -479,3 +511,30 @@ end
 return
 end
 
+function [list,wmsg]=rs_disp_parse_label(method,nvals,list_specified,msg)
+%parse a method token that specifies a list
+wmsg=[];
+list=[];
+switch method
+    case 'none'
+    case 'all'
+        list=nvals(:);
+    case 'first'
+        list=nvals(1);
+    case 'last'
+        list=nvals(end);
+    case 'list'
+        list=list_specified(:);
+    otherwise
+        wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
+end
+if ~isempty(list)
+    if ((size(list,2)~=1) | any(list(:)<=0) | any(list(:)>max(nvals)) | any(floor(list(:))~=list(:)))
+        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not one column; none used',msg,max(nvals)));
+    end
+end
+if ~isempty(wmsg)
+    list=[];
+end
+return
+end
