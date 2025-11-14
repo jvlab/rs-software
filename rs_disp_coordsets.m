@@ -50,15 +50,15 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_linewidths: line widths assigned to each set, defaults to 1
 %   set_labels: labels for each dataset, defaults to 'set 1', etc.
 %
-%   connect_method: 'none' (default), or any of the following: which pairs of datasets to connect
+%   connect_sets_method: 'none' (default), or any of the following: which pairs of datasets to connect
 %      'all'-> all pairs, 'star' or 'star_first': all connect to 1; 'star_last': all connect to last set;
 %      'chain' connects [1 2],[2 3],[3 4],...[nsets-1 nsets]; 'circuit' connects [1 2],[2 3],[3 4],...[nsets 1]
-%      'list': pairs listed in connect_sets as a two-column array
-%   connect_color_mode: 'first','last','split' (default),'list': how connection line is colored
+%      'list': pairs listed in connect_sets_list as a two-column array
+%   connect_sets_color_mode: 'first','last','split' (default),'list': how connection line is colored
 %      %first uses first set of connection pair, last uses last set of
-%      %pair, split uses half of each, list expects a list in connect_colors (cycled through if necessary)
-%   connect_linestyles: line styles assigned to each set, defaults to '-'
-%   connect_linewidths: line widths assigned to each set, defaults to 1
+%      %pair, split uses half of each, list expects a list in connect_sets_colors (cycled through if necessary)
+%   connect_sets_linestyles: line styles assigned to each set, defaults to '-'
+%   connect_sets_linewidths: line widths assigned to each set, defaults to 1
 %
 %   if_box: 1 (default) to include a box in a 3d plot
 %   if_grid: 1 (default) to include the grid
@@ -85,7 +85,7 @@ if (nargin<=1)
     aux=struct;
 end
 %fields that will be made into cells if singletons
-make_cell={'set_colors','set_markers','set_linestyles','set_labels','axis_view','connect_linestyles','connect_colors'};
+make_cell={'set_colors','set_markers','set_linestyles','set_labels','axis_view','connect_sets_linestyles','connect_sets_colors'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default\
 xyzlim={'XLim','YLim','ZLim'};
@@ -133,12 +133,12 @@ aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
 aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'none'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
 %
-aux.opts_disp=filldefault(aux.opts_disp,'connect_method','none');
-aux.opts_disp=filldefault(aux.opts_disp,'connect_sets',[]);
-aux.opts_disp=filldefault(aux.opts_disp,'connect_linestyles','-');
-aux.opts_disp=filldefault(aux.opts_disp,'connect_linewidths',1);
-aux.opts_disp=filldefault(aux.opts_disp,'connect_color_mode','split');
-aux.opts_disp=filldefault(aux.opts_disp,'connect_colors',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_method','none');
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_list',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_linestyles','-');
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_linewidths',1);
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_color_mode','split');
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_colors',[]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
@@ -202,7 +202,7 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
         wmsg_all=strvcat(wmsg_all,wmsg);
 end
 %set up method for connecting points across sets
-[x.connect_sets,wmsg]=rs_disp_parsemethod(x.connect_method,nsets,x.connect_sets,'specification of sets to connect');
+[x.connect_sets_list,wmsg]=rs_disp_parsemethod(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
     wmsg_all=strvcat(wmsg_all,wmsg);
 end
@@ -222,22 +222,22 @@ for imc=1:length(make_cell)
 end
 %set up connection colors
 x.set_colors=x.set_colors(:);% ensure a column
-if size(x.connect_sets,1)>0
-    switch x.connect_color_mode
+if size(x.connect_sets_list,1)>0
+    switch x.connect_sets_color_mode
         case 'first'
-            x.connect_colors=x.set_colors(x.connect_sets(:,1));
+            x.connect_sets_colors=x.set_colors(x.connect_sets_list(:,1));
         case 'last'
-            x.connect_colors=x.set_colors(x.connect_sets(:,2));
+            x.connect_sets_colors=x.set_colors(x.connect_sets_list(:,2));
         case 'split'
-            x.connect_colors=[x.set_colors(x.connect_sets(:,1)),x.set_colors(x.connect_sets(:,2))];
+            x.connect_sets_colors=[x.set_colors(x.connect_sets_list(:,1)),x.set_colors(x.connect_sets_list(:,2))];
         case 'list'
         otherwise
-            wmsg=sprintf('connect color mode (%s) not recognized, connections ignored',x.connect_method);
-            x.connect_sets=[];
+            wmsg=sprintf('connect color mode (%s) not recognized, connections ignored',x.connect_sets_method);
+            x.connect_sets_list=[];
             wmsg_all=strvcat(wmsg_all,wmsg);
     end
 else
-    x.connect_sets=[];
+    x.connect_sets_list=[];
 end
 %
 ngroups=size(x.coord_groups,1);
@@ -270,8 +270,8 @@ if aux_out.warn_bad==0
     connect_styles.colors={'k'};
     connect_styles.markers={'none'};
     connect_styles.markersizes=8;
-    connect_styles.linestyles=x.connect_linestyles;
-    connect_styles.linewidths=x.connect_linewidths;
+    connect_styles.linestyles=x.connect_sets_linestyles;
+    connect_styles.linewidths=x.connect_sets_linewidths;
     %
     if isempty(x.fig_handle)
         x.fig_handle=figure;
@@ -314,22 +314,22 @@ if aux_out.warn_bad==0
             view(x.axis_view{index_view});
         end
         %connections between sets
-        for ic=1:size(x.connect_sets,1)
-            cset=x.connect_sets(ic,:);
+        for ic=1:size(x.connect_sets_list,1)
+            cset=x.connect_sets_list(ic,:);
             if all(ismember(cset,x.set_select))
                 endpoints=cat(3,...
                     data_in.ds{cset(1)}{x.dim_select}(:,x.coord_groups(igp,:)),...
                     data_in.ds{cset(2)}{x.dim_select}(:,x.coord_groups(igp,:)));
                 midpoints=mean(endpoints,3);
-                if ~strcmp(x.connect_color_mode,'split')
-                    connect_styles.colors=x.connect_colors;
+                if ~strcmp(x.connect_sets_color_mode,'split')
+                    connect_styles.colors=x.connect_sets_colors;
                     for istim=1:min(nstims_each)
                         hconnect=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_styles);
                     end
                 else
                     for istim=1:min(nstims_each)
                         for iseg=1:2
-                            hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_styles,'colors',x.connect_colors(:,iseg)));
+                            hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_styles,'colors',x.connect_sets_colors(:,iseg)));
                         end %each segment
                     end %each stimulus
                 end %split or not
