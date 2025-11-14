@@ -138,6 +138,7 @@ for iscale=1:ncols
     else
         opts_disp_conn.if_legend=1;
     end
+    opts_disp_conn.data_label_setsel_method='last'; %label just the consensus
     opts_disp_conn.fig_handle=hfig;
     opts_disp_conn.axis_handles{1}=subplot(2,ncols,iscale);
     opts_disp_conn.axis_handles{2}=subplot(2,ncols,iscale+ncols);
@@ -173,4 +174,7 @@ opts_disp2.axis_scales=3*[-1 2;-2 3;-4 5;-5 6;-6 7];
 opts_disp2.axis_scale='list';
 opts_disp2.legend_font_size=6;
 opts_disp2.legend_location='SouthEast';
+opts_disp2.data_label_method='list';
+opts_disp2.data_label_list=[1 28 37]; %label three points
+opts_disp2.data_label_setsel_method='all'; %label all datasets
 aux_out_custm=rs_disp_coordsets(data_components,setfield(aux_nocust,'opts_disp',opts_disp2));
