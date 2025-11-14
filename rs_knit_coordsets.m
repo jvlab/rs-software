@@ -286,7 +286,7 @@ if aux_out.warn_bad==0
     sets_knitted.dim_list=dim_list_all;
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
-        sets_knitted.(fn)=[];
+        sets_knitted.(fn)=''; % was []
         for iset=1:nsets
             if isfield(data_in.sets{iset},fn)
                 sets_knitted.(fn)=cat(2,sets_knitted.(fn),data_in.sets{iset}.(fn),'+');
