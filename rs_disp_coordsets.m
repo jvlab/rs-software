@@ -43,12 +43,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
 %      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
 %
+%   set_labels: labels for each dataset in legend, defaults to 'set 1', etc.
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
-%   set_linestyles: line styles assigned to each set, defaults to {'none'} (disconnected)
-%   set_linewidths: line widths assigned to each set, defaults to 1
-%   set_labels: labels for each dataset, defaults to 'set 1', etc.
+%   connect_data_linestyles: line styles assigned to connections within each set, defaults to {'none'} (disconnected)
+%   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
 %
 %   connect_sets_method: 'none' (default), or any of the following: which pairs of datasets to connect
 %      'all'-> all pairs, 'star' or 'star_first': all connect to 1; 'star_last': all connect to last set;
@@ -62,7 +62,10 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   if_box: 1 (default) to include a box in a 3d plot
 %   if_grid: 1 (default) to include the grid
-%
+%   if_legend: 1 (default) to include legend, 0 to omit, -1 to omit from all subplots but to add an extra
+%     subplot mathcing the first, with a legend
+%   legend_font_size: defaults to axis_font_size
+%   legend_location: defaults to 'Best'
 %   if_warn: 1 to display warnings
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
@@ -75,17 +78,17 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% legend options (font size, where to position, which subplots)
-% connections within a set
+% connections within a set -- this should use connect_data_method,
+% connect_data_linestyles, connect_data_linewidth
 % labeling of points
 % rays, i.e., choice of markers or colors depending on btc_coords, etc
-% tetrahedral/bary centric plots
+% tetrahedral/barycentric plots
 %
 if (nargin<=1)
     aux=struct;
 end
 %fields that will be made into cells if singletons
-make_cell={'set_colors','set_markers','set_linestyles','set_labels','axis_view','connect_sets_linestyles','connect_sets_colors'};
+make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','axis_view','connect_sets_linestyles','connect_sets_colors'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default\
 xyzlim={'XLim','YLim','ZLim'};
@@ -130,8 +133,9 @@ aux.opts_disp=filldefault(aux.opts_disp,'fig_name',sprintf('dimension %2.0f',aux
 aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
-aux.opts_disp=filldefault(aux.opts_disp,'set_linestyles',{'none'});
-aux.opts_disp=filldefault(aux.opts_disp,'set_linewidths',1);
+%
+aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linestyles',{'none'});
+aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linewidths',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_method','none');
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_list',[]);
@@ -142,10 +146,13 @@ aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_colors',[]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
+aux.opts_disp=filldefault(aux.opts_disp,'if_legend',1);
+aux.opts_disp=filldefault(aux.opts_disp,'legend_location','Best');
 %
 aux=rs_aux_customize(aux,'rs_disp_coordsets');
-%quantities dependent omn overall defaults
+%quantities dependent on overall defaults
 aux.opts_disp=filldefault(aux.opts_disp,'axis_label_font_size',aux.opts_disp.axis_font_size);
+aux.opts_disp=filldefault(aux.opts_disp,'legend_font_size',aux.opts_disp.axis_font_size);
 %
 wmsg_all=[];
 %
@@ -241,10 +248,14 @@ else
 end
 %
 ngroups=size(x.coord_groups,1);
+ngroups_aug=ngroups;
+if x.if_legend==-1
+    ngroups_aug=ngroups+1;
+end
 %
 naxis_handles=length(x.axis_handles);
-if naxis_handles>0 & naxis_handles~=ngroups
-    wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of groups (%3.0f)',naxis_handles,ngroups);
+if naxis_handles>0 & naxis_handles~=ngroups_aug
+    wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of axes needed (%3.0f)',naxis_handles,ngroups_aug);
     wmsg_all=strvcat(wmsg_all,wmsg);
     aux_out.warn_bad=aux_out.warn_bad+1;
 end
@@ -263,15 +274,22 @@ if aux_out.warn_bad==0
     set_styles.colors=x.set_colors;
     set_styles.markers=x.set_markers;
     set_styles.markersizes=x.set_markersizes;
-    set_styles.linestyles=x.set_linestyles;
-    set_styles.linewidths=x.set_linewidths;
+    set_styles.linestyles={'none'};
+    set_styles.linewidths=1;
     %
-    connect_styles=struct;
-    connect_styles.colors={'k'};
-    connect_styles.markers={'none'};
-    connect_styles.markersizes=8;
-    connect_styles.linestyles=x.connect_sets_linestyles;
-    connect_styles.linewidths=x.connect_sets_linewidths;
+    connect_data_styles=struct;
+    connect_data_styles.colors=x.set_colors;
+    connect_data_styles.markers={'none'};
+    connect_data_styles.markersizes=8;
+    connect_data_styles.linestyles=x.connect_data_linestyles;
+    connect_data_styles.linewidths=x.connect_data_linewidths;
+    %
+    connect_set_styles=struct;
+    connect_set_styles.colors={'k'};
+    connect_set_styles.markers={'none'};
+    connect_set_styles.markersizes=8;
+    connect_set_styles.linestyles=x.connect_sets_linestyles;
+    connect_set_styles.linewidths=x.connect_sets_linewidths;
     %
     if isempty(x.fig_handle)
         x.fig_handle=figure;
@@ -283,18 +301,19 @@ if aux_out.warn_bad==0
     end
     if naxis_handles==0
         fig_posit=get(gcf,'Position');
-        [nrows,ncols]=nicesubp(ngroups,fig_posit(4)/fig_posit(3)); %find an arrangement of rows and columns that fits the aspect ratio
-        for igp=1:ngroups
+        [nrows,ncols]=nicesubp(ngroups_aug,fig_posit(4)/fig_posit(3)); %find an arrangement of rows and columns that fits the aspect ratio
+        for igp=1:ngroups_aug
             x.axis_handles{igp}=subplot(nrows,ncols,igp);
         end
     end
-    for igp=1:ngroups
- %       haxis=subplot(nrows,ncols,igp);
-        haxis=x.axis_handles{igp};
+    for igp_aug=1:ngroups_aug
+        haxis=x.axis_handles{igp_aug};
+        igp=mod(igp_aug-1,ngroups)+1; %if igp_aug=ngroup+1 (if_legend=-1) then igp=1 but it is plotted in a new subplot
         subplot(haxis);
         set(gca,'FontSize',x.axis_font_size);
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
+            %plot with no line, later connect
             hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,set_styles);
             set(hline,'Tag',sprintf('ds %2.0f',k));
             set(hline,'DisplayName',x.set_labels{k});
@@ -322,14 +341,14 @@ if aux_out.warn_bad==0
                     data_in.ds{cset(2)}{x.dim_select}(:,x.coord_groups(igp,:)));
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
-                    connect_styles.colors=x.connect_sets_colors;
+                    connect_set_styles.colors=x.connect_sets_colors;
                     for istim=1:min(nstims_each)
-                        hconnect=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_styles);
+                        hconnect=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_set_styles);
                     end
                 else
                     for istim=1:min(nstims_each)
                         for iseg=1:2
-                            hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_styles,'colors',x.connect_sets_colors(:,iseg)));
+                            hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_set_styles,'colors',x.connect_sets_colors(:,iseg)));
                         end %each segment
                     end %each stimulus
                 end %split or not
@@ -363,9 +382,18 @@ if aux_out.warn_bad==0
                 end
         end
         %legend
-        hc=get(haxis,'Children');
-        hc_keeps=psg_legend_keep(hc);
-        legend(hc(flipud(hc_keeps.ds)));  %flipud since children appear to be added in reverse order
+        if (x.if_legend==1)
+            need_legend=1;
+        elseif (x.if_legend==-1)
+            need_legend=(igp_aug==ngroups_aug);
+        else
+            need_legend=0;
+        end
+        if need_legend
+            hc=get(haxis,'Children');
+            hc_keeps=psg_legend_keep(hc);
+            legend(hc(flipud(hc_keeps.ds)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+        end
     end
 end
 % options from psg_plotcoords 
