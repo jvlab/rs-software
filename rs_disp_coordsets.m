@@ -50,10 +50,10 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_linewidths: line widths assigned to each set, defaults to 1
 %   set_labels: labels for each dataset, defaults to 'set 1', etc.
 %
-%   connect_method: 'none','all','circuit','star','list': which pairs of datasets to connect
-%      defaults to 'none'; 'all'-> all pairs, 'star' or 'star_first': all connect to 1;
-%      'star_last': all connect to last set; 'circuit' connects [1 2],[2 3],[3 4],...[nsets 1];
-%      list: uses connect_sets
+%   connect_method: 'none' (default), or any of the following: which pairs of datasets to connect
+%      'all'-> all pairs, 'star' or 'star_first': all connect to 1; 'star_last': all connect to last set;
+%      'chain' connects [1 2],[2 3],[3 4],...[nsets-1 nsets]; 'circuit' connects [1 2],[2 3],[3 4],...[nsets 1]
+%      'list': pairs listed in connect_sets as a two-column array
 %   connect_color_mode: 'first','last','split' (default),'list': how connection line is colored
 %      %first uses first set of connection pair, last uses last set of
 %      %pair, split uses half of each, list expects a list in connect_colors (cycled through if necessary)
@@ -207,6 +207,8 @@ switch x.connect_method
         x.connect_sets=[];
     case 'all'
         x.connect_sets=nchoosek([1:nsets],2);
+    case 'chain'
+        x.connect_sets=1+mod([[0:nsets-2];[1:nsets-1]],nsets)';
     case 'circuit'
         x.connect_sets=1+mod([[0:nsets-1];[1:nsets]],nsets)';
     case {'star','star_first'}
@@ -385,12 +387,10 @@ if aux_out.warn_bad==0
         %legend
         hc=get(haxis,'Children');
         hc_keeps=psg_legend_keep(hc);
-        legend(hc(hc_keeps.ds));
+        legend(hc(flipud(hc_keeps.ds)));  %flipud since children appear to be added in reverse order
     end
-
 end
 % options from psg_plotcoords 
-% opts=filldefault(opts,'line_width',1); %0 to omit lines
 % opts=filldefault(opts,'line_width_ring',1);
 % opts=filldefault(opts,'line_type',[]); %line type
 % opts=filldefault(opts,'line_type_connect_neg','--'); %line type for negative directions for connections
@@ -404,13 +404,11 @@ end
 % opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
 % opts=filldefault(opts,'color_ring',[0 0 0]);
 % opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
-
 %
 %labels
-%connections withn and between sets
+%connections within sets
 %legends
 %figure label on figure
-%view
 %
 aux_out.opts_disp=x;
 return
