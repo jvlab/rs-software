@@ -1,10 +1,7 @@
 % rs_disp_coordsets_demo: demonstrate display of datasets
+% with several customizations, with and without rotating to consensus
 %
 %  See also:  RS_DISP_COORDSETS.
-%
-%
-%totally un-customized version
-%
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nfiles=length(filenames);
@@ -29,6 +26,12 @@ aux_knit_scale=struct;
 aux_knit_scale.opts_knit.allow_scale=1;
 [data_consensus_scale,aux_knit_scale]=rs_knit_coordsets(data_read,aux_knit_scale);
 data_components_scale=aux_knit_scale.components;
+%
+aux_knit_normscale=struct;
+aux_knit_normscale.opts_knit.allow_scale=1;
+aux_knit_normscale.opts_knit.if_normscale=1;
+[data_consensus_normscale,aux_knit_normscale]=rs_knit_coordsets(data_read,aux_knit_normscale);
+data_components_normscale=aux_knit_normscale.components;
 %
 %plots with 2-d projection and 3-d projections of a 5-d model
 %
@@ -72,7 +75,7 @@ set(hfig,'Position',[100 100 1400 800]);
 set(hfig,'Name','comparison, 3 dims');
 set(hfig,'NumberTitle','off');
 %
-ncols=3; %eventually, noscale, scale, scale and restore
+ncols=3; %noscale, scale, scale and normalize
 %
 for iscale=1:ncols
     switch iscale
@@ -80,10 +83,14 @@ for iscale=1:ncols
             data_all=data_components;
             data_c=data_consensus;
             subtitle='no scaling';
-        case {2,3}
+        case 2
             data_all=data_components_scale;
             data_c=data_consensus_scale;
             subtitle='scaling';
+        case 3
+            data_all=data_components_normscale;
+            data_c=data_consensus_normscale;
+            subtitle='scaling, normalized';
     end
     data_all.ds{nfiles+1}=data_c.ds{1};
     data_all.sas{nfiles+1}=data_c.sas{1};
@@ -108,10 +115,14 @@ for isub=1:ncols
             data_all=data_components;
             data_c=data_consensus;
             subtitle='no scaling';
-        case {2,3}
+        case 2
             data_all=data_components_scale;
             data_c=data_consensus_scale;
             subtitle='scaling';
+        case 3
+            data_all=data_components_normscale;
+            data_c=data_consensus_normscale;
+            subtitle='scaling, normalized';
     end
     data_all.ds{nfiles+1}=data_c.ds{1};
     data_all.sas{nfiles+1}=data_c.sas{1};
