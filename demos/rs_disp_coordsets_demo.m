@@ -47,6 +47,9 @@ for igroup=1:length(group_size_list)
     if opts_disp.coord_group_size==2
         opts_disp.axis_scale='auto';
     end
+    if opts_disp.coord_group_size==3
+        opts_disp.if_legend=-1;
+    end
     for imethod=1:length(coord_group_methods)
         opts_disp.coord_group_method=coord_group_methods{imethod};
         opts_disp.fig_name=sprintf('consensus dim %2.0f: coords in groups of %2.0f (method: %s)',opts_disp.dim_select,opts_disp.coord_group_size,opts_disp.coord_group_method);
@@ -68,14 +71,13 @@ opts_disp_conn.set_markers=cellstr(strvcat(repmat('.',nfiles,1),'x'))'; %consens
 opts_disp_conn.connect_sets_method='star_last';
 opts_disp_conn.connect_sets_color_mode='split';
 %
+ncols=3; %noscale, scale, scale and normalize
 %3-d coord sets
 hfig=figure;
 opts_disp_conn.dim_select=3;
 set(hfig,'Position',[100 100 1400 800]);
 set(hfig,'Name','comparison, 3 dims');
 set(hfig,'NumberTitle','off');
-%
-ncols=3; %noscale, scale, scale and normalize
 %
 for iscale=1:ncols
     switch iscale
@@ -95,6 +97,11 @@ for iscale=1:ncols
     data_all.ds{nfiles+1}=data_c.ds{1};
     data_all.sas{nfiles+1}=data_c.sas{1};
     data_all.sets{nfiles+1}=data_c.sets{1};
+    if iscale==2
+        opts_disp_conn.if_legend=0; %show with legend suppressed
+    else
+        opts_disp_conn.if_legend=1;
+    end
     opts_disp_conn.fig_handle=hfig;
     opts_disp_conn.axis_handles{1}=subplot(1,ncols,iscale);
     aux_out_conn=rs_disp_coordsets(data_all,setfield(aux_nocust,'opts_disp',opts_disp_conn));
@@ -108,9 +115,8 @@ opts_disp_conn.dim_select=4;
 set(hfig,'Position',[100 100 1400 800]);
 set(hfig,'Name','comparison, 4 dims');
 set(hfig,'NumberTitle','off');
-ncols=3; %third col for scaled, and restore 
-for isub=1:ncols
-    switch isub
+for iscale=1:ncols
+    switch iscale
         case 1
             data_all=data_components;
             data_c=data_consensus;
@@ -127,13 +133,18 @@ for isub=1:ncols
     data_all.ds{nfiles+1}=data_c.ds{1};
     data_all.sas{nfiles+1}=data_c.sas{1};
     data_all.sets{nfiles+1}=data_c.sets{1};
+    if iscale==2
+        opts_disp_conn.if_legend=0; %show with legend suppressed
+    else
+        opts_disp_conn.if_legend=1;
+    end
     opts_disp_conn.fig_handle=hfig;
-    opts_disp_conn.axis_handles{1}=subplot(2,ncols,isub);
-    opts_disp_conn.axis_handles{2}=subplot(2,ncols,isub+ncols);
+    opts_disp_conn.axis_handles{1}=subplot(2,ncols,iscale);
+    opts_disp_conn.axis_handles{2}=subplot(2,ncols,iscale+ncols);
     opts_disp_conn.coord_group_method='list';
     opts_disp_conn.coord_groups=[[1 2 3];[1 2 4]];
     aux_out_conn=rs_disp_coordsets(data_all,setfield(aux_nocust,'opts_disp',opts_disp_conn));
-    subplot(2,ncols,isub);
+    subplot(2,ncols,iscale);
     title(subtitle);
 end
 %
@@ -150,9 +161,9 @@ opts_disp2.axis_label_prefix='d';
 opts_disp2.set_colors={'g',[.5 .5 0],[.5 0 .7],[.8 .2 .1]};
 opts_disp2.set_markers={'*','o','x','.'};
 opts_disp2.set_markersizes=[7 8 9 10];
-opts_disp2.set_linestyles={':','-',':','--'};
-opts_disp2.set_linewidths=[2 1 1]; %will cycle
 opts_disp2.set_labels={'s1','s2','s3','s4'};
+opts_disp2.connect_set_linestyles={':','-',':','--'};
+opts_disp2.connect_set_linewidths=[2 1 1]; %will cycle
 opts_disp2.coord_group_size=3;
 opts_disp2.coord_group_method='list';
 opts_disp2.coord_groups=[[1 2 3];[1 2 3];[1 2 3];[1 2 3];[1 2 3];[1 2 3];[2 3 4];[1 2 5]];
@@ -160,4 +171,6 @@ opts_disp2.if_box=0;
 opts_disp2.axis_view={3,[-37.5 30],[-47.5 30],[-27.5 30],[-37.5 10],2,3,3};
 opts_disp2.axis_scales=3*[-1 2;-2 3;-4 5;-5 6;-6 7];
 opts_disp2.axis_scale='list';
+opts_disp2.legend_font_size=6;
+opts_disp2.legend_location='SouthEast';
 aux_out_custm=rs_disp_coordsets(data_components,setfield(aux_nocust,'opts_disp',opts_disp2));
