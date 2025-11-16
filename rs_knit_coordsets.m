@@ -289,7 +289,7 @@ if aux_out.warn_bad==0
         sets_knitted.(fn)=''; % was []
         for iset=1:nsets
             if isfield(data_in.sets{iset},fn)
-                sets_knitted.(fn)=cat(2,sets_knitted.(fn),data_in.sets{iset}.(fn),'+');
+                sets_knitted.(fn)=cat(2,sets_knitted.(fn),char(data_in.sets{iset}.(fn)),'+');
             end
         end
         if length(sets_knitted.(fn))>1
