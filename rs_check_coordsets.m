@@ -9,6 +9,7 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 % opts: options
 %    opts.if_warn: defaults to 0, 1 to display warnings
+%    opts.if_checkorder: defaults to 1, if set, the order of the entries in typenames must match
 %    opts.set_num_offset: number to add to set number in warnings
 %
 % check: a structure with  fields:
@@ -31,6 +32,7 @@ if (nargin<=1)
     opts=struct;
 end
 opts=filldefault(opts,'if_warn',0);
+opts=filldefault(opts,'if_checkorder',1);
 opts=filldefault(opts,'set_num_offset',0);
 opts_used=opts;
 check=struct;
@@ -109,7 +111,6 @@ for iset=1:nsets
             check.warnings=strvcat(check.warnings,wmsg);
             check.warn_bad=check.warn_bad+1;
         end
-
     end
 end
 %check that number of stimuli are consistent across datasets
@@ -131,7 +132,25 @@ if length(typenames_inter)~=length(typenames_union)
     end
     check.warnings=strvcat(check.warnings,wmsg);
     check.warn_bad=check.warn_bad+1;
-end
+else %only check order of typenames if they have same length and match in some order
+    if opts.if_checkorder
+        if_order=1;
+        for iset=1:nsets-1
+            if any(~strcmp(typenames_each{iset},typenames_each{iset+1}))
+                if_order=0;
+            end
+        end
+        if if_order==0
+            wmsg=sprintf('stimulus orders do not agree across datasets');
+            if opts.if_warn
+                warning(wmsg);
+                check.warn_bad=check.warn_bad+1;
+            end
+            check.warnings=strvcat(check.warnings,wmsg);
+            check.warn_bad=check.warn_bad+1;
+        end
+    end
+end %same stimulus names,independent of order?
 if length(dim_list_union)~=length(dim_list_inter)
     wmsg=sprintf('dimension lists do not agree across datasets'); %this is OK, process the intersection
     if opts.if_warn

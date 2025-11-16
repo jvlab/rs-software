@@ -160,6 +160,7 @@ if aux_out.warn_bad==0
     %
 else
     disp('cannot proceed');
+    disp(aux_out.warnings);
 end
 return
 end

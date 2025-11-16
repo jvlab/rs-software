@@ -261,6 +261,7 @@ if aux_out.warn_bad==0
     end %each set
 else
     disp('cannot proceed');
+    disp(aux_out.warnings);
 end
 return
 end
