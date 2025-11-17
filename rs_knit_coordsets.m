@@ -147,10 +147,7 @@ if aux.opts_knit.if_log
     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
 end
 if any(all(coords_isnan,2))
-    wmsg=sprintf('one or more stimuli never appear');
-    warning(wmsg);
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
 %if aux.sa_pooled is present, use it, otherwise, re=create
@@ -175,7 +172,7 @@ else
 end
 if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
     wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
-    aux_out.warn_bad=aux_out.warn_bad+1;
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
     disp('discrepancies')
     disp(setdiff(typenames_union,sa_pooled.typenames));
 end
@@ -189,7 +186,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'dim_aug',0);
 aux.opts_knit=filldefault(aux.opts_knit,'dim_list_out',aux.opts_knit.dim_aug+aux.opts_knit.dim_list_in);
 if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
     wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
-    aux_out.warn_bad=aux_out.warn_bad+1;
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 else
     if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
     aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
@@ -226,6 +223,10 @@ if aux_out.warn_bad==0
     [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
     if ~isempty(warnings)
         wmsg=strvcat(wmsg,warnings);
+        warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
+        for k=1:size(warnings,1)
+            disp(cat(2,warn_leadin,warnings(k,:)));
+        end
     end
     ds_knitted=ra.ds_knitted;
     ds_components=ra.ds_components;
@@ -303,9 +304,7 @@ if aux_out.warn_bad==0
     %find rays
     [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
     if ~isempty(wmsg)
-        wmsg=cat(2,sprintf('set %2.0f: ',iset),wmsg);
-        warning(wmsg);
-        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
     end
     %
     % %pipeline for component sets

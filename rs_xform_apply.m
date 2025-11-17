@@ -75,10 +75,7 @@ typenames_inter=check.typenames_inter;
 nsets_xform=length(xforms.ts);
 if (nsets_xform~=nsets) & (nsets_xform~=1)
     wmsg=sprintf('number of transform sets specified (%2.0f) differs from number of datasets (%2.0f)',nsets_xform,nsets);
-    if aux.opts_xform.if_warn
-        warning(wmsg);
-    end
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_xform.if_warn));
 end
 data_out.ds=cell(1,nsets);
 data_out.sas=cell(1,nsets);

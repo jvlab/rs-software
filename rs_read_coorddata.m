@@ -116,8 +116,7 @@ if aux.opts_read.if_justsetup==0
     %
     [rays,wmsg,opts_rays_used]=rs_findrays(sa,opts_read_used.setup_fullname,aux.opts_rays);
     if ~isempty(wmsg)
-        warning(wmsg);
-        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+        aux_out=rs_warning(wmsg,0,aux_out);
     end
 else
     setup_fullname=fullname;
@@ -141,7 +140,10 @@ aux_out.syms_list=struct();
 check=rs_check_coordsets(data_out,aux.opts_check);
 if ~isempty(check.warnings) %since strvcat([],[])~=[]
     aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
-    disp(check.warnings);
+    warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
+    for k=1:size(aux_out.warnings,1)
+        disp(cat(2,warn_leadin,aux_out.warnings(k,:)));
+    end
 end
 aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
 return

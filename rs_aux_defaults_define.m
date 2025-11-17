@@ -1,12 +1,16 @@
 %rs_aux_defaults_define
-%define the defaults for auxiliary parameters
-%This file is appropriate for binary texture data.
-% 
-%output should be saved as rs_aux_defaults.mat
+%This script defines the defaults for auxiliary parameters.
+%It should be run once in a clean workspace, and the resulting workspace saved as rs_aux_defaults.mat.
+%It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
+%
+%Values below are appropriate for binary texture data.
+%
+overall=struct;
+overall.warn_leadin='##### rs_warning: ';
 %
 generic=struct; %subfields will be applied to auxiliary parameters for all function calls
 %
-generic.opts_read.if_debug=0; %1 to enable debugging
+generic.opts_read.if_debug=0; %1 to enable debugging specifically in 
 generic.opts_read.if_uselocal=0; %1 to enable psg_localopts to define local options
 generic.opts_read.if_gui=1; %1 to use gui, 0 not
 %

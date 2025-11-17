@@ -81,9 +81,12 @@ for iset=1:nsets
     data_check.sas{1}=data_in.sas{iset};
     data_check.sets{1}=data_in.sets{iset};
     check=rs_check_coordsets(data_check,setfield(aux.opts_check,'set_num_offset',iset-1));
-    if ~isempty(check.warnings) %since strvcat([],[])~=[]
+    if ~isempty(check.warnings) %since strvcat([],[])~=[]       
         aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
-        disp(check.warnings);
+        warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
+        for k=1:size(aux_out.warnings,1)
+            disp(cat(2,warn_leadin,aux_out.warnings(k,:)));
+        end
     end
     aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
 end
@@ -124,9 +127,7 @@ for iset=1:nsets
 end
 if paradigm_match==0
     wmsg=sprintf('paradigm types disagree');
-    warning(wmsg);
-    aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
     if aux.opts_align.if_log
         disp([types paradigm_types])
     end
@@ -142,9 +143,7 @@ if aux_out.warn_bad==0
     for iset=1:nsets
         [rays,wmsg,opts_rays_used]=rs_findrays(sas_align{iset},sets_align{iset}.label,aux.opts_rays);
         if ~isempty(wmsg)
-            wmsg=cat(2,sprintf('set %2.0f: ',iset),wmsg);
-            warning(wmsg);
-            aux_out.warnings=strvcat(aux_out.warnings,wmsg);
+            aux_out=rs_warning(wmsg,0,aux_out);
         end
         aux_out.opts_rays{iset}=opts_rays_used;
         aux_out.rayss{iset}=rays;

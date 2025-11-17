@@ -109,16 +109,12 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
     end       
     if nsets_named~=nsets
         wmsg=sprintf('number of files listed (%3.0f) disagrees with number of files specified (%3.0f)',nsets_named,nsets);
-        warning(wmsg);
-        aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-        aux_out.warn_bad=aux_out.warn_bad+1;
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
     end
     for iset=1:nsets_named
         if ~contains(fullnames{iset},aux.opts_read.coord_string)
             wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames{iset},aux.opts_read.coord_string);
-            warning(wmsg);
-            aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-            aux_out.warn_bad=aux_out.warn_bad+1;
+            aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
         end
     end
     %attempt to read automatically
@@ -153,14 +149,20 @@ if aux_out.warn_bad==0
         check=rs_check_coordsets(data_check,setfield(aux.opts_check,'set_num_offset',iset-1));
         if ~isempty(check.warnings) %since strvcat([],[])~=[]
             aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
-            disp(check.warnings);
+            warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
+            for k=1:size(check.warnings,1)
+                disp(cat(2,warn_leadin,check.warnings(k,:)));
+            end
         end
         aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
     end
     %
 else
     disp('cannot proceed');
-    disp(aux_out.warnings);
+    warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
+    for k=1:size(aux_out.warnings,1)
+        disp(cat(2,warn_leadin,aux_out.warnings(k,:)));
+    end
 end
 return
 end

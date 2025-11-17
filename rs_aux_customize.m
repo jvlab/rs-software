@@ -34,4 +34,7 @@ for ifn=1:length(aux_fields)
     end %default values to fill
 end %fields of aux
 aux_out=aux;
+if isfield(s,'overall')
+    aux_out.overall=s.overall;
+end
 return

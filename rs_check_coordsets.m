@@ -48,19 +48,11 @@ typenames_union=[];
 %check that ds, sas, sets is consistent
 if length(data_in.sas)~=nsets
     wmsg=sprintf('number of entries in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sas),nsets);
-    if opts.if_warn
-        warning(wmsg);
-    end
-    check.warnings=strvcat(check.warnings,wmsg);
-    check.warn_bad=check.warn_bad+1;
+    check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
 if length(data_in.sets)~=nsets
     wmsg=sprintf('number of entries in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sets),nsets);
-    if opts.if_warn
-        warning(wmsg);
-    end
-    check.warnings=strvcat(check.warnings,wmsg);
-    check.warn_bad=check.warn_bad+1;
+    check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
 %check that number of stimuli is internally consistent
 for iset=1:nsets
@@ -68,19 +60,11 @@ for iset=1:nsets
     typenames_each{iset}=data_in.sas{iset}.typenames;
     if nstims_each(iset)~=data_in.sas{iset}.nstims
         wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and sas (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),data_in.sas{iset}.nstims);
-        if opts.if_warn
-            warning(wmsg);
-        end
-        check.warnings=strvcat(check.warnings,wmsg);
-        check.warn_bad=check.warn_bad+1;
+        check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     if nstims_each(iset)~=length(typenames_each{iset})
         wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),length(typenames_each{iset}));
-        if opts.if_warn
-            warning(wmsg);
-        end
-        check.warnings=strvcat(check.warnings,wmsg);
-        check.warn_bad=check.warn_bad+1;
+        check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     dim_list_each{iset}=data_in.sets{iset}.dim_list;
     if iset==1
@@ -97,41 +81,23 @@ for iset=1:nsets
         coords=data_in.ds{iset}{idim};
         if size(coords,1)~=nstims_each(iset)
             wmsg=sprintf('number of stimuli in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
-            if opts.if_warn
-                warning(wmsg);
-            end
-            check.warnings=strvcat(check.warnings,wmsg);
-            check.warn_bad=check.warn_bad+1;
+            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
         end
         if size(coords,2)~=idim
             wmsg=sprintf('number of dimensions in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
-            if opts.if_warn
-                warning(wmsg);
-            end
-            check.warnings=strvcat(check.warnings,wmsg);
-            check.warn_bad=check.warn_bad+1;
+            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
         end
     end
 end
 %check that number of stimuli are consistent across datasets
 if min(nstims_each)~=max(nstims_each)
     wmsg=sprintf('number of stimuli do not agree across datasets (min: %3.0f, max: %3.0f)',min(nstims_each),max(nstims_each));
-    if opts.if_warn
-        warning(wmsg);
-    end
-    check.warnings=strvcat(check.warnings,wmsg);
-    check.warn_bad=check.warn_bad+1;
+    check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
 %check that stimulus names are consistent across datasets
 if length(typenames_inter)~=length(typenames_union)
     wmsg=sprintf('stimulus names do not agree across datasets');
-    if opts.if_warn
-        warning(wmsg);
-        disp('discrepancies')
-        disp(setdiff(typenames_union,typenames_inter));
-    end
-    check.warnings=strvcat(check.warnings,wmsg);
-    check.warn_bad=check.warn_bad+1;
+    check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 else %only check order of typenames if they have same length and match in some order
     if opts.if_checkorder
         if_order=1;
@@ -142,23 +108,17 @@ else %only check order of typenames if they have same length and match in some o
         end
         if if_order==0
             wmsg=sprintf('stimulus orders do not agree across datasets');
-            if opts.if_warn
-                warning(wmsg);
-                check.warn_bad=check.warn_bad+1;
-            end
-            check.warnings=strvcat(check.warnings,wmsg);
-            check.warn_bad=check.warn_bad+1;
+            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
         end
     end
 end %same stimulus names,independent of order?
 if length(dim_list_union)~=length(dim_list_inter)
-    wmsg=sprintf('dimension lists do not agree across datasets'); %this is OK, process the intersection
+    wmsg=sprintf('dimension lists do not agree across datasets'); %this is not severe, process the intersection
     if opts.if_warn
-        warning(wmsg);
+        check=rs_warning(wmsg,0,setfield(check,'if_warn',opts.if_warn));
         disp('discrepancies')
         disp(setdiff(dim_list_union,dim_list_inter));
     end
-    check.warnings=strvcat(check.warnings,wmsg);
 end
 check.nsets=nsets;
 check.nstims_each=nstims_each;

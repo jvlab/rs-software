@@ -180,12 +180,10 @@ aux.opts_disp=filldefault(aux.opts_disp,'axis_label_font_size',aux.opts_disp.axi
 aux.opts_disp=filldefault(aux.opts_disp,'legend_font_size',aux.opts_disp.axis_font_size);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_font_size',aux.opts_disp.axis_font_size);
 %
-wmsg_all=[];
-%
 %set up other defaults and check consistency
 %
 x=aux.opts_disp; %for convenience
-switch x.coord_group_method %dertermine coordinate groups
+switch x.coord_group_method %determine coordinate groups
     case 'all'
         x.coord_groups=nchoosek([1:x.dim_select],x.coord_group_size);
     case 'keeplow'
@@ -201,22 +199,19 @@ switch x.coord_group_method %dertermine coordinate groups
     otherwise
         wmsg=sprintf('grouping method (%s) not recognized; only lowest coords shown',x.coord_group_method);
         x.coord_groups=[1:x.coord_group_size];
-        wmsg_all=strvcat(wmsg_all,wmsg);
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 if x.coord_group_size~=size(x.coord_groups,2)
     wmsg=sprintf('specified coordinate group size (%3.0f) and list of coord groups is inconsistent',x.coord_group_size);
-    wmsg_all=strvcat(wmsg_all,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;  
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 if ~ismember(x.coord_group_size,coords_together_allowed)
     wmsg=sprintf('cannot plot groups of %3.0f coordinates on same axis',x.coord_group_size);
-    wmsg_all=strvcat(wmsg_all,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;  
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 if any(x.coord_groups(:)<=0) | any(x.coord_groups(:)>x.dim_select)
     wmsg=sprintf('some specified dimensions are out of bounds for the dimension plotted (%2.0f)',x.dim_select);
-    wmsg_all=strvcat(wmsg_all,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up axis scale
 switch x.axis_scale %check that it is 'tight','auto', or pairs of values
@@ -224,29 +219,29 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
     case 'list'
         if (~isnumeric(x.axis_scales) | size(x.axis_scales,2)~=2)
             wmsg=sprintf('axis scale list must have two columns; tight scaling used');
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
             x.axis_scale='tight';
             x.axis_scales=[NaN NaN];
-            wmsg_all=strvcat(wmsg_all,wmsg);
         end
     otherwise
         wmsg=sprintf('axis scale specifier (%s) not recognized, tight scaling used',x.axis_scale);
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
         x.axis_scale='tight';
         x.axis_scales=[NaN NaN];
-        wmsg_all=strvcat(wmsg_all,wmsg);
 end
 %set up data label params
 [x.data_label_list,wmsg]=rs_disp_parse_label(x.data_label_method,[1:nstims_each],x.data_label_list,'specification of data points to label');
 if ~isempty(wmsg)
-    wmsg_all=strvcat(wmsg_all,wmsg);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 [x.data_label_setsel_list,wmsg]=rs_disp_parse_label(x.data_label_setsel_method,x.set_select,x.data_label_setsel_list,'specification of sets to label');
 if ~isempty(wmsg)
-    wmsg_all=strvcat(wmsg_all,wmsg);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up params for connecting points across sets
 [x.connect_sets_list,wmsg]=rs_disp_parse_connect(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
-    wmsg_all=strvcat(wmsg_all,wmsg);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up labels
 if ~isfield(x,'set_labels')
@@ -276,7 +271,7 @@ if size(x.connect_sets_list,1)>0
         otherwise
             wmsg=sprintf('connect color mode (%s) not recognized, connections ignored',x.connect_sets_method);
             x.connect_sets_list=[];
-            wmsg_all=strvcat(wmsg_all,wmsg);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
     end
 else
     x.connect_sets_list=[];
@@ -291,17 +286,7 @@ end
 naxis_handles=length(x.axis_handles);
 if naxis_handles>0 & naxis_handles~=ngroups_aug
     wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of axes needed (%3.0f)',naxis_handles,ngroups_aug);
-    wmsg_all=strvcat(wmsg_all,wmsg);
-    aux_out.warn_bad=aux_out.warn_bad+1;
-end
-%
-aux_out.warnings=strvcat(aux_out.warnings,wmsg_all);
-if ~isempty(wmsg_all)
-    if x.if_warn
-        for k=1:size(wmsg_all,1)
-            warning(wmsg_all(k,:));
-        end
-    end
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 %
 if aux_out.warn_bad==0
