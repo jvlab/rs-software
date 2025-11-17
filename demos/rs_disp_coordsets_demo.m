@@ -16,21 +16,23 @@ aux_in.nsets=length(filenames);
 aux_nocust=struct;
 aux_out_nocust=rs_disp_coordsets(data_read,aux_nocust);
 %
-%now rotate data into a consensus, and use each component, aligned to consensus, for further plotting
+%now align and rotate data into a consensus, and use each component, aligned to consensus, for further plotting
 %
+aux_align_def=struct;
+[data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
 aux_knit_def=struct;
-[data_consensus,aux_knit]=rs_knit_coordsets(data_read,aux_knit_def);
+[data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
 data_components=aux_knit.components;
 %
 aux_knit_scale=struct;
 aux_knit_scale.opts_knit.allow_scale=1;
-[data_consensus_scale,aux_knit_scale]=rs_knit_coordsets(data_read,aux_knit_scale);
+[data_consensus_scale,aux_knit_scale]=rs_knit_coordsets(data_align,aux_knit_scale);
 data_components_scale=aux_knit_scale.components;
 %
 aux_knit_normscale=struct;
 aux_knit_normscale.opts_knit.allow_scale=1;
 aux_knit_normscale.opts_knit.if_normscale=1;
-[data_consensus_normscale,aux_knit_normscale]=rs_knit_coordsets(data_read,aux_knit_normscale);
+[data_consensus_normscale,aux_knit_normscale]=rs_knit_coordsets(data_align,aux_knit_normscale);
 data_components_normscale=aux_knit_normscale.components;
 %
 %plots with 2-d projection and 3-d projections of a 5-d model
