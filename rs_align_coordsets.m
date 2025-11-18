@@ -7,6 +7,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % * stimulus identity is determined by typenames
 % * coordinates for missing stimuli are NaN
 % * see rs_knit_coordsets for finding a consensus set of coordinates 
+% The 'type' field of data_in.sets{k} must agree, and is propagated to data_out.sets{1}
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returned by rs_get_coordsets or rs_read_coorddata
 %      sas{k}.typenames is a strvcat, and is used to determine stimulus identity
@@ -152,6 +153,7 @@ if aux_out.warn_bad==0
     data_out.ds=ds_align;
     data_out.sas=sas_align;
     data_out.sets=sets_align;
+    data_out.sets{1}.type=data_in.sets{1}.type;
     aux_out.ovlp_array=ovlp_array;
     aux_out.sa_pooled=sa_pooled;
     aux_out.opts_align=opts_align_used;

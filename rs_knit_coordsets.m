@@ -7,6 +7,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   These are typically created by rs_align_coordsets, but could also be directly from 
 %   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
 %   datasets, as listed in data_in.sas{k}.typenames
+% The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % aux.opts_knit:
 %  if_log: 1 to log progress
@@ -314,6 +315,7 @@ if aux_out.warn_bad==0
     data_out.ds{1}=ds_knitted;
     data_out.sas{1}=sas_knitted;
     data_out.sets{1}=sets_knitted;
+    data_out.sets{1}.type=data_in.sets{1}.type;
     %
     aux_out.rayss{1}=rays;
     aux_out.opts_rays{1}=opts_rays_used;

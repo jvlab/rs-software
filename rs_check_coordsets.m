@@ -78,14 +78,16 @@ for iset=1:nsets
     %check that each array of coordinates is consistent with number of stimuli and dimension
     for idim_ptr=1:length(dim_list_each{iset})
         idim=dim_list_each{iset}(idim_ptr);
-        coords=data_in.ds{iset}{idim};
-        if size(coords,1)~=nstims_each(iset)
-            wmsg=sprintf('number of stimuli in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
-            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
-        end
-        if size(coords,2)~=idim
-            wmsg=sprintf('number of dimensions in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
-            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+        if length(data_in.ds{iset})>=idim
+            coords=data_in.ds{iset}{idim};
+            if size(coords,1)~=nstims_each(iset)
+                wmsg=sprintf('number of stimuli in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
+                check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+            end
+            if size(coords,2)~=idim
+                wmsg=sprintf('number of dimensions in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
+                check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+            end
         end
     end
 end
