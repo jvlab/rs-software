@@ -168,7 +168,9 @@ else
     data_in_nonan.ds=ds_nonan;
     data_in_nonan.sas=sas_nonan;
     data_in_nonan.sets=sets_nonan;
-    [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux);
+    aux2=aux;
+    aux2.opts_align.if_log=aux.opts_knit.if_log;
+    [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux2);
     sa_pooled=aux_align.sa_pooled;
 end
 if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))

@@ -118,9 +118,11 @@ for iset=1:nsets
                 disp(sprintf(' set %3.0f: simplification attempted, %3.0f coords simplified (label: %s)',iset,length(change_list),data_in.sets{iset}.label));
             end
             if length(change_list)>0
-                for k=1:length(change_list)
-                    kch=change_list(k);
-                    disp(sprintf('%15s -> %15s',data_in.sas{iset}.typenames{kch},sas_new.typenames{kch}));
+                if aux.opts_align.if_log
+                    for k=1:length(change_list)
+                        kch=change_list(k);
+                        disp(sprintf('%15s -> %15s',data_in.sas{iset}.typenames{kch},sas_new.typenames{kch}));
+                    end
                 end
                 data_in.sas{iset}=sas_new;
             end
