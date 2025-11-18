@@ -285,7 +285,7 @@ if aux_out.warn_bad==0
     %knitted set structure
     sets_knitted=struct;
     sets_knitted.nstims=nstims_all;
-    sets_knitted.dim_list=dim_list_all;
+    sets_knitted.dim_list=intersect(dim_list_all,dim_list_in);
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=''; % was []
