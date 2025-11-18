@@ -114,7 +114,8 @@ for iset=1:nsets
             [sas_new,change_list,opts_btcremz_used]=psg_btcremz(data_in.sas{iset});
             aux_out.opts_btcremz{iset}=opts_btcremz_used;
             if aux.opts_align.if_log
-            disp(sprintf(' set %3.0f: simplification attempted, %3.0f coords simplified (label: %s)',iset,length(change_list),data_in.sets{iset}.label));
+                disp(sprintf(' set %3.0f: simplification attempted, %3.0f coords simplified (label: %s)',iset,length(change_list),data_in.sets{iset}.label));
+            end
             if length(change_list)>0
                 for k=1:length(change_list)
                     kch=change_list(k);
