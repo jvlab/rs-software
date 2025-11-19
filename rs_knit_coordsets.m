@@ -287,7 +287,7 @@ if aux_out.warn_bad==0
     %knitted set structure
     sets_knitted=struct;
     sets_knitted.nstims=nstims_all;
-    sets_knitted.dim_list=intersect(dim_list_all,dim_list_in);
+    sets_knitted.dim_list=dim_list_out;
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=''; % was []
@@ -310,9 +310,10 @@ if aux_out.warn_bad==0
         aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
     end
     %
-    % %pipeline for component sets
+    %dim list and pipeline for component sets
     for iset=1:nsets
-        data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);
+        data_in.sets{iset}.dim_list=dim_list_out;
+        data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);       
     end
     data_out.ds{1}=ds_knitted;
     data_out.sas{1}=sas_knitted;
@@ -326,7 +327,7 @@ if aux_out.warn_bad==0
     %
     aux_out.components.ds=ds_components;
     aux_out.components.sas=data_in.sas;
-    aux_out.components.sets=data_in.sets;
+    aux_out.components.sets=data_in.sets;   
     %
     if aux.opts_knit.keep_details
         aux_out.details=details;
