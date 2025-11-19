@@ -24,7 +24,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
 %  dim_aug: number of dimensions to augment by, defaults to 0
 %  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
-%    optional, if both are not supplied, they will be computed here
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -327,7 +326,7 @@ if aux_out.warn_bad==0
     %
     aux_out.components.ds=ds_components;
     aux_out.components.sas=data_in.sas;
-    aux_out.components.sets=data_in.sets;   
+    aux_out.components.sets=data_in.sets;
     %
     if aux.opts_knit.keep_details
         aux_out.details=details;
