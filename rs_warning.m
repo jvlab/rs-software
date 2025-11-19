@@ -2,8 +2,8 @@ function check_new=rs_warning(msg,if_bad,opts_check)
 % check_new=rs_warning(msg,if_bad,opts_check) produces a warning message and updates a strructure of warning tallies and messages
 % 
 % msg: a string or a strvcat of strings
-% if_bad: 1 if the warning is severe, and should hald further processing
-% opts_check: a structure
+% if_bad: 1 (default) if the warning is severe, and should hald further processing; may be omitted
+% opts_check: a structure, may be omitted
 %   opts_check.if_warn: whether to echo warnings (defaults to 1)
 %   opts_check.warnings: warnings so far, as a strvcat (defaults to []) 
 %   opts_check.warn_bad: a tally of serious warnings (defaults to 0)
@@ -11,6 +11,9 @@ function check_new=rs_warning(msg,if_bad,opts_check)
 %
 % check_new: updated opts_check structure
 %
+if (nargin<=1)
+    if_bad=1;
+end
 if (nargin<=2)
     opts_check=struct();
 end

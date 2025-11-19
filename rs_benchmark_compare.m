@@ -3,7 +3,8 @@ function [ifdif,opts_used]=rs_benchmark_compare(rs_outfile,opts)
 %
 % rs_outfile: name of file to compare, e.g., rs_aux_customize_test
 % opts: options
-%  opts.signflips{k}: a cell array of nested fieldnames pointing to variables that may have a dimension sign-flipped, defaults to empthy
+%  opts.signflips{k}: a cell array of nested fieldnames pointing to variables that may have a dimension sign-flipped, defaults to empty
+%  opts.ignore{k}: a cell array of fieldnames that should not be compared
 %  opts.flipdims: array, of same length as signflips, indicating the dimensions for flips
 %
 % ifdif: empty if contents are identical, otherwise a string describing the differences
@@ -13,7 +14,7 @@ function [ifdif,opts_used]=rs_benchmark_compare(rs_outfile,opts)
 %  opts_used.signflips{k}.[t|b]: fields that need to be compared recognizing sign-flip ambiguities
 %  opts_used.flipdims: dimensions for possible slgn flips
 %
-%   See also:  FILLDEFAULT, RMSUBFIELD, GETSUBFIELD, COMPARE_SIGNFLIP.
+%   See also:  FILLDEFAULT, RMSUBFIELD, GETSUBFIELD, COMPARE_SIGNFLIP, RS_WARNING.
 %
 if (nargin<=1)
     opts=struct;
@@ -22,6 +23,7 @@ opts=filldefault(opts,'dir_test','tests');
 opts=filldefault(opts,'dir_benchmark','benchmarks');
 opts=filldefault(opts,'if_log',1);
 opts=filldefault(opts,'signflips',cell(0));
+opts=filldefault(opts,'ignore',cell(0));
 opts=filldefault(opts,'flipdims',ones(1,length(opts.signflips)));
 %
 tf=cat(2,opts.dir_test,filesep,rs_outfile,'.mat');
@@ -31,17 +33,31 @@ bf=strrep(bf,'.mat.mat','.mat');
 if exist(tf,'file')
     t=load(tf);
 else
-    warning(sprintf('%s not found',tf));
+    rs_warning(sprintf('%s not found',tf));
     t=struct;
 end
 if exist(bf,'file')
     b=load(bf);
 else
-    warning(sprintf('%s not found',bf));
+    rs_warning(sprintf('%s not found',bf));
     b=struct;
 end
 t_comp=t;
 b_comp=b;
+%remove fields to be ignored
+for k=1:length(opts.ignore)
+    if opts.if_log
+        disp(sprintf('field (and subfield) that are ignored'));
+        disp(opts.ignore{k});
+    end
+    if ~isempty(t_comp)
+        t_comp=rmsubfield(t_comp,opts.ignore{k});
+    end
+    if ~isempty(b_comp)
+        b_comp=rmsubfield(b_comp,opts.ignore{k});
+    end
+end
+%extract signflips
 signflips=cell(0,length(opts.signflips));
 for k=1:length(opts.signflips)
     if opts.if_log
@@ -79,7 +95,7 @@ opts.signflips=signflips;
 %
 ifdif=compstruct('benchmark',b_comp,'test',t_comp);
 if ~isempty(ifdif)
-    warning(sprintf('%s: benchmark comparison fails',rs_outfile));
+    rs_warning(sprintf('%s: benchmark comparison fails',rs_outfile));
 else
     if (opts.if_log)
         disp(sprintf('%s: benchmark comparison ok',rs_outfile));
