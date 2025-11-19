@@ -9,6 +9,9 @@ rs_module='xform_specify';
 if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
+if ~exist('if_ignore_svdambig')
+    if_ignore_svdambig=0;
+end
 %
 ntests=8;
 %
@@ -16,6 +19,7 @@ test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
 auxs=cell(1,ntests);
 signflips=cell(1,ntests);
+ignore=cell(1,ntests);
 data_reads=cell(1,ntests);
 aux_ins=cell(1,ntests);
 xforms=cell(1,ntests);
@@ -75,6 +79,9 @@ auxs{6}.opts_xform.mode='offset_pca';
 auxs{6}.opts_xform.source='global';
 auxs{6}.opts_xform.centering_specifier='index';
 auxs{6}.opts_xform.centering_index=17;
+if if_ignore_svdambig
+    ignore{6}={{'xform_out','ts'}};
+end
 %
 test_descs{7}='four animal-domain files, centering by index, global, translate_then_pca';
 filenames_examples{7}=filenames_examples{2};
@@ -84,6 +91,9 @@ auxs{7}.opts_xform.mode='translate_then_pca';
 auxs{7}.opts_xform.source='local';
 auxs{7}.opts_xform.centering_specifier='index';
 auxs{7}.opts_xform.centering_index=17;
+if if_ignore_svdambig
+    ignore{7}={{'xform_out','ts'}};
+end
 %
 test_descs{8}='three binary texture coordinate files, no models, centering by typename, local, translate_then_pca';
 filenames_examples{8}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
@@ -95,6 +105,9 @@ auxs{8}.opts_xform.mode='translate_then_pca';
 auxs{8}.opts_xform.source='local';
 auxs{8}.opts_xform.centering_specifier='typename';
 auxs{8}.opts_xform.centering_typname='bp0600';
+if if_ignore_svdambig
+    ignore{8}={{'xform_out','ts'}};
+end
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
@@ -119,7 +132,10 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 for itest=1:ntests
     if ~isempty(data_reads{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
-        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
+        opts_compare=struct;
+        opts_compare.signflips=signflips{itest};
+        opts_compare.ignore=ignore{itest};
+        [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},opts_compare);
         if ~isempty(aux_outs{itest}.warnings)
             disp('warnings encountered during test:')
             disp(aux_outs{itest}.warnings)
