@@ -7,6 +7,7 @@
 %
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';
+overall.if_warn_traceback=0; %set to 1 to show a traceback with each warning
 %
 generic=struct; %subfields will be applied to auxiliary parameters for all function calls
 %
