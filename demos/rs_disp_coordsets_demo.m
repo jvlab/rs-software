@@ -1,6 +1,19 @@
 % rs_disp_coordsets_demo: demonstrate display of datasets
 % with several customizations, with and without rotating to consensus
 %
+% options illustrated:
+%  choice of data to plot
+%  choice of coordinates to plot
+%  legend placement
+%  sample datasets are rotated into a consensus, with and without scaling (in rs_knit_coordsets)
+%  combining consensus and individual datasets on same plot
+%  modification of data point colors, symbols, symbol sizes
+%  modification of font sizes
+%  several plots into same figure
+%  custom arrangement of subplots
+%  axis labels
+%  3D views
+%
 %  See also:  RS_DISP_COORDSETS.
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
