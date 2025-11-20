@@ -78,15 +78,11 @@ for irs=1:length(rs_modules)
             disp(sprintf(' test %2.0f (sequential test %3.0f, sub-module %3.0f):',idiff,...
                 ceil(idiff/nsubmodules),mod(idiff-1,nsubmodules)+1));
             diff_show=r.(rs_module).ifdif{idiff};
-            if diff_maxchars<Inf
-                if size(diff_show,2)>diff_maxchars
-                    diff_show=diff_show(:,1:diff_maxchars);
-                end
+            if size(diff_show,2)>diff_maxchars
+                diff_show=diff_show(:,1:diff_maxchars);
             end
-            if diff_maxlines<Inf
-                if size(diff_maxlines,1)<diff_maxlines
-                    diff_show=strvcat(diff_show(1:diff_maxlines-1,:),'  ...',diff_show(end,:));
-                end
+            if size(diff_show,1)>diff_maxlines
+                diff_show=strvcat(diff_show(1:diff_maxlines-1,:),'  ...',diff_show(end,:));
             end
             disp(diff_show);
         end
