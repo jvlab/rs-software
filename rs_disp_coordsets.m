@@ -85,6 +85,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
+% offsets between datasets
+% alpha blending
 % connect_data_linestyles, connect_data_linewidth for connection within a set
 % rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
 % tetrahedral/barycentric plots
