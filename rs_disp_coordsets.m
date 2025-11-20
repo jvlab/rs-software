@@ -50,7 +50,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   data_label_method: which data points should be labeled, 'all' (default),'none', 'first', 'last', 'list'
 %   data_label_list: list of labels (if data_label_method='list')
-%   data_label_setsel_method: which sets should be labeled, 'all','none', 'first' (default: first set displayed), or 'list'
+%   data_label_setsel_method: which sets should be labeled, 'all','none', 'first' (default: first set displayed), 'last', or 'list'
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
 %   data_label_font_size; font size for data labels, defaults to axis_font_size
 %
@@ -102,7 +102,6 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 % opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
 % opts=filldefault(opts,'color_ring',[0 0 0]);
 % opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
-
 %
 if (nargin<=1)
     aux=struct;
