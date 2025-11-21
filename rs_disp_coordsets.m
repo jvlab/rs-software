@@ -37,7 +37,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      'keepone': keep one dimension and step the rest;                      [dim_select,coord_group_size] yields [1 2 3],[1 2 4],[1 2 5],[1 3 4],[1 3 5],[1 4 5]
 %      'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %      'onlylowest': only the lowest dimensions                              [dim_select,coord_group_size] yields [1 2 3]
-%      'list': specify a list in opts_disp.coord_groups
+%      'list': specify a list in opts_disp.coord_groups, as an array with coord_group_size columns
 %   By default, each dataset is plotted with its own style, with points disconnected.
 %      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
