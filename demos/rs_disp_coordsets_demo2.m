@@ -4,6 +4,8 @@
 % options illustrated:
 %  sample datasets are rotated via PCA (in rs_knit_coordsets)
 %  choice of dataset to label
+%  choice of datasets to display
+%  offsets between datasets
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO.
 %
@@ -35,6 +37,13 @@ opts_disp=struct;
 opts_disp.dim_select=dim_select;
 opts_disp.data_label_setsel_method='list';
 opts_disp.data_label_setsel_list=2;
+opts_disp.set_select=[1 2 4]; % datasets to show
+opts_disp.set_offsets=repmat([0:nfiles-1]',1,dim_select)+repmat([1:dim_select]/2,nfiles,1);
+opts_disp.connect_sets_method='list';
+opts_disp.connect_sets_list=[2 4];
+opts_disp.connect_sets_color_mode='split';
+disp('set_offsets');
+disp(opts_disp.set_offsets)
 %
 aux_out_custproj=cell(length(group_size_list),length(coord_group_methods));
 for igroup=1:length(group_size_list)
