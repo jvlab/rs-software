@@ -73,9 +73,8 @@ for iset=1:nsets
     end
     typenames_union=union(typenames_union,typenames_each{iset});
     typenames_inter=intersect(typenames_inter,typenames_each{iset});
-    dim_list_union=union(dim_list_union(:)',dim_list_each{iset});
-    dim_list_inter=intersect(dim_list_inter,dim_list_each{iset});
     %check that each array of coordinates is consistent with number of stimuli and dimension
+    dim_remove=[];
     for idim_ptr=1:length(dim_list_each{iset})
         idim=dim_list_each{iset}(idim_ptr);
         if length(data_in.ds{iset})>=idim
@@ -88,8 +87,15 @@ for iset=1:nsets
                 wmsg=sprintf('number of dimensions in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
                 check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             end
+        else
+            wmsg=sprintf('coordinate array for set %3.0f, dimension %3.0f is missing',iset+opts.set_num_offset,idim);
+            check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+            dim_remove=[dim_remove,idim];
         end
     end
+    dim_list_each{iset}=setdiff(dim_list_each{iset},dim_remove);
+    dim_list_union=union(dim_list_union(:)',dim_list_each{iset});
+    dim_list_inter=intersect(dim_list_inter,dim_list_each{iset});
 end
 %check that number of stimuli are consistent across datasets
 if min(nstims_each)~=max(nstims_each)

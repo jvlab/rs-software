@@ -50,7 +50,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformations used from the component sets daat_in.ds{iset} to consensus data_out.ds{1}
+%   knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
 %       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
 %          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
 %       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
@@ -135,7 +135,7 @@ nstims_all=min(nstims_each);
 coords_isnan=zeros(nstims_all,nsets);
 for iset=1:nsets
     for kd=dim_list_each{iset}
-        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimenison, it's missing
+        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimension, it's missing
     end
     if aux.opts_knit.if_log
         disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
