@@ -26,13 +26,13 @@ aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
 [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
 data_components=aux_knit.components;
 %
-%plots with 2-d projection and 3-d projections of a 5-d model
+%plots with 2-d projection and 3-d projections of a 5-d model, with offsets
+%and connections between datasets
 %
 dim_select=5;
 group_size_list=[2:3];
 coord_group_methods={'keeplow'};
 %
-aux_nocust=struct;
 opts_disp=struct;
 opts_disp.dim_select=dim_select;
 opts_disp.data_label_setsel_method='list';
@@ -43,9 +43,8 @@ opts_disp.connect_sets_method='list';
 opts_disp.connect_sets_list=[2 4];
 opts_disp.connect_sets_color_mode='split';
 disp('set_offsets');
-disp(opts_disp.set_offsets)
-%
-aux_out_custproj=cell(length(group_size_list),length(coord_group_methods));
+%offsets, connections between datasets
+aux_out_disp=cell(length(group_size_list),length(coord_group_methods));
 for igroup=1:length(group_size_list)
     opts_disp.coord_group_size=group_size_list(igroup);
     if opts_disp.coord_group_size==2
@@ -57,7 +56,21 @@ for igroup=1:length(group_size_list)
     for imethod=1:length(coord_group_methods)
         opts_disp.coord_group_method=coord_group_methods{imethod};
         opts_disp.fig_name=sprintf('consensus dim %2.0f: coords in groups of %2.0f (method: %s)',opts_disp.dim_select,opts_disp.coord_group_size,opts_disp.coord_group_method);
-        aux_out_custproj{igroup,imethod}=rs_disp_coordsets(data_components,setfield(aux_nocust,'opts_disp',opts_disp));
+        aux_out_disp{igroup,imethod}=rs_disp_coordsets(data_components,setfield(struct,'opts_disp',opts_disp));
     end
 end
 %
+%plots with 2-d projection and 3-d projections of a 5-d model, with offsets
+%and connections between datasets
+%
+opts_disp2=opts_disp;
+opts_disp2=rmfield(opts_disp2,'set_offsets');
+opts_disp2.connect_sets_method='chain';
+opts_disp2.connect_sets_color_mode='first';
+opts_disp2.coord_group_method='list';
+opts_disp2.coord_groups=[2 3 5];
+opts_disp2.coord_group_size=3;
+opts_disp2.if_legend=1;
+opts_disp2.fig_name=sprintf('consensus dim %2.0f: coords in groups of %2.0f (method: %s)',opts_disp2.dim_select,opts_disp2.coord_group_size,opts_disp2.coord_group_method);
+aux_out_disp2=rs_disp_coordsets(data_components,setfield(struct,'opts_disp',opts_disp2));
+
