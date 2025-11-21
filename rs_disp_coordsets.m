@@ -27,7 +27,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   axis_scale: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list;
 %   axis_scales: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
-%   set_select: datasets to show, defaults to [1:length(data_in.da)
+%   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
 %
 %   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,max(number of dimensions available in all sets)
@@ -47,6 +47,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
+%   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
 %
 %   data_label_method: which data points should be labeled, 'all' (default),'none', 'first', 'last', 'list'
 %   data_label_list: list of labels (if data_label_method='list')
@@ -85,7 +86,6 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% offsets between datasets
 % alpha blending
 % connect_data_linestyles, connect_data_linewidth for connection within a set
 % rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
@@ -146,6 +146,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'axis_scales',[0 1]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
 aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_default,dim_list_inter)));
+aux.opts_disp=filldefault(aux.opts_disp,'set_offsets',zeros(1,aux.opts_disp.dim_select));
 %
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_size',min(aux.opts_disp.dim_select,max(coords_together_default)));
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_method','all');
@@ -203,7 +204,7 @@ switch x.coord_group_method %determine coordinate groups
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 if x.coord_group_size~=size(x.coord_groups,2)
-    wmsg=sprintf('specified coordinate group size (%3.0f) and list of coord groups is inconsistent',x.coord_group_size);
+    wmsg=sprintf('number of columnns in coord_groups (%3.0f) and coord_group_size is inconsistent',x.coord_group_size);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 if ~ismember(x.coord_group_size,coords_together_allowed)
@@ -214,6 +215,22 @@ if any(x.coord_groups(:)<=0) | any(x.coord_groups(:)>x.dim_select)
     wmsg=sprintf('some specified dimensions are out of bounds for the dimension plotted (%2.0f)',x.dim_select);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
+if ~isempty(setdiff(x.set_select,[1:nsets]))
+    wmsg=sprintf('some selections in set_select are out of bounds ([1:%1.0f], and ignored )',nsets);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+    x.set_select=intersect(x.set_select,[1:nsets]);
+end
+if size(x.set_offsets,2)~=x.dim_select
+    wmsg=sprintf('number of columns in set_offsets (%1.0f) is inconsistent with number of dimensions (%2.0f); truncated or padded',size(x.set_offsets,2),x.dim_select);
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+    if size(x.set_offsets,2)>x.dim_select
+        x.set_offsets=x.set_offsets(:,[1:x.dim_select]);
+    end
+    if size(x.set_offsets,2)<x.dim_select
+        x.set_offsets=cat(2,x.set_offsets,zeros(size(x.set_offsets,1),x.dim_select-size(x.set_offsets,2)));
+    end
+end
+%
 %set up axis scale
 switch x.axis_scale %check that it is 'tight','auto', or pairs of values
     case {'tight','auto'}
@@ -332,23 +349,26 @@ if aux_out.warn_bad==0
         igp=mod(igp_aug-1,ngroups)+1; %if igp_aug=ngroup+1 (if_legend=-1) then igp=1 but it is plotted in a new subplot
         subplot(haxis);
         set(gca,'FontSize',x.axis_font_size);
+        cg=x.coord_groups(igp,:);
         %plot points
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
             %plot with no line, later connect
-            hline=rs_disp_doplot(data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:)),k,set_styles);
+            z=data_in.ds{k}{x.dim_select}(:,cg);
+            ko=mod(k-1,size(x.set_offsets,1))+1;
+            z=z+repmat(x.set_offsets(ko,cg),size(z,1),1); %add the offset
+            hline=rs_disp_doplot(z,k,set_styles);
             set(hline,'Tag',sprintf('ds %2.0f',k));
             set(hline,'DisplayName',x.set_labels{k});
             %label?
             if ismember(k,x.data_label_setsel_list)
-                vals=data_in.ds{k}{x.dim_select}(:,x.coord_groups(igp,:));
                 typenames=data_in.sas{k}.typenames;
                 for ipt=x.data_label_list(:)'
                     switch x.coord_group_size
                         case 2
-                            ht=text(vals(ipt,1),vals(ipt,2),typenames{ipt});
+                            ht=text(z(ipt,1),z(ipt,2),typenames{ipt});
                         case 3
-                            ht=text(vals(ipt,1),vals(ipt,2),vals(ipt,3),typenames{ipt});
+                            ht=text(z(ipt,1),z(ipt,2),z(ipt,3),typenames{ipt});
                     end %coord group size
                     set(ht,'FontSize',x.data_label_font_size);
                 end %ipt
@@ -356,13 +376,13 @@ if aux_out.warn_bad==0
         end
         %set up view, box, grid, axis labels
         if x.coord_group_size<=3
-            hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,1)));
+            hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(1)));
             set(hl,'FontSize',x.axis_label_font_size);
-            hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,2)));
+            hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(2)));
             set(hl,'FontSize',x.axis_label_font_size);
         end
         if (x.coord_group_size==3)
-            hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,x.coord_groups(igp,3)));
+            hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(3)));
             set(hl,'FontSize',x.axis_label_font_size);
             axis vis3d;
             index_view=1+mod(igp-1,length(x.axis_view));
@@ -372,9 +392,15 @@ if aux_out.warn_bad==0
         for ic=1:size(x.connect_sets_list,1)
             cset=x.connect_sets_list(ic,:);
             if all(ismember(cset,x.set_select))
-                endpoints=cat(3,...
-                    data_in.ds{cset(1)}{x.dim_select}(:,x.coord_groups(igp,:)),...
-                    data_in.ds{cset(2)}{x.dim_select}(:,x.coord_groups(igp,:)));
+                endpoints=zeros(min(nstims_each),x.coord_group_size,2);
+                for iz=1:2
+                    endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(:,cg);
+                    ko=mod(cset(iz)-1,size(x.set_offsets,1))+1;
+                    endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg),size(endpoints,1),1,1); %add the offset
+                end
+%                endpoints=cat(3,...
+%                    data_in.ds{cset(1)}{x.dim_select}(:,x.coord_groups(igp,:)),...
+%                    data_in.ds{cset(2)}{x.dim_select}(:,x.coord_groups(igp,:)));
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
                     connect_set_styles.colors=x.connect_sets_colors;
@@ -438,8 +464,7 @@ return
 end
 
 function hline=rs_disp_doplot(coords,index,opts)
-%plot the data (rows of coords) into the current plot, using index into
-%opts.set* to determine the style, and giving the line a tag
+%plot the data (rows of coords) into the current plot, using index into opts.set* to determine the style
 switch size(coords,2)
     case 2
         hline=plot(coords(:,1),coords(:,2),'k.');
