@@ -49,9 +49,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_markersizes: marker assigned to each set, defaults to 8
 %   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
 %
-%   data_label_method: which data points should be labeled, 'all' (default),'none', 'first', 'last', 'list'
-%   data_label_list: list of labels (if data_label_method='list')
-%   data_label_setsel_method: which sets should be labeled, 'all','none', 'first' (default: first set displayed), 'last', or 'list'
+%   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
+%   data_show_list: list of data points to whos(if data_show_method='list')
+%   data_label_method: which data points to label, 'all' (default),'none',
+%   'first', 'last', 'list'  [all, first, last apply to the data points shown]
+%   data_label_list: list of data points to label (if data_label_method='list')
+%   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
 %   data_label_font_size; font size for data labels, defaults to axis_font_size
 %
@@ -86,9 +89,10 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% data selection
-% alpha blending
 % connect_data_linestyles, connect_data_linewidth for connection within a set
+% callouts for labeling
+% alpha blending
+% test selective plotting with several datasets and automate based on rays
 % rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
 % tetrahedral/barycentric plots
 % options from psg_plotcoords  related to rays
@@ -112,7 +116,7 @@ end
 %fields that will be made into cells if singletons
 make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','axis_view','connect_sets_linestyles','connect_sets_colors'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
-coords_together_default=[2 3]; %how many coords are plotted together by default\
+coords_together_default=[2 3]; %how many coords are plotted together by default
 xyzlim={'XLim','YLim','ZLim'};
 %
 aux=filldefault(aux,'opts_check',struct);
@@ -133,6 +137,8 @@ dim_list_inter=check.dim_list_inter;
 typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
+%
+nstims=min(nstims_each); %all nstims_each should be identical
 %
 %set up sub-structure options
 aux=filldefault(aux,'opts_disp',struct); %options for this module (psg_template)
@@ -157,6 +163,8 @@ aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g
 aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
 %
+aux.opts_disp=filldefault(aux.opts_disp,'data_show_method','all');
+aux.opts_disp=filldefault(aux.opts_disp,'data_show_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_method','all');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
@@ -248,17 +256,21 @@ switch x.axis_scale %check that it is 'tight','auto', or pairs of values
         x.axis_scale='tight';
         x.axis_scales=[NaN NaN];
 end
-%set up data label params
-[x.data_label_list,wmsg]=rs_disp_parse_label(x.data_label_method,[1:nstims_each],x.data_label_list,'specification of data points to label');
+%set up data show and label params
+[x.data_show_list,wmsg]=rs_disp_parse_listmethod(x.data_show_method,[1:nstims],x.data_show_list,'specification of data points to show');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
-[x.data_label_setsel_list,wmsg]=rs_disp_parse_label(x.data_label_setsel_method,x.set_select,x.data_label_setsel_list,'specification of sets to label');
+[x.data_label_list,wmsg]=rs_disp_parse_listmethod(x.data_label_method,[x.data_show_list],x.data_label_list,'specification of data points to label');
+if ~isempty(wmsg)
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+end
+[x.data_label_setsel_list,wmsg]=rs_disp_parse_listmethod(x.data_label_setsel_method,x.set_select,x.data_label_setsel_list,'specification of sets to label');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up params for connecting points across sets
-[x.connect_sets_list,wmsg]=rs_disp_parse_connect(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
+[x.connect_sets_list,wmsg]=rs_disp_parse_pairmethod(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
@@ -355,7 +367,7 @@ if aux_out.warn_bad==0
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
             %plot with no line, later connect
-            z=data_in.ds{k}{x.dim_select}(:,cg);
+            z=data_in.ds{k}{x.dim_select}(x.data_show_list,cg);
             ko=mod(k-1,size(x.set_offsets,1))+1;
             z=z+repmat(x.set_offsets(ko,cg),size(z,1),1); %add the offset
             hline=rs_disp_doplot(z,k,set_styles);
@@ -364,12 +376,13 @@ if aux_out.warn_bad==0
             %label?
             if ismember(k,x.data_label_setsel_list)
                 typenames=data_in.sas{k}.typenames;
-                for ipt=x.data_label_list(:)'
+                for ipt_ptr=1:length(x.data_label_list)
+                    ipt=x.data_label_list(ipt_ptr);
                     switch x.coord_group_size
                         case 2
-                            ht=text(z(ipt,1),z(ipt,2),typenames{ipt});
+                            ht=text(z(ipt_ptr,1),z(ipt_ptr,2),typenames{ipt});
                         case 3
-                            ht=text(z(ipt,1),z(ipt,2),z(ipt,3),typenames{ipt});
+                            ht=text(z(ipt_ptr,1),z(ipt_ptr,2),z(ipt_ptr,3),typenames{ipt});
                     end %coord group size
                     set(ht,'FontSize',x.data_label_font_size);
                 end %ipt
@@ -393,9 +406,9 @@ if aux_out.warn_bad==0
         for ic=1:size(x.connect_sets_list,1)
             cset=x.connect_sets_list(ic,:);
             if all(ismember(cset,x.set_select))
-                endpoints=zeros(min(nstims_each),x.coord_group_size,2);
+                endpoints=zeros(length(x.data_show_list),x.coord_group_size,2);
                 for iz=1:2
-                    endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(:,cg);
+                    endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(x.data_show_list,cg);
                     ko=mod(cset(iz)-1,size(x.set_offsets,1))+1;
                     endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg),size(endpoints,1),1,1); %add the offset
                 end
@@ -405,11 +418,11 @@ if aux_out.warn_bad==0
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
                     connect_set_styles.colors=x.connect_sets_colors;
-                    for istim=1:min(nstims_each)
+                    for istim=1:length(x.data_show_list)
                         hconnect=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_set_styles);
                     end
                 else
-                    for istim=1:min(nstims_each)
+                    for istim=1:length(x.data_show_list)
                         for iseg=1:2
                             hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_set_styles,'colors',x.connect_sets_colors(:,iseg)));
                         end %each segment
@@ -491,7 +504,7 @@ set(hline,'LineWidth',opts.linewidths(index_linewidth));
 return
 end
 
-function [list,wmsg]=rs_disp_parse_connect(method,n,list_specified,msg)
+function [list,wmsg]=rs_disp_parse_pairmethod(method,n,list_specified,msg)
 %parse a method token that specifies a list of pairs
 wmsg=[];
 list=[];
@@ -523,7 +536,7 @@ end
 return
 end
 
-function [list,wmsg]=rs_disp_parse_label(method,nvals,list_specified,msg)
+function [list,wmsg]=rs_disp_parse_listmethod(method,nvals,list_specified,msg)
 %parse a method token that specifies a list
 wmsg=[];
 list=[];
