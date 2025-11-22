@@ -61,7 +61,7 @@ for igroup=1:length(group_size_list)
 end
 %
 %plots with 2-d projection and 3-d projections of a 5-d model, with offsets
-%and connections between datasets
+%and connections between datasets, but only plot a subset of points
 %
 opts_disp2=opts_disp;
 opts_disp2=rmfield(opts_disp2,'set_offsets');
@@ -70,11 +70,13 @@ opts_disp2.connect_sets_color_mode='first';
 opts_disp2.coord_group_method='list';
 opts_disp2.coord_groups=[2 3 5];
 opts_disp2.coord_group_size=3;
+opts_disp2.data_show_method='list';
+opts_disp2.data_show_list=[4:2:28];
 opts_disp2.if_legend=1;
 opts_disp2.fig_name=sprintf('consensus dim %2.0f: coords in groups of %2.0f (method: %s)',opts_disp2.dim_select,opts_disp2.coord_group_size,opts_disp2.coord_group_method);
 aux_out_disp2=rs_disp_coordsets(data_components,setfield(struct,'opts_disp',opts_disp2));
 %
-% repeated plots into same axis
+% repeated plots into same axis, with different subsets of data and different colors and symbols
 % 
 filename_rep={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
 nsets=length(filename_rep);
@@ -93,12 +95,30 @@ opts_disp_rep.fig_handle=hfig;
 opts_disp_rep.axis_handles=hax(1);
 opts_disp_rep.if_legend=1;
 typenames=data_rep.sas{1}.typenames;
-opts_disp_rep.set_colors='b';
-opts_disp_rep.set_markers='+';
-opts_disp_rep.data_label_method='list';
-opts_disp_rep.data_label_list=find(contains(typenames,'p'));
-aux_rep_disp=rs_disp_coordsets(data_rep,setfield(struct,'opts_disp',opts_disp_rep));
-
-
-
-
+opts_disp_rep.data_show_method='list';
+%define subsets
+subs{1}.string='bp';
+subs{1}.set_colors='b';
+subs{1}.set_markers='+';
+subs{1}.line_style='_';
+subs{2}.string='bm';
+subs{2}.set_colors='b';
+subs{2}.set_markers='*';
+subs{2}.line_style=':';
+subs{3}.string='ap';
+subs{3}.set_colors='r';
+subs{3}.set_markers='+';
+subs{3}.line_style='_';
+subs{4}.string='rand';
+subs{4}.set_colors='k';
+subs{4}.set_markers='o';
+subs{4}.line_style='none';
+%
+for isubs=1:length(subs)
+    opts_disp_rep.set_colors=subs{isubs}.set_colors;
+    opts_disp_rep.set_markers=subs{isubs}.set_markers;
+    opts_disp_rep.data_show_list=find(contains(typenames,subs{isubs}.string));
+    opts_disp_rep.connect_data_linestyles=subs{isubs}.line_style;
+    opts_disp_rep.set_label=subs{isubs}.string; %only one dataset
+    aux_rep_disp=rs_disp_coordsets(data_rep,setfield(struct,'opts_disp',opts_disp_rep));
+end
