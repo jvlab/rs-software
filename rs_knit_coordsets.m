@@ -231,7 +231,7 @@ if aux_out.warn_bad==0
         end
     end
     ds_knitted=ra.ds_knitted;
-    ds_components=ra.ds_components;
+    ds_components=ra.ds_components(:);
     opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
     details=details'; %make a column for consistency
     %
