@@ -537,7 +537,7 @@ return
 end
 
 function [list,wmsg]=rs_disp_parse_listmethod(method,nvals,list_specified,msg)
-%parse a method token that specifies a list
+%parse a method token that specifies a list: first, last, and all are relative to contents of nvals
 wmsg=[];
 list=[];
 switch method
@@ -549,7 +549,7 @@ switch method
     case 'last'
         list=nvals(end);
     case 'list'
-        list=list_specified(:);
+        list=intersect(nvals,list_specified(:));
     otherwise
         wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
 end
