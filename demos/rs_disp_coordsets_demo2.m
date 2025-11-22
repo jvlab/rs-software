@@ -73,4 +73,32 @@ opts_disp2.coord_group_size=3;
 opts_disp2.if_legend=1;
 opts_disp2.fig_name=sprintf('consensus dim %2.0f: coords in groups of %2.0f (method: %s)',opts_disp2.dim_select,opts_disp2.coord_group_size,opts_disp2.coord_group_method);
 aux_out_disp2=rs_disp_coordsets(data_components,setfield(struct,'opts_disp',opts_disp2));
+%
+% repeated plots into same axis
+% 
+filename_rep={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
+nsets=length(filename_rep);
+aux_rep=struct;
+aux_rep.nsets=1;
+aux_rep.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+[data_rep,aux_read_rep]=rs_get_coordsets(filename_rep,aux_rep);
+hfig=figure;
+set(gcf,'Position',[100 100 1200 700]);
+hax=cell(1,2);
+hax{1}=subplot(1,2,1);
+hax{2}=subplot(1,2,2);
+opts_disp_rep=struct;
+opts_disp_rep.dim_select=3;
+opts_disp_rep.fig_handle=hfig;
+opts_disp_rep.axis_handles=hax(1);
+opts_disp_rep.if_legend=1;
+typenames=data_rep.sas{1}.typenames;
+opts_disp_rep.set_colors='b';
+opts_disp_rep.set_markers='+';
+opts_disp_rep.data_label_method='list';
+opts_disp_rep.data_label_list=find(contains(typenames,'p'));
+aux_rep_disp=rs_disp_coordsets(data_rep,setfield(struct,'opts_disp',opts_disp_rep));
+
+
+
 
