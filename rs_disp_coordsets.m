@@ -51,8 +51,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
 %   data_show_list: list of data points to whos(if data_show_method='list')
-%   data_label_method: which data points to label, 'all' (default),'none',
-%   'first', 'last', 'list'  [all, first, last apply to the data points shown]
+%   data_label_method: which data points to label, 'all' (default),'none', 'first', 'last', 'list'  [all, first, last apply to the data points shown]
 %   data_label_list: list of data points to label (if data_label_method='list')
 %   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
@@ -62,9 +61,9 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
 %
 %   connect_sets_method: 'none' (default), or any of the following: which pairs of datasets to connect
-%      'all'-> all pairs, 'star' or 'star_first': all connect to 1; 'star_last': all connect to last set;
-%      'chain' connects [1 2],[2 3],[3 4],...[nsets-1 nsets]; 'circuit' connects [1 2],[2 3],[3 4],...[nsets 1]
-%      'list': pairs listed in connect_sets_list as a two-column array
+%      'all'-> all pairs, 'star' or 'star_first': all connect to first; 'star_last': all connect to last set;
+%      'chain' connects [first next ],[next second-next],,...[next-to-last last]; 'circuit' closes 'chain' to include [last first]
+%      'list': pairs listed in connect_sets_list as a two-column array [first and last refer to the sets selected in set_select]
 %   connect_sets_color_mode: 'first','last','split' (default),'list': how connection line is colored
 %      %first uses first set of connection pair, last uses last set of
 %      %pair, split uses half of each, list expects a list in connect_sets_colors (cycled through if necessary)
@@ -270,7 +269,7 @@ if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up params for connecting points across sets
-[x.connect_sets_list,wmsg]=rs_disp_parse_pairmethod(x.connect_sets_method,nsets,x.connect_sets_list,'specification of sets to connect');
+[x.connect_sets_list,wmsg]=rs_disp_parse_pairmethod(x.connect_sets_method,x.set_select,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
@@ -504,62 +503,70 @@ set(hline,'LineWidth',opts.linewidths(index_linewidth));
 return
 end
 
-function [list,wmsg]=rs_disp_parse_pairmethod(method,n,list_specified,msg)
+function [pair_list,wmsg]=rs_disp_parse_pairmethod(method,vals_avail,list_specified,msg)
 %parse a method token that specifies a list of pairs
+n=length(vals_avail);
 wmsg=[];
-list=[];
+pair_list=[];
 switch method
     case 'none'
     case 'all'
-        list=nchoosek([1:n],2);
+        pairs=nchoosek([1:n],2);
+        pair_list=vals_avail(pairs);
     case 'chain'
-        list=1+mod([[0:n-2];[1:n-1]],n)';
+        pairs=1+mod([[0:n-2];[1:n-1]],n)';
+        pair_list=vals_avail(pairs);
     case 'circuit'
-        list=1+mod([[0:n-1];[1:n]],n)';
+        pairs=1+mod([[0:n-1];[1:n]],n)';
+        pair_list=vals_avail(pairs);
     case {'star','star_first'}
-        list=[repmat(1,1,n-1);[2:n]]';
+        pairs=[repmat(1,1,n-1);[2:n]]';
+        pair_list=vals_avail(pairs);
     case {'star_last'}
-        list=[repmat(n,1,n-1);[1:n-1]]';
+        pairs=[repmat(n,1,n-1);[1:n-1]]';
+        pair_list=vals_avail(pairs);
     case 'list'
-        list=list_specified;
+        pair_list=list_specified;
+        have_pair=find(all(ismember(pair_list,list_specified),2));
+        pair_list=pair_list(have_pair,:);
     otherwise
         wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
 end
-if ~isempty(list)
-    if ((size(list,2)~=2) | any(list(:)<=0) | any(list(:)>n) | any(floor(list(:))~=list(:)))
-        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not two columns; none used',msg,n));
+if ~isempty(pair_list)
+    if ((size(pair_list,2)~=2) | any(list_specified(:)<=0) | any(list_specified(:)>max(vals_avail)) | any(floor(pair_list(:))~=pair_list(:)))
+        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not two columns; none used',msg,max(vals_avail)));
     end
 end
 if ~isempty(wmsg)
-    list=[];
+    pair_list=[];
 end
 return
 end
 
-function [list,wmsg]=rs_disp_parse_listmethod(method,nvals,list_specified,msg)
-%parse a method token that specifies a list: first, last, and all are relative to contents of nvals
+function [list_vals,wmsg]=rs_disp_parse_listmethod(method,vals_avail,list_specified,msg)
+%parse a method token that specifies a list: first, last, and all are relative to contents of vals_avail
 wmsg=[];
-list=[];
+list_vals=[];
 switch method
     case 'none'
     case 'all'
-        list=nvals(:);
+        list_vals=vals_avail(:);
     case 'first'
-        list=nvals(1);
+        list_vals=vals_avail(1);
     case 'last'
-        list=nvals(end);
+        list_vals=vals_avail(end);
     case 'list'
-        list=intersect(nvals,list_specified(:));
+        list_vals=intersect(vals_avail,list_specified(:));
     otherwise
         wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
 end
-if ~isempty(list)
-    if ((size(list,2)~=1) | any(list(:)<=0) | any(list(:)>max(nvals)) | any(floor(list(:))~=list(:)))
-        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not one column; none used',msg,max(nvals)));
+if ~isempty(list_vals)
+    if ((size(list_vals,2)~=1) | any(list_vals(:)<=0) | any(list_vals(:)>max(vals_avail)) | any(floor(list_vals(:))~=list_vals(:)))
+        wmsg=strvcat(wmsg,sprintf('%s exceeds bounds ([1 %1.0f]), or is not integer, or is not one column; none used',msg,max(vals_avail)));
     end
 end
 if ~isempty(wmsg)
-    list=[];
+    list_vals=[];
 end
 return
 end
