@@ -42,7 +42,6 @@ opts_disp.set_offsets=repmat([0:nfiles-1]',1,dim_select)+repmat([1:dim_select]/2
 opts_disp.connect_sets_method='list';
 opts_disp.connect_sets_list=[2 4];
 opts_disp.connect_sets_color_mode='split';
-disp('set_offsets');
 %offsets, connections between datasets
 aux_out_disp=cell(length(group_size_list),length(coord_group_methods));
 for igroup=1:length(group_size_list)
@@ -100,7 +99,7 @@ opts_disp_rep.data_show_method='list';
 subs{1}.string='bp';
 subs{1}.set_colors='b';
 subs{1}.set_markers='+';
-subs{1}.line_style='_';
+subs{1}.line_style='-';
 subs{2}.string='bm';
 subs{2}.set_colors='b';
 subs{2}.set_markers='*';
@@ -108,17 +107,32 @@ subs{2}.line_style=':';
 subs{3}.string='ap';
 subs{3}.set_colors='r';
 subs{3}.set_markers='+';
-subs{3}.line_style='_';
+subs{3}.line_style='-';
 subs{4}.string='rand';
 subs{4}.set_colors='k';
 subs{4}.set_markers='o';
 subs{4}.line_style='none';
+subs{5}.string='am';
+subs{5}.set_colors='r';
+subs{5}.set_markers='*';
+subs{5}.line_style=':';
+%
+opts_disp_rep.connect_data_method='chain';
+opts_disp_rep.callout_amount=0.5;
 %
 for isubs=1:length(subs)
     opts_disp_rep.set_colors=subs{isubs}.set_colors;
     opts_disp_rep.set_markers=subs{isubs}.set_markers;
     opts_disp_rep.data_show_list=find(contains(typenames,subs{isubs}.string));
     opts_disp_rep.connect_data_linestyles=subs{isubs}.line_style;
-    opts_disp_rep.set_label=subs{isubs}.string; %only one dataset
+    opts_disp_rep.set_labels=subs{isubs}.string; %only one dataset
+    opts_disp_rep.set_tags=subs{isubs}.string; %so that only some components will be in legend
+    opts_disp_rep.legend_tags={'b','a'}; %what is in the legend
+    if ~strcmp(subs{isubs}.line_style,'none') % %use data linestyle for callout unless none
+        opts_disp_rep.callout_linestyles=opts_disp_rep.connect_data_linestyles; 
+    else
+        opts_disp_rep=rmfield(opts_disp_rep,'callout_linestyles');
+    end
+    opts_disp_rep.callout_colors=opts_disp_rep.set_colors; %use data colors for callouts
     aux_rep_disp=rs_disp_coordsets(data_rep,setfield(struct,'opts_disp',opts_disp_rep));
 end
