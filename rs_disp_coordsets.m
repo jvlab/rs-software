@@ -56,7 +56,11 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   data_label_list: list of data points to label (if data_label_method='list')
 %   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
-%   data_label_font_size; font size for data labels, defaults to axis_font_size
+%   data_label_font_size: font size for data labels, defaults to axis_font_size
+%   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
+%   callout_colors: color for callout lines, defaults to {'k'};
+%   callout_linestyles: line style for callouts, defaults to {'-.'}
+%   callout_linewidtths: width for callouts, defaults to 1
 %
 %   connect_data_method: which data points to connect, 'none' (default), or any of the options in connect_sets_method
 %   connect_data_list: two-column array of data points to connect (if data_connect_method='list')
@@ -93,7 +97,6 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% callouts for labeling
 % alpha blending
 % tetrahedral/barycentric plots
 % test selective plotting with several datasets and automate based on rays rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
@@ -116,7 +119,8 @@ if (nargin<=1)
     aux=struct;
 end
 %fields that will be made into cells if singletons
-make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors'};
+make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors',...
+    'callout_colors','callout_linestyles'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
 xyzlim={'XLim','YLim','ZLim'};
@@ -171,6 +175,11 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_method','all');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
+%
+aux.opts_disp=filldefault(aux.opts_disp,'callout_amount',0);
+aux.opts_disp=filldefault(aux.opts_disp,'callout_colors',{'k'});
+aux.opts_disp=filldefault(aux.opts_disp,'callout_linestyles',{'-.'});
+aux.opts_disp=filldefault(aux.opts_disp,'callout_linewidths',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_method','none');
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_list',[]);
@@ -356,6 +365,13 @@ if aux_out.warn_bad==0
     connect_data_styles.linestyles=x.connect_data_linestyles;
     connect_data_styles.linewidths=x.connect_data_linewidths;
     %
+    callout_styles=struct;
+    callout_styles.colors=x.callout_colors;
+    callout_styles.markers={'none'};
+    callout_styles.markersizes=8;
+    callout_styles.linestyles=x.callout_linestyles;
+    callout_styles.linewidths=x.callout_linewidths;
+    %
     connect_set_styles=struct;
     connect_set_styles.colors={'k'};
     connect_set_styles.markers={'none'};
@@ -405,16 +421,31 @@ if aux_out.warn_bad==0
             end
             %label?
             if ismember(k,x.data_label_setsel_list)
+                zcallout=z; 
+                if x.callout_amount>0 %compute position of call-out for every data point shown
+                    centroid=mean(z_all,1);
+                    dists=sqrt(sum((z_all-repmat(centroid,size(z_all,1),1)).^2,2)); %distances from centroid
+                    rmsdist=sqrt(mean(dists.^2)); %rms distances from centroid
+                    dists(dists==0)=1;
+                    for lab=1:size(x.data_show_list,1)
+                        zcallout(lab,:)=centroid+(zcallout(lab,:)-centroid)*(1+x.callout_amount*rmsdist/dists(x.data_show_list(lab)));
+                    end
+                else
+                    zcallout=z;
+                end
                 typenames=data_in.sas{k}.typenames;
                 for ipt_ptr=1:length(x.data_label_list)
                     ipt=x.data_label_list(ipt_ptr);
                     switch x.coord_group_size
                         case 2
-                            ht=text(z(ipt_ptr,1),z(ipt_ptr,2),typenames{ipt});
+                            ht=text(zcallout(ipt_ptr,1),zcallout(ipt_ptr,2),typenames{ipt});
                         case 3
-                            ht=text(z(ipt_ptr,1),z(ipt_ptr,2),z(ipt_ptr,3),typenames{ipt});
+                            ht=text(zcallout(ipt_ptr,1),zcallout(ipt_ptr,2),zcallout(ipt_ptr,3),typenames{ipt});
                     end %coord group size
                     set(ht,'FontSize',x.data_label_font_size);
+                    if x.callout_amount>0
+                        hcallout=rs_disp_doplot(cat(1,z(ipt_ptr,:),zcallout(ipt_ptr,:)),ipt_ptr,callout_styles);
+                    end
                 end %ipt
             end %set to label?
         end
