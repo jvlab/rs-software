@@ -48,15 +48,18 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_markers marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
 %   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
+%   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
 %
 %   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
-%   data_show_list: list of data points to whos(if data_show_method='list')
+%   data_show_list: list of data points to show (if data_show_method='list')
 %   data_label_method: which data points to label, 'all' (default),'none', 'first', 'last', 'list'  [all, first, last apply to the data points shown]
 %   data_label_list: list of data points to label (if data_label_method='list')
 %   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
 %   data_label_font_size; font size for data labels, defaults to axis_font_size
 %
+%   connect_data_method: which data points to connect, 'none' (default), or any of the options in connect_sets_method
+%   connect_data_list: two-column array of data points to connect (if data_connect_method='list')
 %   connect_data_linestyles: line styles assigned to connections within each set, defaults to {'none'} (disconnected)
 %   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
 %
@@ -64,6 +67,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      'all'-> all pairs, 'star' or 'star_first': all connect to first; 'star_last': all connect to last set;
 %      'chain' connects [first next ],[next second-next],,...[next-to-last last]; 'circuit' closes 'chain' to include [last first]
 %      'list': pairs listed in connect_sets_list as a two-column array [first and last refer to the sets selected in set_select]
+%   connect_sets_list: two-column array of sets to connect, if connect_sets_method='list'
 %   connect_sets_color_mode: 'first','last','split' (default),'list': how connection line is colored
 %      %first uses first set of connection pair, last uses last set of
 %      %pair, split uses half of each, list expects a list in connect_sets_colors (cycled through if necessary)
@@ -76,6 +80,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     subplot mathcing the first, with a legend
 %   legend_font_size: defaults to axis_font_size
 %   legend_location: defaults to 'Best'
+%   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set'
 %   if_warn: 1 to display warnings
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
@@ -88,12 +93,10 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     PSG_VISUALIZE, PSG_PLOTCOORDS.
 %
 % still to do:
-% connect_data_linestyles, connect_data_linewidth for connection within a set
 % callouts for labeling
 % alpha blending
-% test selective plotting with several datasets and automate based on rays
-% rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
 % tetrahedral/barycentric plots
+% test selective plotting with several datasets and automate based on rays rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
 % options from psg_plotcoords  related to rays
 % opts=filldefault(opts,'line_width_ring',1);
 % opts=filldefault(opts,'line_type',[]); %line type
@@ -113,7 +116,7 @@ if (nargin<=1)
     aux=struct;
 end
 %fields that will be made into cells if singletons
-make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','axis_view','connect_sets_linestyles','connect_sets_colors'};
+make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
 xyzlim={'XLim','YLim','ZLim'};
@@ -169,6 +172,8 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
 %
+aux.opts_disp=filldefault(aux.opts_disp,'connect_data_method','none');
+aux.opts_disp=filldefault(aux.opts_disp,'connect_data_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linestyles',{'none'});
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linewidths',1);
 %
@@ -183,6 +188,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_legend',1);
 aux.opts_disp=filldefault(aux.opts_disp,'legend_location','Best');
+aux.opts_disp=filldefault(aux.opts_disp,'legend_tags',{'set'});
 %
 aux=rs_aux_customize(aux,'rs_disp_coordsets');
 %quantities dependent on overall defaults
@@ -268,6 +274,16 @@ end
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
+%set up params for connecting points within sets
+[x.connect_data_list,wmsg]=rs_disp_parse_pairmethod(x.connect_data_method,x.data_show_list,x.connect_data_list,'specification of data points to connect');
+if ~isempty(wmsg)
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+end
+if ~isempty(x.connect_data_list) %convert a set of pairs to a set of chains to simplify plotting
+    x.connect_data_chains=pairs2chains(x.connect_data_list);
+else
+    x.connect_data_chains=[];
+end
 %set up params for connecting points across sets
 [x.connect_sets_list,wmsg]=rs_disp_parse_pairmethod(x.connect_sets_method,x.set_select,x.connect_sets_list,'specification of sets to connect');
 if ~isempty(wmsg)
@@ -278,6 +294,12 @@ if ~isfield(x,'set_labels')
     x.set_labels=cell(nsets,1);
     for k=1:nsets
         x.set_labels{k}=sprintf('set %1.0f',k);
+    end
+end
+if ~isfield(x,'set_tags')
+    x.set_tags=cell(nsets,1);
+    for k=1:nsets
+        x.set_tags{k}=sprintf('set %1.0f',k);
     end
 end
 %ensure that certain options are cells
@@ -366,12 +388,21 @@ if aux_out.warn_bad==0
         for isetptr=1:length(x.set_select)
             k=x.set_select(isetptr);
             %plot with no line, later connect
-            z=data_in.ds{k}{x.dim_select}(x.data_show_list,cg);
+            z_all=data_in.ds{k}{x.dim_select}(:,cg); %all the points in the dataset
             ko=mod(k-1,size(x.set_offsets,1))+1;
-            z=z+repmat(x.set_offsets(ko,cg),size(z,1),1); %add the offset
+            z_all=z_all+repmat(x.set_offsets(ko,cg),size(z_all,1),1); %add the offset
+            z=z_all(x.data_show_list,:); %points to plot
             hline=rs_disp_doplot(z,k,set_styles);
-            set(hline,'Tag',sprintf('ds %2.0f',k));
-            set(hline,'DisplayName',x.set_labels{k});
+            set(hline,'Tag',x.set_tags{1+mod(k-1,length(x.set_tags))});
+            set(hline,'DisplayName',x.set_labels{1+mod(k-1,length(x.set_labels))});
+            %connect requested points
+            if ~isempty(x.connect_data_chains)
+                for ichain=1:length(x.connect_data_chains)
+                    hline=rs_disp_doplot(z_all(x.connect_data_chains{ichain},:),k,connect_data_styles);
+                    set(hline,'Tag',sprintf('ds %2.0f chain %2.0f',k,ichain));
+                    set(hline,'DisplayName',x.set_labels{1+mod(k-1,length(x.set_labels))});
+                end
+            end
             %label?
             if ismember(k,x.data_label_setsel_list)
                 typenames=data_in.sas{k}.typenames;
@@ -466,8 +497,17 @@ if aux_out.warn_bad==0
         end
         if need_legend
             hc=get(haxis,'Children');
-            hc_keeps=psg_legend_keep(hc);
-            legend(hc(flipud(hc_keeps.ds)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+            tags_all=cell(length(hc),1);
+            for ich=1:length(hc)
+                tags_all{ich}=get(hc(ich),'Tag');
+            end
+            hc_show=[];
+            for itag=1:length(x.legend_tags)
+                hc_show=union(hc_show,strmatch(x.legend_tags{itag},tags_all)); %select the objects whose tags start with x.legend_tags
+            end
+            if ~isempty(hc_show)
+                legend(hc(flipud(hc_show)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+            end
         end
     end
 end
@@ -508,29 +548,33 @@ function [pair_list,wmsg]=rs_disp_parse_pairmethod(method,vals_avail,list_specif
 n=length(vals_avail);
 wmsg=[];
 pair_list=[];
-switch method
-    case 'none'
-    case 'all'
-        pairs=nchoosek([1:n],2);
-        pair_list=vals_avail(pairs);
-    case 'chain'
-        pairs=1+mod([[0:n-2];[1:n-1]],n)';
-        pair_list=vals_avail(pairs);
-    case 'circuit'
-        pairs=1+mod([[0:n-1];[1:n]],n)';
-        pair_list=vals_avail(pairs);
-    case {'star','star_first'}
-        pairs=[repmat(1,1,n-1);[2:n]]';
-        pair_list=vals_avail(pairs);
-    case {'star_last'}
-        pairs=[repmat(n,1,n-1);[1:n-1]]';
-        pair_list=vals_avail(pairs);
-    case 'list'
-        pair_list=list_specified;
-        have_pair=find(all(ismember(pair_list,list_specified),2));
-        pair_list=pair_list(have_pair,:);
-    otherwise
-        wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
+if n>=1
+    switch method
+        case 'none'
+        case 'all'
+            if n>=2
+                pairs=nchoosek([1:n],2);
+                pair_list=vals_avail(pairs);
+            end
+        case 'chain'
+            pairs=1+mod([[0:n-2];[1:n-1]],n)';
+            pair_list=vals_avail(pairs);
+        case 'circuit'
+            pairs=1+mod([[0:n-1];[1:n]],n)';
+            pair_list=vals_avail(pairs);
+        case {'star','star_first'}
+            pairs=[repmat(1,1,n-1);[2:n]]';
+            pair_list=vals_avail(pairs);
+        case {'star_last'}
+            pairs=[repmat(n,1,n-1);[1:n-1]]';
+            pair_list=vals_avail(pairs);
+        case 'list'
+            pair_list=list_specified;
+            have_pair=find(all(ismember(pair_list,list_specified),2));
+            pair_list=pair_list(have_pair,:);
+        otherwise
+            wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
+    end
 end
 if ~isempty(pair_list)
     if ((size(pair_list,2)~=2) | any(list_specified(:)<=0) | any(list_specified(:)>max(vals_avail)) | any(floor(pair_list(:))~=pair_list(:)))
