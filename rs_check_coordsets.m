@@ -39,23 +39,27 @@ check=struct;
 check.warn_bad=0;
 check.warnings=[];
 %
-nsets=length(data_in.ds);
+nsets_ds=length(data_in.ds);
+nsets_sas=length(data_in.sas);
+nsets_sets=length(data_in.sets);
+nsets=min([nsets_ds nsets_sas nsets_sets]);
+%
 nstims_each=zeros(1,nsets);
 dim_list_each=cell(1,nsets);
 dim_list_union=[];
 typenames_each=cell(1,nsets);
 typenames_union=[];
 %check that ds, sas, sets is consistent
-if length(data_in.sas)~=nsets
-    wmsg=sprintf('number of entries in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sas),nsets);
+if nsets_sas~=nsets_ds
+    wmsg=sprintf('number of entries in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sas,nsets_ds);
     check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
-if length(data_in.sets)~=nsets
-    wmsg=sprintf('number of entries in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',length(data_in.sets),nsets);
+if nsets_sets~=nsets
+    wmsg=sprintf('number of entries in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sets,nsets_ds);
     check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
-%check that number of stimuli is internally consistent
 for iset=1:nsets
+    %check that number of stimuli is internally consistent
     nstims_each(iset)=data_in.sets{iset}.nstims;
     typenames_each{iset}=data_in.sas{iset}.typenames;
     if nstims_each(iset)~=data_in.sas{iset}.nstims
@@ -66,7 +70,19 @@ for iset=1:nsets
         wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),length(typenames_each{iset}));
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
+    %dimension list must be unique and ascending and integer
     dim_list_each{iset}=data_in.sets{iset}.dim_list;
+    if (any(dim_list_each{iset}~=round(dim_list_each{iset})) | (any(dim_list_each{iset}<=0)))
+        wmsg=sprintf('dimension list for set %3.0f must be postive integers',iset);
+        check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+    end
+    dim_list_each{iset}=max(1,round(dim_list_each{iset}));
+    if any(diff(dim_list_each{iset})<=0)
+        wmsg=sprintf('dimension list for set %3.0f have unique values',iset);
+        check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
+    end
+    dim_list_each{iset}=unique(dim_list_each{iset});
+    %
     if iset==1
         typenames_inter=typenames_each{iset};
         dim_list_inter=dim_list_each{iset};
@@ -80,11 +96,11 @@ for iset=1:nsets
         if length(data_in.ds{iset})>=idim
             coords=data_in.ds{iset}{idim};
             if size(coords,1)~=nstims_each(iset)
-                wmsg=sprintf('number of stimuli in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
+                wmsg=sprintf('number of stimuli in coordinate array for set %3.0f and dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
                 check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             end
             if size(coords,2)~=idim
-                wmsg=sprintf('number of dimensions in coordinate array for set %3.0f, dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
+                wmsg=sprintf('number of dimensions in coordinate array for set %3.0f and dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
                 check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             end
         else
@@ -96,6 +112,16 @@ for iset=1:nsets
     dim_list_each{iset}=setdiff(dim_list_each{iset},dim_remove);
     dim_list_union=union(dim_list_union(:)',dim_list_each{iset});
     dim_list_inter=intersect(dim_list_inter,dim_list_each{iset});
+    %check if there are extra coordinate sets
+    for idim=1:length(data_in.ds{iset})
+        coords=data_in.ds{iset}{idim};
+        if (size(coords,1)==nstims_each(iset) & size(coords,2)==idim)
+            if ~ismember(idim,data_in.sets{iset}.dim_list)
+                wmsg=sprintf('coordinate array for set %3.0f and dimension %3.0f is not listed in sets metadata; others may be processed',iset+opts.set_num_offset,idim);
+                check=rs_warning(wmsg,0,setfield(check,'if_warn',opts.if_warn));
+            end
+        end
+    end
 end
 %check that number of stimuli are consistent across datasets
 if min(nstims_each)~=max(nstims_each)
@@ -121,7 +147,7 @@ else %only check order of typenames if they have same length and match in some o
     end
 end %same stimulus names,independent of order?
 if length(dim_list_union)~=length(dim_list_inter)
-    wmsg=sprintf('dimension lists do not agree across datasets'); %this is not severe, process the intersection
+    wmsg=sprintf('dimension lists do not agree across datasets; intersection is available for processing'); %this is not severe, process the intersection
     if opts.if_warn
         check=rs_warning(wmsg,0,setfield(check,'if_warn',opts.if_warn));
         disp('discrepancies')
