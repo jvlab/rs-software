@@ -22,8 +22,8 @@ ncolors=length(colors);
 rng('default');
 coords=randn(npts,max(dim_list),ncolors); %make Gaussian clouds
 coords=coords+repmat(randn(1,max(dim_list),ncolors),[npts 1 1]); %add offsets
-styles=cell(2,4); %rows: alpha 1 and non-default; cols: dot marker and std line, custom marker and no line, no marker and custom line, custom marker and custom line
-titles=cell(2,4);
+styles=cell(2,5); %rows: alpha 1 and non-default; cols: dot marker and std line, std marker and no line, custom marker and no line, no marker and custom line, custom marker and custom line
+titles=cell(2,5);
 nrows=size(styles,1);
 ncols=size(styles,2);
 %
@@ -45,14 +45,17 @@ for ir=1:nrows
                 styles{ir,ic}.linestyle='-';
                 titles{ir,ic}=cat(2,'std marker and line',titles{ir,ic});
             case 2
+                styles{ir,ic}.marker='.';
+                titles{ir,ic}=cat(2,'std marker, no line',titles{ir,ic});
+            case 3
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
                 titles{ir,ic}=cat(2,'cust marker',titles{ir,ic});
-            case 3
+            case 4
                 styles{ir,ic}.linewidth=linewidth;
                 styles{ir,ic}.linestyle=linestyle;
                 titles{ir,ic}=cat(2,'cust line',titles{ir,ic});
-            case 4
+            case 5
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
                 styles{ir,ic}.linewidth=linewidth;
@@ -70,10 +73,10 @@ for id=1:length(dim_list)
     set(gcf,'NumberTitle','off');
     set(gcf,'Name',tstring);
     %
-    %
     for ir=1:nrows
         for ic=1:ncols
             subplot(nrows,ncols,ic+ncols*(ir-1));
+            disp(' ');
             disp(cat(2,tstring,' ',titles{ir,ic}));
             hlegend=[];
             for icolor=1:ncolors
@@ -102,7 +105,7 @@ for id=1:length(dim_list)
             end
             title(titles{ir,ic});
             if ~isempty(hlegend)
-                legend(hlegend,'Location','Best');
+                legend(hlegend,'Location','South');
             end
         end %ic
     end %ir

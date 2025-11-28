@@ -6,7 +6,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 % coords: a set of values to plot, either 2 or 3 columns
 %    If coords is empty, no handles are created
 % plotstyle: structure with any of the following fields (empty fields have indicated defaults)
-%   plotstyle.marker: 'none'
+%   plotstyle.marker: '.'
 %   plotstyle.markersize: 6
 %   plotstyle.linestyle: 'none'
 %   plotstyle.linewidth: 1
@@ -46,7 +46,7 @@ if opts.if_alpha_color_marker==-1
 end
 %
 plotstyle_def=struct;
-plotstyle_def.marker='none';
+plotstyle_def.marker='.';
 plotstyle_def.markersize=6;
 plotstyle_def.filled=0;
 %
