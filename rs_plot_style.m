@@ -10,7 +10,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %   plotstyle.markersize: 6
 %   plotstyle.linestyle: 'none'
 %   plotstyle.linewidth: 1
-%   plotstyle.color: 'k' (can also be an [r,g,b] triple)
+%   plotstyle.color: 'k' (can also be an [r,g,b] triple, or any other Matlab color specification)
 %   plotstyle.filled: 0 (1 to fill in)
 %   plotstyle.alpha: 1
 % opts: options, intended for hints for how to resolve conflicts

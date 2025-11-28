@@ -6,7 +6,7 @@
 if ~exist('opts') opts=struct; end
 %
 if ~exist('dim_list') dim_list=[2 3]; end
-if ~exist('colors') colors={'r','g','b',[.7 .3 .8]}; end
+if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8]}; end
 if ~exist('marker') marker='s'; end %non-default marker
 if ~exist('markersize') markersize=12; end %non-default marker size
 if ~exist('linewidth') linewidth=3; end  %non-default line width
