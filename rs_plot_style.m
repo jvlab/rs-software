@@ -4,7 +4,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 % thickness, alpha blending, and possible conflicts or unsupported properties
 %
 % coords: a set of values to plot, either 2 or 3 columns
-%    If coords is empty, no handles are created
+%    If coords is empty, no handles are createdif_line_color_alpha
 % plotstyle: structure with any of the following fields (empty fields have indicated defaults)
 %   plotstyle.marker: '.'
 %   plotstyle.markersize: 6
@@ -14,15 +14,17 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %   plotstyle.filled: 0 (1 to fill in)
 %   plotstyle.alpha: 1
 % opts: options, intended for hints for how to resolve conflicts
-%   opts.if_alpha_color_line: 1 (default) if line color property allows for alpha, 0 if not, -1 to determine from exist('alpha')
-%   opts.if_alpha_color_marker: 1 if marker edge color property allows for alpha, 0 (default) if not, -1 to determine from exist('alpha')
-
+%   opts.if_alpha_color_line: 1 if line color property allows for alpha as fourth component, 0 if not, 
+%    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
+%   opts.if_alpha_color_line_marker: 1 if marker edge color property allows for alpha as fourth component, 0 if not
+%    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
 %
-% handles: handle(s) to the plot, may include any of the following
+% handles: handles to the plot and components
+%    handles.legend: handle appropriate for the legend
+%  and one or more of the following, if the components exist
 %    handles.line
 %    handles.markers
 %    handles.scatter
-%  Also includes handles.legend, the recommended handle for legends
 % plotstyles_used: plot styles used for any of the components, as well as plotstyles_used.orig, 
 %    which is plotstyles_used with defaults filled inb
 % opts_used: options used, has a msgs field
@@ -35,16 +37,17 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 if (nargin<=2)
     opts=struct;
 end
-%line color allows for alpha, but markeredgecolor and markerfacecolor do not have alpha
-opts=filldefault(opts,'if_alpha_color_line',1);
-if opts.if_alpha_color_line==-1
-    opts.if_alpha_color_line=double(exist('alpha')>=2);
+if exist('rs_graphic_hints','file')
+    rs_graphic_hints;
 end
-opts=filldefault(opts,'if_alpha_color_marker',0);
-if opts.if_alpha_color_marker==-1
-    opts.if_alpha_color_marker=double(exist('alpha')>=2);
+if ~exist('rs_graphic_hints_def')
+    rs_graphic_hints_def=struct;
 end
-%
+opts=rs_plot_style_sethint(opts,'if_alpha_color_line',rs_graphic_hints_def); %line color allows for alpha
+opts=rs_plot_style_sethint(opts,'if_alpha_color_line_marker',rs_graphic_hints_def); %MarkerEdgeColor and MarkerFaceColor on a line allow for alpha
+opts=rs_plot_style_sethint(opts,'if_alpha_scatter_marker_edge',rs_graphic_hints_def); %MarkerEdgeAlpha is a property of Scatter
+opts=rs_plot_style_sethint(opts,'if_alpha_scatter_marker_face',rs_graphic_hints_def); %MarkerEdgeAlpha is a property of Scatter
+% 
 plotstyle_def=struct;
 plotstyle_def.marker='.';
 plotstyle_def.markersize=6;
@@ -152,6 +155,21 @@ for k=1:length(fields)
 end
 return
 end
+
+function opts_new=rs_plot_style_sethint(opts,hint,rs_graphic_hints_def)
+opts=filldefault(opts,hint,-1);
+if opts.(hint)==-1
+    if isfield(rs_graphic_hints_def,hint)
+        opts.(hint)=rs_graphic_hints_def.(hint);
+    else
+        opts.(hint)=double(exist('alpha')>=2);
+    end
+end
+opts_new=opts;
+return
+end
+
+
 
 % [hplot,msg]=rs
 % 

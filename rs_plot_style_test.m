@@ -83,7 +83,7 @@ for id=1:length(dim_list)
             for icolor=1:ncolors
                 styles{ir,ic}.filled=fill_list(icolor);
                 [handles{ir,ic,icolor,id},plotstyles_used{ir,ic,icolor,id},opts_used{ir,ic,icolor,id}]=...
-                    rs_plot_style(coords(:,1:nds,icolor),setfield(styles{ir,ic},'color',colors{icolor}),opts);
+                     rs_plot_style(coords(:,1:nds,icolor),setfield(styles{ir,ic},'color',colors{icolor}),opts);
                 if ~isempty(handles{ir,ic,icolor,id}.legend)
                     hlegend(icolor)=handles{ir,ic,icolor,id}.legend;
                 else
