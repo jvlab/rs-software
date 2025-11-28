@@ -50,8 +50,9 @@ for ir=1:nrows
             case 3
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
-                titles{ir,ic}=cat(2,'cust marker',titles{ir,ic});
+                titles{ir,ic}=cat(2,'cust marker, no line',titles{ir,ic});
             case 4
+                styles{ir,ic}.marker='none';
                 styles{ir,ic}.linewidth=linewidth;
                 styles{ir,ic}.linestyle=linestyle;
                 titles{ir,ic}=cat(2,'cust line',titles{ir,ic});
