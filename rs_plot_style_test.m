@@ -12,7 +12,7 @@ if ~exist('markersize') markersize=12; end %non-default marker size
 if ~exist('linewidth') linewidth=3; end  %non-default line width
 if ~exist('linestyle') linestyle=':'; end %non-default line style
 if ~exist('alphaval') alphaval=0.4; end %non default alpha value
-if ~exist('fill_list') fill_list=[0 1 0 1]; end %which colors are filled in
+if ~exist('fill_list') fill_list=[1 0 0 1]; end %which colors are filled in
 %
 if ~exist('npts') npts=20; end
 ncolors=length(colors);
