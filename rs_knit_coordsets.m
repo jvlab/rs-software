@@ -267,6 +267,7 @@ if aux_out.warn_bad==0
         knit_stats_setup.nsets=nsets;
         knit_stats_setup.dim_list_in_max=max(dim_list_in);
         knit_stats_setup.dim_list_in=dim_list_in;
+        knit_stats_setup.dim_list_out=dim_list_out;
         knit_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
             knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
