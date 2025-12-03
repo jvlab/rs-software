@@ -127,7 +127,7 @@ else
             end
         end
         if (~strcmp(plotstyle.marker,plotstyle_def.marker) | (plotstyle.markersize~=plotstyle_def.markersize))
-            opts_used.msgs='Cannot customize marker or marker size while using Scatter objects for alpha-blending';
+            opts_used.msgs='Cannot customize marker size while using Scatter objects for alpha-blending';
         end
         handles=rs_plot_style_sethandles(handles,hp,{'legend','scatter','markers'});
     end
