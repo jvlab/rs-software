@@ -65,10 +65,13 @@ for ir=1:nrows
         end
     end
 end
+param_string=sprintf('marker %s markersize %2.0f linestyle %s linewidth %2.0f alpha %4.2f',...
+    marker,markersize,linestyle,linewidth,alphaval);
 for id=1:length(dim_list)
     nds=dim_list(id);
-    tstring=sprintf('dim %2.0f: marker %s markersize %2.0f linestyle %s linewidth %2.0f alpha %4.2f',...
-        nds,marker,markersize,linestyle,linewidth,alphaval);
+    tstring=sprintf('dim %2.0f: %s',nds,param_string);
+    disp(' ');
+    disp(tstring)
     figure;
     set(gcf,'Position',[50 100 1200 800]);
     set(gcf,'NumberTitle','off');
@@ -77,8 +80,7 @@ for id=1:length(dim_list)
     for ir=1:nrows
         for ic=1:ncols
             subplot(nrows,ncols,ic+ncols*(ir-1));
-            disp(' ');
-            disp(cat(2,tstring,' ',titles{ir,ic}));
+            disp(titles{ir,ic});
             hlegend=[];
             for icolor=1:ncolors
                 styles{ir,ic}.filled=fill_list(icolor);
