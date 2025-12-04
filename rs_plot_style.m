@@ -20,6 +20,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
 %   opts.if_alpha_scatter_marker_[edge|face]:  1 if Marker[Edge|Face]Alpha is a property of Scatter, 0 if not,
 %    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
+%  If any of these capabilities are attempted and fail, then they are set to zero in opts_used 
 %
 % handles: handles to the plot and components
 %    handles.legend: handle appropriate for the legend
@@ -101,10 +102,19 @@ else
         set(hp,'Color',plotstyle.color);
         set(hp,'LineStyle',plotstyle.linestyle);
         set(hp,'LineWidth',plotstyle.linewidth);
+        c3=get(hp,'Color');
         if opts.if_alpha_color_line
-            c3=get(hp,'Color');
-            set(hp,'Color',[c3 plotstyle.alpha]);
+            success=1;
+            try
+                set(hp,'Color',[c3, plotstyle.alpha]);
+            catch
+                success=0;
+            end
         else
+            success=0;
+        end
+        if (success==0)
+            opts_used.if_alpha_color_line=0;
             opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Line objects');
         end
         handles=rs_plot_style_sethandles(handles,hp,{'legend','line'});
@@ -114,15 +124,33 @@ else
         set(hp,'Marker',plotstyle.marker);
         set(hp,'MarkerEdgeColor',plotstyle.color);
         if opts.if_alpha_scatter_marker_edge
-            set(hp,'MarkerEdgeAlpha',plotstyle.alpha);
+            success=1;
+            try 
+                set(hp,'MarkerEdgeAlpha',plotstyle.alpha);
+            catch
+                success=0;
+            end
         else
+            success=0;
+        end
+        if (success==0)
+            opts_used.if_alpha_scatter_marker_edge=0;
             opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker edges');
         end
         if plotstyle.filled
             set(hp,'MarkerFaceColor',plotstyle.color);
             if opts.if_alpha_scatter_marker_face
-                set(hp,'MarkerFaceAlpha',plotstyle.alpha);
+                success=1;
+                try
+                    set(hp,'MarkerFaceAlpha',plotstyle.alpha);
+                catch
+                    success=0;
+                end
             else
+                success=0;
+            end
+            if (success==0)
+                opts_used.if_alpha_scatter_marker_face=0;
                 opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker faces');               
             end
         end
