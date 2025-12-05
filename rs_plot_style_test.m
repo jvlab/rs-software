@@ -98,7 +98,9 @@ for id=1:length(dim_list)
                     end
                 end
                 if ~isempty(opts_used{ir,ic,icolor,id}.msgs)
-                    rs_warning(cat(2,sprintf(' color combination %2.0f: ',icolor),opts_used{ir,ic,icolor,id}.msgs,0));
+                    for k=1:size(opts_used{ir,ic,icolor,id}.msgs,1)
+                        rs_warning(cat(2,sprintf(' color combination %2.0f: ',icolor),opts_used{ir,ic,icolor,id}.msgs(k,:),0));
+                    end
                 end
             end
             axis equal
