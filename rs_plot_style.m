@@ -9,7 +9,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %   plotstyle.marker: '.'
 %   plotstyle.markersize: 6
 %   plotstyle.linestyle: 'none'
-%   plotstyle.linewidth: 1
+%   plotstyle.linewidth: 1, applies both to marker edge and to lines
 %   plotstyle.color: 'k' (can also be an [r,g,b] triple, or any other Matlab color specification)
 %   plotstyle.color_fill: color for inside of marker, if marker is filled in, defaults to plotstyle_color
 %   plotstyle.filled: 0 (1 to fill in)
@@ -125,6 +125,7 @@ else
         hp=rs_plot_style_do(coords,'Scatter');
         set(hp,'Marker',plotstyle.marker);
         set(hp,'MarkerEdgeColor',plotstyle.color);
+        set(hp,'LineWidth',plotstyle.linewidth);
         if opts.if_alpha_scatter_marker_edge
             success=1;
             try 

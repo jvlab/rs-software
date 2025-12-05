@@ -7,7 +7,7 @@ if ~exist('opts') opts=struct; end
 %
 if ~exist('dim_list') dim_list=[2 3]; end
 if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8]}; end
-if ~exist('colors_fill') colors_fill={'c',"#009F0F",'blue',[.2 .9 .8]}; end
+if ~exist('colors_fill') colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]}; end
 if ~exist('marker') marker='s'; end %non-default marker
 if ~exist('markersize') markersize=12; end %non-default marker size
 if ~exist('linewidth') linewidth=3; end  %non-default line width
@@ -51,6 +51,7 @@ for ir=1:nrows
             case 3
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
+                styles{ir,ic}.linewidth=linewidth;
                 titles{ir,ic}=cat(2,'cust marker, no   line',titles{ir,ic});
             case 4
                 styles{ir,ic}.marker='none';
