@@ -11,6 +11,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %   plotstyle.linestyle: 'none'
 %   plotstyle.linewidth: 1
 %   plotstyle.color: 'k' (can also be an [r,g,b] triple, or any other Matlab color specification)
+%   plotstyle.color_fill: color for inside of marker, if marker is filled in, defaults to plotstyle_color
 %   plotstyle.filled: 0 (1 to fill in)
 %   plotstyle.alpha: 1
 % opts: options, intended for hints for how to resolve conflicts
@@ -61,6 +62,7 @@ plotstyle=filldefault(plotstyle,'markersize',plotstyle_def.markersize);
 plotstyle=filldefault(plotstyle,'linestyle','none');
 plotstyle=filldefault(plotstyle,'linewidth',1);
 plotstyle=filldefault(plotstyle,'color','k');
+plotstyle=filldefault(plotstyle,'color_fill',plotstyle.color);
 plotstyle=filldefault(plotstyle,'filled',plotstyle_def.filled);
 plotstyle=filldefault(plotstyle,'alpha',1);
 plotstyles_used=struct;
@@ -85,7 +87,7 @@ if plotstyle.alpha==1
     set(hp,'MarkerSize',plotstyle.markersize);
     set(hp,'MarkerEdgeColor',plotstyle.color);
     if plotstyle.filled
-        set(hp,'MarkerFaceColor',plotstyle.color);
+        set(hp,'MarkerFaceColor',plotstyle.color_fill);
     end
     set(hp,'LineStyle',plotstyle.linestyle);
     set(hp,'LineWidth',plotstyle.linewidth);
@@ -138,7 +140,7 @@ else
             opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker edges');
         end
         if plotstyle.filled
-            set(hp,'MarkerFaceColor',plotstyle.color);
+            set(hp,'MarkerFaceColor',plotstyle.color_fill);
             if opts.if_alpha_scatter_marker_face
                 success=1;
                 try
@@ -154,7 +156,7 @@ else
                 opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker faces');               
             end
         end
-        if (~strcmp(plotstyle.marker,plotstyle_def.marker) | (plotstyle.markersize~=plotstyle_def.markersize))
+        if plotstyle.markersize~=plotstyle_def.markersize
             opts_used.msgs='Cannot customize marker size while using Scatter objects for alpha-blending';
         end
         handles=rs_plot_style_sethandles(handles,hp,{'legend','scatter','markers'});

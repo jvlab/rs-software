@@ -7,6 +7,7 @@ if ~exist('opts') opts=struct; end
 %
 if ~exist('dim_list') dim_list=[2 3]; end
 if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8]}; end
+if ~exist('colors_fill') colors_fill={'c',"#009F0F",'blue',[.2 .9 .8]}; end
 if ~exist('marker') marker='s'; end %non-default marker
 if ~exist('markersize') markersize=12; end %non-default marker size
 if ~exist('linewidth') linewidth=3; end  %non-default line width
@@ -43,25 +44,25 @@ for ir=1:nrows
             case 1
                 styles{ir,ic}.marker='.';
                 styles{ir,ic}.linestyle='-';
-                titles{ir,ic}=cat(2,'std marker and line',titles{ir,ic});
+                titles{ir,ic}=cat(2,'std  marker, std  line',titles{ir,ic});
             case 2
                 styles{ir,ic}.marker='.';
-                titles{ir,ic}=cat(2,'std marker, no line',titles{ir,ic});
+                titles{ir,ic}=cat(2,'std  marker, no   line',titles{ir,ic});
             case 3
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
-                titles{ir,ic}=cat(2,'cust marker, no line',titles{ir,ic});
+                titles{ir,ic}=cat(2,'cust marker, no   line',titles{ir,ic});
             case 4
                 styles{ir,ic}.marker='none';
                 styles{ir,ic}.linewidth=linewidth;
                 styles{ir,ic}.linestyle=linestyle;
-                titles{ir,ic}=cat(2,'cust line',titles{ir,ic});
+                titles{ir,ic}=cat(2,'no   marker, cust line',titles{ir,ic});
             case 5
                 styles{ir,ic}.marker=marker;
                 styles{ir,ic}.markersize=markersize;
                 styles{ir,ic}.linewidth=linewidth;
                 styles{ir,ic}.linestyle=linestyle;
-                titles{ir,ic}=cat(2,'cust marker and line',titles{ir,ic});
+                titles{ir,ic}=cat(2,'cust marker, cust line',titles{ir,ic});
         end
     end
 end
@@ -85,7 +86,9 @@ for id=1:length(dim_list)
             for icolor=1:ncolors
                 styles{ir,ic}.filled=fill_list(icolor);
                 [handles{ir,ic,icolor,id},plotstyles_used{ir,ic,icolor,id},opts_used{ir,ic,icolor,id}]=...
-                     rs_plot_style(coords(:,1:nds,icolor),setfield(styles{ir,ic},'color',colors{icolor}),opts);
+                     rs_plot_style(coords(:,1:nds,icolor),...
+                     setfield(setfield(styles{ir,ic},'color',colors{icolor}),'color_fill',colors_fill{icolor}),...
+                     opts);
                 if ~isempty(handles{ir,ic,icolor,id}.legend)
                     hlegend(icolor)=handles{ir,ic,icolor,id}.legend;
                 else
@@ -93,8 +96,8 @@ for id=1:length(dim_list)
                         rs_warning('No legend handle returned',0);
                     end
                 end
-                if (~isempty(opts_used{ir,ic,icolor,id}.msgs) & icolor==1)
-                    rs_warning(opts_used{ir,ic,icolor,id}.msgs,0);
+                if ~isempty(opts_used{ir,ic,icolor,id}.msgs)
+                    rs_warning(cat(2,sprintf(' color combination %2.0f: ',icolor),opts_used{ir,ic,icolor,id}.msgs,0));
                 end
             end
             axis equal
