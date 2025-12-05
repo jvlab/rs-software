@@ -70,6 +70,7 @@ plotstyles_used.orig=plotstyle;
 handles=[];
 opts_used=opts;
 opts_used.msgs=[];
+%
 nds=size(coords,2);
 if ~ismember(nds,[0 2 3])
     return
@@ -99,73 +100,121 @@ else
     if_alpha_marker=~strcmp(plotstyle.marker,'none');
     if_alpha_line=~strcmp(plotstyle.linestyle,'none');
     %
-    if if_alpha_line & ~if_alpha_marker %alpha requested for line but not marker
-        hp=rs_plot_style_do(coords,'Line');
-        set(hp,'Color',plotstyle.color);
-        set(hp,'LineStyle',plotstyle.linestyle);
-        set(hp,'LineWidth',plotstyle.linewidth);
-        c3=get(hp,'Color');
-        if opts.if_alpha_color_line
-            success=1;
-            try
-                set(hp,'Color',[c3, plotstyle.alpha]);
-            catch
-                success=0;
-            end
-        else
-            success=0;
-        end
-        if (success==0)
-            opts_used.if_alpha_color_line=0;
-            opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Line objects');
-        end
+    %alpha for line but not marker
+    if if_alpha_line & ~if_alpha_marker
+        [hp,opts_used]=rs_plot_style_line(coords,plotstyle,plotstyle_def,opts_used);
         handles=rs_plot_style_sethandles(handles,hp,{'legend','line'});
-    end
-    if ~if_alpha_line & if_alpha_marker %alpha requested for marker but not line
-        hp=rs_plot_style_do(coords,'Scatter');
-        set(hp,'Marker',plotstyle.marker);
-        set(hp,'MarkerEdgeColor',plotstyle.color);
-        set(hp,'LineWidth',plotstyle.linewidth);
-        if opts.if_alpha_scatter_marker_edge
-            success=1;
-            try 
-                set(hp,'MarkerEdgeAlpha',plotstyle.alpha);
-            catch
-                success=0;
-            end
-        else
-            success=0;
-        end
-        if (success==0)
-            opts_used.if_alpha_scatter_marker_edge=0;
-            opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker edges');
-        end
-        if plotstyle.filled
-            set(hp,'MarkerFaceColor',plotstyle.color_fill);
-            if opts.if_alpha_scatter_marker_face
-                success=1;
-                try
-                    set(hp,'MarkerFaceAlpha',plotstyle.alpha);
-                catch
-                    success=0;
-                end
-            else
-                success=0;
-            end
-            if (success==0)
-                opts_used.if_alpha_scatter_marker_face=0;
-                opts_used.msgs=strvcat(opts_used.msgs,'Cannot apply alpha-blending to Scatter marker faces');               
-            end
-        end
-        if plotstyle.markersize~=plotstyle_def.markersize
-            opts_used.msgs='Cannot customize marker size while using Scatter objects for alpha-blending';
-        end
+    end 
+    %
+    %alpha requested for marker but not line
+    if ~if_alpha_line & if_alpha_marker
+        [hp,opts_used]=rs_plot_style_scatter(coords,plotstyle,plotstyle_def,opts_used);
+        handles=rs_plot_style_sethandles(handles,hp,{'legend','scatter','markers'});
+    end %alpha requested for marker but not line
+    %
+    %alpha requested for line and marker
+    if if_alpha_line & if_alpha_marker
+        %first plot line with no markers
+        [hp,opts_used]=rs_plot_style_line(coords,setfield(plotstyle,'marker','none'),plotstyle_def,opts_used);
+        handles=rs_plot_style_sethandles(handles,hp,{'line'});
+        %then plot markers without line, and use this for legend handle
+        [hp,opts_used]=rs_plot_style_scatter(coords,plotstyle,plotstyle_def,opts_used);
         handles=rs_plot_style_sethandles(handles,hp,{'legend','scatter','markers'});
     end
-
 end
 return
 end
+
+function handles=rs_plot_style_sethandles(h,hp,fields)
+handles=h;
+for k=1:length(fields)
+    handles.(fields{k})=hp;
+end
+return
+end
+
+function opts_new=rs_plot_style_sethint(opts,hint,rs_graphic_hints_def)
+opts=filldefault(opts,hint,-1);
+if opts.(hint)==-1
+    if isfield(rs_graphic_hints_def,hint)
+        opts.(hint)=rs_graphic_hints_def.(hint);
+    else
+        opts.(hint)=double(exist('alpha')>=2);
+    end
+end
+opts_new=opts;
+return
+end
+
+function [hp,opts_new]=rs_plot_style_line(coords,plotstyle,plotstyle_def,opts)
+ %attempt to plot an alpha-blended line
+hp=rs_plot_style_do(coords,'Line');
+set(hp,'Color',plotstyle.color);
+set(hp,'LineStyle',plotstyle.linestyle);
+set(hp,'LineWidth',plotstyle.linewidth);
+c3=get(hp,'Color');
+if opts.if_alpha_color_line
+    success=1;
+    try
+        set(hp,'Color',[c3, plotstyle.alpha]);
+    catch
+        success=0;
+    end
+else
+    success=0;
+end
+if (success==0)
+    opts.if_alpha_color_line=0;
+    opts.msgs=strvcat(opts.msgs,'Cannot apply alpha-blending to Line objects');
+end
+opts_new=opts;
+return
+end
+
+function [hp,opts_new]=rs_plot_style_scatter(coords,plotstyle,plotstyle_def,opts) 
+%attempt to plot a scatter object with a given style
+hp=rs_plot_style_do(coords,'Scatter');
+set(hp,'Marker',plotstyle.marker);
+set(hp,'MarkerEdgeColor',plotstyle.color);
+set(hp,'LineWidth',plotstyle.linewidth);
+if opts.if_alpha_scatter_marker_edge
+    success=1;
+    try 
+        set(hp,'MarkerEdgeAlpha',plotstyle.alpha);
+    catch
+        success=0;
+    end
+else
+    success=0;
+end
+if (success==0)
+    opts.if_alpha_scatter_marker_edge=0;
+    opts.msgs=strvcat(opts.msgs,'Cannot apply alpha-blending to Scatter marker edges');
+end
+if plotstyle.filled
+    set(hp,'MarkerFaceColor',plotstyle.color_fill);
+    if opts.if_alpha_scatter_marker_face
+        success=1;
+        try
+            set(hp,'MarkerFaceAlpha',plotstyle.alpha);
+        catch
+            success=0;
+        end
+    else
+        success=0;
+    end
+    if (success==0)
+        opts.if_alpha_scatter_marker_face=0;
+        opts.msgs=strvcat(opts.msgs,'Cannot apply alpha-blending to Scatter marker faces');               
+    end
+end
+if plotstyle.markersize~=plotstyle_def.markersize
+    opts.msgs='Cannot customize marker size while using Scatter objects for alpha-blending';
+end
+opts_new=opts;
+return
+end
+
 function hp=rs_plot_style_do(coords,plot_type)
 switch plot_type
     case 'Line'
@@ -188,28 +237,6 @@ end
 hold on;
 return
 end
-%
-function handles=rs_plot_style_sethandles(h,hp,fields)
-handles=h;
-for k=1:length(fields)
-    handles.(fields{k})=hp;
-end
-return
-end
-
-function opts_new=rs_plot_style_sethint(opts,hint,rs_graphic_hints_def)
-opts=filldefault(opts,hint,-1);
-if opts.(hint)==-1
-    if isfield(rs_graphic_hints_def,hint)
-        opts.(hint)=rs_graphic_hints_def.(hint);
-    else
-        opts.(hint)=double(exist('alpha')>=2);
-    end
-end
-opts_new=opts;
-return
-end
-
 
 
 % [hplot,msg]=rs
