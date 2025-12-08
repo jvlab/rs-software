@@ -2,9 +2,9 @@
 %
 % options illustrated:
 %  generation of datasets "from scratch"
-%  options for interpreter
 %  filled symvbols and symbols with contrasting interiors
 %  alpha-blending
+%  options for interpreter
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, , RS_DISP_COORDSETS_DEMO2, ZPAD, PSG_MAKE_SETSTRUCT.
 %
@@ -14,12 +14,9 @@ if ~exist('nstims') nstims=10; end
 if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8],[.2 .3 0],'c'}; end  %intentionally of length 6 in case nsets>4
 if ~exist('markers') markers={'s','h','>','o'}; end 
 if ~exist('markersizes') markersizes=[6 8 10 12 14]; end %intentionally of length 5 in case nsets>4
-%options not yet implemented
 if ~exist('colors_fill') colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]}; end
-if ~exist('markersize') markersize=12; end %non-default marker size
-if ~exist('alphaval') alphaval=0.4; end %non default alpha value
 if ~exist('fill_list') fill_list=[1 0 0 1]; end %which colors are filled in
-
+if ~exist('alphaval') alphaval=[0.3 0.4 0.7]; end %non default alpha values
 %
 % data are Gaussian clouds
 %
@@ -35,6 +32,8 @@ typenames=cell(nstims,1);
 for istim=1:nstims
     typenames{istim}=cat(2,'stim ',zpad(istim,3));
 end
+typenames{1}='stim_1'; %for demonstrating Interpreter
+typenames{end}='stim \omega';
 type_string='data';
 label_long='[unknown]';
 pipeline=[];
@@ -60,9 +59,9 @@ for ip=1:length(dim_list)
     set(gcf,'NumberTitle','off');
     set(gcf,'Name',sprintf('dim %1.0f',k));
     hax=cell(nrows,ncols);
-    for iplot=1:3
-        irow=mod(iplot-1,ncols)+1;
-        icol=ceil(iplot/ncols);
+    for iplot=1:nrows*ncols
+        icol=mod(iplot-1,ncols)+1;
+        irow=ceil(iplot/ncols);
         hax=subplot(nrows,ncols,iplot);
         %
         opts_disp=struct;
@@ -78,15 +77,32 @@ for ip=1:length(dim_list)
         opts_disp.set_colors=colors;
         opts_disp.set_markers=markers;
         opts_disp.set_markersizes=markersizes;
-        switch mod(iplot,3)
-            case 0
+        opts_disp.set_filled=fill_list;
+        opts_disp.set_colors_filled=colors_fill;
+        %
+        opts_disp.callout_amount=0.75;
+        opts_disp.data_label_font_size=10;
+        opts_disp.legend_font_size=12;
+        %
+        opts_disp.set_labels={'set 1','set 2_a','set 2\alpha','set 3'};
+        if (irow==1 & icol==3)
+            opts_disp.legend_interpreter='none';
+            opts_disp.data_label_interpreter='none';
+        end
+        %
+        if irow==2
+            opts_disp.set_alphas=0.5; %alpha blending
+        end
+        switch icol
             case 1
+            case 2
                 opts_disp.connect_data_method='chain';
                 opts_disp.connect_data_linestyles={':','--'};
-            case 2
+            case 3
                 opts_disp.connect_sets_method='chain';
         end
         %
+        disp(sprintf(' row %1.0f col %1.0f, dim %1.0f',irow,icol,k));
         aux_out{irow,icol,ip}=rs_disp_coordsets(data_in,setfield(struct(),'opts_disp',opts_disp));
     end
 end
