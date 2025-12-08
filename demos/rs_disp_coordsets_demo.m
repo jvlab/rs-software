@@ -1,7 +1,8 @@
-% rs_disp_coordsets_demo: demonstrate display of datasets
-% with several customizations, with and without rotating to consensus
+% rs_disp_coordsets_demo: demonstrate display of datasets with several customizations
+% 
+% data are plotted with and without rotating to consensus
 %
-% options illustrated:
+% plot options illustrated:
 %  choice of data to plot
 %  choice of coordinates to plot
 %  legend placement
@@ -14,7 +15,7 @@
 %  axis labels
 %  3D views
 %
-%  See also:  RS_DISP_COORDSETS.
+%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO2, RS_DISP_COORDSETS_DEMO3.
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nfiles=length(filenames);

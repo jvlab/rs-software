@@ -1,5 +1,4 @@
-% rs_disp_coordsets_demo2: demonstrate display of datasets
-% with several customizations
+% rs_disp_coordsets_demo2: demonstrate display of datasets with several customizations
 %
 % options illustrated:
 %  sample datasets are rotated via PCA (in rs_knit_coordsets)
@@ -7,7 +6,7 @@
 %  choice of datasets to display
 %  offsets between datasets
 %
-%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO.
+%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3.
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nfiles=length(filenames);
