@@ -4,7 +4,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 % thickness, alpha blending, and possible conflicts or unsupported properties
 %
 % coords: a set of values to plot, either 2 or 3 columns
-%    If coords is empty, no handles are createdif_line_color_alpha
+%    If coords is empty, no handles are created
 % plotstyle: structure with any of the following fields (empty fields have indicated defaults)
 %   plotstyle.marker: '.'
 %   plotstyle.markersize: 6
@@ -237,34 +237,3 @@ end
 hold on;
 return
 end
-
-
-% [hplot,msg]=rs
-% 
-% 
-% function hline=rs_disp_doplot(coords,index,opts)
-% %plot the data (rows of coords) into the current plot, using index into opts.set* to determine the style
-% switch size(coords,2)
-%     case 2
-%         hline=plot(coords(:,1),coords(:,2),'k.');
-%     case 3
-%         hline=plot3(coords(:,1),coords(:,2),coords(:,3),'k.');
-% end
-% hold on;
-% index_color=1+mod(index-1,length(opts.colors));
-% set(hline,'Color',opts.colors{index_color});
-% %
-% index_marker=1+mod(index-1,length(opts.markers));
-% set(hline,'Marker',opts.markers{index_marker});
-% %
-% index_markersize=1+mod(index-1,length(opts.markersizes));
-% set(hline,'MarkerSize',opts.markersizes(index_markersize));
-% %
-% index_linestyle=1+mod(index-1,length(opts.linestyles));
-% set(hline,'LineStyle',opts.linestyles{index_linestyle});
-% %
-% index_linewidth=1+mod(index-1,length(opts.linewidths));
-% set(hline,'LineWidth',opts.linewidths(index_linewidth));
-% %
-% return
-% end

@@ -47,6 +47,9 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers: marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
+%   set_filled: 1 for sets for which markers are filled, 0 for unfilled (default)
+%   set_colors_filled: color assigned to fill, ignore if set_filled=0, defaults to set_colors
+%   set_alphas: alpha blending for each set, defaults to 1 (implementation may be system-dependent and lead to messages in aux_out.warnings)
 %   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
 %   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
 %
@@ -57,6 +60,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
 %   data_label_font_size: font size for data labels, defaults to axis_font_size
+%   data_label_interpreter: interpreter for labeling data, empty (default) is system default, alternatively 'none','tex','latex'
 %   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
 %   callout_colors: color for callout lines, defaults to {'k'};
 %   callout_linestyles: line style for callouts, defaults to {'-.'}
@@ -84,44 +88,24 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     subplot mathcing the first, with a legend
 %   legend_font_size: defaults to axis_font_size
 %   legend_location: defaults to 'Best'
+%   legend_interpreter: interpreter for set label in legend, empty (default) is system default, alternatively 'none','tex','latex'
 %   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set'
 %   if_warn: 1 to display warnings
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
 % aux_out: auxiliary outputs and parameter values used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
+%   warnings: warnings generated in creating arguments for psg_get_coordsets, or related to graphics capabilities and alpha blending
 %   warn_bad: count of warnings that prevent further processing
 %
 %  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_XFORM_APPLY,
-%     PSG_VISUALIZE, PSG_PLOTCOORDS.
-%
-% still to do:
-% alpha blending\
-% filled option for markers
-% allow for styling of lines to callouts
-% tetrahedral/barycentric plots
-% test selective plotting with several datasets and automate based on rays rays, i.e., choice of markers or colors depending on btc_coords -- piggyback on connect_data_linestyles, etc
-% options from psg_plotcoords  related to rays
-% opts=filldefault(opts,'line_width_ring',1);
-% opts=filldefault(opts,'line_type',[]); %line type
-% opts=filldefault(opts,'line_type_connect_neg','--'); %line type for negative directions for connections
-% opts=filldefault(opts,'line_type_ring',':');
-% opts=filldefault(opts,'marker_sign','*+'); %symbols for negative and postive values on rays
-% opts=filldefault(opts,'marker_origin','o'); %symbol for origin
-% opts=filldefault(opts,'marker_noray','.'); %symbol if no ray
-% opts=filldefault(opts,'marker_size',8); %marker size
-% opts=filldefault(opts,'color_rays',{[.3 .3 .3],[1 0 0],[0 .7 0],[0 0 1]}); %colors to cycle through for each ray, supplanted by psg_typenames2colors
-% opts=filldefault(opts,'color_origin',[0 0 0]); %color used for origin
-% opts=filldefault(opts,'color_nearest_nbr',[0 0 0]); %color for interconnections of nearest-neighbor points in same datset
-% opts=filldefault(opts,'color_ring',[0 0 0]);
-% opts=filldefault(opts,'noray_connect',1); %connect points not on rays (ray indicator=NaN) to each other
+%     PSG_VISUALIZE, PSG_PLOTCOORDS, RS_PLOT_STYLE.
 %
 if (nargin<=1)
     aux=struct;
 end
 %fields that will be made into cells if singletons
-make_cell={'set_colors','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors',...
+make_cell={'set_colors','set_colors_filled','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors',...
     'callout_colors','callout_linestyles'};
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
@@ -170,6 +154,9 @@ aux.opts_disp=filldefault(aux.opts_disp,'fig_name',sprintf('dimension %2.0f',aux
 aux.opts_disp=filldefault(aux.opts_disp,'set_colors',{'k','b','c','m','r','y','g'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markers',{'.'});
 aux.opts_disp=filldefault(aux.opts_disp,'set_markersizes',8);
+aux.opts_disp=filldefault(aux.opts_disp,'set_filled',0);
+aux.opts_disp=filldefault(aux.opts_disp,'set_colors_filled',aux.opts_disp.set_colors);
+aux.opts_disp=filldefault(aux.opts_disp,'set_alphas',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'data_show_method','all');
 aux.opts_disp=filldefault(aux.opts_disp,'data_show_list',[]);
@@ -177,6 +164,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_method','all');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_interpreter',[]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'callout_amount',0);
 aux.opts_disp=filldefault(aux.opts_disp,'callout_colors',{'k'});
@@ -199,6 +187,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_legend',1);
 aux.opts_disp=filldefault(aux.opts_disp,'legend_location','Best');
+aux.opts_disp=filldefault(aux.opts_disp,'legend_interpreter',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'legend_tags',{'set'});
 %
 aux=rs_aux_customize(aux,'rs_disp_coordsets');
@@ -322,6 +311,7 @@ for imc=1:length(make_cell)
 end
 %set up connection colors
 x.set_colors=x.set_colors(:);% ensure a column
+x.set_colors_filled=x.set_colors_filled(:);
 if size(x.connect_sets_list,1)>0
     connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
     switch x.connect_sets_color_mode
@@ -355,12 +345,17 @@ if naxis_handles>0 & naxis_handles~=ngroups_aug
 end
 %
 if aux_out.warn_bad==0
+    disp_msgs=[]; 
+    %set up styles for each component:  dataset, connections between data in a set, callouts, connectoins between sets
     set_styles=struct;
     set_styles.colors=x.set_colors;
     set_styles.markers=x.set_markers;
     set_styles.markersizes=x.set_markersizes;
     set_styles.linestyles={'none'};
     set_styles.linewidths=1;
+    set_styles.colors_filled=x.set_colors_filled;
+    set_styles.filled=x.set_filled;
+    set_styles.alphas=x.set_alphas;
     %
     connect_data_styles=struct;
     connect_data_styles.colors=x.set_colors;
@@ -412,13 +407,15 @@ if aux_out.warn_bad==0
             ko=mod(k-1,size(x.set_offsets,1))+1;
             z_all=z_all+repmat(x.set_offsets(ko,cg),size(z_all,1),1); %add the offset
             z=z_all(x.data_show_list,:); %points to plot
-            hline=rs_disp_doplot(z,k,set_styles);
+            [hline,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z,k,set_styles);
+            disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
             set(hline,'Tag',x.set_tags{1+mod(k-1,length(x.set_tags))});
             set(hline,'DisplayName',x.set_labels{1+mod(k-1,length(x.set_labels))});
             %connect requested points
             if ~isempty(x.connect_data_chains)
                 for ichain=1:length(x.connect_data_chains)
-                    hline=rs_disp_doplot(z_all(x.connect_data_chains{ichain},:),k,connect_data_styles);
+                    [hline,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z_all(x.connect_data_chains{ichain},:),k,connect_data_styles);
+                    disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                     set(hline,'Tag',sprintf('ds %2.0f chain %2.0f',k,ichain));
                     set(hline,'DisplayName',x.set_labels{1+mod(k-1,length(x.set_labels))});
                 end
@@ -447,8 +444,12 @@ if aux_out.warn_bad==0
                             ht=text(zcallout(ipt_ptr,1),zcallout(ipt_ptr,2),zcallout(ipt_ptr,3),typenames{ipt});
                     end %coord group size
                     set(ht,'FontSize',x.data_label_font_size);
+                    if ~isempty(x.data_label_interpreter)
+                        set(ht,'Interpreter',x.data_label_interpreter);
+                    end
                     if x.callout_amount>0
-                        hcallout=rs_disp_doplot(cat(1,z(ipt_ptr,:),zcallout(ipt_ptr,:)),ipt_ptr,callout_styles);
+                        [hcallout,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(cat(1,z(ipt_ptr,:),zcallout(ipt_ptr,:)),ipt_ptr,callout_styles);
+                        disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                     end
                 end %ipt
             end %set to label?
@@ -477,19 +478,18 @@ if aux_out.warn_bad==0
                     ko=mod(cset(iz)-1,size(x.set_offsets,1))+1;
                     endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg),size(endpoints,1),1,1); %add the offset
                 end
-%                endpoints=cat(3,...
-%                    data_in.ds{cset(1)}{x.dim_select}(:,x.coord_groups(igp,:)),...
-%                    data_in.ds{cset(2)}{x.dim_select}(:,x.coord_groups(igp,:)));
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
                     connect_set_styles.colors=x.connect_sets_colors;
                     for istim=1:length(x.data_show_list)
-                        hconnect=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_set_styles);
+                        [hconnect,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_set_styles);
+                        disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                     end
                 else
                     for istim=1:length(x.data_show_list)
                         for iseg=1:2
-                            hconnect=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_set_styles,'colors',x.connect_sets_colors(:,iseg)));
+                            [hconnect,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_set_styles,'colors',x.connect_sets_colors(:,iseg)));
+                            disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                         end %each segment
                     end %each stimulus
                 end %split or not
@@ -541,40 +541,59 @@ if aux_out.warn_bad==0
                 hc_show=union(hc_show,strmatch(x.legend_tags{itag},tags_all)); %select the objects whose tags start with x.legend_tags
             end
             if ~isempty(hc_show)
-                legend(hc(flipud(hc_show)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+                h_legend=legend(hc(flipud(hc_show)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+                if ~isempty(x.legend_interpreter)
+                    set(h_legend,'Interpreter',x.legend_interpreter);
+                end
             end
         end
     end
 end
 %
-aux_out.opts_disp=x;
+aux_out=rs_warning(unique(disp_msgs,'rows'),0,setfield(aux_out,'if_warn',x.if_warn));
 return
 end
 
-function hline=rs_disp_doplot(coords,index,opts)
-%plot the data (rows of coords) into the current plot, using index into opts.set* to determine the style
-switch size(coords,2)
-    case 2
-        hline=plot(coords(:,1),coords(:,2),'k.');
-    case 3
-        hline=plot3(coords(:,1),coords(:,2),coords(:,3),'k.');
+function [hline,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(coords,index,style_specs,opts)
+%plot the data (rows of coords) into the current plot, using index into style_specs.set* to determine the style
+%
+if (nargin<=3)
+    opts=struct;
 end
+%
+style_specs=filldefault(style_specs,'colors_filled',style_specs.colors);
+style_specs=filldefault(style_specs,'filled',0);
+style_specs=filldefault(style_specs,'alphas',1);
+%
+plotstyle=struct;
+%
+index_color=1+mod(index-1,length(style_specs.colors));
+plotstyle.color=style_specs.colors{index_color};
+%
+index_colors_filled=1+mod(index-1,length(style_specs.colors_filled));
+plotstyle.color_fill=style_specs.colors_filled{index_colors_filled};
+%
+index_filled=1+mod(index-1,length(style_specs.filled));
+plotstyle.filled=style_specs.filled(index_filled);
+%
+index_alpha=1+mod(index-1,length(style_specs.alphas));
+plotstyle.alpha=style_specs.alphas(index_alpha);
+%
+index_marker=1+mod(index-1,length(style_specs.markers));
+plotstyle.marker=style_specs.markers{index_marker};
+%
+index_markersize=1+mod(index-1,length(style_specs.markersizes));
+plotstyle.markersize=style_specs.markersizes(index_markersize);
+%
+index_linestyle=1+mod(index-1,length(style_specs.linestyles));
+plotstyle.linestyle=style_specs.linestyles{index_linestyle};
+%
+index_linewidth=1+mod(index-1,length(style_specs.linewidths));
+plotstyle.linewidth=style_specs.linewidths(index_linewidth);
+%
+[handles,plotstyle_used,opts_plotstyle_used]=rs_plot_style(coords,plotstyle,opts);
+hline=handles.legend;
 hold on;
-index_color=1+mod(index-1,length(opts.colors));
-set(hline,'Color',opts.colors{index_color});
-%
-index_marker=1+mod(index-1,length(opts.markers));
-set(hline,'Marker',opts.markers{index_marker});
-%
-index_markersize=1+mod(index-1,length(opts.markersizes));
-set(hline,'MarkerSize',opts.markersizes(index_markersize));
-%
-index_linestyle=1+mod(index-1,length(opts.linestyles));
-set(hline,'LineStyle',opts.linestyles{index_linestyle});
-%
-index_linewidth=1+mod(index-1,length(opts.linewidths));
-set(hline,'LineWidth',opts.linewidths(index_linewidth));
-%
 return
 end
 
