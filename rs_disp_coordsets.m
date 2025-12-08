@@ -45,7 +45,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   set_labels: labels for each dataset in legend, defaults to 'set 1', etc.
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
-%   set_markers marker assigned to each set, defaults to {'.'};
+%   set_markers: marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
 %   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
 %   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
@@ -323,13 +323,15 @@ end
 %set up connection colors
 x.set_colors=x.set_colors(:);% ensure a column
 if size(x.connect_sets_list,1)>0
+    connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
     switch x.connect_sets_color_mode
+        %connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
         case 'first'
-            x.connect_sets_colors=x.set_colors(x.connect_sets_list(:,1));
+            x.connect_sets_colors=x.set_colors(connect_sets_list_mod(:,1));
         case 'last'
-            x.connect_sets_colors=x.set_colors(x.connect_sets_list(:,2));
+            x.connect_sets_colors=x.set_colors(connect_sets_list_mod(:,2));
         case 'split'
-            x.connect_sets_colors=[x.set_colors(x.connect_sets_list(:,1)),x.set_colors(x.connect_sets_list(:,2))];
+            x.connect_sets_colors=[x.set_colors(connect_sets_list_mod(:,1)),x.set_colors(connect_sets_list_mod(:,2))];
         case 'list'
         otherwise
             wmsg=sprintf('connect color mode (%s) not recognized, connections ignored',x.connect_sets_method);
