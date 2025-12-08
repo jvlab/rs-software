@@ -5,6 +5,8 @@
 %  choice of dataset to label
 %  choice of datasets to display
 %  offsets between datasets
+%  plots of selected subsets of ponints, each with own kind of line or marker
+%  callouts for labels
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3.
 %
@@ -84,9 +86,10 @@ aux_rep.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 [data_rep,aux_read_rep]=rs_get_coordsets(filename_rep,aux_rep);
 hfig=figure;
 set(gcf,'Position',[100 100 1200 700]);
-hax=cell(1,2);
-hax{1}=subplot(1,2,1);
-hax{2}=subplot(1,2,2);
+set(gcf,'Numbertitle','off');
+set(gcf,'Name','selected subsets of data points');
+hax=cell(1,1);
+hax{1}=subplot(1,1,1);
 opts_disp_rep=struct;
 opts_disp_rep.dim_select=3;
 opts_disp_rep.fig_handle=hfig;
@@ -127,11 +130,17 @@ for isubs=1:length(subs)
     opts_disp_rep.set_labels=subs{isubs}.string; %only one dataset
     opts_disp_rep.set_tags=subs{isubs}.string; %so that only some components will be in legend
     opts_disp_rep.legend_tags={'b','a'}; %what is in the legend
-    if ~strcmp(subs{isubs}.line_style,'none') % %use data linestyle for callout unless none
-        opts_disp_rep.callout_linestyles=opts_disp_rep.connect_data_linestyles; 
+    if contains(subs{isubs}.string,'m')
+        opts_disp_rep.callout_linestyles={'--'}; %callout line style is -- for am and bm
+    elseif strcmp(subs{isubs}.line_style,'none')
+        opts_disp_rep=rmfield(opts_disp_rep,'callout_linestyles'); %default callout line style if no line for connectoin
     else
-        opts_disp_rep=rmfield(opts_disp_rep,'callout_linestyles');
+        opts_disp_rep.callout_linestyles=opts_disp_rep.connect_data_linestyles; 
+    end
+    if contains(subs{isubs}.string,'b')
+        opts_disp_rep.callout_linewidths=2; %thicker lines for callouts for b
     end
     opts_disp_rep.callout_colors=opts_disp_rep.set_colors; %use data colors for callouts
+    opts_disp_rep.connect_data_linewidths=3;
     aux_rep_disp=rs_disp_coordsets(data_rep,setfield(struct,'opts_disp',opts_disp_rep));
 end
