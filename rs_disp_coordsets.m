@@ -551,6 +551,7 @@ if aux_out.warn_bad==0
 end
 %
 aux_out=rs_warning(unique(disp_msgs,'rows'),0,setfield(aux_out,'if_warn',x.if_warn));
+aux_out.opts_disp=x;
 return
 end
 
@@ -602,32 +603,40 @@ function [pair_list,wmsg]=rs_disp_parse_pairmethod(method,vals_avail,list_specif
 n=length(vals_avail);
 wmsg=[];
 pair_list=[];
+npairs=0;
 if n>=1
     switch method
         case 'none'
         case 'all'
             if n>=2
                 pairs=nchoosek([1:n],2);
-                pair_list=vals_avail(pairs);
+                npairs=n*(n-1)/2;
             end
         case 'chain'
             pairs=1+mod([[0:n-2];[1:n-1]],n)';
-            pair_list=vals_avail(pairs);
+            npairs=n-1;
         case 'circuit'
             pairs=1+mod([[0:n-1];[1:n]],n)';
-            pair_list=vals_avail(pairs);
+            npairs=n;
         case {'star','star_first'}
             pairs=[repmat(1,1,n-1);[2:n]]';
-            pair_list=vals_avail(pairs);
+            npairs=n-1;
         case {'star_last'}
             pairs=[repmat(n,1,n-1);[1:n-1]]';
-            pair_list=vals_avail(pairs);
+            npairs=n-1;
+            pair_list=[vals_avail(pairs(:,1))',vals_avail(pairs(:,2))'];
         case 'list'
             pair_list=list_specified;
-            have_pair=find(all(ismember(pair_list,list_specified),2));
+            have_pair=find(all(ismember(pair_list,vals_avail),2));
             pair_list=pair_list(have_pair,:);
         otherwise
             wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
+    end
+    if npairs>0
+        %make pair_list 2 columns
+        v1=vals_avail(pairs(:,1));
+        v2=vals_avail(pairs(:,2));
+        pair_list=[v1(:),v2(:)];
     end
 end
 if ~isempty(pair_list)
@@ -654,7 +663,8 @@ switch method
     case 'last'
         list_vals=vals_avail(end);
     case 'list'
-        list_vals=intersect(vals_avail,list_specified(:));
+        list_vals=list_specified(find(ismember(list_specified(:),vals_avail))); %so we don't change the order
+        list_vals=list_vals(:);
     otherwise
         wmsg=strvcat(wmsg,sprintf('%s not recognized; none used',msg));
 end
