@@ -14,7 +14,7 @@ if ~exist('filename_gps')
 end
 if ~exist('nvars') nvars=2; end %for variants such as with and without rings or axes
 ngps=length(filename_gps);
-aux_out_disp=cell(ngps,nvars);
+aux_out_disp=cell(ngps,nvars,2); %final dimension is if_pca+1
 for igp=1:ngps
     filenames=filename_gps{igp};
     nfiles=length(filenames);
@@ -34,6 +34,15 @@ for igp=1:ngps
         end
     end
     if (if_ok)
+        %
+        aux_align_def=struct;
+        aux_align_def.opts_align.if_log=0;
+        [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
+        aux_knit_def=struct;
+        aux_knit_def.opts_knit.if_log=0;
+        aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
+        [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
+        %
         opts_disp=struct;
         opts_disp.fig_name=sprintf('group %1.0f: %s',igp,data_read.sets{1}.paradigm_name);
         for ifile=1:nfiles
@@ -42,11 +51,23 @@ for igp=1:ngps
         opts_disp.fig_handle=figure;
         set(gcf,'Name',opts_disp.fig_name);
         set(gcf,'Position',[50 100 1400 800]);
-        set(gcf,'NumberTitle','off');
+        set(gcf,'NumberTitle','off');       
         for ivar=1:nvars
             opts_disp_var=opts_disp;
-            opts_disp_var.axis_handles{1}=subplot(1,nvars,ivar);
-            aux_out_disp{igp,ivar}=rs_disp_coordsets(data_read,setfield(struct,'opts_disp',opts_disp_var));
+            if (ivar>1)
+                opts_disp_var.data_label_method='none';
+            end
+            for if_pca=0:1
+                if (if_pca==0)
+                    data_disp=data_read;
+                else
+                    data_disp=aux_knit.components;
+                    opts_disp_var.axis_label_prefix='pc';
+                    opts_disp_var.connect_sets_method='all';
+                end
+                opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
+                aux_out_disp{igp,ivar,1+if_pca}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_var));
+            end
         end
     end
 end
