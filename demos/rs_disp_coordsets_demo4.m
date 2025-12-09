@@ -1,5 +1,12 @@
 % rs_disp_coordsets_demo4: demonstrate display of datasets with rays
 %
+%  Note: when using data from components, rays also need to be taken from compoents
+%
+%   To do:  too much legend; need better labels
+%    need colorizatoin of the rays
+%    plot the grid
+%    plot fitted rays
+
 %  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3.
 %
 if ~exist('filename_gps')
@@ -12,10 +19,13 @@ if ~exist('filename_gps')
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
 end
-if ~exist('nvars') nvars=2; end %for variants such as with and without rings or axes
+if ~exist('nvars') nvars=4; end %for variants such as with and without rings or axes
 ngps=length(filename_gps);
-aux_out_disp=cell(ngps,nvars,2); %final dimension is if_pca+1
-for igp=1:ngps
+aux_out_disp=cell(nvars,2,ngps); %dim 2 is if_pca+1
+%
+gp_list=getinp('group list','d',[1 ngps]);
+for igp_ptr=1:length(gp_list)
+    igp=gp_list(igp_ptr);
     filenames=filename_gps{igp};
     nfiles=length(filenames);
     aux_in=struct;
@@ -30,7 +40,7 @@ for igp=1:ngps
             disp(sprintf(' file %1.0f: %70s: ray structure not created',ifile,filenames{ifile}))
             if_ok=0;
         else
-            disp(sprintf(' file %1.0f: %70s: %3.0f rays, %3.0f rings',ifile,filenames{ifile},rays.nrays,rays.nrings))
+            disp(sprintf(' file %1.0f: %70s: %3.0f rays, %3.0f rings, %3.0f pairs',ifile,filenames{ifile},rays.nrays,rays.nrings,rays.npairs))
         end
     end
     if (if_ok)
@@ -53,24 +63,74 @@ for igp=1:ngps
         set(gcf,'Position',[50 100 1400 800]);
         set(gcf,'NumberTitle','off');       
         for ivar=1:nvars
-            opts_disp_var=opts_disp;
-            if (ivar>1)
-                opts_disp_var.data_label_method='none';
-            end
             for if_pca=0:1
+                opts_disp_var=opts_disp;
                 if (if_pca==0)
                     data_disp=data_read;
-                else
+                    rays_use=aux_read.rayss{1};
+                else %use component data and rays
                     data_disp=aux_knit.components;
                     opts_disp_var.axis_label_prefix='pc';
                     opts_disp_var.connect_sets_method='all';
+                    rays_use=aux_knit.rayss{1};
+                end
+                %set up plot options
+                if (ivar>1)
+                    opts_disp_var.data_label_method='none';
                 end
                 opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
-                aux_out_disp{igp,ivar,1+if_pca}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_var));
-            end
-        end
-    end
-end
+                %
+                %plot all pairs of points
+                aux_out_disp{ivar,1+if_pca,igp}=struct;
+                aux_out_disp{ivar,1+if_pca,igp}.all=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_var));
+                %
+                %then plot subsets
+                aux_out_disp{ivar,1+if_pca,igp}.rays=cell(0);
+                if (ivar>=2)%connect points along a ray
+                    for iray=1:rays_use.nrays
+                        opts_disp_rays=opts_disp_var;
+                        opts_disp_rays.data_show_method='list';
+                        orig_ptr=min(find(rays_use.whichray==0));
+                        for isign=-1:2:1
+                            bidir=find(rays_use.whichray==iray);
+                            mults=rays_use.mult(bidir);
+                            sign_sel=find(sign(mults)==isign);
+                            if ~isempty(sign_sel)
+                                bidir_sel=bidir(sign_sel);
+                                mults_sel=mults(sign_sel);
+                                mb_sorted=sort([abs(mults_sel(:)),bidir_sel],1,'ascend');
+                                bidir_sorted=mb_sorted(:,2); %sorted in ascending order of magnitude
+                                opts_disp_rays.data_show_list=[orig_ptr bidir_sorted'];
+                                opts_disp_rays.connect_data_method='chain';
+                                switch isign
+                                    case 1
+                                        opts_disp_rays.connect_data_linestyles='-';
+                                    case -1
+                                        opts_disp_rays.connect_data_linestyles='--';
+                                end
+                                aux_out_disp{ivar,1+if_pca,igp}.rays{iray,(3+isign)/2}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_rays));                                             
+                            end %not empty
+                        end %sign
+                    end %iray
+                end %ivar>=2
+                aux_out_disp{ivar,1+if_pca,igp}.rings=cell(0);
+                if (ivar>=3)%connect points on a ring
+                    for iring=1:rays_use.nrings
+                        ring_list=rays_use.rings{iring}.coord_ptrs;
+                        ring_list_offset=[ring_list(2:end) ring_list(1)];
+                        opts_disp_rings=opts_disp_var;
+                        opts_disp_rings.data_show_method='list';
+                        opts_disp_rings.data_show_list=ring_list;
+                        opts_disp_rings.connect_data_method='list';
+                        opts_disp_rings.connect_data_list=[ring_list(:),ring_list_offset(:)];
+                        opts_disp_rings.connect_data_linestyles=':';
+                        aux_out_disp{ivar,1+if_pca,igp}.rings{iring}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_rings));               
+                    end %iray
+                end %ivar>=2
+            end 
+        end %ivar
+    end %if_ok
+end %igp
 % 
 % %
 % %align and rotate data into a consensus, and use each component, aligned to consensus, for further plotting
