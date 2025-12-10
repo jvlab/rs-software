@@ -2,12 +2,14 @@
 %
 %  Note: when using data from components, rays also need to be taken from compoents
 %
-%   To do:  too much legend; need better labels
-%    need colorizatoin of the rays
-%    plot the grid
+%   To do:
+%    plot the grid (may need to eliminate pairs that are in rays)
+%    demonstrate offset
+%    better legend based on whether there are multiple subjects or one subject
 %    plot fitted rays
-
-%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3.
+%
+%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3,
+%   PSG_TYPENAMES2COLORS.
 %
 if ~exist('filename_gps')
     filename_gps{1}={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
@@ -19,6 +21,7 @@ if ~exist('filename_gps')
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
 end
+if ~exist('opts_tn2c') opts_tn2c=struct; end %for psg_typenames2colors
 if ~exist('nvars') nvars=4; end %for variants such as with and without rings or axes
 ngps=length(filename_gps);
 aux_out_disp=cell(nvars,2,ngps); %dim 2 is if_pca+1
@@ -80,7 +83,7 @@ for igp_ptr=1:length(gp_list)
                 end
                 opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
                 %
-                %plot all pairs of points
+                %plot all points
                 aux_out_disp{ivar,1+if_pca,igp}=struct;
                 aux_out_disp{ivar,1+if_pca,igp}.all=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_var));
                 %
@@ -100,14 +103,20 @@ for igp_ptr=1:length(gp_list)
                                 mults_sel=mults(sign_sel);
                                 mb_sorted=sort([abs(mults_sel(:)),bidir_sel],1,'ascend');
                                 bidir_sorted=mb_sorted(:,2); %sorted in ascending order of magnitude
-                                opts_disp_rays.data_show_list=[orig_ptr bidir_sorted'];
+                                opts_disp_rays.data_show_list=[orig_ptr bidir_sorted']; %add origin to the beginning
                                 opts_disp_rays.connect_data_method='chain';
+                                [rgb,symb,vecs,opts_used]=psg_typenames2colors(data_disp.sas{1}.typenames(bidir_sorted),opts_tn2c); %get standard colors and symbols
+                                opts_disp_rays.set_colors{1}=rgb;
+                                opts_disp_rays.data_label_method='last';
+                                opts_disp_rays.callout_amount=0.5;
+                                opts_disp_rays.callout_colors{1}=rgb;
                                 switch isign
                                     case 1
                                         opts_disp_rays.connect_data_linestyles='-';
                                     case -1
                                         opts_disp_rays.connect_data_linestyles='--';
                                 end
+                                opts_disp_rays.set_tags='ray'; %so that this will not be in legend
                                 aux_out_disp{ivar,1+if_pca,igp}.rays{iray,(3+isign)/2}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_rays));                                             
                             end %not empty
                         end %sign
@@ -124,6 +133,7 @@ for igp_ptr=1:length(gp_list)
                         opts_disp_rings.connect_data_method='list';
                         opts_disp_rings.connect_data_list=[ring_list(:),ring_list_offset(:)];
                         opts_disp_rings.connect_data_linestyles=':';
+                        opts_disp_rings.set_tags='rings'; %so that this will not be in legend
                         aux_out_disp{ivar,1+if_pca,igp}.rings{iring}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_rings));               
                     end %iray
                 end %ivar>=2
