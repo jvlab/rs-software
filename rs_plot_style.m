@@ -29,8 +29,7 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %    handles.line
 %    handles.markers
 %    handles.scatter
-% plotstyles_used: plot styles used for any of the components, as well as plotstyles_used.orig, 
-%    which is plotstyles_used with defaults filled in
+% plotstyles_used: plot styles with defaults filled in
 % opts_used: options used, has a msgs field
 % 
 % plot status is hold on at exit
@@ -65,8 +64,7 @@ plotstyle=filldefault(plotstyle,'color','k');
 plotstyle=filldefault(plotstyle,'color_fill',plotstyle.color);
 plotstyle=filldefault(plotstyle,'filled',plotstyle_def.filled);
 plotstyle=filldefault(plotstyle,'alpha',1);
-plotstyles_used=struct;
-plotstyles_used.orig=plotstyle;
+plotstyles_used=plotstyle;
 handles=[];
 opts_used=opts;
 opts_used.msgs=[];

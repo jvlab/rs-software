@@ -64,7 +64,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
 %   callout_colors: color for callout lines, defaults to {'k'};
 %   callout_linestyles: line style for callouts, defaults to {'-.'}
-%   callout_linewidtths: width for callouts, defaults to 1
+%   callout_linewidths: width for callouts, defaults to 1
 %
 %   connect_data_method: which data points to connect, 'none' (default), or any of the options in connect_sets_method
 %   connect_data_list: two-column array of data points to connect (if data_connect_method='list')
@@ -437,18 +437,19 @@ if aux_out.warn_bad==0
                 typenames=data_in.sas{k}.typenames;
                 for ipt_ptr=1:length(x.data_label_list)
                     ipt=x.data_label_list(ipt_ptr);
+                    ipt_rel=find(x.data_show_list==ipt); %which of the selected points is being labelled
                     switch x.coord_group_size
                         case 2
-                            ht=text(zcallout(ipt_ptr,1),zcallout(ipt_ptr,2),typenames{ipt});
+                            ht=text(zcallout(ipt_rel,1),zcallout(ipt_rel,2),typenames{ipt});
                         case 3
-                            ht=text(zcallout(ipt_ptr,1),zcallout(ipt_ptr,2),zcallout(ipt_ptr,3),typenames{ipt});
+                            ht=text(zcallout(ipt_rel,1),zcallout(ipt_rel,2),zcallout(ipt_rel,3),typenames{ipt});
                     end %coord group size
                     set(ht,'FontSize',x.data_label_font_size);
                     if ~isempty(x.data_label_interpreter)
                         set(ht,'Interpreter',x.data_label_interpreter);
                     end
                     if x.callout_amount>0
-                        [hcallout,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(cat(1,z(ipt_ptr,:),zcallout(ipt_ptr,:)),ipt_ptr,callout_styles);
+                        [hcallout,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(cat(1,z(ipt_rel,:),zcallout(ipt_rel,:)),k,callout_styles);
                         disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                     end
                 end %ipt
