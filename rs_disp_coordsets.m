@@ -219,7 +219,7 @@ switch x.coord_group_method %determine coordinate groups
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 if x.coord_group_size~=size(x.coord_groups,2)
-    wmsg=sprintf('number of columnns in coord_groups (%3.0f) and coord_group_size is inconsistent',x.coord_group_size);
+    wmsg=sprintf('number of columnns in coord_groups (%3.0f) and coord_group_size (%3.0f) is inconsistent',size(x.coord_groups,2),x.coord_group_size);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
 end
 if ~ismember(x.coord_group_size,coords_together_allowed)
