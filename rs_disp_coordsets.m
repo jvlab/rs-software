@@ -198,6 +198,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_font_size',aux.opts_disp.axi
 %
 %set up other defaults and check consistency
 %
+disp_msgs=[]; %for warnings encountered during plots
 x=aux.opts_disp; %for convenience
 switch x.coord_group_method %determine coordinate groups
     case 'all'
@@ -341,11 +342,10 @@ end
 naxis_handles=length(x.axis_handles);
 if naxis_handles>0 & naxis_handles~=ngroups_aug
     wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of axes needed (%3.0f)',naxis_handles,ngroups_aug);
-    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',x.if_warn));
+    aux_out=rs_warning(wmsg,double(naxis_handles<ngroups_aug),setfield(aux_out,'if_warn',x.if_warn));
 end
 %
 if aux_out.warn_bad==0
-    disp_msgs=[]; 
     %set up styles for each component:  dataset, connections between data in a set, callouts, connectoins between sets
     set_styles=struct;
     set_styles.colors=x.set_colors;
