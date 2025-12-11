@@ -134,7 +134,6 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
             pair_keep=and(pair_keep,all(pair_rayid~=0,2)); %exclude rays that include the origin
             pairs=pairs(find(pair_keep),:);
         end
-        pairs
         if ~isempty(pairs)
             opts_disp_nbrs.data_show_list=unique(pairs(:));
             opts_disp_nbrs.connect_data_list=pairs;
