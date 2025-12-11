@@ -1,9 +1,10 @@
 function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 % function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %
-%   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
-%
-%  aux.opts_disp: these fields are starting points for customization for ray plots
+% aux.opts_disp_enh: controls which enhanced features are added to plots
+% 
+% aux.opts_disp: these fields are starting points for customization for enhanced plots
+%  fields not specified are passed through to rs_disp_coordsets
 %                                  points     rays     rings    neighbors
 %    data_show_method:             'all'     'list'   'list'     'list' 
 %    data_label_method:            'none'*   'last'   'none'*    'none'*
@@ -13,13 +14,15 @@ function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %    callout_amount                           0.5*
 %    set_colors                             per ray
 %    callout_colors                         per ray*
-%   * indicates that an explicitly supplied value is NOT overridden
+%   * indicates that an explicitly supplied value in aux.opts_disp is NOT overridden
 %
 %need to document, what is passed through, and handles on output
 %provide options for psg_typenames2colors
 %labellig options
 %rings, rays, grids
-%need to test with multiple subsets of axes
+%need to test with multiple subsets of axes, selectoin of datasets, views,etc
+%
+%   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
 %
 aux=filldefault(aux,'opts_disp',struct());
 aux=filldefault(aux,'opts_disp_enh',struct());
