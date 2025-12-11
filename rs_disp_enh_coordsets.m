@@ -2,7 +2,13 @@ function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 % function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %
 % aux.opts_disp_enh: controls which enhanced features are added to plots
-% 
+%   if_points: 1 (default) to display each data point
+%   if_rays:   1 (default) to display rays
+%   if_rings:  1 to display rings (default: 0)
+%   if_nbrs:   1 (default) to connect nearest-neighbors
+%   if_nbrs_nosameray: 1 (default) to suppress nearest-neighbor connections 
+%      if both points are on the same ray, or next to origin, and rays are displayed
+%
 % aux.opts_disp: these fields are starting points for customization for enhanced plots
 %  fields not specified are passed through to rs_disp_coordsets
 %                                  points     rays     rings    neighbors
@@ -10,6 +16,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %    data_label_method:            'none'*   'last'   'none'*    'none'*
 %    data_connect_method:                    'list'   'list'*    'list'
 %    connect_data_linestyles       'none'*  '-'/'--'   ':'*      '-'*
+%    set_markers                                                 'none'
 %    set_tags                                'rays'   'rings'    'nbrs'
 %    callout_amount                           0.5*
 %    set_colors                             per ray
@@ -28,10 +35,11 @@ aux=filldefault(aux,'opts_disp',struct());
 aux=filldefault(aux,'opts_disp_enh',struct());
 aux=filldefault(aux,'opts_tn2c',struct());
 %
-aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_points',0);
+aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_points',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rays',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
-aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',0);
+aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
+aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
 %
 if aux.opts_disp_enh.if_points %plot individual points?
     %customize standard plot options for points
@@ -108,6 +116,34 @@ if aux.opts_disp_enh.if_rings %connect rings
             aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out_ring.opts_disp);
          end %empty?
     end %iray
+end
+%
+if aux.opts_disp_enh.if_nbrs %connect neighbors
+   if rays.npairs>0
+        %customize standard plot options for rings
+        opts_disp_nbrs=aux.opts_disp;
+        opts_disp_nbrs.data_show_method='list';
+        opts_disp_nbrs.connect_data_method='list';
+        opts_disp_nbrs=filldefault(opts_disp_nbrs,'data_label_method','none');
+        opts_disp_nbrs=filldefault(opts_disp_nbrs,'connect_data_linestyles','-');
+        opts_disp_nbrs.set_tags='nbrs'; %so that this will not be in legend
+        pairs=rays.pairs;
+        if aux.opts_disp_enh.if_nbrs_notsameray
+            pair_rayid=rays.whichray(pairs);
+            pair_keep=double(pair_rayid(:,1)~=pair_rayid(:,2)); %note, this will keep if both are NaN
+            pair_keep=and(pair_keep,all(pair_rayid~=0,2)); %exclude rays that include the origin
+            pairs=pairs(find(pair_keep),:);
+        end
+        pairs
+        if ~isempty(pairs)
+            opts_disp_nbrs.data_show_list=unique(pairs(:));
+            opts_disp_nbrs.connect_data_list=pairs;
+            opts_disp_nbrs.set_markers={'none'};
+            aux_out_nbrs=rs_disp_coordsets(data_in,setfield(struct,'opts_disp',opts_disp_nbrs));
+            aux_out.nbrs=aux_out_nbrs;
+            aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out_nbrs.opts_disp);
+        end
+    end %empty?
 end
 %
 aux_out.opts_disp=aux.opts_disp;
