@@ -20,7 +20,9 @@ if ~exist('filename_gps')
         './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',...
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
+    filename_gps{6}=filename_gps{5}; %this will be for multiple dims on the same plot
 end
+igp_spec=6; %will be treated specially
 if ~exist('opts_tn2c') opts_tn2c=struct; end %for psg_typenames2colors
 if ~exist('nvars') nvars=5; end %for variants such as with and without rings or axes
 ngps=length(filename_gps);
@@ -66,23 +68,25 @@ for igp_ptr=1:length(gp_list)
         %
         %standard plot
         %
-        opts_disp.fig_handle=figure;
-        set(gcf,'Name',cat(2,opts_disp.fig_name,', standard'));
-        set(gcf,'Position',[50 100 1200 800]);
-        set(gcf,'NumberTitle','off');       
-        for if_pca=0:1
-            opts_disp_std=opts_disp;
-            if (if_pca==0)
-                data_disp=data_read;
-                rays_use=aux_read.rayss{1};
-            else %use component data and rays
-                data_disp=aux_knit.components;
-                opts_disp_std.axis_label_prefix='pc';
-                opts_disp_std.connect_sets_method='all';
-                rays_use=aux_knit.rayss{1};
+        if ~ismember(igp,igp_spec)
+            opts_disp.fig_handle=figure;
+            set(gcf,'Name',cat(2,opts_disp.fig_name,', standard'));
+            set(gcf,'Position',[50 100 1200 800]);
+            set(gcf,'NumberTitle','off');       
+            for if_pca=0:1
+                opts_disp_std=opts_disp;
+                if (if_pca==0)
+                    data_disp=data_read;
+                    rays_use=aux_read.rayss{1};
+                else %use component data and rays
+                    data_disp=aux_knit.components;
+                    opts_disp_std.axis_label_prefix='pc';
+                    opts_disp_std.connect_sets_method='all';
+                    rays_use=aux_knit.rayss{1};
+                end
+                opts_disp_std.axis_handles{1}=subplot(1,2,1+if_pca);
+                aux_out_std{1+if_pca,igp}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_std));
             end
-            opts_disp_std.axis_handles{1}=subplot(1,2,1+if_pca);
-            aux_out_std{1+if_pca,igp}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_std));
         end
         %
         %plot variants
@@ -90,9 +94,16 @@ for igp_ptr=1:length(gp_list)
         opts_disp.fig_handle=figure;
         set(gcf,'Name',cat(2,opts_disp.fig_name,', variants'));
         set(gcf,'Position',[100 100 1400 800]);
-        set(gcf,'NumberTitle','off');       
-        for ivar=1:nvars
-            for if_pca=0:1
+        set(gcf,'NumberTitle','off');
+        if ismember(igp,igp_spec)
+            nvars_adj=1;
+            pca_init=1;
+        else
+            nvars_adj=nvars;
+            pca_init=0;
+        end
+        for ivar=1:nvars_adj
+            for if_pca=pca_init:1
                 opts_disp_var=opts_disp;
                 if (if_pca==0)
                     data_disp=data_read;
@@ -104,12 +115,22 @@ for igp_ptr=1:length(gp_list)
                     rays_use=aux_knit.rayss{1};
                 end
                 opts_disp_enh=struct();
+                npanels=1;
                 switch ivar
                     case 1
-                        opts_disp_enh.if_points=1;
-                        opts_disp_enh.if_rays=0;
-                        opts_disp_enh.if_rings=0;
-                        opts_disp_enh.if_nbrs=0;
+                        if ismember(igp,igp_spec)
+                            opts_disp_var.set_select=[1 3];
+                            opts_disp_var.dim_select=4;
+                            opts_disp_var.coord_group_size=3;
+                            opts_disp_var.coord_group_method='list';
+                            opts_disp_var.coord_groups=[[1 2 3];[2 3 4]];
+                            npanels=size(opts_disp_var.coord_groups,1);
+                         else
+                            opts_disp_enh.if_points=1;
+                            opts_disp_enh.if_rays=0;
+                            opts_disp_enh.if_rings=0;
+                            opts_disp_enh.if_nbrs=0;
+                        end
                     case 2
                         opts_disp_enh.if_points=1;
                         opts_disp_enh.if_rays=1;
@@ -135,7 +156,13 @@ for igp_ptr=1:length(gp_list)
                         opts_disp_enh.if_rings=0;
                         opts_disp_enh.if_nbrs=1;
                 end
-                opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
+                if ismember(igp,igp_spec)
+                    for ip=1:npanels
+                        opts_disp_var.axis_handles{ip}=subplot(1,npanels,ip);
+                    end
+                else
+                    opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
+                end
                 aux_disp_enh=struct;
                 aux_disp_enh.opts_disp=opts_disp_var;
                 aux_disp_enh.opts_disp_enh=opts_disp_enh;
