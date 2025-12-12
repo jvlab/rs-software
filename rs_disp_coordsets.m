@@ -27,8 +27,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   axis_scale: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list;
 %   axis_scales: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
-%   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
+%   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %
 %   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,max(number of dimensions available in all sets)
 %   coord_group_method: method of selecting coordinates (corresponds to opts_vis.which_dimcombs in psg_visualize)
@@ -38,7 +38,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %      'onlylowest': only the lowest dimensions                              [dim_select,coord_group_size] yields [1 2 3]
 %      'list': specify a list in opts_disp.coord_groups, as an array with coord_group_size columns
-%   By default, each dataset is plotted with its own style, with points disconnected.
+%     By default, each dataset is plotted with its own style, with points disconnected.
 %      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
 %      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
@@ -50,7 +50,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_filled: 1 for sets for which markers are filled, 0 for unfilled (default)
 %   set_colors_filled: color assigned to fill, ignore if set_filled=0, defaults to set_colors
 %   set_alphas: alpha blending for each set, defaults to 1 (implementation may be system-dependent and lead to messages in aux_out.warnings)
-%   set_offsets: additive offset for plotting data from each set, must have dim_select columns, defaults to zeros(1,dim_select), cycled through if necessary
+%   set_offsets: additive offset for plotting data from each set, defaults to zeros(1,dim_select), for no offset
+%       may be specified by rows of length dim_select (truncated or padded as needed), one for each set, cycled through if necessary.
+%       may also be specified by 'margin_amount', which leaves a margin of set_of set_offsets_margin_amount between each dataset and the next
+%       may also be specified by 'margin_fraction', which leaves a fractional margin of set_offsets_margin_fraction 
+%   set_offsets_margin_amount: absolute margin between datasets, defaults to ones(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
+%   set_offsets_margin_fraction: fractional margin between datasets, defaults zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
 %   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
 %
 %   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
@@ -107,6 +112,7 @@ end
 %fields that will be made into cells if singletons
 make_cell={'set_colors','set_colors_filled','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors',...
     'callout_colors','callout_linestyles'};
+trunc_pad={'set_offsets','set_offsets_margin_amount','set_offsets_margin_fraction'}; %fields that are truncated or padded to have dim 2 length = dim_select
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
 xyzlim={'XLim','YLim','ZLim'};
@@ -143,9 +149,11 @@ aux.opts_disp=filldefault(aux.opts_disp,'axis_equal',1);
 aux.opts_disp=filldefault(aux.opts_disp,'axis_scale','tight');
 aux.opts_disp=filldefault(aux.opts_disp,'axis_scales',[0 1]);
 %
-aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
 aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_default,dim_list_inter)));
+aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
 aux.opts_disp=filldefault(aux.opts_disp,'set_offsets',zeros(1,aux.opts_disp.dim_select));
+aux.opts_disp=filldefault(aux.opts_disp,'set_offsets_margin_amount',ones(1,aux.opts_disp.dim_select));
+aux.opts_disp=filldefault(aux.opts_disp,'set_offsets_margin_fraction',zeros(1,aux.opts_disp.dim_select));
 %
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_size',min(aux.opts_disp.dim_select,max(coords_together_default)));
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_method','all');
@@ -235,14 +243,50 @@ if ~isempty(setdiff(x.set_select,[1:nsets]))
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
     x.set_select=intersect(x.set_select,[1:nsets]);
 end
-if size(x.set_offsets,2)~=x.dim_select
-    wmsg=sprintf('number of columns in set_offsets (%1.0f) is inconsistent with number of dimensions (%2.0f); truncated or padded',size(x.set_offsets,2),x.dim_select);
-    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
-    if size(x.set_offsets,2)>x.dim_select
-        x.set_offsets=x.set_offsets(:,[1:x.dim_select]);
+%parse set_offsets
+for ifn=1:length(trunc_pad)
+    tp=trunc_pad{ifn};
+    if isnumeric(x.(tp))
+        if size(x.(tp),2)~=x.dim_select
+            wmsg=sprintf('number of columns in %s (%1.0f) is inconsistent with number of dimensions (%2.0f); truncated or padded',tp,size(x.set_offsets,2),x.dim_select);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+            if size(x.(tp),2)>x.dim_select
+                x.(tp)=x.(tp)(:,[1:x.dim_select]);
+            end
+            if size(x.(tp),2)<x.dim_select
+                x.(tp)=cat(2,x.(tp),zeros(size(x.(tp),1),x.dim_select-size(x.(tp),2)));
+            end
+        end
     end
-    if size(x.set_offsets,2)<x.dim_select
-        x.set_offsets=cat(2,x.set_offsets,zeros(size(x.set_offsets,1),x.dim_select-size(x.set_offsets,2)));
+end
+if ~isnumeric(x.set_offsets)    
+    %compute min and max of each coord in each set
+    mins=zeros(nsets,x.dim_select);
+    maxs=zeros(nsets,x.dim_select);
+    for iset=1:nsets
+        mins(iset,:)=min(data_in.ds{iset}{x.dim_select},[],1);
+        maxs(iset,:)=max(data_in.ds{iset}{x.dim_select},[],1);
+    end
+    switch x.set_offsets
+        case 'margin_amount'
+            upper=-Inf;
+            x.set_offsets=zeros(nsets,x.dim_select);
+            for iset=1:nsets
+                if ismember(iset,x.set_select)
+                    if (upper>-Inf) %have we encountered any sets)
+                        x.set_offsets(iset,:)=x.set_offsets_margin_amount+upper-mins(iset,:);
+                        upper=x.set_offsets(iset,:)+maxs(iset,:)-mins(iset,:);
+                    else
+                        upper=maxs(iset,:);
+                    end
+                end
+            end
+            x.set_offsets=x.set_offsets-repmat(mean(x.set_offsets,1),nsets,1); %center around zero
+        case 'margin_fraction'
+        otherwise
+            wmsg=sprintf('specification of offset (%s) not recognized; no offset used',x.set_offsets);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+            x.set_offsets=zeros(1,x.dim_select);
     end
 end
 %
