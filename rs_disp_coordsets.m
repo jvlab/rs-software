@@ -56,6 +56,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %       may also be specified by 'margin_fraction', which leaves a fractional margin of set_offsets_margin_fraction 
 %   set_offsets_margin_amount: absolute margin between datasets, defaults to ones(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
 %   set_offsets_margin_fraction: fractional margin between datasets, defaults zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
+%   set_offsets_coordchoices: if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset.
+%       Can be 'first','last','all', or a subset of [1:dim_select], or a cell array of subsets
 %   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
 %
 %   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
@@ -154,6 +156,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
 aux.opts_disp=filldefault(aux.opts_disp,'set_offsets',zeros(1,aux.opts_disp.dim_select));
 aux.opts_disp=filldefault(aux.opts_disp,'set_offsets_margin_amount',ones(1,aux.opts_disp.dim_select));
 aux.opts_disp=filldefault(aux.opts_disp,'set_offsets_margin_fraction',zeros(1,aux.opts_disp.dim_select));
+aux.opts_disp=filldefault(aux.opts_disp,'set_offsets_coordchoices','all');
 %
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_size',min(aux.opts_disp.dim_select,max(coords_together_default)));
 aux.opts_disp=filldefault(aux.opts_disp,'coord_group_method','all');
@@ -288,6 +291,37 @@ if ~isnumeric(x.set_offsets)
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
             x.set_offsets=zeros(1,x.dim_select);
     end
+    if ~ischar(x.set_offsets_coordchoices) %only force numeric arrays into cells
+        if ~iscell(x.set_offsets_coordchoices)
+            x.set_offsets_coordchoices={x.set_offsets_coordchoices};
+        end
+        off_choices=x.set_offsets_coordchoices;
+    else
+        switch x.set_offsets_coordchoices
+            case 'all'
+                off_choices=num2cell(x.coord_groups,2);
+            case 'first'
+                off_choices=(num2cell(x.coord_groups(:,1)))';
+            case 'last'
+                off_choices=(num2cell(x.coord_groups(:,end)))';
+            otherwise
+                wmsg=sprintf('specification of offset coordinate choices (%s) not recognized; all coordinates offset',x.set_offsets_coordchoices);
+                aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+                off_choices{1}=[1:x.dim_select];
+        end
+    end
+    x.offsets_select=zeros(size(x.coord_groups,1),x.dim_select); %will have 1's to select coordinates with offsets
+    for kptr=1:size(x.coord_groups,1)
+        k=1+mod(kptr-1,length(off_choices));
+        if (any(off_choices{k}<1) | any(off_choices{k}>x.dim_select) | any(off_choices{k}~=round(off_choices{k}))) 
+            wmsg=sprintf(' specification of offset coordinate choices non-integer or out of range ([1 %1.0f], all coordinates offset',x.dim_select);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+            off_choices{k}=[1:x.dim_select];
+        end
+        x.offsets_select(kptr,intersect(off_choices{k},x.coord_groups(kptr,:)))=1;
+    end
+else
+    x.offsets_select=ones(1,x.dim_select);
 end
 %
 %set up axis scale
@@ -334,26 +368,6 @@ end
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
-%set up labels
-if ~isfield(x,'set_labels')
-    x.set_labels=cell(nsets,1);
-    for k=1:nsets
-        x.set_labels{k}=sprintf('set %1.0f',k);
-    end
-end
-if ~isfield(x,'set_tags')
-    x.set_tags=cell(nsets,1);
-    for k=1:nsets
-        x.set_tags{k}=sprintf('set %1.0f',k);
-    end
-end
-%ensure that certain options are cells
-for imc=1:length(make_cell)
-    mc=make_cell{imc};
-    if ~iscell(x.(mc))
-        x.(mc)={x.(mc)};
-    end
-end
 %set up connection colors
 x.set_colors=x.set_colors(:);% ensure a column
 x.set_colors_filled=x.set_colors_filled(:);
@@ -375,6 +389,26 @@ if size(x.connect_sets_list,1)>0
     end
 else
     x.connect_sets_list=[];
+end
+%set up labels
+if ~isfield(x,'set_labels')
+    x.set_labels=cell(nsets,1);
+    for k=1:nsets
+        x.set_labels{k}=sprintf('set %1.0f',k);
+    end
+end
+if ~isfield(x,'set_tags')
+    x.set_tags=cell(nsets,1);
+    for k=1:nsets
+        x.set_tags{k}=sprintf('set %1.0f',k);
+    end
+end
+%ensure that certain options are cells
+for imc=1:length(make_cell)
+    mc=make_cell{imc};
+    if ~iscell(x.(mc))
+        x.(mc)={x.(mc)};
+    end
 end
 %
 ngroups=size(x.coord_groups,1);
