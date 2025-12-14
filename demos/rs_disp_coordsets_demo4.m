@@ -31,6 +31,7 @@ aux_out_std=cell(2,ngps); %dim 1 is if_pca+1
 aux_out_enh=cell(nvars,2,ngps); % dim 2 is if_pca+1
 %
 gp_list=getinp('group list','d',[1 ngps]);
+nsbvs=2; %use for pca or offset variants
 for igp_ptr=1:length(gp_list)
     igp=gp_list(igp_ptr);
     filenames=filename_gps{igp};
@@ -97,34 +98,48 @@ for igp_ptr=1:length(gp_list)
         set(gcf,'NumberTitle','off');
         if ismember(igp,igp_spec)
             nvars_adj=1;
-            pca_init=1;
+            nsbvs_adj=4;
         else
             nvars_adj=nvars;
-            pca_init=0;
-        end
+            nsbvs_adj=2;
+        end       
         for ivar=1:nvars_adj
-            for if_pca=pca_init:1
+            for isbv=1:nsbvs_adj
+                if_pca=isbv-1;
                 opts_disp_var=opts_disp;
-                if (if_pca==0)
+                if (if_pca==0) & ~ismember(igp,igp_spec)
                     data_disp=data_read;
                     rays_use=aux_read.rayss{1};
                 else %use component data and rays
                     data_disp=aux_knit.components;
                     opts_disp_var.axis_label_prefix='pc';
-                    opts_disp_var.connect_sets_method='all';
                     rays_use=aux_knit.rayss{1};
+                end
+                if isbv==1 & ~ismember(igp,igp_spec)
+                    opts_disp_var.connect_sets_method='all';
                 end
                 opts_disp_enh=struct();
                 npanels=1;
                 switch ivar
                     case 1
                         if ismember(igp,igp_spec)
-                            opts_disp_var.set_select=[1 3];
                             opts_disp_var.dim_select=4;
                             opts_disp_var.coord_group_size=3;
                             opts_disp_var.coord_group_method='list';
                             opts_disp_var.coord_groups=[[1 2 3];[2 3 4]];
                             npanels=size(opts_disp_var.coord_groups,1);
+                            switch isbv
+                                case 1
+                                    opts_disp_var.set_select=[1 3];
+                                case 2
+                                    opts_disp_var.set_offsets=([-1 -.5 1]'*2*[1 2 3 4]);
+                                case 3
+                                    opts_disp_var.set_offsets='margin_amount';
+                                    opts_disp_var.set_offsets_coordchoices='first';
+                                case 4
+                                    opts_disp_var.set_offsets='margin_amount';
+                                    opts_disp_var.set_offsets_coordchoices=3;
+                            end
                          else
                             opts_disp_enh.if_points=1;
                             opts_disp_enh.if_rays=0;
@@ -158,10 +173,10 @@ for igp_ptr=1:length(gp_list)
                 end
                 if ismember(igp,igp_spec)
                     for ip=1:npanels
-                        opts_disp_var.axis_handles{ip}=subplot(1,npanels,ip);
+                        opts_disp_var.axis_handles{ip}=subplot(npanels,nsbvs_adj,(ip-1)*nsbvs_adj+isbv);
                     end
                 else
-                    opts_disp_var.axis_handles{1}=subplot(2,nvars,ivar+nvars*if_pca);
+                    opts_disp_var.axis_handles{1}=subplot(nsbvs_adj,nvars,if_pca*nvars+ivar);
                 end
                 aux_disp_enh=struct;
                 aux_disp_enh.opts_disp=opts_disp_var;
