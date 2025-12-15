@@ -1,12 +1,7 @@
 % rs_disp_coordsets_demo4: demonstrate display of datasets with rays
 %
-%  Note: when using data from components, rays also need to be taken from compoents
-%
-%   To do:
-%    plot the grid (may need to eliminate pairs that are in rays)
-%    demonstrate offset
-%    better legend based on whether there are multiple subjects or one subject
-%    plot fitted rays
+%  Note: when using data from components, rays also need to be taken from
+%  components (as is done here)
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3,
 %   PSG_TYPENAMES2COLORS.
@@ -16,9 +11,9 @@ if ~exist('filename_gps')
     filename_gps{2}={'./samples/bwtextures/bcpm24pt_coords_MC_sess01_10.mat'};
     filename_gps{3}={'./samples/bwtextures/bcpp55qpt_coords_MC_sess01_10.mat'};
     filename_gps{4}={'./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
-    filename_gps{5}={...
-        './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',...
-        './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
+    filename_gps{5}={... 
+        './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',... 
+        './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
     filename_gps{6}=filename_gps{5}; %this will be for multiple dims on the same plot
 end
