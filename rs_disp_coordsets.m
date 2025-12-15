@@ -53,9 +53,9 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_offsets: additive offset for plotting data from each set, defaults to zeros(1,dim_select), for no offset
 %       may be specified by rows of length dim_select (truncated or padded as needed), one for each set, cycled through if necessary.
 %       may also be specified by 'margin_amount', which leaves a margin of set_of set_offsets_margin_amount between each dataset and the next
-%       may also be specified by 'margin_fraction', which leaves a fractional margin of set_offsets_margin_fraction 
+%       may also be specified by 'margin_fraction', which leaves a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
 %   set_offsets_margin_amount: absolute margin between datasets, defaults to ones(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
-%   set_offsets_margin_fraction: fractional margin between datasets, defaults zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
+%   set_offsets_margin_fraction: fractional margin between datasets, defaults to zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
 %   set_offsets_coordchoices: if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset.
 %       Can be 'first','last','all', or a subset of [1:dim_select], or a cell array of subsets
 %   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
@@ -246,6 +246,11 @@ if ~isempty(setdiff(x.set_select,[1:nsets]))
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
     x.set_select=intersect(x.set_select,[1:nsets]);
 end
+ngroups=size(x.coord_groups,1);
+ngroups_aug=ngroups;
+if x.if_legend==-1
+    ngroups_aug=ngroups+1;
+end
 %parse set_offsets
 for ifn=1:length(trunc_pad)
     tp=trunc_pad{ifn};
@@ -271,12 +276,12 @@ if ~isnumeric(x.set_offsets)
         maxs(iset,:)=max(data_in.ds{iset}{x.dim_select},[],1);
     end
     switch x.set_offsets
-        case 'margin_amount'
+        case 'margin_amount' %space by an absolute amount
             upper=-Inf;
             x.set_offsets=zeros(nsets,x.dim_select);
             for iset=1:nsets
                 if ismember(iset,x.set_select)
-                    if (upper>-Inf) %have we encountered any sets)
+                    if (upper>-Inf) %have we encountered any sets
                         x.set_offsets(iset,:)=x.set_offsets_margin_amount+upper-mins(iset,:);
                         upper=x.set_offsets(iset,:)+maxs(iset,:)-mins(iset,:);
                     else
@@ -284,19 +289,38 @@ if ~isnumeric(x.set_offsets)
                     end
                 end
             end
-            x.set_offsets=x.set_offsets-repmat(mean(x.set_offsets,1),nsets,1); %center around zero
-        case 'margin_fraction'
-        otherwise
+        case 'margin_fraction' %space by a fraction of the average size of the spans
+            upper=-Inf;
+            x.set_offsets=zeros(nsets,x.dim_select);
+            for iset=1:nsets
+                if ismember(iset,x.set_select)
+                    if (upper>-Inf) %have we encountered any sets
+                        meansize=(maxs(iset_prev,:)-mins(iset_prev,:)+maxs(iset,:)-mins(iset,:))/2; %mean span of current and previous set
+                        x.set_offsets(iset,:)=x.set_offsets_margin_fraction.*meansize+upper-mins(iset,:);
+                        upper=x.set_offsets(iset,:)+maxs(iset,:)-mins(iset,:);
+                        iset_prev=iset;
+                    else
+                        upper=maxs(iset,:);
+                        iset_prev=iset;
+                    end
+                end
+            end
+      otherwise
             wmsg=sprintf('specification of offset (%s) not recognized; no offset used',x.set_offsets);
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
             x.set_offsets=zeros(1,x.dim_select);
     end
+    x.set_offsets=x.set_offsets-repmat(mean(x.set_offsets,1),nsets,1); %center around zero
+    %now process set_offsets_coordchoices:  which coordinates are offset in each coordinate group
     if ~ischar(x.set_offsets_coordchoices) %only force numeric arrays into cells
         if ~iscell(x.set_offsets_coordchoices)
             x.set_offsets_coordchoices={x.set_offsets_coordchoices};
         end
         off_choices=x.set_offsets_coordchoices;
-    else
+    else %string values cannot be cells
+        if iscell(x.set_offsets_coordchoices)
+            x.set_offsets_coordchoices=x.set_offsets_coordchoices{1};
+        end
         switch x.set_offsets_coordchoices
             case 'all'
                 off_choices=num2cell(x.coord_groups,2);
@@ -310,8 +334,9 @@ if ~isnumeric(x.set_offsets)
                 off_choices{1}=[1:x.dim_select];
         end
     end
-    x.offsets_select=zeros(size(x.coord_groups,1),x.dim_select); %will have 1's to select coordinates with offsets
-    for kptr=1:size(x.coord_groups,1)
+    %convert off_choices to [0,1] selection
+    x.offsets_select=zeros(ngroups,x.dim_select); %will have 1's to select coordinates with offsets
+    for kptr=1:ngroups
         k=1+mod(kptr-1,length(off_choices));
         if (any(off_choices{k}<1) | any(off_choices{k}>x.dim_select) | any(off_choices{k}~=round(off_choices{k}))) 
             wmsg=sprintf(' specification of offset coordinate choices non-integer or out of range ([1 %1.0f], all coordinates offset',x.dim_select);
@@ -321,7 +346,7 @@ if ~isnumeric(x.set_offsets)
         x.offsets_select(kptr,intersect(off_choices{k},x.coord_groups(kptr,:)))=1;
     end
 else
-    x.offsets_select=ones(1,x.dim_select);
+    x.offsets_select=ones(ngroups,x.dim_select);
 end
 %
 %set up axis scale
@@ -411,12 +436,6 @@ for imc=1:length(make_cell)
     end
 end
 %
-ngroups=size(x.coord_groups,1);
-ngroups_aug=ngroups;
-if x.if_legend==-1
-    ngroups_aug=ngroups+1;
-end
-%
 naxis_handles=length(x.axis_handles);
 if naxis_handles>0 & naxis_handles~=ngroups_aug
     wmsg=sprintf('number of axes (subplots) supplied (%3.0f) does not match number of axes needed (%3.0f)',naxis_handles,ngroups_aug);
@@ -483,7 +502,7 @@ if aux_out.warn_bad==0
             %plot with no line, later connect
             z_all=data_in.ds{k}{x.dim_select}(:,cg); %all the points in the dataset
             ko=mod(k-1,size(x.set_offsets,1))+1;
-            z_all=z_all+repmat(x.set_offsets(ko,cg),size(z_all,1),1); %add the offset
+            z_all=z_all+repmat(x.set_offsets(ko,cg).*x.offsets_select(igp,cg),size(z_all,1),1); %add the offset
             z=z_all(x.data_show_list,:); %points to plot
             [hline,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z,k,set_styles);
             disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
@@ -555,7 +574,7 @@ if aux_out.warn_bad==0
                 for iz=1:2
                     endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(x.data_show_list,cg);
                     ko=mod(cset(iz)-1,size(x.set_offsets,1))+1;
-                    endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg),size(endpoints,1),1,1); %add the offset
+                    endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg).*x.offsets_select(igp,cg),size(endpoints,1),1,1); %add the offset
                 end
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
