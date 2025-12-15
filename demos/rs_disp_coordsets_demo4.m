@@ -98,7 +98,7 @@ for igp_ptr=1:length(gp_list)
         set(gcf,'NumberTitle','off');
         if ismember(igp,igp_spec)
             nvars_adj=1;
-            nsbvs_adj=4;
+            nsbvs_adj=6;
         else
             nvars_adj=nvars;
             nsbvs_adj=2;
@@ -138,7 +138,14 @@ for igp_ptr=1:length(gp_list)
                                     opts_disp_var.set_offsets_coordchoices='first';
                                 case 4
                                     opts_disp_var.set_offsets='margin_amount';
-                                    opts_disp_var.set_offsets_coordchoices=3;
+                                    opts_disp_var.set_offsets_coordchoices={3,2};
+                                case 5
+                                    opts_disp_var.set_offsets='margin_amount';
+                                    opts_disp_var.set_offsets_coordchoices='last';
+                                case 6
+                                    opts_disp_var.set_offsets='margin_fraction';
+                                    opts_disp_var.set_offsets_margin_fraction=repmat(0.5,1,4);
+                                    opts_disp_var.set_offsets_coordchoices='last';
                             end
                          else
                             opts_disp_enh.if_points=1;
