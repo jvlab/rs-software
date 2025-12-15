@@ -283,7 +283,7 @@ if ~isnumeric(x.set_offsets)
                 if ismember(iset,x.set_select)
                     if (upper>-Inf) %have we encountered any sets
                         x.set_offsets(iset,:)=x.set_offsets_margin_amount+upper-mins(iset,:);
-                        upper=x.set_offsets(iset,:)+maxs(iset,:)-mins(iset,:);
+                        upper=x.set_offsets(iset,:)+maxs(iset,:);
                     else
                         upper=maxs(iset,:);
                     end
@@ -297,7 +297,7 @@ if ~isnumeric(x.set_offsets)
                     if (upper>-Inf) %have we encountered any sets
                         meansize=(maxs(iset_prev,:)-mins(iset_prev,:)+maxs(iset,:)-mins(iset,:))/2; %mean span of current and previous set
                         x.set_offsets(iset,:)=x.set_offsets_margin_fraction.*meansize+upper-mins(iset,:);
-                        upper=x.set_offsets(iset,:)+maxs(iset,:)-mins(iset,:);
+                        upper=x.set_offsets(iset,:)+maxs(iset,:);
                         iset_prev=iset;
                     else
                         upper=maxs(iset,:);
@@ -310,7 +310,7 @@ if ~isnumeric(x.set_offsets)
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
             x.set_offsets=zeros(1,x.dim_select);
     end
-    x.set_offsets=x.set_offsets-repmat(mean(x.set_offsets,1),nsets,1); %center around zero
+    x.set_offsets=x.set_offsets-repmat(mean(x.set_offsets(x.set_select,:),1),nsets,1); %center around zero
     %now process set_offsets_coordchoices:  which coordinates are offset in each coordinate group
     if ~ischar(x.set_offsets_coordchoices) %only force numeric arrays into cells
         if ~iscell(x.set_offsets_coordchoices)
