@@ -481,7 +481,9 @@ if aux_out.warn_bad==0
         set(gcf,'NumberTitle','off');
         set(gcf,'Name',x.fig_name);
     else
-        figure(x.fig_handle);
+        if x.fig_handle~=gcf
+            figure(x.fig_handle);
+        end
     end
     if naxis_handles==0
         fig_posit=get(gcf,'Position');
