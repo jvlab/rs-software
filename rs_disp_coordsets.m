@@ -551,8 +551,8 @@ if aux_out.warn_bad==0
                     end
                 end %ipt
             end %set to label?
-        end
-        %set up view, box, grid, axis labels
+        end %isetptr
+        %set up view and axis labels
         if x.coord_group_size<=3
             hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(1)));
             set(hl,'FontSize',x.axis_label_font_size);
@@ -593,6 +593,7 @@ if aux_out.warn_bad==0
                 end %split or not
             end %both sets are plotted
         end %each connection pair
+        %box, view, axis scaling, legend
         if (x.coord_group_size==3)
             if x.if_box
                 box on;
@@ -645,7 +646,7 @@ if aux_out.warn_bad==0
                 end
             end
         end
-    end
+    end %igp_aug
 end
 %
 aux_out=rs_warning(unique(disp_msgs,'rows'),0,setfield(aux_out,'if_warn',x.if_warn));
