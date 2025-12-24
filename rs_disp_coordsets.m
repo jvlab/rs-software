@@ -97,7 +97,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   legend_location: defaults to 'Best'
 %   legend_interpreter: interpreter for set label in legend, empty (default) is system default, alternatively 'none','tex','latex'
 %   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set'
-%   if_warn: 1 to display warnings
+%   if_warn: 1 to display warnings related to plot configurations
+%   if_finalize: 1 (default) to finalize axis, view, legend
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
@@ -143,6 +144,7 @@ nstims=min(nstims_each); %all nstims_each should be identical
 %set up sub-structure options
 aux=filldefault(aux,'opts_disp',struct); %options for this module (psg_template)
 aux.opts_disp=filldefault(aux.opts_disp,'if_warn',1);
+aux.opts_disp=filldefault(aux.opts_disp,'if_finalize',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'fig_handle',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'axis_handles',[]);
@@ -555,18 +557,20 @@ if aux_out.warn_bad==0
             end %set to label?
         end %isetptr
         %set up view and axis labels
-        if x.coord_group_size<=3
-            hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(1)));
-            set(hl,'FontSize',x.axis_label_font_size);
-            hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(2)));
-            set(hl,'FontSize',x.axis_label_font_size);
-        end
-        if (x.coord_group_size==3)
-            hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(3)));
-            set(hl,'FontSize',x.axis_label_font_size);
-            axis vis3d;
-            index_view=1+mod(igp-1,length(x.axis_view));
-            view(x.axis_view{index_view});
+        if x.if_finalize
+            if x.coord_group_size<=3
+                hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(1)));
+                set(hl,'FontSize',x.axis_label_font_size);
+                hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(2)));
+                set(hl,'FontSize',x.axis_label_font_size);
+            end
+            if (x.coord_group_size==3)
+                hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(3)));
+                set(hl,'FontSize',x.axis_label_font_size);
+                axis vis3d;
+                index_view=1+mod(igp-1,length(x.axis_view));
+                view(x.axis_view{index_view});
+            end
         end
         %connections between sets
         for ic=1:size(x.connect_sets_list,1)
@@ -596,33 +600,35 @@ if aux_out.warn_bad==0
             end %both sets are plotted
         end %each connection pair
         %box, view, axis scaling, legend
-        if (x.coord_group_size==3)
-            if x.if_box
-                box on;
-            else
-                box off;
-            end
-        end
-        if x.if_grid
-            grid on;
-        else
-            grid off;
-        end
-        if x.axis_equal
-            axis equal;
-        else
-            axis normal;
-        end
-        switch x.axis_scale
-            case 'tight'
-                axis tight;
-            case 'auto'
-                axis auto;
-            case 'list'
-                for ic=1:x.coord_group_size
-                    set(gca,xyzlim{ic},x.axis_scales(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_scales,1)),:));
+        if  x.if_finalize
+            if (x.coord_group_size==3)
+                if x.if_box
+                    box on;
+                else
+                    box off;
                 end
-        end
+            end
+            if x.if_grid
+                grid on;
+            else
+                grid off;
+            end
+            if x.axis_equal
+                axis equal;
+            else
+                axis normal;
+            end
+            switch x.axis_scale
+                case 'tight'
+                    axis tight;
+                case 'auto'
+                    axis auto;
+                case 'list'
+                    for ic=1:x.coord_group_size
+                        set(gca,xyzlim{ic},x.axis_scales(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_scales,1)),:));
+                    end
+            end
+        end %if_finalize
         %legend
         if (x.if_legend==1)
             need_legend=1;

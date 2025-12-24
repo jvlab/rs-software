@@ -54,16 +54,15 @@ if aux.opts_disp_enh.if_points %plot individual points?
 end
 %
 if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
+    %customize standard plot options for rays
+    opts_disp_rays=aux.opts_disp;
+    opts_disp_rays.data_show_method='list';
+    opts_disp_rays.connect_data_method='chain';
+    opts_disp_rays=filldefault(opts_disp_rays,'data_label_method','last');
+    opts_disp_rays.set_tags='rays'; %so that this will not be in legend
+    opts_disp_rays=filldefault(opts_disp_rays,'callout_amount',0.5);
+    if_callout_colors_supplied=double(isfield(opts_disp_rays,'callout_colors'));
     for iray=1:rays.nrays
-        %customize standard plot options for rays
-        opts_disp_rays=aux.opts_disp;
-        opts_disp_rays.data_show_method='list';
-        opts_disp_rays.connect_data_method='chain';
-        opts_disp_rays=filldefault(opts_disp_rays,'data_label_method','last');
-        opts_disp_rays.set_tags='rays'; %so that this will not be in legend
-        opts_disp_rays=filldefault(opts_disp_rays,'callout_amount',0.5);
-        if_callout_colors_supplied=double(isfield(opts_disp_rays,'callout_colors'));
-        %
         orig_ptr=min(find(rays.whichray==0));
         for isign=-1:2:1
             bidir=find(rays.whichray==iray);
@@ -88,6 +87,11 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
                         opts_disp_rays.connect_data_linestyles='--';
                 end
                 %
+                if isign==-1 | iray<rays.nrays
+                    opts_disp_rays.if_finalize=0;
+                else
+                    opts_disp_rays.if_finalize=1;
+                end
                 aux_out_ray=rs_disp_coordsets(data_in,setfield(struct,'opts_disp',opts_disp_rays));
                 aux_out.rays{iray,(3+isign)/2}=aux_out_ray;
                 aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out_ray.opts_disp);
@@ -97,19 +101,30 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
 end
 %
 if aux.opts_disp_enh.if_rings %connect rings
-   for iring=1:rays.nrings
-        %customize standard plot options for rings
-        opts_disp_rings=aux.opts_disp;
-        opts_disp_rings.data_show_method='list';
-        opts_disp_rings.connect_data_method='list';
-        opts_disp_rings=filldefault(opts_disp_rings,'data_label_method','none');
-        opts_disp_rings=filldefault(opts_disp_rings,'connect_data_linestyles',':');
-        opts_disp_rings.set_tags='rings'; %so that this will not be in legend
+    %customize standard plot options for rings
+    opts_disp_rings=aux.opts_disp;
+    opts_disp_rings.data_show_method='list';
+    opts_disp_rings.connect_data_method='list';
+    opts_disp_rings=filldefault(opts_disp_rings,'data_label_method','none');
+    opts_disp_rings=filldefault(opts_disp_rings,'connect_data_linestyles',':');
+    opts_disp_rings.set_tags='rings'; %so that this will not be in legend
+    %find which ring is the last non-empty ring so if_finalize can be used to speed up
+    ring_nz=zeros(1,rays.nrings);
+    for iring=1:rays.nrings
+        ring_nz(iring)=length(rays.rings{iring}.coord_ptrs);
+    end
+    ring_last=max(find(ring_nz>0));
+    for iring=1:rays.nrings
         ring_list=rays.rings{iring}.coord_ptrs;
         if ~isempty(ring_list)
             ring_list_offset=[ring_list(2:end) ring_list(1)];
             opts_disp_rings.data_show_list=ring_list;
             opts_disp_rings.connect_data_list=[ring_list(:),ring_list_offset(:)];
+            if iring<ring_last
+                opts_disp_rings.if_finalize=0;
+            else
+                opts_disp_rings.if_finalize=1;
+            end
             %
             aux_out_ring=rs_disp_coordsets(data_in,setfield(struct,'opts_disp',opts_disp_rings));
             aux_out.rings{iring}=aux_out_ring;
