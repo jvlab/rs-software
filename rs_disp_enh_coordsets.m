@@ -54,7 +54,7 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
     opts_disp_rays.data_show_method='list';
     opts_disp_rays.connect_data_method='chain';
     opts_disp_rays=filldefault(opts_disp_rays,'data_label_method','last');
-    opts_disp_rays.set_tags='rays'; %so that this will not be in legend
+    opts_disp_rays.set_tags='rays'; %to identify for legend
     opts_disp_rays=filldefault(opts_disp_rays,'callout_amount',0.5);
     if_callout_colors_supplied=double(isfield(opts_disp_rays,'callout_colors'));
     for iray=1:rays.nrays
@@ -114,7 +114,7 @@ if aux.opts_disp_enh.if_rings %connect rings
     opts_disp_rings.connect_data_method='list';
     opts_disp_rings=filldefault(opts_disp_rings,'data_label_method','none');
     opts_disp_rings=filldefault(opts_disp_rings,'connect_data_linestyles',':');
-    opts_disp_rings.set_tags='rings'; %so that this will not be in legend
+    opts_disp_rings.set_tags='rings'; %to identify for legend
     %find which ring is the last non-empty ring so if_finalize can be used to speed up
     ring_nz=zeros(1,rays.nrings);
     for iring=1:rays.nrings
