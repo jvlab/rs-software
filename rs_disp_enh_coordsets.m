@@ -23,11 +23,18 @@ function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %    callout_colors                         per ray*
 %   * indicates that an explicitly supplied value in aux.opts_disp is NOT overridden
 %
-%need to document, what is passed through, and handles on output
-%provide options for psg_typenames2colors
-%labellig options
-%rings, rays, grids
-%need to test with multiple subsets of axes, selectoin of datasets, views,etc
+% aux_out:
+%     opts_disp: values of aux.opts_disp as used
+%     opts_disp_enh: values of aux.opts_disp_enh as used
+%     opts_t2nc: values of aux.opts_t2nc as used
+%     points: aux_out rs_disp_coordsets for plotting points, omitted if aux.opts_disp_enh.if_points=0
+%     rays{iray,isign}: aux_out returned by rs_disp_coordsets for ray iray, (isign=1: neg,isign=2, pos), omitted if no rays are plotted, or if aux.opts_disp_enh.if_rays=0
+%     rings{iring}: aux_out returned by rs_disp_coordsets for ring iring, omitted if no rings are plotted or aux.opts_disp_enh.if_rings=0
+%     nbrs: aux_out returned by rs_disp_coordsets for connectiong neighbors, omitted if no connections are plotted or aux.opts_disp_enh.if_nbrs=0
+%
+% Notes:
+%   Legend is a label by sets, andwill not appear unless if_points=1
+%   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
 %
 %   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
 %
@@ -40,18 +47,6 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rays',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
-%
-if aux.opts_disp_enh.if_points %plot individual points?
-    %customize standard plot options for points
-    opts_disp_points=aux.opts_disp;
-    opts_disp_points.data_show_method='all';
-    opts_disp_points=filldefault(opts_disp_points,'data_label_method','none');
-    opts_disp_points=filldefault(opts_disp_points,'connect_data_linestyles','-');
-    %
-    aux_out.points=rs_disp_coordsets(data_in,setfield(struct(),'opts_disp',opts_disp_points));
-    %update figure and axis handles so future plots are in same place
-    aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out.points.opts_disp);
-end
 %
 if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
     %customize standard plot options for rays
@@ -98,6 +93,18 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
             end %not empty
         end %sign
     end %iray
+end
+%
+if aux.opts_disp_enh.if_points %plot individual points?
+    %customize standard plot options for points
+    opts_disp_points=aux.opts_disp;
+    opts_disp_points.data_show_method='all';
+    opts_disp_points=filldefault(opts_disp_points,'data_label_method','none');
+    opts_disp_points=filldefault(opts_disp_points,'connect_data_linestyles','-');
+    %
+    aux_out.points=rs_disp_coordsets(data_in,setfield(struct(),'opts_disp',opts_disp_points));
+    %update figure and axis handles so future plots are in same place
+    aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out.points.opts_disp);
 end
 %
 if aux.opts_disp_enh.if_rings %connect rings
