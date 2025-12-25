@@ -104,6 +104,7 @@ for igp_ptr=1:length(gp_list)
                 opts_disp_var=opts_disp;
                 if (if_pca==0) & ~ismember(igp,igp_spec)
                     data_disp=data_read;
+                    opts_disp_var.axis_label_prefix='dim';
                     rays_use=aux_read.rayss{1};
                 else %use component data and rays
                     data_disp=aux_knit.components;
@@ -142,7 +143,7 @@ for igp_ptr=1:length(gp_list)
                                     opts_disp_var.set_offsets_margin_fraction=repmat(0.5,1,4);
                                     opts_disp_var.set_offsets_coordchoices='last';
                             end
-                         else
+                        else 
                             opts_disp_enh.if_points=1;
                             opts_disp_enh.if_rays=0;
                             opts_disp_enh.if_rings=0;
