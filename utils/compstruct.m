@@ -2,7 +2,7 @@ function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
 %
 %  ifdif=compstruct(parent1,x1,parent2,x2,varargin) compares two structures
 %
-%  Downloaded from matlab site as "Compare", 6/4/04; renamed to "comp_struct"
+%  Downloaded from matlab site as "Compare", 6/4/04; renamed to "compstruct"
 %  Uploaded by Nicholas Gigis, gigisn@netscape.net.  Original documentation follows.
 %  Modified so that the text is returned as an output; empty if structures are identical
 %
