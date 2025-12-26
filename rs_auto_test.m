@@ -1,28 +1,24 @@
 %rs_auto_test: run all tests in automatic mode
-if ~exist('if_auto_skip')
-    if_auto_skip=1;
-end
-if ~exist('if_ignore_svdambig')
-    if_ignore_svdambig=0; 
-end
-if ~exist('diff_maxchars')
-    diff_maxchars=70;   
-end
-if ~exist('diff_maxlines')
-    diff_maxlines=3;
-end
+if ~exist('if_auto_skip')  if_auto_skip=1; end %by default, skip modules that require keyboard input
+if ~exist('if_ignore_svdambig') if_ignore_svdambig=0; end
+if ~exist('diff_maxchars') diff_maxchars=70; end 
+if ~exist('diff_maxlines') diff_maxlines=3; end
+if ~exist('if_save_and_close') if_save_and_close=1; end %for graphics tests
 %
 r=struct;
 %
+clear ifdif
 rs_aux_customize_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).aux_outs=aux_outs;
 %
+clear ifdif
 rs_get_coordsets_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
 r.(rs_module).aux_outs=aux_outs;
 %
+clear ifdif
 rs_read_coorddata_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
@@ -30,28 +26,57 @@ r.(rs_module).aux_outs=aux_outs;
 r.(rs_module).ifdif2_data=ifdif2_data;
 r.(rs_module).ifdif2_aux=ifdif2_aux;
 %
+clear ifdif
 rs_align_coordsets_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
 r.(rs_module).aux_outs=aux_outs;
 %
+clear ifdif
 rs_knit_coordsets_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_outs=data_outs;
 r.(rs_module).aux_outs=aux_outs;
 %
+clear ifdif
 rs_xform_specify_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_reads=data_reads;
 r.(rs_module).xforms=xforms;
 r.(rs_module).aux_outs=aux_outs;
 %
+clear ifdif
 rs_xform_specify_apply_test;
 r.(rs_module).ifdif=ifdif;
 r.(rs_module).data_reads=data_reads;
 r.(rs_module).xforms=xforms;
 r.(rs_module).aux_outs=aux_outs;
 r.(rs_module).data_outs=data_outs;
+%
+%graphics modules
+clear ifdif
+rs_plot_style_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).aux_outs=aux_outs;
+r.(rs_module).aux_outs{1}='dummy'; %so that it is not empty
+%
+clear ifdif
+rs_disp_coordsets_test1;
+rs_module_aug=cat(2,rs_module,sprintf('%1.0f',testset));
+r.(rs_module_aug).ifdif=ifdif;
+r.(rs_module_aug).aux_outs=aux_outs;
+%
+clear ifdif
+rs_disp_coordsets_test2;
+rs_module_aug=cat(2,rs_module,sprintf('%1.0f',testset));
+r.(rs_module_aug).ifdif=ifdif;
+r.(rs_module_aug).aux_outs=aux_outs;
+%
+clear ifdif
+rs_disp_coordsets_test3;
+rs_module_aug=cat(2,rs_module,sprintf('%1.0f',testset));
+r.(rs_module_aug).ifdif=ifdif;
+r.(rs_module_aug).aux_outs=aux_outs;
 %
 disp('%%%%%%%')
 disp('summary')
@@ -89,7 +114,8 @@ for irs=1:length(rs_modules)
         alldiffs=alldiffs+sum(diff_list);
     end
 end
-disp(sprintf('run with if_auto_skip=%1.0f, if_ignore_svdambig=%1.0f',if_auto_skip,if_ignore_svdambig));
+disp(sprintf('run with if_auto_skip=%1.0f, if_ignore_svdambig=%1.0f, if_save_and_close=%1.0f',...
+    if_auto_skip,if_ignore_svdambig,if_save_and_close));
 disp(sprintf('total number of tests with differences: %4.0f',alldiffs));
 if alldiffs>0
     disp('Consider re-running with if_ignore_svdambig=1 to ignore differences related to implementations of singular value decomposition');

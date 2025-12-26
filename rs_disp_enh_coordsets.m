@@ -1,27 +1,35 @@
-function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
-% function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
+function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
+% function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
+%
+% data_in: a standard dataset structure, with fields ds, sas, sets
 %
 % aux.opts_disp_enh: controls which enhanced features are added to plots
 %   if_points: 1 (default) to display each data point
-%   if_rays:   1 (default) to display rays
-%   if_rings:  1 to display rings (default: 0)
+%   if_rays:   1 (default) to display rays, set to zero if rays is not present or empty
+%   if_rings:  1 to display rings (default: 0), , set to zero if rays is not present or empty
 %   if_nbrs:   1 (default) to connect nearest-neighbors
 %   if_nbrs_nosameray: 1 (default) to suppress nearest-neighbor connections 
 %      if both points are on the same ray, or next to origin, and rays are displayed
 %
 % aux.opts_disp: these fields are starting points for customization for enhanced plots
 %  fields not specified are passed through to rs_disp_coordsets
-%                                  points     rays     rings    neighbors
-%    data_show_method:             'all'     'list'   'list'     'list' 
-%    data_label_method:            'none'*   'last'   'none'*    'none'*
-%    data_connect_method:                    'list'   'list'*    'list'
-%    connect_data_linestyles       'none'*  '-'/'--'   ':'*      '-'*
-%    set_markers                                                 'none'
-%    set_tags                                'rays'   'rings'    'nbrs'
-%    callout_amount                           0.5*
-%    set_colors                             per ray
-%    callout_colors                         per ray*
-%   * indicates that an explicitly supplied value in aux.opts_disp is NOT overridden
+%                                  points     rays       rings    neighbors
+%    data_show_method:             'all'     'list'      'list'     'list' 
+%    data_label_method:            'none'*   'last'      'none'*    'none'*
+%    data_connect_method:                    'list'      'list'*    'list'
+%    connect_data_linestyles       'none'*  '--' or '-'#    ':'*     '-'*
+%    set_markers                             'x' or '+'#            'none'
+%    set_tags                                 'rays'     'rings'    'nbrs'
+%    callout_amount                            0.5*
+%    set_colors                              per ray
+%    callout_colors                          per ray*
+%   *: an explicitly supplied value in aux.opts_disp is NOT overridden
+%   #:line style and set markers depends on whether the ray is negative or positive
+% 
+% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors, in psg_typenames2colors
+%    usually empty
+% 
+% rays: a standard ray structure, containing metadata for rays and rings
 %
 % aux_out:
 %     opts_disp: values of aux.opts_disp as used
@@ -33,10 +41,13 @@ function aux_out=rs_disp_enh_coordsets(data_in,rays,aux)
 %     nbrs: aux_out returned by rs_disp_coordsets for connectiong neighbors, omitted if no connections are plotted or aux.opts_disp_enh.if_nbrs=0
 %
 % Notes:
-%   Legend is a label by sets, andwill not appear unless if_points=1
 %   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
 %
 %   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
+%
+if (nargin<=2)
+    rays=[];
+end
 %
 aux=filldefault(aux,'opts_disp',struct());
 aux=filldefault(aux,'opts_disp_enh',struct());
@@ -48,6 +59,11 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
 %
+if isempty(rays)
+    aux.opts_disp_enh.if_rays=0;
+    aux.opts_disp_enh.if_rings=0;
+end
+%
 if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
     %customize standard plot options for rays
     opts_disp_rays=aux.opts_disp;
@@ -55,8 +71,12 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
     opts_disp_rays.connect_data_method='chain';
     opts_disp_rays=filldefault(opts_disp_rays,'data_label_method','last');
     opts_disp_rays.set_tags='rays'; %to identify for legend
+    if aux.opts_disp_enh.if_points==0
+        opts_disp_rays.legend_tags='rays'; %to include in legend
+    end
     opts_disp_rays=filldefault(opts_disp_rays,'callout_amount',0.5);
     if_callout_colors_supplied=double(isfield(opts_disp_rays,'callout_colors'));
+    aux_used_rays=[];
     for iray=1:rays.nrays
         orig_ptr=min(find(rays.whichray==0));
         for isign=-1:2:1
@@ -78,8 +98,10 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
                 switch isign
                     case 1
                         opts_disp_rays.connect_data_linestyles='-';
+                        opts_disp_rays.set_markers='+';
                     case -1
                         opts_disp_rays.connect_data_linestyles='--';
+                        opts_disp_rays.set_markers='x';
                 end
                 %
                 if isign==-1 | iray<rays.nrays
@@ -87,9 +109,13 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
                 else
                     opts_disp_rays.if_finalize=1;
                 end
+                opts_disp_rays.set_labels=data_in.sas{1}.typenames(bidir_sorted(end)); %use typenames of last stimulus in the ray
                 aux_out_ray=rs_disp_coordsets(data_in,setfield(struct,'opts_disp',opts_disp_rays));
                 aux_out.rays{iray,(3+isign)/2}=aux_out_ray;
                 aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out_ray.opts_disp);
+                if isempty(aux_used_rays) %to use for legends
+                    aux_used_rays=aux_out_ray;
+                end
             end %not empty
         end %sign
     end %iray
@@ -165,6 +191,41 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
             aux.opts_disp=rs_disp_enh_hupdate(aux.opts_disp,aux_out_nbrs.opts_disp);
         end
     end %empty?
+end
+%
+%if rays but not points are plotted, then clean up legend: 
+% ray label will have been repeated for each dataset
+%
+if aux.opts_disp_enh.if_rays==1 & aux.opts_disp_enh.if_points==0 & ~isempty(aux_used_rays)
+    x=aux_used_rays.opts_disp; %these are the options used for plotting rays
+    for iax=1:length(aux.opts_disp.axis_handles)
+        haxis=aux.opts_disp.axis_handles{iax};
+        legh=get(haxis,'Legend');
+        if ~isempty(legh)
+            subplot(haxis);
+            hc=get(haxis,'Children');
+            tags_all=cell(length(hc),1);
+            display_all=cell(length(hc),1);
+            for ich=1:length(hc)
+                tags_all{ich}=get(hc(ich),'Tag');
+                display_all{ich}=get(hc(ich),'DisplayName');
+            end
+            hc_show=strmatch('rays',tags_all); %select the objects whose tags start with x.legend_tags
+            if ~isempty(hc_show)
+                %find the unique display names, to eliminate duplicates across datasets
+                display_unique=unique(display_all(hc_show));
+                hc_show_unique=zeros(length(display_unique),1);
+                for iu=1:length(display_unique)
+                    hc_show_unique(iu)=hc_show(min(strmatch(display_unique{iu},display_all(hc_show),'exact'))); 
+                end
+                h_legend=legend(hc(flipud(hc_show_unique)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+                if ~isempty(x.legend_interpreter)
+                    set(h_legend,'Interpreter',x.legend_interpreter);
+                end
+            end
+            %
+        end %legend is present
+    end
 end
 %
 aux_out.opts_disp=aux.opts_disp;

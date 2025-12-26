@@ -5,6 +5,7 @@
 %   rs_get_coordsets_test: test for above
 %   rs_read_coorddata: read one coordinate set from a file
 %   rs_read_coorddata_test: test for above
+%   rs_save_figs: save one or more figure files
 %   rs_save_mat: save a mat-file
 %   rs_showpipeline: show the processing pipeline for a coordinate dataset
 %   rs_write_coordsets: write a coordinate dataset
@@ -13,6 +14,9 @@
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
 %   rs_align_coordsets_test: test for above
 %   rs_disp_coordsets: display one or more sets of coordinates
+%   rs_disp_coordsets_test1: test rs_disp_coordsets: rotations, data selection, connections, offsets, labels, callouts
+%   rs_disp_coordsets_test2: test rs_disp_coordsets: synthetic data, alpha blending
+%   rs_disp_coordsets_test3: test rs_disp_coordsets: rays, rings, neighbors (via rs_disp_enh_coordsets)
 %   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.
 %   rs_findrays: find rays from coordinates
 %   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli

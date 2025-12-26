@@ -43,7 +43,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
 %      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
 %
-%   set_labels: labels for each dataset in legend, defaults to 'set 1', etc.
+%   set_labels: labels for each dataset in legend, defaults to 'set 1', etc., text string or cell array of strings
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers: marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
@@ -58,7 +58,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_offsets_margin_fraction: fractional margin between datasets, defaults to zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
 %   set_offsets_coordchoices: if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset.
 %       Can be 'first','last','all', or a subset of [1:dim_select], or a cell array of subsets
-%   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc.
+%   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc., text string or cell array of strings
 %
 %   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
 %   data_show_list: list of data points to show (if data_show_method='list')
@@ -68,6 +68,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
 %   data_label_font_size: font size for data labels, defaults to axis_font_size
 %   data_label_interpreter: interpreter for labeling data, empty (default) is system default, alternatively 'none','tex','latex'
+%
 %   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
 %   callout_colors: color for callout lines, defaults to {'k'};
 %   callout_linestyles: line style for callouts, defaults to {'-.'}
@@ -96,7 +97,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   legend_font_size: defaults to axis_font_size
 %   legend_location: defaults to 'Best'
 %   legend_interpreter: interpreter for set label in legend, empty (default) is system default, alternatively 'none','tex','latex'
-%   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set'
+%   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set',  text string or cell array of strings
 %   if_warn: 1 to display warnings related to plot configurations
 %   if_finalize: 1 (default) to finalize axis, view, legend
 %

@@ -1,8 +1,23 @@
 %rs_plot_style_test: test a utility plotting routine 
 % 
 %   See also:  RS_PLOT_STYLE
-% 
-% 
+%
+%testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
+rs_module='plot_style';
+testset=1; 
+ntests=1;
+%
+if ~exist('if_save_and_close')
+    if_save_and_close=0;
+end
+if if_save_and_close==0
+    if_save_and_close=getinp('1 to save and close all figures','d',[0 1]);
+end
+if if_save_and_close
+    close all;
+end
+aux_outs=cell(1); %no outputs in this module
+%
 if ~exist('opts') opts=struct; end
 %
 if ~exist('dim_list') dim_list=[2 3]; end
@@ -122,3 +137,18 @@ for id=1:length(dim_list)
     text(0,0,tstring,'Interpreter','none');
     axis off;
 end %id
+if if_save_and_close
+    rs_save_figs('./tests/rs_plot_style_test','all',setfield(struct(),'if_log',1));
+    close all;
+end
+%
+fns{1}=sprintf('rs_%s_testset%1.0f',rs_module,testset);
+s=struct;
+s.aux_out=aux_outs;
+rs_save_mat(cat(2,'tests',filesep,fns{1}),s);
+%
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+%
+disp(sprintf('testing rs_%s: %s',rs_module,sprintf('testset %1.0f',testset)));
+opts_compare=struct;
+[ifdif{1},opts_used{1}]=rs_benchmark_compare(fns{1},opts_compare);
