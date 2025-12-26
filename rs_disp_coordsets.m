@@ -629,32 +629,32 @@ if aux_out.warn_bad==0
                         set(gca,xyzlim{ic},x.axis_scales(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_scales,1)),:));
                     end
             end
-        end %if_finalize
-        %legend
-        if (x.if_legend==1)
-            need_legend=1;
-        elseif (x.if_legend==-1)
-            need_legend=(igp_aug==ngroups_aug);
-        else
-            need_legend=0;
-        end
-        if need_legend
-            hc=get(haxis,'Children');
-            tags_all=cell(length(hc),1);
-            for ich=1:length(hc)
-                tags_all{ich}=get(hc(ich),'Tag');
+            %legend
+            if (x.if_legend==1)
+                need_legend=1;
+            elseif (x.if_legend==-1)
+                need_legend=(igp_aug==ngroups_aug);
+            else
+                need_legend=0;
             end
-            hc_show=[];
-            for itag=1:length(x.legend_tags)
-                hc_show=union(hc_show,strmatch(x.legend_tags{itag},tags_all)); %select the objects whose tags start with x.legend_tags
-            end
-            if ~isempty(hc_show)
-                h_legend=legend(hc(flipud(hc_show)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
-                if ~isempty(x.legend_interpreter)
-                    set(h_legend,'Interpreter',x.legend_interpreter);
+            if need_legend
+                hc=get(haxis,'Children');
+                tags_all=cell(length(hc),1);
+                for ich=1:length(hc)
+                    tags_all{ich}=get(hc(ich),'Tag');
+                end
+                hc_show=[];
+                for itag=1:length(x.legend_tags)
+                    hc_show=union(hc_show,strmatch(x.legend_tags{itag},tags_all)); %select the objects whose tags start with x.legend_tags
+                end
+                if ~isempty(hc_show)
+                    h_legend=legend(hc(flipud(hc_show)),'Location',x.legend_location,'FontSize',x.legend_font_size);  %flipud since children appear to be added in reverse order
+                    if ~isempty(x.legend_interpreter)
+                        set(h_legend,'Interpreter',x.legend_interpreter);
+                    end
                 end
             end
-        end
+        end %if_finalize
     end %igp_aug
 end
 %

@@ -162,8 +162,10 @@ for isubs=1:length(subs)
 end
 if if_save_and_close
     rs_save_figs(sprintf('./tests/rs_disp_coordsets_testset%1.0f',testset),'all',setfield(struct(),'if_log',1));
-    close all;
+else
+    getinp('1 when ready to close and compare','d',[1 1],1);
 end
+close all;
 %
 fns{1}=sprintf('rs_%s_testset%1.0f',rs_module,testset);
 s=struct;

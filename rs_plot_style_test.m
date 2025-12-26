@@ -18,19 +18,19 @@ if if_save_and_close
 end
 aux_outs=cell(1); %no outputs in this module
 %
-if ~exist('opts') opts=struct; end
+opts=struct;
 %
-if ~exist('dim_list') dim_list=[2 3]; end
-if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8]}; end
-if ~exist('colors_fill') colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]}; end
-if ~exist('marker') marker='s'; end %non-default marker
-if ~exist('markersize') markersize=12; end %non-default marker size
-if ~exist('linewidth') linewidth=3; end  %non-default line width
-if ~exist('linestyle') linestyle=':'; end %non-default line style
-if ~exist('alphaval') alphaval=0.4; end %non default alpha value
-if ~exist('fill_list') fill_list=[1 0 0 1]; end %which colors are filled in
+dim_list=[2 3];
+colors={'r',"#009F0F",'blue',[.7 .3 .8]};
+colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]};
+marker='s'; %non-default marker
+markersize=12; %non-default marker size
+linewidth=3;  %non-default line width
+linestyle=':'; %non-default line style
+alphaval=0.4; %non default alpha value
+fill_list=[1 0 0 1]; %which colors are filled in
 %
-if ~exist('npts') npts=20; end
+npts=20;
 ncolors=length(colors);
 %
 % data are Gaussian clouds
@@ -137,10 +137,13 @@ for id=1:length(dim_list)
     text(0,0,tstring,'Interpreter','none');
     axis off;
 end %id
+%
 if if_save_and_close
-    rs_save_figs('./tests/rs_plot_style_test','all',setfield(struct(),'if_log',1));
-    close all;
+    rs_save_figs(sprintf('./tests/rs_disp_coordsets_testset%1.0f',testset),'all',setfield(struct(),'if_log',1));
+else
+    getinp('1 when ready to close and compare','d',[1 1],1);
 end
+close all;
 %
 fns{1}=sprintf('rs_%s_testset%1.0f',rs_module,testset);
 s=struct;

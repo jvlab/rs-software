@@ -23,7 +23,6 @@ if if_save_and_close
 end
 aux_outs=cell(1);
 %
-if ~exist('filename_gps')
     filename_gps{1}={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
     filename_gps{2}={'./samples/bwtextures/bcpm24pt_coords_MC_sess01_10.mat'};
     filename_gps{3}={'./samples/bwtextures/bcpp55qpt_coords_MC_sess01_10.mat'};
@@ -33,10 +32,9 @@ if ~exist('filename_gps')
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
     filename_gps{6}=filename_gps{5}; %this will be for multiple dims on the same plot
-end
 igp_spec=6; %will be treated specially
-if ~exist('opts_tn2c') opts_tn2c=struct; end %for psg_typenames2colors
-if ~exist('nvars') nvars=5; end %for variants such as with and without rings or axes
+opts_tn2c=struct; %for psg_typenames2colors
+nvars=5; %for variants such as with and without rings or axes
 ngps=length(filename_gps);
 %
 aux_outs{1}.aux_out_std=cell(2,ngps); %dim 1 is if_pca+1
@@ -207,10 +205,13 @@ for igp_ptr=1:length(gp_list)
         end % ivar
     end %if_ok
 end %igp
+%
 if if_save_and_close
     rs_save_figs(sprintf('./tests/rs_disp_coordsets_testset%1.0f',testset),'all',setfield(struct(),'if_log',1));
-    close all;
+else
+    getinp('1 when ready to close and compare','d',[1 1],1);
 end
+close all;
 %
 fns{1}=sprintf('rs_%s_testset%1.0f',rs_module,testset);
 s=struct;

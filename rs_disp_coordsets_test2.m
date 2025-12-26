@@ -24,15 +24,15 @@ if if_save_and_close
     close all;
 end
 %
-if ~exist('dim_list') dim_list=[2 3]; end
-if ~exist('nsets') nsets=4; end
-if ~exist('nstims') nstims=10; end
-if ~exist('colors') colors={'r',"#009F0F",'blue',[.7 .3 .8],[.2 .3 0],'c'}; end  %intentionally of length 6 in case nsets>4
-if ~exist('markers') markers={'s','h','>','o'}; end 
-if ~exist('markersizes') markersizes=[6 8 10 12 14]; end %intentionally of length 5 in case nsets>4
-if ~exist('colors_fill') colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]}; end
-if ~exist('fill_list') fill_list=[1 0 0 1]; end %which colors are filled in
-if ~exist('alphaval') alphaval=[0.3 0.4 0.7]; end %non default alpha values
+dim_list=[2 3];
+nsets=4;
+nstims=10; 
+colors={'r',"#009F0F",'blue',[.7 .3 .8]};
+markers={'s','h','>','o'};
+markersizes=[6 8 10 12 14]; %intentionally of length 5 in case nsets>4
+colors_fill={'k',"#009F0F",'blue',[.2 .9 .1]};
+fill_list=[1 0 0 1]; %which colors are filled in
+alphaval=[0.3 0.4 0.7]; %non default alpha values
 %
 % data are Gaussian clouds
 %
@@ -123,10 +123,13 @@ for ip=1:length(dim_list)
         aux_outs{1}{irow,icol,ip}=rs_disp_coordsets(data_in,setfield(struct(),'opts_disp',opts_disp));
     end
 end
+%
 if if_save_and_close
     rs_save_figs(sprintf('./tests/rs_disp_coordsets_testset%1.0f',testset),'all',setfield(struct(),'if_log',1));
-    close all;
+else
+    getinp('1 when ready to close and compare','d',[1 1],1);
 end
+close all;
 %
 fns{1}=sprintf('rs_%s_testset%1.0f',rs_module,testset);
 s=struct;
