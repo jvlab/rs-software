@@ -2,7 +2,7 @@ function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
 %
 %  ifdif=compstruct(parent1,x1,parent2,x2,varargin) compares two structures
 %
-%  Downloaded from matlab site as "Compare", 6/4/04; renamed to "compstruct"
+%  Downloaded from matlab site as "Compare", 6/4/04; renamed to "comp_struct"
 %  Uploaded by Nicholas Gigis, gigisn@netscape.net.  Original documentation follows.
 %  Modified so that the text is returned as an output; empty if structures are identical
 %
@@ -27,7 +27,8 @@ function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
 %
 %  Ver: 1.0  5/19/03
 %
-%  13Apr20: edit made to fix bug in comparenum when inputs have different dimensions
+%  13Apr21: edit made to fix bug in comparenum when inputs have different dimensions
+%  26Dec25: edit made to avoid errors if grpahics objects are being compared
 
 ifdif=[];
 if nargin<4;
@@ -89,7 +90,7 @@ if isnumeric(x1) & ~strcmp(class(x1),'double');
     x1=double(x1);
     x2=double(x2);
 end;
-if length(size(x1))~=length(size(x2)) %added by JV 13Apr20
+if length(size(x1))~=length(size(x2)) %added by JV 13Apr21
     txt=['ndims(' parent1 ')~=ndims(' parent2 ')'];
     if (fid~=1)
     	fprintf(fid,[txt '\n']);
@@ -103,14 +104,16 @@ else
         end;
         ifdif=strvcat(ifdif,txt);
     else ~any((size(x1)==size(x2))==0);                            %if x1 and x2 have the same length
-        i=find(abs(x1-x2)>tol);                             %find index where the differenxe between x1 and x2 are above a certain tolerance
-        if ~isempty(i);                                     %if there are some differences
-            tmp=sprintf('%d ', i);
-            txt=sprintf('%s([ %s])\n',parent1,tmp);
-            if (fid~=1)
-               fprintf(fid,txt);
+        if isnumeric(x1) & isnumeric(x2) %prevent copmarison of non-numeric arguments, JV, 26Dec25
+            i=find(abs(x1-x2)>tol);                             %find index where the differenxe between x1 and x2 are above a certain tolerance
+            if ~isempty(i);                                     %if there are some differences
+                tmp=sprintf('%d ', i);
+                txt=sprintf('%s([ %s])\n',parent1,tmp);
+                if (fid~=1)
+                   fprintf(fid,txt);
+                end;
+                ifdif=strvcat(ifdif,txt);
             end;
-            ifdif=strvcat(ifdif,txt);
         end;
     end;
 end;
