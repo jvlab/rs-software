@@ -57,6 +57,39 @@ def all_distance_pairs(trial_key):
     return list(map(helper, pairs))
 
 
+def ranking_to_pairwise_comparisons_per_trial(distance_pairs, ranked_stimuli):
+    """ Convert ranking data to comparisons of pairs of pairs of stimuli
+
+    @param distance_pairs:
+    :type distance_pairs: list
+    :param ranked_stimuli:
+    :type ranked_stimuli: list
+    """
+    # ranked_stimuli is a list of lists. each list is a 'repeat'
+    rank = {}
+    stimulus_pairs = []  # ((s1, s2), (s3, s4))
+    judgments = []
+    num_repeats = []
+    comparator = ['<']
+
+    for stimulus_list in ranked_stimuli:
+        for index in range(len(stimulus_list)):
+            rank[stimulus_list[index]] = index
+        for pair in distance_pairs:
+            dists = pair.split('<')
+            stim1 = dists[0].split(',')[1]
+            stim2 = dists[1].split(',')[1]
+            stimulus_pairs.append((stim1))
+            if pair not in comparisons:
+                comparisons[pair] = 1 if rank[stim1] < rank[stim2] else 0
+                num_repeats[pair] = 1
+            else:
+                num_repeats[pair] += 1
+                if rank[stim1] < rank[stim2]:
+                    comparisons[pair] += 1
+    return comparisons, num_repeats
+
+
 def ranking_to_pairwise_comparisons(distance_pairs, ranked_stimuli):
     """ Convert ranking data to comparisons of pairs of pairs of stimuli
 

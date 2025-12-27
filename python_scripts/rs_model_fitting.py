@@ -6,10 +6,10 @@ import pandas as pd
 from sklearn.manifold import smacof
 from scipy.spatial.distance import pdist
 
-import analysis.model_fitting.mds as mds
-import analysis.model_fitting.run_mds_seed as rs
-import analysis.model_fitting.pairwise_likelihood_analysis as an
-from analysis.util import read_in_params, json_to_pairwise_choice_probs
+import mds as mds
+import run_mds_seed as rs
+import pairwise_likelihood_analysis as an
+from util import read_in_params, json_to_pairwise_choice_probs
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
@@ -90,86 +90,6 @@ if __name__ == '__main__':
             # the ii for loop can be taken out later. just need it for a plot
             #   plt.plot(fmin_costs)
             # plt.show()
-
-            # Deprecated - Feb 1, 2023 - use bootstrap.curvature_and_model_goodness on homePC for curvature LLs
-            # if CONFIG['hyperbolic']:
-            #     # HYPERBOLIC MODELS #########################################################################
-            #     hyp_dim = 2
-            #     # FIRST OPTIMIZE CURVATURE ###############################
-            #     MAX_ITERATIONS = CONFIG['max_iterations']
-            #     INITIAL_ITERATIONS = 2000
-            #     CONFIG['max_iterations'] = INITIAL_ITERATIONS
-            #     max_ll = -np.inf
-            #     c_max_ll = None
-            #     hyp_start = None
-            #     for c in np.arange(0.0001, CONFIG['curvature'] + 0.1, 0.05):
-            #         CONFIG['curvature'] = c
-            #         LOG.info('Fitting hyperbolic model with parameters: ')
-            #         LOG.info('######################################### Hyperbolic model with curvature {}'.format(
-            #             str(CONFIG['curvature'])))
-            #         CONFIG['n_dim'] = hyp_dim
-            #         start, ll_nd, fmin_costs = rs.hyperbolic_points_of_best_fit(subset, CONFIG)
-            #         ll_nd = -ll_nd / float(num_trials * CONFIG['num_repeats'])
-            #         LOG.info('######################################## Log likelihood: {}'.format(str(ll_nd)))
-            #         if ll_nd > max_ll:
-            #             max_ll = ll_nd
-            #             c_max_ll = c
-            #             hyp_start = start
-            #             LOG.info("#### Best curvature so far: " + str(c))
-            #     # NEXT OPTIMIZE COORDINATES ##############################
-            #     CONFIG['curvature'] = c_max_ll
-            #     CONFIG['max_iterations'] = MAX_ITERATIONS - INITIAL_ITERATIONS
-            #     LOG.info('Fitting hyperbolic model with parameters: ')
-            #     LOG.info(
-            #         '################################### Hyperbolic model being optimized with curvature {}'.format(
-            #             str(CONFIG['curvature'])))
-            #     solution, ll_nd, fmin_costs = rs.hyperbolic_points_of_best_fit(subset, CONFIG, hyp_start)
-            #     ll_nd = -ll_nd / float(num_trials * CONFIG['num_repeats'])
-            #     result['Model'].append(str(hyp_dim) + 'D-hyp')
-            #     result['Log Likelihood'].append(ll_nd)
-            #     result['number of points'].append(CONFIG['num_stimuli'])
-            #     result['Experiment'].append(EXP)
-            #     result['Subject'].append(SUBJECT)
-            #     result['Curvature'].append(np.round(c_max_ll, 2))
-            #
-            # if CONFIG['spherical']:
-            #     # SPHERICAL MODELS #########################################################################
-            #     sph_dim = 2
-            #     # FIRST OPTIMIZE CURVATURE ###############################
-            #     MAX_ITERATIONS = CONFIG['max_iterations']
-            #     INITIAL_ITERATIONS = 2000
-            #     CONFIG['max_iterations'] = INITIAL_ITERATIONS
-            #     max_ll = -np.inf
-            #     c_max_ll = None
-            #     sph_start = None
-            #     for c in np.arange(0.0001, ORIGINAL_CURVATURE + 0.1, 0.05):
-            #         CONFIG['curvature'] = c
-            #         LOG.info('Fitting spherical model with parameters: ')
-            #         LOG.info('######################################### Spherical model with curvature {}'.format(
-            #             str(CONFIG['curvature'])))
-            #         CONFIG['n_dim'] = sph_dim
-            #         start2, ll_nd, fmin_costs = rs.spherical_points_of_best_fit(subset, CONFIG)
-            #         ll_nd = -ll_nd / float(num_trials * CONFIG['num_repeats'])
-            #         LOG.info('######################################## Log likelihood: {}'.format(str(ll_nd)))
-            #         if ll_nd > max_ll:
-            #             max_ll = ll_nd
-            #             sph_start = start2
-            #             c_max_ll = c
-            #             LOG.info("#### Best curvature so far: " + str(c))
-            #     # NEXT OPTIMIZE COORDINATES ##############################
-            #     CONFIG['curvature'] = c_max_ll
-            #     CONFIG['max_iterations'] = MAX_ITERATIONS - INITIAL_ITERATIONS
-            #     LOG.info('Fitting spherical model with parameters: ')
-            #     LOG.info('################################### Spherical model being optimized with curvature {}'.format(
-            #         str(CONFIG['curvature'])))
-            #     solution, ll_nd, fmin_costs = rs.spherical_points_of_best_fit(subset, CONFIG, sph_start)
-            #     ll_nd = -ll_nd / float(num_trials * CONFIG['num_repeats'])
-            #     result['Model'].append(str(sph_dim) + 'D-sph')
-            #     result['Log Likelihood'].append(ll_nd)
-            #     result['number of points'].append(CONFIG['num_stimuli'])
-            #     result['Experiment'].append(EXP)
-            #     result['Subject'].append(SUBJECT)
-            #     result['Curvature'].append(np.round(c_max_ll, 2))
 
             # RANDOM AND BEST MODELS ####################################################################
             ll_best = an.best_model_ll(

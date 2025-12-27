@@ -69,6 +69,6 @@ if __name__ == '__main__':
         'response_colnames': responses_col_names,
         'responses': responses}
 
-    output_path = os.path.join(output_dir, f"{subject}_{paradigm}_detailed_choice.mat")
+    output_path = os.path.join(output_dir, f"{paradigm}_detailed_choices_{subject}.mat")
     savemat(output_path, results)
     print(f"Saved results to {output_path}")
