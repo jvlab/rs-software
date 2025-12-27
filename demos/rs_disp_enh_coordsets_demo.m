@@ -7,26 +7,31 @@
 %
 %testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
 %
-filename_gps{1}={... 
+filename_paradigms{1}={... 
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
-filename_gps{2}={
+filename_paradigms{2}={
     './samples/bwtextures/bcpp55qpt_coords_BL_sess01_10.mat',...
     './samples/bwtextures/bcpp55qpt_coords_MC_sess01_10.mat',...
     './samples/bwtextures/bcpp55qpt_coords_ZK_sess01_10.mat'};
-filename_gps{3}={
+filename_paradigms{3}={
     './samples/bwtextures/bcpm24pt_coords_BL_sess01_10.mat',...
     './samples/bwtextures/bcpm24pt_coords_MC_sess01_10.mat',...
     './samples/bwtextures/bcpm24pt_coords_ZK_sess01_10.mat'};
-ngps=length(filename_gps);
-for igp=1:ngps
-    filenames=filename_gps{igp};
+nparas=length(filename_paradigms);
+nenh=3; %varieties of enhanced plots
+ncgps=2; %number of coordinate groups ([1 2 3],[1 2 3]) from 'keeplow')
+haxes_all=cell(ncgps,1+nenh); %standard plot in first column, enhanced plots in other columns
+haxes=cell(ncgps,1);
+aux_outs=cell(nparas,1+nenh); 
+for ipara=1:nparas
+    filenames=filename_paradigms{ipara};
     nfiles=length(filenames);
     aux_in=struct;
     aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
     aux_in.nsets=nfiles;
-    disp(sprintf(' group %1.0f: %2.0f files',igp,nfiles))
+    disp(sprintf(' group %1.0f: %2.0f files',ipara,nfiles))
     [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
     if_ok=1;
     for ifile=1:nfiles
@@ -38,22 +43,73 @@ for igp=1:ngps
             disp(sprintf(' file %1.0f: %70s: %3.0f rays, %3.0f rings, %3.0f pairs',ifile,filenames{ifile},rays.nrays,rays.nrings,rays.npairs))
         end
     end
-end
-%     if (if_ok)
-%         %
-%         aux_align_def=struct;
-%         aux_align_def.opts_align.if_log=0;
-%         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-%         aux_knit_def=struct;
-%         aux_knit_def.opts_knit.if_log=0;
-%         aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
-%         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
-%         %
-%         opts_disp=struct;
-%         opts_disp.fig_name=sprintf('group %1.0f: %s',igp,data_read.sets{1}.paradigm_name);
-%         for ifile=1:nfiles
-%             opts_disp.set_labels{ifile}=data_read.sets{ifile}.subj_id;
-%         end
+    if (if_ok)
+        %
+        aux_align_def=struct;
+        aux_align_def.opts_align.if_log=0;
+        [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
+        aux_knit_def=struct;
+        aux_knit_def.opts_knit.if_log=0;
+        aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
+        [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
+        data_disp=aux_knit.components;
+        opts_disp_std.axis_label_prefix='pc';
+        rays_use=aux_knit.rayss{1};
+        %
+        hfig=figure;
+        for icgp=1:ncgps
+            for icol=1:nenh+1
+                haxes_all{icgp,icol}=subplot(ncgps,1+nenh,icol+(icgp-1)*(nenh+1));
+            end
+        end
+        opts_disp=struct;
+        opts_disp.fig_handle=hfig;
+        for icgp=1:ncgps
+            opts_disp.axis_handles{icgp}=haxes_all{icgp,1};
+        end
+        opts_disp.fig_name=sprintf('group %1.0f: %s',icgp,data_read.sets{1}.paradigm_name);
+        for ifile=1:nfiles
+            opts_disp.set_labels{ifile}=data_read.sets{ifile}.subj_id;
+        end
+        %
+        opts_disp.axis_label_prefix='pc';
+        opts_disp.dim_select=4;
+        opts_disp.coord_group_method='keeplow';
+        aux_outs{ipara,1}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp));
+        %
+        opts_disp_enh=opts_disp;
+        opts_disp_enh.set_offsets='margin_fraction';
+        opts_disp_enh.set_offsets_margin_fraction=1;
+        opts_disp_enh.set_offsets_coordchoices='last';
+        for ienh=1:nenh
+            for icgp=1:ncgps
+                opts_disp_enh.axis_handles{icgp}=haxes_all{icgp,1+ienh};
+            end
+
+%        case 1
+%                             opts_disp_enh.if_points=1;
+%                             opts_disp_enh.if_rays=0;
+%                             opts_disp_enh.if_rings=0;
+%                             opts_disp_enh.if_nbrs=0;
+%                         end
+%                     case 2
+%                         opts_disp_enh.if_points=1;
+%                         opts_disp_enh.if_rays=1;
+%                         opts_disp_enh.if_rings=0;
+%                         opts_disp_enh.if_nbrs=0;
+%                     case 3
+%                         opts_disp_enh.if_points=1;
+%                         opts_disp_enh.if_rays=0;
+%                         opts_disp_enh.if_rings=1;
+%                         opts_disp_enh.if_nbrs=0;
+
+
+            aux_outs{ipara,1+ienh}=rs_disp_enh_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_enh),rays_use);
+        end %ienh
+    end %if_ok
+end %ipara
+%    opts_disp.fig_position=[50 100 1200 800];
+    
 %         %
 %         %standard plot
 %         %
