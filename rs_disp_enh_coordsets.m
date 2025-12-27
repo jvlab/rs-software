@@ -62,6 +62,7 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
 if isempty(rays)
     aux.opts_disp_enh.if_rays=0;
     aux.opts_disp_enh.if_rings=0;
+    aux.opts_disp_enh.if_nbrs=0;
 end
 %
 if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors

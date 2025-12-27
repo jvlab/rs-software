@@ -256,18 +256,22 @@ if x.if_legend==-1
     ngroups_aug=ngroups+1;
 end
 %parse set_offsets
-for ifn=1:length(trunc_pad)
+for ifn=1:length(trunc_pad) %trunc_pad={'set_offsets','set_offsets_margin_amount','set_offsets_margin_fraction'}; %fields that are truncated or padded to have dim 2 length = dim_select
     tp=trunc_pad{ifn};
     if isnumeric(x.(tp))
-        if size(x.(tp),2)~=x.dim_select
-            wmsg=sprintf('number of columns in %s (%1.0f) is inconsistent with number of dimensions (%2.0f); truncated or padded',tp,size(x.set_offsets,2),x.dim_select);
+        needcols=[1 x.dim_select];
+        needcols_msg=sprintf('1 to %1.0f',x.dim_select);
+        %
+        if_okcols=double((size(x.(tp),2)>=min(needcols)) & (size(x.(tp),2)<=max(needcols)));
+        if if_okcols==0
+            wmsg=sprintf('number of columns in %s (%1.0f) is inconsistent with number needed (%s); truncated or padded',tp,size(x.(tp),2),needcols_msg);
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
-            if size(x.(tp),2)>x.dim_select
-                x.(tp)=x.(tp)(:,[1:x.dim_select]);
-            end
-            if size(x.(tp),2)<x.dim_select
-                x.(tp)=cat(2,x.(tp),zeros(size(x.(tp),1),x.dim_select-size(x.(tp),2)));
-            end
+        end
+        if size(x.(tp),2)>x.dim_select
+            x.(tp)=x.(tp)(:,[1:x.dim_select]);
+        end
+        if size(x.(tp),2)<x.dim_select
+            x.(tp)=cat(2,x.(tp),zeros(size(x.(tp),1),x.dim_select-size(x.(tp),2)));
         end
     end
 end
