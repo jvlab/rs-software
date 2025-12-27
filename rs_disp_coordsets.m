@@ -440,7 +440,7 @@ for imc=1:length(make_cell)
     end
 end
 %use set colors for callout colors if requested
-if strmatch(x.callout_colors,'set_colors')
+if strmatch(x.callout_colors{1},'set_colors')
     x.callout_colors=x.set_colors;
 end
 %
