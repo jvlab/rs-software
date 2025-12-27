@@ -42,6 +42,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
 %      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
 %      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
+%   coord_groups: coordinates to show in groups: array of integers in range [1 dim_select]; each row will generate one panel
 %
 %   set_labels: labels for each dataset in legend, defaults to 'set 1', etc., text string or cell array of strings
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
@@ -70,7 +71,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   data_label_interpreter: interpreter for labeling data, empty (default) is system default, alternatively 'none','tex','latex'
 %
 %   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
-%   callout_colors: color for callout lines, defaults to {'k'};
+%   callout_colors: color for callout lines, defaults to {'k'}; can also be 'set_colors' and will match set_colors
 %   callout_linestyles: line style for callouts, defaults to {'-.'}
 %   callout_linewidths: width for callouts, defaults to 1
 %
@@ -438,6 +439,10 @@ for imc=1:length(make_cell)
         x.(mc)={x.(mc)};
     end
 end
+%use set colors for callout colors if requested
+if strmatch(x.callout_colors,'set_colors')
+    x.callout_colors=x.set_colors;
+end
 %
 naxis_handles=length(x.axis_handles);
 if naxis_handles>0 & naxis_handles~=ngroups_aug
@@ -480,14 +485,14 @@ if aux_out.warn_bad==0
     %
     if isempty(x.fig_handle)
         x.fig_handle=figure;
-        set(gcf,'Position',x.fig_position);
-        set(gcf,'NumberTitle','off');
-        set(gcf,'Name',x.fig_name);
     else
         if x.fig_handle~=gcf
             figure(x.fig_handle);
         end
     end
+    set(gcf,'Position',x.fig_position);
+    set(gcf,'NumberTitle','off');
+    set(gcf,'Name',x.fig_name);
     if naxis_handles==0
         fig_posit=get(gcf,'Position');
         [nrows,ncols]=nicesubp(ngroups_aug,fig_posit(4)/fig_posit(3)); %find an arrangement of rows and columns that fits the aspect ratio
