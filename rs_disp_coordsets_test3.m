@@ -1,8 +1,6 @@
-% rs_disp_coordsets_demo3: demonstrate display of datasets with rays, and
-% enhanced plotting options
+% rs_disp_coordsets_test3: demonstrate display of datasets with rays, and other enhanced plotting options
 %
-%  Note: when using data from components, rays also need to be taken from
-%  components (as is done here)
+%  Note: when using data from components, rays also need to be taken from components (as is done here)
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3,
 %   PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
