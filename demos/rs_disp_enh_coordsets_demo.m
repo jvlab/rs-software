@@ -13,6 +13,8 @@
 %  custom plot size
 %  custom data label font size
 %
+% Also illustrates rotation of consensus data into principal components via rs_knit_coordsets
+%
 %  Note: when using data from components, rays also need to be taken from components (as is done here)
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3,
@@ -60,7 +62,7 @@ for ipara=1:nparas
         end
     end
     if (if_ok)
-        %align rotate to consensus, and into pca coords
+        %align data, rotate to consensus, and rotate consensus into pca coords
         aux_align_def=struct;
         aux_align_def.opts_align.if_log=0;
         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);

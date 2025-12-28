@@ -68,7 +68,7 @@ for iset=1:nsets
     aux_out_raw{iset}=rs_disp_coordsets(data_read,setfield(struct,'opts_disp',opts_disp_raw));
 end
 %
-%now align and rotate data into a consensus, and use each component, aligned to consensus, for further plotting
+%align data, rotate data into a consensus, and use each component, aligned to consensus, for further plotting
 %
 aux_align_def=struct;
 [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
