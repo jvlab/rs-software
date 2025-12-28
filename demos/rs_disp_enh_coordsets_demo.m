@@ -13,7 +13,7 @@
 %  custom plot size
 %  custom data label font size
 %
-% Also illlustrates:
+% Also illustrates:
 %  silencing logging for rs_[get|align|knit]_coordsets,
 %  rotation of consensus data into principal components via rs_knit_coordsets
 %
