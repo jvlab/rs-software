@@ -28,8 +28,6 @@ aux_allowscale.opts_knit.allow_scale=1;
 aux_allowscale.opts_knit.if_normscale=1;
 [data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
 %
-
-%
 %show pipelines, also expanding the contents of sets and sets_combined
 %
 if verbosity<=1
