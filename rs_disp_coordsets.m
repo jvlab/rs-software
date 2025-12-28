@@ -24,8 +24,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   axis_label_font_size: font size, defaults to axis_font_size
 %   axis_view: 3-d view of axis, as cell array for each subplot, 2, 3 (default), or azimuth-elevation pair, where [AZ,EL=[-37.5,30] is the default 3-D view.
 %   axis_equal: 1 (default) to set axes to have equal scales
-%   axis_scale: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list;
-%   axis_scales: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
+%   axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
+%   axis_range_list: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
 %   set_select: datasets to show, defaults to [1:length(data_in.da)]
@@ -75,16 +75,19 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   callout_linestyles: line style for callouts, defaults to {'-.'}
 %   callout_linewidths: width for callouts, defaults to 1
 %
-%   connect_data_method: which data points to connect, 'none' (default), or any of the options in connect_sets_method
+%   connect_data_method: which pairs of data points to connect within a set, 'none' (default), or any of the following:
+%      'all'-> all pairs, 'star' or 'star_first': all connect to first; 'star_last': all connect to last set;
+%      'chain' connects [first next ],[next second-next],,...[next-to-last last]; 'circuit' closes 'chain' to include [last first]
+%      'list': pairs listed in connect_sets_list as a two-column array [first and last refer to the sets selected in set_select]
 %   connect_data_list: two-column array of data points to connect (if data_connect_method='list')
 %   connect_data_linestyles: line styles assigned to connections within each set, defaults to {'none'} (disconnected)
 %   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
 %
-%   connect_sets_method: 'none' (default), or any of the following: which pairs of datasets to connect
-%      'all'-> all pairs, 'star' or 'star_first': all connect to first; 'star_last': all connect to last set;
-%      'chain' connects [first next ],[next second-next],,...[next-to-last last]; 'circuit' closes 'chain' to include [last first]
-%      'list': pairs listed in connect_sets_list as a two-column array [first and last refer to the sets selected in set_select]
+%   connect_sets_method: which sets to connect: 'none' (default), or any of the options in connect_data_method
 %   connect_sets_list: two-column array of sets to connect, if connect_sets_method='list'
+%   connect_sets_data_method: which data points to connect between sets, 'all' (default), or any of the options in data_label_method
+%        or 'labeled': connects all data points that designated by data_label_method and data_label_list
+%   connect_sets_data_list: list of data points to connect wbetween sets, if connect_sets_data_method='list'
 %   connect_sets_color_mode: 'first','last','split' (default),'list': how connection line is colored
 %      %first uses first set of connection pair, last uses last set of
 %      %pair, split uses half of each, list expects a list in connect_sets_colors (cycled through if necessary)
@@ -99,6 +102,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   legend_location: defaults to 'Best'
 %   legend_interpreter: interpreter for set label in legend, empty (default) is system default, alternatively 'none','tex','latex'
 %   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set',  text string or cell array of strings
+%
 %   if_warn: 1 to display warnings related to plot configurations
 %   if_finalize: 1 (default) to finalize axis, view, legend
 %
@@ -152,8 +156,8 @@ aux.opts_disp=filldefault(aux.opts_disp,'fig_handle',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'axis_handles',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'axis_view',{3});
 aux.opts_disp=filldefault(aux.opts_disp,'axis_equal',1);
-aux.opts_disp=filldefault(aux.opts_disp,'axis_scale','tight');
-aux.opts_disp=filldefault(aux.opts_disp,'axis_scales',[0 1]);
+aux.opts_disp=filldefault(aux.opts_disp,'axis_range','tight');
+aux.opts_disp=filldefault(aux.opts_disp,'axis_range_list',[0 1]);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_default,dim_list_inter)));
 aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
@@ -193,6 +197,8 @@ aux.opts_disp=filldefault(aux.opts_disp,'connect_data_linewidths',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_method','none');
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_list',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_data_method','all');
+aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_data_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_linestyles','-');
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_linewidths',1);
 aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_color_mode','split');
@@ -358,20 +364,20 @@ else
 end
 %
 %set up axis scale
-switch x.axis_scale %check that it is 'tight','auto', or pairs of values
+switch x.axis_range %check that it is 'tight','auto', or pairs of values
     case {'tight','auto'}
     case 'list'
-        if (~isnumeric(x.axis_scales) | size(x.axis_scales,2)~=2)
+        if (~isnumeric(x.axis_range_list) | size(x.axis_range_list,2)~=2)
             wmsg=sprintf('axis scale list must have two columns; tight scaling used');
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
-            x.axis_scale='tight';
-            x.axis_scales=[NaN NaN];
+            x.axis_range='tight';
+            x.axis_range_list=[NaN NaN];
         end
     otherwise
-        wmsg=sprintf('axis scale specifier (%s) not recognized, tight scaling used',x.axis_scale);
+        wmsg=sprintf('axis scale specifier (%s) not recognized, tight scaling used',x.axis_range);
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
-        x.axis_scale='tight';
-        x.axis_scales=[NaN NaN];
+        x.axis_range='tight';
+        x.axis_range_list=[NaN NaN];
 end
 %set up data show and label params
 [x.data_show_list,wmsg]=rs_disp_parse_listmethod(x.data_show_method,[1:nstims],x.data_show_list,'specification of data points to show');
@@ -387,7 +393,7 @@ if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up params for connecting points within sets
-[x.connect_data_list,wmsg]=rs_disp_parse_pairmethod(x.connect_data_method,x.data_show_list,x.connect_data_list,'specification of data points to connect');
+[x.connect_data_list,wmsg]=rs_disp_parse_pairmethod(x.connect_data_method,x.data_show_list,x.connect_data_list,'specification of data points to connect within a set');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
@@ -398,6 +404,14 @@ else
 end
 %set up params for connecting points across sets
 [x.connect_sets_list,wmsg]=rs_disp_parse_pairmethod(x.connect_sets_method,x.set_select,x.connect_sets_list,'specification of sets to connect');
+if ~isempty(wmsg)
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+end
+if strcmp(x.connect_sets_data_method,'labeled')
+    x.connect_sets_data_method=x.data_label_method;
+    x.connect_sets_data_list=x.data_label_list;
+end
+[x.connect_sets_data_list,wmsg]=rs_disp_parse_listmethod(x.connect_sets_data_method,[x.data_show_list],x.connect_sets_data_list,'specification of data points to connect between sets');
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
@@ -586,21 +600,22 @@ if aux_out.warn_bad==0
         for ic=1:size(x.connect_sets_list,1)
             cset=x.connect_sets_list(ic,:);
             if all(ismember(cset,x.set_select))
-                endpoints=zeros(length(x.data_show_list),x.coord_group_size,2);
+                data_connect_list=intersect(x.data_show_list,x.connect_sets_data_list); %find the points that are shown and also those selected for inter-set connection
+                endpoints=zeros(length(data_connect_list),x.coord_group_size,2);
                 for iz=1:2
-                    endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(x.data_show_list,cg);
+                    endpoints(:,:,iz)=data_in.ds{cset(iz)}{x.dim_select}(data_connect_list,cg);
                     ko=mod(cset(iz)-1,size(x.set_offsets,1))+1;
                     endpoints(:,:,iz)=endpoints(:,:,iz)+repmat(x.set_offsets(ko,cg).*x.offsets_select(igp,cg),size(endpoints,1),1,1); %add the offset
                 end
                 midpoints=mean(endpoints,3);
                 if ~strcmp(x.connect_sets_color_mode,'split')
                     connect_set_styles.colors=x.connect_sets_colors;
-                    for istim=1:length(x.data_show_list)
+                    for istim=1:length(data_connect_list)
                         [hconnect,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot([endpoints(istim,:,1);endpoints(istim,:,2)],ic,connect_set_styles);
                         disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
                     end
                 else
-                    for istim=1:length(x.data_show_list)
+                    for istim=1:length(data_connect_list)
                         for iseg=1:2
                             [hconnect,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot([endpoints(istim,:,iseg);midpoints(istim,:)],ic,setfield(connect_set_styles,'colors',x.connect_sets_colors(:,iseg)));
                             disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
@@ -628,14 +643,14 @@ if aux_out.warn_bad==0
             else
                 axis normal;
             end
-            switch x.axis_scale
+            switch x.axis_range
                 case 'tight'
                     axis tight;
                 case 'auto'
                     axis auto;
                 case 'list'
                     for ic=1:x.coord_group_size
-                        set(gca,xyzlim{ic},x.axis_scales(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_scales,1)),:));
+                        set(gca,xyzlim{ic},x.axis_range_list(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_range_list,1)),:));
                     end
             end
             %legend
