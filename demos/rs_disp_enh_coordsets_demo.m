@@ -13,7 +13,9 @@
 %  custom plot size
 %  custom data label font size
 %
-% Also illustrates rotation of consensus data into principal components via rs_knit_coordsets
+% Also illlustrates:
+%  silencing logging for rs_[get|align|knit]_coordsets,
+%  rotation of consensus data into principal components via rs_knit_coordsets
 %
 %  Note: when using data from components, rays also need to be taken from components (as is done here)
 %

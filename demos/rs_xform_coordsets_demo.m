@@ -13,19 +13,22 @@
 %  custom line style and color for connections between sets
 %  rotation of raw data coordinates into a consensus
 %
-% Also shows how to save intermediate results from alignment so that alignment is not repeated by rs_knit_coordsets
+% Also illustrates:
+%  silencing logging for rs_[get|align|knit]_coordsets,
+%  saving intermediate results from alignment so that alignment is not repeated by rs_knit_coordsets
 %
 %  See also:  RS_XFORM_SPECIFY, RS_XFORM_APPLY, RS_DISP_COORDDSETS.
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S6'};
 nsets=length(filenames);
 aux_in=struct;
-aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 aux_in.nsets=nsets;
 %raw dataset
 [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
 %align data
 aux_align_def=struct;
+aux_align_def.opts_align.if_log=0; %turn off logging
 [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
 %keep intermediate results from alignment so that alignment isn't redone
 aux_knit_def=struct;  
@@ -35,7 +38,7 @@ aux_knit_def.opts_knit.if_log=0; %turn off logging
 [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
 aux_knit_pc=aux_knit_def;
 aux_knit_pc.opts_knit.if_pca=1; %turn on pca rotation
-%Procrustes alignment and pc rotation
+%rotate to consensus and pc rotation
 [data_consensus_pc,aux_knit_pc]=rs_knit_coordsets(data_align,aux_knit_pc);
 %
 subj_ids=cell(1,nsets);
