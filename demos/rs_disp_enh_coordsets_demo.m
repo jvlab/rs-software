@@ -6,6 +6,7 @@
 %  custom arrangement of subplots
 %  rotation of raw data coordinates into a consensus
 %  custom axis labels
+%  custom labeling of datasets based on subject ID and paradigm name
 %  custom selection of which points to label
 %  rays, rings, and nearest neighbor connections
 %  selection of data points to label based on length of stimulus name, and how this interacts with plotting rays

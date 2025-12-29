@@ -11,6 +11,7 @@
 %  combining consensus and individual datasets on same plot
 %  custom data point symbols
 %  custom axis labels
+%  custom labeling of datasets based on subject ID
 %  connecting corresponding points between plots
 %  selection of data points to label based on length of stimulus name
 %

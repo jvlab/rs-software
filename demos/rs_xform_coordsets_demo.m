@@ -10,6 +10,7 @@
 %  custom marker sizes for points
 %  custom axis labels
 %  custom axis ranges
+%  custom labeling of datasets based on subject ID and paradigm name
 %  selection of data points to label based on length of stimulus name
 %  custom choice of data points to connect between sets
 %  custom line style and color for connections between sets
@@ -21,7 +22,7 @@
 %
 %  See also:  RS_XFORM_SPECIFY, RS_XFORM_APPLY, RS_DISP_COORDDSETS.
 %
-filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S6'};
+filenames={'./samples/animals/image_coords_S5','./samples/animals/word_coords_S5'};
 nsets=length(filenames);
 aux_in=struct;
 aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
@@ -43,9 +44,9 @@ aux_knit_pc.opts_knit.if_pca=1; %turn on pca rotation
 %rotate to consensus and pc rotation
 [data_consensus_pc,aux_knit_pc]=rs_knit_coordsets(data_align,aux_knit_pc);
 %
-subj_ids=cell(1,nsets);
+set_labels=cell(1,nsets);
 for iset=1:nsets
-    subj_ids{iset}=data_read.sets{iset}.subj_id;
+    set_labels{iset}=cat(2,data_read.sets{iset}.subj_id,': ',data_read.sets{iset}.paradigm_name);
 end
 %label the stimuli with short names
 label_maxlength=5; %max length of a stimulus label
@@ -109,12 +110,13 @@ for ixform=1:nxforms
     opts_disp_init.fig_handle=hfig;
     opts_disp_init.fig_name=xform_name;
     opts_disp_init.axis_label_prefix=axis_label_prefix;
-    opts_disp_init.set_labels=subj_ids;
+    opts_disp_init.set_labels=set_labels;
     opts_disp_init.set_colors={'r',[0 0.6 0.1]'};
     opts_disp_init.set_markersizes=12;
     opts_disp_init.data_label_method='list';
     opts_disp_init.data_label_list=data_label_list;
     opts_disp_init.data_label_font_size=7;
+    opts_disp_init.callout_amount=0.5;
     opts_disp_init.connect_sets_data_method='labeled';
     opts_disp_init.connect_sets_linestyles={':'};
     opts_disp_init.connect_sets_color_mode='list';
@@ -128,7 +130,7 @@ for ixform=1:nxforms
         opts_disp_init.data_label_setsel_method='first';
         opts_disp_init.connect_sets_method='all';
         opts_disp_init.axis_range='list';
-        opts_disp_init.axis_range_list=[-3 3]; %fixed scales to make transforms easier to see
+        opts_disp_init.axis_range_list=[-10 10;-7 7;-5 5]; %fixed scales to make transforms easier to see
 
     end
     for id=1:nds
