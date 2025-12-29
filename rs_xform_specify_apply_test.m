@@ -109,7 +109,7 @@ auxs{8}=struct;
 auxs{8}.opts_xform.mode='translate_then_pca';
 auxs{8}.opts_xform.source='local';
 auxs{8}.opts_xform.centering_specifier='typename';
-auxs{8}.opts_xform.centering_typname='bp0600';
+auxs{8}.opts_xform.centering_typename='bp0600';
 if if_ignore_svdambig
     ignore{1,8}={{'xform_out','ts'}};
     ignore{2,8}={{'xform_out','ts'},{'data_out','ds'}};
