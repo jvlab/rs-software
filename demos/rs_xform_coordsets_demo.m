@@ -1,5 +1,7 @@
 % rs_xform_coordsets_demo: demonstrate specification and application of simple linear transformations
 %
+%****also try out generic transformations and buff up documentation in rs_xform_apply
+%
 % plot options illustrated:
 %  choice of dimension and coordinates to plot
 %  several plots into same figure
@@ -60,7 +62,11 @@ nds=length(dlist);
 data_start={'raw','raw','consensus','consensus','consensus_pc'};
 nxforms=length(data_start);
 aux_outs=cell(2,nds,nxforms); %d1: init or transformed, d2: dimension, d3: which transform
-%will use data_align for raw data plot, so stimuli are in the same order as raw data
+%
+xform=cell(1,nxforms);
+aux_spec_outs=cell(1,nxforms);
+aux_xform_outs=cell(1,nxforms);
+%
 for ixform=1:nxforms
     switch data_start{ixform}
         case 'raw'
@@ -73,8 +79,24 @@ for ixform=1:nxforms
             data_use=aux_knit_pc.components;
             axis_label_prefix='pc (consensus)';
     end
+    opts_xform=struct;
+    switch ixform
+        case 1
+            opts_xform.mode='translate';
+            opts_xform.source='global';
+            opts_xform.centering_specifier='value';
+            opts_xform.centering_value=0.5*[1:10];
+        otherwise
+            opts_xform.mode='translate';
+            opts_xform.source='global';
+            opts_xform.centering_specifier='value';
+            opts_xform.centering_value=-0.5*[1:10];
+    end
+    %specify the transformation
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
+    [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
     %do the transformations
+    [data_xform,aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
     %plot: top row is untransformed data, dims 2 and 3; bottom row is transfornmed data
     hfig=figure;
     haxes=cell(2,nds);
@@ -87,8 +109,6 @@ for ixform=1:nxforms
     opts_disp_init.fig_handle=hfig;
     opts_disp_init.fig_name=xform_name;
     opts_disp_init.axis_label_prefix=axis_label_prefix;
-    opts_disp_init.axis_range='list';
-    opts_disp_init.axis_range_list=[-3 3]; %fixed scales to make transforms easier to see
     opts_disp_init.set_labels=subj_ids;
     opts_disp_init.set_colors={'r',[0 0.6 0.1]'};
     opts_disp_init.set_markersizes=12;
@@ -103,17 +123,19 @@ for ixform=1:nxforms
     if strcmp(data_start{ixform},'raw')
         opts_disp_init.data_label_setsel_method='all';
         opts_disp_init.connect_sets_method='none';
+        opts_disp_init.axis_range='tight';
     else
         opts_disp_init.data_label_setsel_method='first';
         opts_disp_init.connect_sets_method='all';
+        opts_disp_init.axis_range='list';
+        opts_disp_init.axis_range_list=[-3 3]; %fixed scales to make transforms easier to see
+
     end
     for id=1:nds
         opts_disp_init.axis_handles=haxes(1,id);
         opts_disp_init.dim_select=dlist(id);
         aux_outs{1,id,ixform}=rs_disp_coordsets(data_use,setfield(struct,'opts_disp',opts_disp_init));
     end
-    %transform the data
-    data_xform=data_use;
     %
     opts_disp_xform=opts_disp_init;
     opts_disp_xform.if_legend=0; %don't need a legend
