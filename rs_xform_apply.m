@@ -13,7 +13,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
 %  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
-%                         1 for a general transformatoin 
+%                         1 for a general transformation, for future use 
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) after the transformation
@@ -23,8 +23,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warn_bad: count of warnings that prevent further processing
 %
 % The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-% if aux.opts_xform.if_gen=0: [output]=ts.scaling*[input]*ts.orthog+ts.translation,
-% if aux.opts_xform.if_gen=1: [output]=      ts.b*[input]*ts.T     +ts.c,
+% [output]=ts.b*[input]*ts.T +ts.c,
 %  
 %  (data_in.da{k} should be nstims x idim)
 % Note that the output dimension is always equal to the input dimension.
@@ -91,13 +90,7 @@ for k=1:nsets
         if ~isempty(xforms.ts{k_xform})
             ts=xforms.ts{k_xform}{ip};
             if ~isempty(coords) & ~isempty(ts)
-                switch aux.opts_xform.if_gen
-                   case 0
-                        ts_use=procrustes_compat(ts);
-                    case 1
-                        ts_use=ts;
-                end
-                coords_new=psg_geomodels_apply('procrustes',coords,ts_use);
+                coords_new=psg_geomodels_apply('procrustes',coords,ts);
                 data_out.ds{k}{1,ip}=coords_new;
                 dim_list_out=[dim_list_out,ip];
             end

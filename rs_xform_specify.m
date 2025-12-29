@@ -34,12 +34,11 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %   If inconsistent or unrecognized options are used, opts_xform.mode is set to 'none' and warnings are generated.
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
-% The transformation is [output]=ts.scaling*[input]*ts.orthog+ts.translation,
+% The transformation is [output]=ts.b*[input]*ts.T+ts.c,
 %  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
 %  (data_in.da{k} should be nstims x idim)
 % Note that the output dimension is always equal to the input dimension.
-% The transformation is the same as Matlab's procrustes.m, but with other field names
-%  (see procrustes_compat), and with the translation replicated for each data point
+% The transformation is the same as Matlab's procrustes.m, but for Matlab, the translation c must be replicated for each data point
 %
 % xforms:
 %   xforms.ts are the transformations
@@ -186,9 +185,9 @@ if aux_out.warn_bad==0
             idim=dim_list_each{iset}(dim_ptr);
             %
             ts=struct;
-            ts.scaling=1;
-            ts.orthog=eye(idim);
-            ts.translation=zeros(1,idim);
+            ts.b=1;
+            ts.T=eye(idim);
+            ts.c=zeros(1,idim);
             if ~strcmp(x.mode,'none')
                 switch x.source
                     case 'local'
@@ -228,17 +227,17 @@ if aux_out.warn_bad==0
                     switch x.mode % 'none', 'translate', 'offset_pca', 'translate_then_pca';
                         case 'none'
                         case 'translate'
-                            ts.translation=-cvec;
+                            ts.c=-cvec;
                         case {'offset_pca','translate_then_pca'}
                             if (iset==1) | ~strcmp(x.source,'global')
                                 %cvec+(coords-cvec)*qv is the reconstruction in the PC space.
                                 [recon_pcaxes,recon_coords,var_ex,var_tot,coord_maxdiff,opts_offset_pca]=psg_pcaoffset(coords,cvec);
                                 qv=opts_offset_pca.qv;
-                                ts.orthog=qv;
+                                ts.T=qv;
                                 if strcmp(x.mode,'offset_pca')
-                                    ts.translation=-cvec*qv+cvec;
+                                    ts.c=-cvec*qv+cvec;
                                 else
-                                    ts.translation=-cvec*qv;
+                                    ts.c=-cvec*qv;
                                 end
                             else
                                 ts=xforms.ts{1}{idim}; %no need to redo PCA
