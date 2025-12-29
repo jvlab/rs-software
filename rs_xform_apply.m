@@ -23,8 +23,11 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warn_bad: count of warnings that prevent further processing
 %
 % The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-% [output]=ts.b*[input]*ts.T +ts.c,
-%  
+% [output]=ts.b*[input]*ts.T +ts.c
+%
+% If these fields are not present, but 'scaling','orthog',and 'translation' are pesent, then those values are used.
+%  This allows for direct compatibility with the transformations produced by procrustes_consensus
+%
 %  (data_in.da{k} should be nstims x idim)
 % Note that the output dimension is always equal to the input dimension.
 % The transformation is the same as Matlab's procrustes.m, but with other field names
@@ -79,7 +82,6 @@ end
 data_out.ds=cell(1,nsets);
 data_out.sas=cell(1,nsets);
 data_out.sets=cell(1,nsets);
-%create pipeline -- need to add the dimension list
 %
 for k=1:nsets
     k_xform=mod(k-1,nsets_xform)+1;
@@ -90,6 +92,9 @@ for k=1:nsets
         if ~isempty(xforms.ts{k_xform})
             ts=xforms.ts{k_xform}{ip};
             if ~isempty(coords) & ~isempty(ts)
+                if ((~isfield(ts,'b') | ~isfield(ts,'T') | ~isfield(ts,'c')) & (isfield(ts,'scaling') & isfield(ts,'orthog') & isfield(ts,'translation')))
+                    ts=procrustes_compat(ts);
+                end
                 coords_new=psg_geomodels_apply('procrustes',coords,ts);
                 data_out.ds{k}{1,ip}=coords_new;
                 dim_list_out=[dim_list_out,ip];
