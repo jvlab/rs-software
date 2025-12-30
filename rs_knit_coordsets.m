@@ -17,8 +17,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  if_normscale: 1 to normalize consensus to size of data (default=0)
 %  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
-%  if_stats: 1 to do statistics via shuffling labels (0 is default)
+%  if_stats: 1 to do statistics of variance explained (0 is default)
 %  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
+%     Note that to just compute statistics of variance explained, without shuffles, set if_stats=1, nshuffs=0.
 %  if_plot: 1 to plot statistics, defaults to if_stats
 %  dim_max_in: maximum dimension of the component set to use, defaults to max available across all datasets
 %  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
@@ -50,15 +51,15 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
+%   jack_mode: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
 %       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
 %          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
-%       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
+%       The transformation in jack_mode.ts{ip}{iset} is the transformation from the component set to the consensus
 %       This does *not* take into account the further rotation of the consensus carried out if if_pca=1.
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
+%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(jack_mode,knit_stats_setup), 
 %     but also knit_stats_setup can be customized by setting 
 %         knit_stats_setup.dataset_labels
 %         knit_stats_setup.stimulus_labels
