@@ -4,7 +4,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % data_in.sas{k}.typenames is used to establish stimulus identity
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These are typically created by rs_align_coordsets, but could also be directly from 
+%   These are typically created by rs_align_coordsets, but could also be directly from if_stats
 %   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
 %   datasets, as listed in data_in.sas{k}.typenames
 % The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
@@ -51,15 +51,15 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
 %   details: details of the convergence towards knitting
-%   jack_mode: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
+%   knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
 %       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
 %          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
-%       The transformation in jack_mode.ts{ip}{iset} is the transformation from the component set to the consensus
+%       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
 %       This does *not* take into account the further rotation of the consensus carried out if if_pca=1.
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(jack_mode,knit_stats_setup), 
+%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
 %     but also knit_stats_setup can be customized by setting 
 %         knit_stats_setup.dataset_labels
 %         knit_stats_setup.stimulus_labels
