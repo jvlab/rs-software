@@ -58,6 +58,8 @@ def all_distance_pairs(trial_key):
 
 
 def ranking_to_pairwise_comparisons_per_trial(distance_pairs, ranked_stimuli):
+    # TODO
+    # refactor or delete
     """ Convert ranking data to comparisons of pairs of pairs of stimuli
 
     @param distance_pairs:
@@ -91,6 +93,8 @@ def ranking_to_pairwise_comparisons_per_trial(distance_pairs, ranked_stimuli):
 
 
 def ranking_to_pairwise_comparisons(distance_pairs, ranked_stimuli):
+    # TODO
+    # may need to refactor or delete entirely
     """ Convert ranking data to comparisons of pairs of pairs of stimuli
 
     @param distance_pairs:
