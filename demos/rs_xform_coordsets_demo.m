@@ -161,14 +161,6 @@ for ixform=1:nxforms
         opts_disp_init.dim_select=dlist(id);
         aux_outs{1,id,ixform}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_init));
     end
-    %
-    % opts_disp_xform=opts_disp_init;
-    % opts_disp_xform.if_legend=0; %don't need a legend
-    % for id=1:nds
-    %     opts_disp_xform.axis_handles=haxes(2,id);
-    %     opts_disp_xform.dim_select=dlist(id);
-    %     aux_outs{2,id,ixform}=rs_disp_coordsets(data_xform{ixform},setfield(struct,'opts_disp',opts_disp_xform));
-    % end
 end %ixform
 
 % 
