@@ -110,7 +110,7 @@ for ixform=1:nxforms
     end
     %specify the transformation
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
-    if ~strcmp(opts_xform.mode,'generic')
+    if isempty(xform{ixform})
         [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
     end
     %do the transformations
@@ -138,19 +138,18 @@ for ixform=1:nxforms
     opts_disp_init.connect_sets_linestyles={':'};
     opts_disp_init.connect_sets_color_mode='list';
     opts_disp_init.connect_sets_colors='k';
-
     %
     if strcmp(data_start{ixform},'raw')
         opts_disp_init.data_label_setsel_method='all';
-        opts_disp_init.connect_sets_method='none';
+        opts_disp_init.connect_sets_method='list';
+        opts_disp_init.connect_sets_list=[1 3;2 4]; %connect each dataset with its transform
         opts_disp_init.axis_range='tight';
     else
         opts_disp_init.data_label_setsel_method='first';
         opts_disp_init.connect_sets_method='list';
-        opts_disp_init.connect_sets_list=[1 2;1 3;2 4]; %connect the two raw datasets and each one with their transform
+        opts_disp_init.connect_sets_list=[1 2;1 3;2 4]; %connect the two raw datasets to eachother and each one to its transform
         opts_disp_init.axis_range='list';
         opts_disp_init.axis_range_list=[-10 10;-7 7;-5 5]; %fixed scales to make transforms easier to see
-
     end
     data_disp=struct;
     data_disp.ds=[data_use.ds,data_xform{ixform}.ds];
