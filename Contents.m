@@ -37,5 +37,10 @@
 %   rs_plot_style_test: test rs_plot_style
 %   rs_template: a template for modules with an input and an output
 %   rs_warning: a standard display and tallying warnings
+%
+% Documentation
+%   rs_docs_installation: getting started and installation
+%   rs_docs_demos: overview of the demos
+%   rs_docs_structures: key structures
 % 
-%   Copyright (c) 2025 by J. Victor
+%   Copyright (c) 2025, 2026 by J. Victor

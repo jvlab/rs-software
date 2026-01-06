@@ -119,5 +119,7 @@ disp(sprintf('run with if_auto_skip=%1.0f, if_ignore_svdambig=%1.0f, if_save_and
 disp(sprintf('total number of tests with differences: %4.0f',alldiffs));
 if alldiffs>0
     disp('Consider re-running with if_ignore_svdambig=1 to ignore differences related to implementations of singular value decomposition');
-    disp(sprintf('Condider re-running with diff_maxchars or diff_maxlines set to larger values (currently: %4.0f and %4.0f ) to show more differences',diff_maxchars,diff_maxlines));
+    disp(sprintf('Consider re-running with diff_maxchars or diff_maxlines set to larger values (currently: %4.0f and %4.0f ) to show more differences',diff_maxchars,diff_maxlines));
+    disp('Look in r for details of differences');
+    disp(r);
 end

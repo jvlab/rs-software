@@ -4,7 +4,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % data_in.sas{k}.typenames is used to establish stimulus identity
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These are typically created by rs_align_coordsets, but could also be directly from 
+%   These are typically created by rs_align_coordsets, but could also be directly from if_stats
 %   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
 %   datasets, as listed in data_in.sas{k}.typenames
 % The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
@@ -232,7 +232,7 @@ if aux_out.warn_bad==0
         end
     end
     ds_knitted=ra.ds_knitted;
-    ds_components=ra.ds_components(:);
+    ds_components=ra.ds_components;
     opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
     details=details'; %make a column for consistency
     %

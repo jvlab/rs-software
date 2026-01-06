@@ -8,7 +8,9 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   Stimuli should be identical across datasets
 % xforms: typically an output structure from rs_xform_specify
-%   xforms.ts are the transformations
+%   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
+%     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
+%     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
 %   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
@@ -23,7 +25,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warn_bad: count of warnings that prevent further processing
 %
 % The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-% [output]=ts.b*[input]*ts.T +ts.c
+% [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
 %
 % If these fields are not present, but 'scaling','orthog',and 'translation' are pesent, then those values are used.
 %  This allows for direct compatibility with the transformations produced by procrustes_consensus
@@ -89,24 +91,35 @@ for k=1:nsets
     data_out.ds{k}=cell(1,0);
     for ip=1:length(data_in.ds{k})
         coords=data_in.ds{k}{ip};
-        if ~isempty(xforms.ts{k_xform})
+        have_xform=0;
+        if ip<=length(xforms.ts{k_xform})
+            if isstruct(xforms.ts{k_xform}{ip})
+                have_xform=1;
+            end
+        end
+        if have_xform
             ts=xforms.ts{k_xform}{ip};
             if ~isempty(coords) & ~isempty(ts)
                 if ((~isfield(ts,'b') | ~isfield(ts,'T') | ~isfield(ts,'c')) & (isfield(ts,'scaling') & isfield(ts,'orthog') & isfield(ts,'translation')))
                     ts=procrustes_compat(ts);
                 end
-                coords_new=psg_geomodels_apply('procrustes',coords,ts);
-                data_out.ds{k}{1,ip}=coords_new;
-                dim_list_out=[dim_list_out,ip];
+                coords_new=psg_geomodels_apply('affine',coords,ts);
             end
+        else
+            coords_new=coords;
         end
+        data_out.ds{k}{1,ip}=coords_new;
+        dim_list_out=[dim_list_out,ip];
     end
     data_out.sas{k}=data_in.sas{k};
     %sets is taken from input, other than pipeline and dimensions present   
     data_out.sets{k}=data_in.sets{k};
     if isfield(xforms,'pipeline')
         data_out.sets{k}.pipeline=xforms.pipeline;
+    else
+        data_out.sets{k}.pipeline=struct();
     end
+    data_out.sets{k}.pipeline.opts.opts_xform.transforms=xforms.ts;
     data_out.sets{k}.pipeline.sets=data_in.sets{k};
     data_out.sets{k}.dim_list=dim_list_out;
 end

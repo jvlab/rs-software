@@ -48,7 +48,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
 %   set_markers: marker assigned to each set, defaults to {'.'};
 %   set_markersizes: marker assigned to each set, defaults to 8
-%   set_filled: 1 for sets for which markers are filled, 0 for unfilled (default)
+%   set_filled: 1 for sets for which markers are filled, 0 for unfilled (default); note that only some symbols, e.g., o,s,h,p can be unfilled
 %   set_colors_filled: color assigned to fill, ignore if set_filled=0, defaults to set_colors
 %   set_alphas: alpha blending for each set, defaults to 1 (implementation may be system-dependent and lead to messages in aux_out.warnings)
 %   set_offsets: additive offset for plotting data from each set, defaults to zeros(1,dim_select), for no offset
