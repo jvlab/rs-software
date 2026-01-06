@@ -8,9 +8,12 @@
 %  custom arrangement of subplots
 %  custom colors for data points
 %  custom marker sizes for points
+%  custom symbol choice
+%  custom symbol fills
 %  custom axis labels
 %  custom axis ranges
 %  custom labeling of datasets based on subject ID and paradigm name
+%  callouts for stimulus label
 %  selection of data points to label based on length of stimulus name
 %  custom choice of data points to connect between sets
 %  custom line style and color for connections between sets
@@ -44,9 +47,10 @@ aux_knit_pc.opts_knit.if_pca=1; %turn on pca rotation
 %rotate to consensus and pc rotation
 [data_consensus_pc,aux_knit_pc]=rs_knit_coordsets(data_align,aux_knit_pc);
 %
-set_labels=cell(1,nsets);
+set_labels=cell(1,2*nsets); %plot two original datasets and two transformed datasets
 for iset=1:nsets
     set_labels{iset}=cat(2,data_read.sets{iset}.subj_id,': ',data_read.sets{iset}.paradigm_name);
+    set_labels{nsets+iset}=cat(2,'transformed ',set_labels{iset});
 end
 %label the stimuli with short names
 label_maxlength=5; %max length of a stimulus label
@@ -67,6 +71,7 @@ aux_outs=cell(2,nds,nxforms); %d1: init or transformed, d2: dimension, d3: which
 xform=cell(1,nxforms);
 aux_spec_outs=cell(1,nxforms);
 aux_xform_outs=cell(1,nxforms);
+data_xform=cell(1,nxforms);
 %
 for ixform=1:nxforms
     switch data_start{ixform}
@@ -87,6 +92,16 @@ for ixform=1:nxforms
             opts_xform.source='global';
             opts_xform.centering_specifier='value';
             opts_xform.centering_value=0.5*[1:10];
+        case 2
+            xform{ixform}.pipeline=[];
+            ts=cell(1,3);
+            ts{2}.b=0.9;
+            ts{2}.T=[cos(0.1) sin(0.1);-sin(0.1) cos(0.1)];
+            ts{2}.c=[-.2 -.3];
+            ts{3}.b=0.7;
+            ts{3}.T=[cos(0.1) sin(0.1) 0;-sin(0.1) cos(0.1) 0;0 0 1.2]; %rotate on coords 1 and 2, magnify on coord 3
+            ts{3}.c=[-.2 -.3 .5];
+            xform{ixform}.ts{1}=ts;
         otherwise
             opts_xform.mode='translate';
             opts_xform.source='global';
@@ -95,16 +110,16 @@ for ixform=1:nxforms
     end
     %specify the transformation
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
-    [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
+    if ~strcmp(opts_xform.mode,'generic')
+        [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
+    end
     %do the transformations
-    [data_xform,aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
+    [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
     %plot: top row is untransformed data, dims 2 and 3; bottom row is transfornmed data
     hfig=figure;
-    haxes=cell(2,nds);
-    for ix=1:2
-        for id=1:nds
-            haxes{ix,id}=subplot(2,nds,id+(ix-1)*nds);
-        end
+    haxes=cell(1,nds);
+    for id=1:nds
+        haxes{1,id}=subplot(1,nds,id);
     end
     opts_disp_init=struct;
     opts_disp_init.fig_handle=hfig;
@@ -112,7 +127,9 @@ for ixform=1:nxforms
     opts_disp_init.axis_label_prefix=axis_label_prefix;
     opts_disp_init.set_labels=set_labels;
     opts_disp_init.set_colors={'r',[0 0.6 0.1]'};
-    opts_disp_init.set_markersizes=12;
+    opts_disp_init.set_markers={'o'};
+    opts_disp_init.set_filled=[1 1 0 0]; %transformed sets are unfilled
+    opts_disp_init.set_markersizes=6;
     opts_disp_init.data_label_method='list';
     opts_disp_init.data_label_list=data_label_list;
     opts_disp_init.data_label_font_size=7;
@@ -121,6 +138,7 @@ for ixform=1:nxforms
     opts_disp_init.connect_sets_linestyles={':'};
     opts_disp_init.connect_sets_color_mode='list';
     opts_disp_init.connect_sets_colors='k';
+
     %
     if strcmp(data_start{ixform},'raw')
         opts_disp_init.data_label_setsel_method='all';
@@ -128,24 +146,29 @@ for ixform=1:nxforms
         opts_disp_init.axis_range='tight';
     else
         opts_disp_init.data_label_setsel_method='first';
-        opts_disp_init.connect_sets_method='all';
+        opts_disp_init.connect_sets_method='list';
+        opts_disp_init.connect_sets_list=[1 2;1 3;2 4]; %connect the two raw datasets and each one with their transform
         opts_disp_init.axis_range='list';
         opts_disp_init.axis_range_list=[-10 10;-7 7;-5 5]; %fixed scales to make transforms easier to see
 
     end
+    data_disp=struct;
+    data_disp.ds=[data_use.ds,data_xform{ixform}.ds];
+    data_disp.sas=[data_use.sas,data_xform{ixform}.sas];
+    data_disp.sets=[data_use.sets,data_xform{ixform}.sets];
     for id=1:nds
         opts_disp_init.axis_handles=haxes(1,id);
         opts_disp_init.dim_select=dlist(id);
-        aux_outs{1,id,ixform}=rs_disp_coordsets(data_use,setfield(struct,'opts_disp',opts_disp_init));
+        aux_outs{1,id,ixform}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_init));
     end
     %
-    opts_disp_xform=opts_disp_init;
-    opts_disp_xform.if_legend=0; %don't need a legend
-    for id=1:nds
-        opts_disp_xform.axis_handles=haxes(2,id);
-        opts_disp_xform.dim_select=dlist(id);
-        aux_outs{2,id,ixform}=rs_disp_coordsets(data_xform,setfield(struct,'opts_disp',opts_disp_xform));
-    end
+    % opts_disp_xform=opts_disp_init;
+    % opts_disp_xform.if_legend=0; %don't need a legend
+    % for id=1:nds
+    %     opts_disp_xform.axis_handles=haxes(2,id);
+    %     opts_disp_xform.dim_select=dlist(id);
+    %     aux_outs{2,id,ixform}=rs_disp_coordsets(data_xform{ixform},setfield(struct,'opts_disp',opts_disp_xform));
+    % end
 end %ixform
 
 % 
