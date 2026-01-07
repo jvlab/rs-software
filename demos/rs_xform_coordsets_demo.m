@@ -63,7 +63,7 @@ end
 %
 dlist=[2 3]; %dimensions to show
 nds=length(dlist);
-data_start={'raw','raw','raw','consensus','consensus','consensus','consensus_pc'};
+data_start={'raw','raw','raw','consensus','consensus','consensus','consensus','consensus_pc'};
 nxforms=length(data_start);
 aux_outs=cell(2,nds,nxforms); %d1: init or transformed, d2: dimension, d3: which transform
 %
@@ -97,6 +97,7 @@ for ixform=1:nxforms
             ts{3}.T=[cos(0.1) sin(0.1) 0;-sin(0.1) cos(0.1) 0;0 0 1.2]; %rotate on coords 1 and 2, magnify on coord 3
             ts{3}.c=[-.2 -.3 .5];
             xform{ixform}.ts{1}=ts;
+            desc='rotate in dims 1 and 2, dliate dim 3';
         case 2
             opts_xform.mode='translate';
             opts_xform.source='global';
@@ -110,14 +111,19 @@ for ixform=1:nxforms
         case 4
             opts_xform.mode='offset_pca';
             opts_xform.source='local';
+            opts_xform.centering_specifier='none';
+            opts_xform.centering_typename='snake'; %just for labeling, ignored in specification of transformation
+        case 5
+            opts_xform.mode='offset_pca';
+            opts_xform.source='local';
             opts_xform.centering_specifier='typename';
             opts_xform.centering_typename='snake';
-        case 5
+        case 6
             opts_xform.mode='offset_pca';
             opts_xform.source='global';
             opts_xform.centering_specifier='typename';
             opts_xform.centering_typename='snake';
-        case {6,7}
+        case {7,8}
             opts_xform.mode='translate_then_pca';
             opts_xform.source='global';
             opts_xform.centering_specifier='typename';
@@ -127,6 +133,10 @@ for ixform=1:nxforms
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
     if isempty(xform{ixform})
         [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
+        desc=sprintf('mode: %s (%s), centering specified by %s',opts_xform.mode,opts_xform.source,opts_xform.centering_specifier);
+        if isfield(opts_xform,'centering_typename')
+            desc=cat(2,desc,sprintf(' (%s)',opts_xform.centering_typename));
+        end
     end
     %do the transformations
     [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
@@ -181,4 +191,10 @@ for ixform=1:nxforms
         opts_disp_init.dim_select=dlist(id);
         aux_outs{1,id,ixform}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_init));
     end
+    axes('Position',[0.01,0.03,0.01,0.01]);
+    text(0,0,desc,'Interpreter','none');
+    axis off
+    axes('Position',[0.01,0.06,0.01,0.01]);
+    text(0,0,xform_name,'Interpreter','none');
+    axis off
 end %ixform
