@@ -1,7 +1,5 @@
 % rs_xform_coordsets_demo: demonstrate specification and application of simple linear transformations
 %
-%****also try out generic transformations and buff up documentation in rs_xform_apply
-%
 % plot options illustrated:
 %  choice of dimension and coordinates to plot
 %  several plots into same figure
@@ -10,6 +8,7 @@
 %  custom marker sizes for points
 %  custom symbol choice
 %  custom symbol fills
+%  custom alpha blending
 %  custom axis labels
 %  custom axis ranges
 %  custom labeling of datasets based on subject ID and paradigm name
@@ -145,6 +144,7 @@ for ixform=1:nxforms
     opts_disp_init.set_colors={'r',[0 0.6 0.1]'};
     opts_disp_init.set_markers={'o'};
     opts_disp_init.set_filled=[1 1 0 0]; %transformed sets are unfilled
+    opts_disp_init.set_alphas=[0.3 0.3 1 1]; %untransformed sets are alpha-blended
     opts_disp_init.set_markersizes=6;
     opts_disp_init.data_label_method='list';
     if strcmp(opts_xform.mode,'offset_pca') | strcmp(opts_xform.mode,'translate_then_pca') %just label the stimlus used for offset, and one more stimulus
@@ -153,7 +153,7 @@ for ixform=1:nxforms
         opts_disp_init.data_label_list=data_label_list;
     end
     opts_disp_init.data_label_font_size=7;
-    opts_disp_init.callout_amount=0.5;
+    opts_disp_init.callout_amount=0.2;
     opts_disp_init.connect_sets_data_method='labeled';
     opts_disp_init.connect_sets_linestyles={':'};
     opts_disp_init.connect_sets_color_mode='list';
