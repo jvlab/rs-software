@@ -1,9 +1,11 @@
 % rs: Representational space software
 %
 % Data input and output
-%   rs_get_coordsets: read one or more coordinate sets or models from file
+%   rs_get_coordsets: get one or more dataset structures (coordinates and metadata) from a file
 %   rs_get_coordsets_test: test for above
-%   rs_read_coorddata: read one coordinate set from a file
+%   rs_import_coordsets: import a dataset structure from coordinates
+%   rs_import_coordsets_test: test for above
+%   rs_read_coorddata: read one dataset structure from a file
 %   rs_read_coorddata_test: test for above
 %   rs_save_figs: save one or more figure files
 %   rs_save_mat: save a mat-file

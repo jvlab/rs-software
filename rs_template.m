@@ -61,7 +61,6 @@ for iset=1:nsets
     end
     aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
 end
-
 %
 %check consistency and get available stimuli, dimensions, typenames
 %
@@ -71,12 +70,26 @@ check=rs_check_coordsets(data_in,aux.opts_check);
 %
 %validate input parameters for consistency, etc.
 %
+% for matlab style warnings
 if (condition)
     wmsg=sprintf('xxx');
     warning(wmsg);
     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
     aux_out.warn_bad=aux_out.warn_bad+1;
 end
+%for custom warnings with rs leadin
+if (condition)
+    wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1)); %to force a warning output; second argument is a 1 if a bad warning
+    %or%
+    aux_out=rs_warning(wmsg,0,aux_out); %to accumulage warnings and log based on aux_out, first force a warning output
+
+end
+
+% return options as used
+aux_out.opts_temp=aux.opts_temp;
+aux_out.opts_othr=aux.opts_othr;
+%
 if aux_out.warn_bad==0
 %process
     data_out.ds{*}=;

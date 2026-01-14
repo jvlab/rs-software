@@ -66,10 +66,10 @@ for k=1:length(sigma_list)
 end
 clear k sigma_list
 %
-%typically first used in psg_findrays
+%typically first used in psg_import_coorddata
 %
-generic.opts_rays.ray_reorder_ring=1; %standardize ray order
-generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
+generic.opts_import.typename_prefix='stimulus_'; %default prefix for typenames
+generic.opts_import.typename_ndigs=2; %number of digits in an auto-generated typename 
 %
 %typically first used in psg_write_coorddata
 %
@@ -84,6 +84,11 @@ generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file
 generic.opts_disp.fig_position=[100 100 1200 800]; %default position for figures
 generic.opts_disp.axis_font_size=8; %font size for figure labels
 generic.opts_disp.axis_label_prefix='dim'; %prefix for axis label
+%
+%typically first used in psg_findrays
+%
+generic.opts_rays.ray_reorder_ring=1; %standardize ray order
+generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
 %
 %these options override generic defaults when rs_aux_customize is called by a specific function
 %
