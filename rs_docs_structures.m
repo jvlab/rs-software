@@ -3,10 +3,28 @@
 % data:
 %   data.ds{k}: [row] coordinate sets
 %   data.sas{k}: [row] metadata
-%   data.sets{k}: [row] audit trail
+%
+%     typenames: {25×1 cell} 
+% 
+%        nstims: 25
+% btc_specoords: [25×10 double]
+%   others are optional
+    %       nchecks: 16
+    %      nsubsamp: 9
+
+    %         specs: {25×1 cell}
+    %   spec_labels: {25×1 cell}
+    %      opts_psg: [1×1 struct]
+    %      btc_dict: [1×1 struct]
+    % if_frozen_psg: 1
+    % btc_augcoords: [25×10 double]
+
+
+%   data.sets{k}: [row] metadata and audit trail
 %
 % sets{k} has the following fields
 %
+% type: 'data' or 'model'
 % nstims: number of stimuli
 % paradigm_name
 % paradigm:
@@ -16,7 +34,6 @@
 % extra: free text field
 % label_long: dataset label, intended to indicate file of origin
 % label: optional shorter form of label_long for display
-% type: 'data' or 'model'
 %
 % pipeline: processing steps
 %   This can be empty if the data file is created by rs_get_coordsets or rs_read_coorddata

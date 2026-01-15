@@ -2,7 +2,7 @@ function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
 % [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays) is a utility to
 % create a ray structure from metadata that specifies stimulus coordinates
 %
-%  sa: metadata structure, containing stmulus coordiantes, typically btc_specoords or btc_augcoords
+%  sa: metadata structure, containing stmulus coordinates, typically btc_specoords or btc_augcoords
 %  label: a string, to be searched in psg_findray_setopts for identifiers
 %     that require special params for psg_findrays, such as 'bcpm24', 'bcmm55'
 %  opts_rays: options for psg_findrays, from psg_defopts or

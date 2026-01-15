@@ -69,7 +69,7 @@ clear k sigma_list
 %typically first used in psg_import_coorddata
 %
 generic.opts_import.typename_prefix='stimulus_'; %default prefix for typenames
-generic.opts_import.typename_ndigs=2; %number of digits in an auto-generated typename 
+generic.opts_import.typename_ndigits=2; %number of digits in an auto-generated typename 
 %
 %typically first used in psg_write_coorddata
 %

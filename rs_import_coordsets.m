@@ -6,15 +6,20 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %   coords{1,id} should be either empty, or an array of size [nstims id],
 %
 % aux:
-%  aux.opts_import:
-%  aux.opts_check.if_warn: defaults to 1, set to 0 to turn off warnings
-%  aux.opts_check.if_warn_traceback: set to 1 to give full traceback of warnings, defaults to value in overall section of rs_aux_defaults, set by rs_aux_customize.
+%  aux.opts_import: a structure with fields
+%     typenames: cell array, size {nstims,1}, unique labels for the stimuli
+%         if omitted will be set to opts_import.typename_prefix followed by opts.typename_ndigits         
+%        nstims: number of stimuli, if 0 or omitted, will be determined from first non-empty entry in coords
+% btc_specoords: array of size [nstims *], conceptual coordinates, if omitted, will be set to eye(nstims)
+%     
+%  aux.opts_check: a structure with fields
+%     if_warn: defaults to 1, set to 0 to turn off warnings
+%     if_warn_traceback: set to 1 to give full traceback of warnings, defaults to value in overall section of rs_aux_defaults, set by rs_aux_customize.
 % 
 % data_out.ds{1},sas{1},sets{1}:  coordinates after processing
 % aux_out: auxiliary outputs and parameter values used, and also
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
-%
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS.
 %
@@ -28,6 +33,9 @@ aux=filldefault(aux,'opts_check',struct); %options for this module (psg_template
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=rs_aux_customize(aux,'rs_import');
+aux.opts_import=filldefault(aux.opts_import,'nstims',0);
+aux.opts_import=filldefault(aux.opts_import,'typenames',cell(0));
+aux.opts_import=filldefault(aux.opts_import,'btc_specoords',[]);
 %
 data_out=struct;
 aux_out=struct;
@@ -36,20 +44,34 @@ aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
 ds=coords;
-nstims=0;
-dimlist=[];
+dim_list=[];
 for k=1:length(coords)
     if ~isempty(coords{k})
-        if nstims==0
-            nstims=size(coords{k},1);
+        if aux.opts_import.nstims==0
+            aux.opts_import.nstims=size(coords{k},1);
         end
-        dimlist=[dimlist,size(coords{k},2)];
+        dim_list=[dim_list,size(coords{k},2)];
     end
 end
+nstims=aux.opts_import.nstims;
+%
 sas=struct;
+sas.nstims=nstims;
+if isempty(aux.opts_import.btc_specoords)
+    sas.btc_specoords=eye(sas.nstims);
+end
+sas.typenames=cell(nstims,1);
+for istim=1:nstims
+    if istim>length(aux.opts_import.typenames)
+        sas.typenames{istim}=cat(2,aux.opts_import.typename_prefix,zpad(istim,aux.opts_import.typename_ndigits));
+    else
+        sas.typenames{istim}=aux.opts_import.typenames;
+    end
+end
 %
 sets=struct;
 sets.nstims=nstims;
+sets.dim_list=dim_list;
 sets.pipeline=[];
 %
 data_out=struct;
