@@ -22,19 +22,55 @@
 
 %   data.sets{k}: [row] metadata and audit trail
 %
-% sets{k} has the following fields
+% sets{k} has the following fields.
+% nstims and dim_list are determined from data.ds.
+% pipeline is set to [] on a dataset that is imported by rs_import_coordsets or on initial reading by rs_get_coordsets or rs_read_coorddata
+% Other fields are provided in rs_import_coordsets OR decoded from the file name in , they are decoded from the file name
 %
-% type: 'data' or 'model'
-% nstims: number of stimuli
-% paradigm_name
-% paradigm:
-% dim_list
+% type: 'data' for raw data, 'model' for a computational model
+% nstims: integer, number of stimuli
+% dim_list: integer row array, list of dimensions of coordinate sets avilable in data.ds
+% paradigm_type:
+% paradigm_name: 
 % subj_id
 % subj_id_short
 % extra: free text field
 % label_long: dataset label, intended to indicate file of origin
 % label: optional shorter form of label_long for display
-%
+% 
+% data_out.sets{1}
+% ans = 
+%   struct with fields:
+% 
+%              type: 'data'
+%     paradigm_type: 'btc'
+%     paradigm_name: 'bgca3pt'
+%           subj_id: 'MC-br'
+%     subj_id_short: 'MC'
+%             extra: 'sess01_10'
+%          dim_list: [1 2 3 4 5 6 7]
+%            nstims: 25
+%        label_long: './samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat'
+%             label: 'samples/bwtextures/bgca3pt_MC-br_sess01_10'
+%          pipeline: [1×1 struct]
+% load tests/rs_get_coordsets_test_4.mat
+% data_out.sets{1}
+% ans = 
+%   struct with fields:
+% 
+%              type: 'data'
+%     paradigm_type: 'animals'
+%     paradigm_name: 'image'
+%           subj_id: 'S3'
+%     subj_id_short: 'S3'
+%             extra: []
+%          dim_list: [1 2 3 4 5 6 7]
+%            nstims: 37
+%        label_long: './samples/animals/image_coords_S3'
+%             label: 'samples/animals/image_S3'
+%          pipeline: [1×1 struct]
+% %
+% 
 % pipeline: processing steps
 %   This can be empty if the data file is created by rs_get_coordsets or rs_read_coorddata
 %   pipeline.sets{1}: the 'sets' field of the dataset from which this dataset was derived
