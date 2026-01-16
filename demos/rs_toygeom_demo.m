@@ -34,7 +34,7 @@ end
 %define the stimuli
 %
 paradigm_types='toygeom';
-paradigm_names={'Axes','Rings_C12','Rings_C13','Rings23','RandomAndAxisEnds'}; %if this is edited, then change the computation of stimulus sets
+paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if this is edited, then change the computation of stimulus sets
 coord_labels={'f','g','h'}; %any strings will do
 n_coords=length(coord_labels);
 sign_chars={'m','z','p'}; %tokens for negative, zero, or positive
@@ -85,7 +85,7 @@ for ip=1:length(paradigm_names)
             end
             sim.if_findrays=1;
             sim.if_rings=0;
-        case {'Rings_C12','Rings_C13','Rings23'}
+        case {'Rings_C12','Rings_C13','Rings_C23'}
             sim.nstims=length(ring_radii)*n_angles+1; %rings in the plane two coords, and the origin
             sim.type_coords=zeros(sim.nstims,n_coords);
             coord_ptr=0;
