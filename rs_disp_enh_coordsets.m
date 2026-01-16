@@ -6,7 +6,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 % aux.opts_disp_enh: controls which enhanced features are added to plots
 %   if_points: 1 (default) to display each data point
 %   if_rays:   1 (default) to display rays, set to zero if rays is not present or empty
-%   if_rings:  1 to display rings (default: 0), , set to zero if rays is not present or empty
+%   if_rings:  1 to display rings (default: 0), set to zero if rays is not present or empty
 %   if_nbrs:   1 (default) to connect nearest-neighbors
 %   if_nbrs_nosameray: 1 (default) to suppress nearest-neighbor connections 
 %      if both points are on the same ray, or next to origin, and rays are displayed
@@ -59,13 +59,13 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
 %
-if isempty(rays)
+if isempty(rays) | isempty(fieldnames(rays))
     aux.opts_disp_enh.if_rays=0;
     aux.opts_disp_enh.if_rings=0;
     aux.opts_disp_enh.if_nbrs=0;
 end
 %
-if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
+if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
     %customize standard plot options for rays
     opts_disp_rays=aux.opts_disp;
     opts_disp_rays.data_show_method='list';

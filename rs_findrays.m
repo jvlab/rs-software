@@ -15,6 +15,12 @@ function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
 %
 %   See also:  PSG_DEFOPTS, PSG_FINDRAYS.
 %
+if (nargin<=1)
+    label=[];
+end
+if (nargin<=2)
+    opts_rays=struct;
+end
 opts_rays=filldefault(opts_rays,'coord_names',getfield(psg_defopts,'coord_fields')); % was ,{'type_coords','btc_specoords','btc_augcoords'});
 wmsg=[];
 rays=struct;
@@ -33,7 +39,9 @@ for icn=1:ncn
 end
 if ~isempty(stim_coords)
     opts_rays=setfield(opts_rays,'coord_names',{opts_rays.coord_names{cn_used}});
-    opts_rays=psg_findray_setopts(label,opts_rays);
+    if ~isempty(label)
+        opts_rays=psg_findray_setopts(label,opts_rays);
+    end
     [rays,opts_rays_used]=psg_findrays(stim_coords,opts_rays);
 else
     wmsg=sprintf('cannot find stimulus coordinates, so cannot identify rays');

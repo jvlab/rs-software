@@ -22,6 +22,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   axis_font_size: font size, defaults to 8 (modifiable in rs_aux_defaults_define)
 %   axis_label_prefix: prefix for axis label, defaults to 'dim' (modifiable in rs_aux_defaults_define)
 %   axis_label_font_size: font size, defaults to axis_font_size
+%   axis_labels: cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
 %   axis_view: 3-d view of axis, as cell array for each subplot, 2, 3 (default), or azimuth-elevation pair, where [AZ,EL=[-37.5,30] is the default 3-D view.
 %   axis_equal: 1 (default) to set axes to have equal scales
 %   axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
@@ -120,7 +121,7 @@ if (nargin<=1)
 end
 %fields that will be made into cells if singletons
 make_cell={'set_colors','set_colors_filled','set_markers','connect_data_linestyles','set_labels','set_tags','legend_tags','axis_view','connect_sets_linestyles','connect_sets_colors',...
-    'callout_colors','callout_linestyles'};
+    'callout_colors','callout_linestyles','axis_labels'};
 trunc_pad={'set_offsets','set_offsets_margin_amount','set_offsets_margin_fraction'}; %fields that are truncated or padded to have dim 2 length = dim_select
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
@@ -158,6 +159,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'axis_view',{3});
 aux.opts_disp=filldefault(aux.opts_disp,'axis_equal',1);
 aux.opts_disp=filldefault(aux.opts_disp,'axis_range','tight');
 aux.opts_disp=filldefault(aux.opts_disp,'axis_range_list',[0 1]);
+aux.opts_disp=filldefault(aux.opts_disp,'axis_labels',cell(0));
 %
 aux.opts_disp=filldefault(aux.opts_disp,'dim_select',max(intersect(coords_together_default,dim_list_inter)));
 aux.opts_disp=filldefault(aux.opts_disp,'set_select',[1:nsets]);
@@ -581,15 +583,24 @@ if aux_out.warn_bad==0
             end %set to label?
         end %isetptr
         %set up view and axis labels
+        n_axis_labels=length(x.axis_labels);
+        ax_labels=cell(1,x.coord_group_size);
+        for ix=1:x.coord_group_size
+            if isempty(x.axis_labels) | n_axis_labels==0;
+                ax_labels{ix}=sprintf('%s %1.0f',x.axis_label_prefix,cg(ix));
+            else
+                ax_labels{ix}=x.axis_labels{1+mod(ix-1,n_axis_labels)};
+            end
+        end
         if x.if_finalize
             if x.coord_group_size<=3
-                hl=xlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(1)));
+                hl=xlabel(ax_labels{1});
                 set(hl,'FontSize',x.axis_label_font_size);
-                hl=ylabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(2)));
+                hl=ylabel(ax_labels{2});
                 set(hl,'FontSize',x.axis_label_font_size);
             end
             if (x.coord_group_size==3)
-                hl=zlabel(sprintf('%s %1.0f',x.axis_label_prefix,cg(3)));
+                hl=zlabel(ax_labels{3});
                 set(hl,'FontSize',x.axis_label_font_size);
                 axis vis3d;
                 index_view=1+mod(igp-1,length(x.axis_view));
