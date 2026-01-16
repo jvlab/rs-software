@@ -22,6 +22,14 @@
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
 %
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
+if (if_frozen~=0) 
+    rng('default');
+    if (if_frozen<0)
+        rand(1,abs(if_frozen));
+    end
+else
+    rng('shuffle');
+end
 %
 %define the stimuli
 %
@@ -36,17 +44,22 @@ ring_radii=[4 6 8]; %radii for the rings
 n_random=20; %number of random stimuli
 random_max=9; %maximum random value
 %
-%define the simulations
+%define the simulations:  each subject's perceptual space is a linear transformation of the stimulus coordinates.
+%there is noise in the transformation and additive noise
 %
 if ~exist('n_subjs') n_subjs=3; end
-%
-if (if_frozen~=0) 
-    rng('default');
-    if (if_frozen<0)
-        rand(1,abs(if_frozen));
-    end
-else
-    rng('shuffle');
+noise_xform=[0.1 0.2 0.2]; %Gaussian jitter for each subject's transformation
+noise_add=[0.2 0.1 0.2]; %Gaussian additive noise after transform
+xform_base.T=[1.1 0.3 -0.2;-0.4 0.9 -0.1; 0.2 0.5 0.7];
+xform_base.c=zeros(1,n_coords);
+xform_base.b=1;
+%each subject's representation of the conceptual coords 
+xforms=cell(1,n_subjs);
+for is=1:n_subjs
+    noise_subj=+noise_xform(1+mod(is-1,length(noise_xform)));
+    xforms{is}.T=xform_base.T+noise_subj*randn(n_coords,n_coords);
+    xforms{is}.c=xform_base.c+noise_subj*randn(1,n_coords);
+    xforms{is}.b=xform_base.b+noise_subj*randn(1);
 end
 %
 n_paradigms=length(paradigm_names);
@@ -190,135 +203,23 @@ for ip=1:length(paradigm_names)
     sims.(paradigm_name)=sim;
 end
 
+%next is to apply the transformation and plot
+% [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
 %
+% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a rotation
+% The transformation is typically specified by rs_xform_specify, in which case the linear component (in ts.orthog) is guaranteed to be 
+%   orthogonal, but this will also work if the linear component is not orthogonal
+%
+% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
+%   Stimuli should be identical across datasets
+% xforms: typically an output structure from rs_xform_specify
+%   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
+%     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
+%     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
+%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
+% aux: auxiliary inputs
+%  aux.opts_xform.if_warn: 1 (default) to show warnings
+%  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
+%                         1 for a general transformation, for future use 
+%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 
-%    sims.(paradigm_name)=sim;
-
-% filename_paradigms{1}={... 
-%         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
-%         './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',... 
-%         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
-% filename_paradigms{2}={
-%     './samples/bwtextures/bcpm3pt_coords_BL_sess01_10.mat',...
-%     './samples/bwtextures/bcpm3pt_coords_MC_sess01_10.mat',...
-%     './samples/bwtextures/bcpm3pt_coords_ZK_sess01_10.mat'};
-% filename_paradigms{3}={
-%     './samples/bwtextures/bcpp55qpt_coords_BL_sess01_10.mat',...
-%     './samples/bwtextures/bcpp55qpt_coords_MC_sess01_10.mat',...
-%     './samples/bwtextures/bcpp55qpt_coords_ZK_sess01_10.mat'};
-% filename_paradigms{4}={
-%     './samples/bwtextures/bcpm24pt_coords_BL_sess01_10.mat',...
-%     './samples/bwtextures/bcpm24pt_coords_MC_sess01_10.mat',...
-%     './samples/bwtextures/bcpm24pt_coords_ZK_sess01_10.mat'};
-% nparas=length(filename_paradigms);
-% nenh=4; %varieties of enhanced plots
-% ncgps=2; %number of coordinate groups ([1 2 3],[1 2 3]) from 'keeplow')
-% label_maxlength=6; %max length of a stimulus label
-% haxes_all=cell(ncgps,1+nenh); %standard plot in first column, enhanced plots in other columns
-% haxes=cell(ncgps,1);
-% aux_outs=cell(nparas,1+nenh); 
-% for ipara=1:nparas
-%     filenames=filename_paradigms{ipara};
-%     nfiles=length(filenames);
-%     aux_in=struct;
-%     aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
-%     aux_in.nsets=nfiles;
-%     disp(sprintf(' group %1.0f: %2.0f files',ipara,nfiles))
-%     [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
-%     if_ok=1;
-%     for ifile=1:nfiles
-%         rays=aux_read.rayss{ifile};
-%         if isempty(rays)
-%             disp(sprintf(' file %1.0f: %70s: ray structure not created',ifile,filenames{ifile}))
-%             if_ok=0;
-%         else
-%             disp(sprintf(' file %1.0f: %70s: %3.0f rays, %3.0f rings, %3.0f pairs',ifile,filenames{ifile},rays.nrays,rays.nrings,rays.npairs))
-%         end
-%     end
-%     if (if_ok)
-%         %align data, rotate to consensus, and rotate consensus into pca coords
-%         aux_align_def=struct;
-%         aux_align_def.opts_align.if_log=0;
-%         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-%         aux_knit_def=struct;
-%         aux_knit_def.opts_knit.if_log=0;
-%         aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
-%         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
-%         data_disp=aux_knit.components;
-%         rays_use=aux_knit.rayss{1};
-%         %choose datapoints to label:  only if stim name is <=6 chars
-%         %
-%         data_label_list=[];
-%         nstims=data_disp.sas{1}.nstims;
-%         for istim=1:nstims
-%             if length(data_disp.sas{1}.typenames{istim})<=label_maxlength
-%                 data_label_list(end+1)=istim;
-%             end
-%         end
-%         %
-%         hfig=figure;
-%         for icgp=1:ncgps+1
-%             for icol=1:nenh+1
-%                 haxes_all{icgp,icol}=subplot(ncgps+1,1+nenh,icol+(icgp-1)*(nenh+1));
-%             end
-%         end
-%         opts_disp=struct;
-%         opts_disp.fig_handle=hfig;
-%         for icgp=1:ncgps+1 %extra panel for legend
-%             opts_disp.axis_handles{icgp}=haxes_all{icgp,1};
-%         end
-%         opts_disp.fig_name=sprintf('group %1.0f: %s',ipara,data_read.sets{1}.paradigm_name);
-%         for ifile=1:nfiles
-%             opts_disp.set_labels{ifile}=data_read.sets{ifile}.subj_id;
-%         end
-%         opts_disp.data_label_method='list';
-%         opts_disp.data_label_list=data_label_list;
-%         opts_disp.data_label_font_size=7;
-%         opts_disp.axis_label_prefix='pc';
-%         opts_disp.dim_select=4;
-%         opts_disp.coord_group_method='keeplow';
-%         opts_disp.if_legend=-1; %extra panel just for legend
-%         aux_outs{ipara,1}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp));
-%         %
-%         opts_disp2=opts_disp;
-%         opts_disp2.fig_position=[50 80 1400 800];
-%         opts_disp2.set_offsets='margin_fraction';
-%         opts_disp2.set_offsets_margin_fraction=1;
-%         opts_disp2.set_offsets_coordchoices='last';
-%         for ienh=1:nenh
-%             for icgp=1:ncgps+1
-%                 opts_disp2.axis_handles{icgp}=haxes_all{icgp,1+ienh};
-%             end
-%             opts_disp_enh=struct;
-%             switch ienh %show rays, rings, and nearest-neighbors in separate plots
-%                 case 1
-%                     opts_disp_enh.if_points=1;
-%                     opts_disp_enh.if_findrays=1;
-%                     opts_disp_enh.if_rings=0;
-%                     opts_disp_enh.if_nbrs=0;
-%                 case 2
-%                     opts_disp_enh.if_points=1;
-%                     opts_disp_enh.if_findrays=0;
-%                     opts_disp_enh.if_rings=1;
-%                     opts_disp_enh.if_nbrs=0;
-%                 case 3
-%                     opts_disp_enh.if_points=1;
-%                     opts_disp_enh.if_findrays=0;
-%                     opts_disp_enh.if_rings=0;
-%                     opts_disp_enh.if_nbrs=1;
-%                 case 4
-%                     opts_disp_enh.if_points=0;
-%                     opts_disp_enh.if_findrays=1;
-%                     opts_disp_enh.if_rings=0;
-%                     opts_disp_enh.if_nbrs=1;
-%             end
-%             opts_disp2.data_label_method='list';
-%             opts_disp2.data_label_list=data_label_list;
-%             if opts_disp_enh.if_findrays==1 %if rays are not plotted, select labeling based on size; otherwise, ends of rays will be labeled
-%                 opts_disp2=rmfield(opts_disp2,'data_label_method');
-%                 opts_disp2=rmfield(opts_disp2,'data_label_list');
-%             end
-%             aux_outs{ipara,1+ienh}=rs_disp_enh_coordsets(data_disp,setfields(struct,{'opts_disp','opts_disp_enh'},{opts_disp2,opts_disp_enh}),rays_use);
-%         end %ienh
-%     end %if_ok
-% end %ipara
