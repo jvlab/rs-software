@@ -15,6 +15,7 @@
 % Data processing: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
 %   rs_align_coordsets_test: test for above
+%   rs_concat_coordsets: concatenate dataset structures
 %   rs_disp_coordsets: display one or more sets of coordinates
 %   rs_disp_coordsets_test1: test rs_disp_coordsets: rotations, data selection, connections, offsets, labels, callouts
 %   rs_disp_coordsets_test2: test rs_disp_coordsets: synthetic data, alpha blending
