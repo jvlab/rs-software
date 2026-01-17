@@ -6,20 +6,26 @@
 %
 % Shows rings, rays; could use this to illustrate typenames2colors.  
 %
-% set up several subjects:  affine transformations, with some variation,
+% sets up several subjects:  affine transformations, with some variation,
 % and jitter, in 3d -- create these by xform_apply, (affine) add noise in 4d
 %
-% simulated data are first n dimensions, but after PCA
+% simulated data are first n dimensions
+% 
+% ??? apply pca to those 
 %
 % with rays and rings, or withouit
 %write the files
 % frozen random numbers 
 % adjustable jitters for transforms and additive noise
+% maybe illustrate
+% PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
+%
 %
 % then create additional datasets that trnsform these, via piecewise affine or projective
 % then model them, show results of modeling statistics, show model fits
 %
-%  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
+%  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
+%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS.
 %
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 if (if_frozen~=0) 
@@ -36,31 +42,32 @@ end
 paradigm_types='toygeom';
 paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if this is edited, then change the computation of stimulus sets
 coord_labels={'f','g','h'}; %any strings will do
-n_coords=length(coord_labels);
+ncoords=length(coord_labels);
 sign_chars={'m','z','p'}; %tokens for negative, zero, or positive
 axis_samples=[2 4 6 8]; %sample points in each direction along each axis
-n_angles=8; %number of sample points in a ring
+nangles=8; %number of sample points in a ring
 ring_radii=[4 6 8]; %radii for the rings
-n_random=20; %number of random stimuli
+nrandom=20; %number of random stimuli
 random_max=9; %maximum random value
 %
 %define the simulations:  each subject's perceptual space is a linear transformation of the stimulus coordinates.
 %there is noise in the transformation and additive noise
 %
-if ~exist('n_subjs') n_subjs=3; end
+if ~exist('nsubjs') nsubjs=3; end
 noise_xform=[0.1 0.2 0.2]; %Gaussian jitter for each subject's transformation
 noise_add=[0.2 0.1 0.2]; %Gaussian additive noise after transform
 xform_base.T=[1.1 0.3 -0.2;-0.4 0.9 -0.1; 0.2 0.5 0.7];
-xform_base.c=zeros(1,n_coords);
+xform_base.c=zeros(1,ncoords);
 xform_base.b=1;
 %each subject's representation of the conceptual coords 
-xforms=cell(1,n_subjs);
-for is=1:n_subjs
-    noise_subj=+noise_xform(1+mod(is-1,length(noise_xform)));
-    xforms{is}.T=xform_base.T+noise_subj*randn(n_coords,n_coords);
-    xforms{is}.c=xform_base.c+noise_subj*randn(1,n_coords);
-    xforms{is}.b=xform_base.b+noise_subj*randn(1);
+xforms_subj=cell(1,nsubjs);
+for is=1:nsubjs
+    noise_subj=noise_xform(1+mod(is-1,length(noise_xform)));
+    xforms_subj{is}.T=xform_base.T+noise_subj*randn(ncoords,ncoords);
+    xforms_subj{is}.c=xform_base.c+noise_subj*randn(1,ncoords);
+    xforms_subj{is}.b=xform_base.b+noise_subj*randn(1);
 end
+ncoords_sim=5; %add some higher dimensions with just noise
 %
 n_paradigms=length(paradigm_names);
 sims=struct;
@@ -72,10 +79,10 @@ for ip=1:length(paradigm_names)
     sim=struct;
     switch paradigm_name
         case 'Axes'
-            sim.nstims=2*n_coords*length(axis_samples)+1; %bidirectional samples on each axis, and the origin
-            sim.type_coords=zeros(sim.nstims,n_coords);
+            sim.nstims=2*ncoords*length(axis_samples)+1; %bidirectional samples on each axis, and the origin
+            sim.type_coords=zeros(sim.nstims,ncoords);
             coord_ptr=0;
-            for ic=1:n_coords
+            for ic=1:ncoords
                 for isamp=1:length(axis_samples)
                     for isign=-1:2:1
                         coord_ptr=coord_ptr+1;
@@ -86,8 +93,8 @@ for ip=1:length(paradigm_names)
             sim.if_findrays=1;
             sim.if_rings=0;
         case {'Rings_C12','Rings_C13','Rings_C23'}
-            sim.nstims=length(ring_radii)*n_angles+1; %rings in the plane two coords, and the origin
-            sim.type_coords=zeros(sim.nstims,n_coords);
+            sim.nstims=length(ring_radii)*nangles+1; %rings in the plane two coords, and the origin
+            sim.type_coords=zeros(sim.nstims,ncoords);
             coord_ptr=0;
             if contains(paradigm_name,'C12')
                 ring_plane=[1 2];
@@ -96,26 +103,26 @@ for ip=1:length(paradigm_names)
             else
                 ring_plane=[2 3];
             end
-            angs=2*pi*[0:n_angles-1]'/n_angles;
+            angs=2*pi*[0:nangles-1]'/nangles;
             for ir=1:length(ring_radii)
                 ring_locs=ring_radii(ir)*[cos(angs) sin(angs)];
-                sim.type_coords(coord_ptr+[1:n_angles],ring_plane)=ring_locs;
-                coord_ptr=coord_ptr+n_angles;
+                sim.type_coords(coord_ptr+[1:nangles],ring_plane)=ring_locs;
+                coord_ptr=coord_ptr+nangles;
             end
             sim.if_findrays=1;
             sim.if_rings=1;
         case 'RandomAndAxisEnds'
-            sim.nstims=2*n_coords+n_random+1; %bidirectional samples at the ends of the axes, random samples, and the origin
-            sim.type_coords=zeros(sim.nstims,n_coords);
+            sim.nstims=2*ncoords+nrandom+1; %bidirectional samples at the ends of the axes, random samples, and the origin
+            sim.type_coords=zeros(sim.nstims,ncoords);
             random_vals=[[-random_max:-1] [1:random_max]]; %random values avoid the axes;
             %
             [rand_x,rand_y,rand_z]=meshgrid(random_vals);
             rand_xyz=[rand_x(:),rand_y(:),rand_z(:)]; %all distinct points and not on the axes or the origin
-            rand_select=randperm(size(rand_xyz,1),n_random);
-            sim.type_coords(1:n_random,:)=rand_xyz(rand_select,:);
+            rand_select=randperm(size(rand_xyz,1),nrandom);
+            sim.type_coords(1:nrandom,:)=rand_xyz(rand_select,:);
             %make the samples at the ends of the axes
-            coord_ptr=n_random;
-            for ic=1:n_coords
+            coord_ptr=nrandom;
+            for ic=1:ncoords
                 for isign=-1:2:1
                     coord_ptr=coord_ptr+1;
                     sim.type_coords(coord_ptr,ic)=isign*axis_samples(end);
@@ -143,7 +150,7 @@ for ip=1:length(paradigm_names)
     typenames=cell(sim.nstims,1);
     for istim=1:sim.nstims
         tn=[];
-        for ic=1:n_coords
+        for ic=1:ncoords
             cval=sim.type_coords(istim,ic);
             tn=cat(2,tn,coord_labels{ic},sign_chars{2+sign(cval)},sprintf('%1.0f',round(abs(cval))),' ');
         end
@@ -174,7 +181,7 @@ end
 %and plot the conceptual coordinates
 %
 fig_rows=2;
-fig_cols=n_subjs+1;
+fig_cols=nsubjs+1;
 aux_stimdisp=struct;
 for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
@@ -204,10 +211,59 @@ for ip=1:length(paradigm_names)
     end
     sims.(paradigm_name)=sim;
 end
+%
+% apply each subject's transform to the stimuli in each stimulus set
+%
+for ip=1:length(paradigm_names)
+    paradigm_name=paradigm_names{ip};
+    sim=sims.(paradigm_name);
+    %
+    data_xform_eachsubj=cell(1,nsubjs);
+    for is=1:nsubjs
+        xforms=struct;
+        xforms.ts{1}{ncoords}=xforms_subj{is};
+        data_xform_eachsubj{is}=rs_xform_apply(sim.data_stimspace,xforms);
+        %add noise, and fill in lower and higher dimensions
+        noise_subj=noise_add(1+mod(is-1,length(noise_add)));
+        data_nonoise=data_xform_eachsubj{is}.ds{1}{ncoords};
+        for ic=1:ncoords_sim
+            if ic<=ncoords
+                data_xform_eachsubj{is}.ds{1}{ic}=data_nonoise(:,[1:ic])+noise_subj*randn(sim.nstims,ic);
+            else
+                data_xform_eachsubj{is}.ds{1}{ic}=[data_nonoise,zeros(sim.nstims,ic-ncoords)]+noise_subj*randn(sim.nstims,ic);
+            end
+        end
+        %adjust metadata
+        sets=data_xform_eachsubj{is}.sets{1};
+        sets.dim_list=[1:ncoords_sim]; %since we added lower and higher dimensions
+        sets.subj_id=sprintf('%s%s','subject ',zpad(is,2));
+        sets.subj_id_short=sprintf('%s%s','s',zpad(is,2));
+        sets.label_long=sprintf('simulation: affine transform');
+        sets.label='affine';
+        data_xform_eachsubj{is}.sets{1}=sets;
+    end
+    %concatenate datasets aross subjects
+    data_xform_allsubjs=data_xform_eachsubj{1};
+    for is=2:nsubjs
+        data_xform_allsubjs=rs_concat_coordsets(data_xform_allsubjs,data_xform_eachsubj{is});
+    end
+    sim.data_xform_eachsubj=data_xform_eachsubj;
+    sim.data_xform_allsubjs=data_xform_allsubjs;
+    sims.(paradigm_name)=sim;
+end
 
 %next is to apply the transformation and plot
 % [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
 %
+% 
+% xforms=cell(1,n_subjs);
+% for is=1:n_subjs
+%     noise_subj=+noise_xform(1+mod(is-1,length(noise_xform)));
+%     xforms{is}.T=xform_base.T+noise_subj*randn(ncoords,ncoords);
+%     xforms{is}.c=xform_base.c+noise_subj*randn(1,ncoords);
+%     xforms{is}.b=xform_base.b+noise_subj*randn(1);
+% end
+
 % These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a rotation
 % The transformation is typically specified by rs_xform_specify, in which case the linear component (in ts.orthog) is guaranteed to be 
 %   orthogonal, but this will also work if the linear component is not orthogonal
