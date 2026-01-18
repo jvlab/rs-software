@@ -56,7 +56,7 @@ random_max=9; %maximum random value
 if ~exist('nsubjs') nsubjs=3; end
 noise_xform=[0.1 0.2 0.2]; %Gaussian jitter for each subject's transformation
 noise_add=[0.2 0.1 0.2]; %Gaussian additive noise after transform
-xform_base.T=[1.1 0.3 -0.2;-0.4 0.9 -0.1; 0.2 0.5 0.7];
+xform_base.T=[-0.2 1.1 0.3;-0.1 -0.4 0.9;0.8 0.2 0.5];
 xform_base.c=zeros(1,ncoords);
 xform_base.b=1;
 %each subject's representation of the conceptual coords 
