@@ -26,7 +26,8 @@
 % then model them, show results of modeling statistics, show model fits
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
-%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS.
+%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS
+%  PSG_GEO_TRANSFORMS_GETC.
 %
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 if (if_frozen~=0) 
@@ -61,7 +62,20 @@ random_max=9; %maximum random value
 if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have added noise on additional coordinates
 ncoords_tot=ncoords+ncoords_noise;
 %
-transform_names={'null','procrustes','affine'};
+transform_names_avail={'null','procrustes','affine','projective','pwaffine'};
+transform_classes_avail={'affine','affine','affine','projective','pwaffine'};
+%
+if ~exist('transforms_use_list') transforms_use_list=[1:5];end
+for itptr=1:length(transforms_use_list)
+    transform_names{itptr}=transform_names_avail{transforms_use_list(itptr)};
+    transform_classes{itptr}=transform_classes_avail{transforms_use_list(itptr)};
+end
+%
+ntransforms=length(transform_names);
+if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
+if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
+if ~exist('pwaffine_mag') pwaffine_mag=0.5; end %controls difference in linear transforms of piecewise affine
+%
 %null transformation
 transforms.null.T=eye(ncoords);
 transforms.null.b=1;
@@ -82,12 +96,30 @@ end
 transforms.procrustes.b=1;
 transforms.procrustes.c=zeros(1,ncoords);
 %
-if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 T=(1-affine_mag)*eye(ncoords)+affine_mag*randn(ncoords,ncoords); %mix the identity with a random matrix
 transforms.affine.T=T/sqrt(max(eig(T'*T))); %limit the max dilation to keep in range
 transforms.affine.b=1;
 transforms.affine.c=affine_mag*randn(1,ncoords);
-ntransforms=length(transform_names);
+%
+transforms.projective=transforms.affine;
+transforms.projective.p=projective_mag*randn(ncoords,1);
+%
+transforms.pwaffine=transforms.affine;
+%params needed to ensure continuity across boundary
+ncuts=1; %just one cut
+transforms.pwaffine.tdif=randn(1,ncoords);
+vcut=randn(1,ncoords);
+vcut=vcut./sqrt(vcut*vcut');
+transforms.pwaffine.vcut=vcut./sqrt(vcut*vcut'); %a random normalized vector
+T1=transforms.affine.T;
+T2=T1+vcut'*transforms.pwaffine.tdif;
+transforms.pwaffine.T=cat(3,T1,T2);
+transforms.pwaffine.b=1;
+transforms.pwaffine.acut=randn(1); %random cutpoint
+transforms.pwaffine.cadd=randn(1,ncoords); %random offset so that cutpoint does not get mapped to zero
+transforms.pwaffine.c=repmat(transforms.pwaffine.cadd,2^ncuts,1)+...
+    psg_geo_transforms_getc(ncoords,transforms.pwaffine.T,transforms.pwaffine.vcut,transforms.pwaffine.acut); %find c so that transforms agree on cutpoint
+%
 disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoords));
 %
 %define the number of subjects and levels of noise for each
@@ -106,8 +138,28 @@ for it=1:ntransforms
     fns=fieldnames(transform);
     for is=1:nsubjs
          for ifn=1:length(fns)
-            transforms_noisy{is}.(transform_names{it}).(fns{ifn})=transform.(fns{ifn})+noise_transform(is)*randn(size(transform.(fns{ifn})));
+            if strcmp(fns{ifn},'p')
+                noise_param_mult=projective_mag;
+            else
+                noise_param_mult=1;
+            end
+            transforms_noisy{is}.(transform_names{it}).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
         end %fn
+        %adjustments for pwaffine to ensure continuity at boundary       
+        if strcmp(transform_names{it},'pwaffine')
+            vcut_noisy=transforms_noisy{is}.pwaffine.vcut;
+            acut_noisy=transforms_noisy{is}.pwaffine.acut;
+            tdif_noisy=transforms_noisy{is}.pwaffine.tdif;
+            cadd_noisy=transforms_noisy{is}.pwaffine.cadd;
+            vcut_noisy=vcut_noisy./sqrt(vcut_noisy*vcut_noisy');
+            T1=transforms_noisy{is}.pwaffine.T(:,:,1);
+            T2=T1+vcut_noisy'*tdif_noisy;
+            %
+            transforms_noisy{is}.T=cat(3,T1,T2);
+            transforms_noisy{is}.pwaffine.vcut=vcut_noisy;
+            transforms_noisy{is}.pwaffine.c=repmat(cadd_noisy,2^ncuts,1)+...
+                psg_geo_transforms_getc(ncoords,transforms_noisy{is}.pwaffine.T,vcut_noisy,acut_noisy); %find c so that transforms agree on cutpoint
+        end %pwaffine
     end %is
 end %it
 disp(sprintf('jittered transformations created for %2.0f subjects',nsubjs));
@@ -245,12 +297,15 @@ for ip=1:length(paradigm_names)
     aux_stimdisp.opts_disp.axis_range_list=[-1 1]*(1+random_max);
     aux_stimdisp.opts_disp.callout_amount=0.3;
     aux_stimdisp.opts_disp.axis_labels=coord_labels;
+    aux_stimdisp.opts_disp.legend_location='North';
     for it=1:ntransforms
         transform_name=transform_names{it};
         xforms=struct;
         xforms.ts{1}{ncoords}=transforms.(transform_name);
         %
-        xformspace=rs_xform_apply(sim.stimspace,xforms);
+        opts_xform=struct;
+        opts_xform.class=transform_classes{it};
+        xformspace=rs_xform_apply(sim.stimspace,xforms,setfield(struct,'opts_xform',opts_xform));
         %fill in lower and higher dimensions
         for ic=1:ncoords_tot
             xformspace.ds{1}{ic}=[xformspace.ds{1}{ncoords}(:,1:min(ic,ncoords)),zeros(sim.nstims,max(0,ic-ncoords))];
@@ -284,7 +339,9 @@ for ip=1:length(paradigm_names)
         for is=1:nsubjs
             xforms=struct;
             xforms.ts{1}{ncoords}=transforms_noisy{is}.(transform_name);
-            xform_subj{is}=rs_xform_apply(sim.stimspace,xforms);
+            opts_xform=struct;
+            opts_xform.class=transform_classes{it};
+            xform_subj{is}=rs_xform_apply(sim.stimspace,xforms,setfield(struct,'opts_xform',opts_xform));
             %fill in lower and higher dimensions and add noise
             for ic=1:ncoords_tot
                 xform_subj{is}.ds{1}{ic}=noise_add(is)*randn(sim.nstims,ic)+...
