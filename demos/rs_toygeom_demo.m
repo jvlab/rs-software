@@ -1,16 +1,17 @@
 % rs_toygeom_demo: demonstrate geometric modeling with toy simulated datasets
 %
-% set up several stimulus sets: three axes, rings and one axis, axis ends and random
-% The stimulus domain has three conceptual coordinates, 'f','g','h'
-% They can have values in [-9:1:9].
+% Creates several stimulus sets ('paradigm types'): three axes, rings, axis ends and random
+% The stimulus domain has ncoords coordinates, 'a','b','c',..., which can have values in [-9:9].
+% This is stimspace.
 %
-% Shows rings, rays; could use this to illustrate typenames2colors.  
+% Considers ntransforms transformations:  null, procrustes (rotation with inversion), affine (with offset)
+% Applies each of these to the coordinate sets.  This is xformspace.
 %
-% sets up several subjects:  affine transformations, with some variation,
-% and jitter, in 3d -- create these by xform_apply, (affine) add noise in 4d
-%
-% simulated data are first n dimensions
+% Sets up nsubjs subjects.  Each applies a jittered version of the transformations, and also adds noise,
+% and optionally adds extra dimensions (ncoords_noise) that are just noise. This is dataspace.
 % 
+% Main data structures in sims.(paradigm_name)
+%
 % ??? apply pca to those 
 %
 % with rays and rings, or withouit
@@ -87,21 +88,34 @@ transforms.affine.T=T/sqrt(max(eig(T'*T))); %limit the max dilation to keep in r
 transforms.affine.b=1;
 transforms.affine.c=affine_mag*randn(1,ncoords);
 ntransforms=length(transform_names);
+disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoords));
 %
-%define the subjects
+%define the number of subjects and levels of noise for each
 %
 if ~exist('nsubjs') nsubjs=4; end
-if ~exist('subjs_show') subjs_show=unique([1,nsubjs]); end %which subjects to show
+if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show
 if ~exist('noise_transform_mag') noise_transform_mag=0.1; end %range of Gaussian jitter for each subject's transformation 
 noise_transform=noise_transform_mag*[0:nsubjs-1]/nsubjs; %sugbjects have increasing amounts of noise
-if ~exist('noise_add_mag') noise_add_mag=0.1; end %rande of additive Gaussian noise for each subject
-noise_add=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
-%
-nparadigms=length(paradigm_names);
-sims=struct;
+if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian noise for each subject
+noise_add_base=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
+noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
+%create the transformed parameters corrupted by transform noise
+transforms_noisy=cell(1,nsubjs);
+for it=1:ntransforms
+    transform=transforms.(transform_names{it});
+    fns=fieldnames(transform);
+    for is=1:nsubjs
+         for ifn=1:length(fns)
+            transforms_noisy{is}.(transform_names{it}).(fns{ifn})=transform.(fns{ifn})+noise_transform(is)*randn(size(transform.(fns{ifn})));
+        end %fn
+    end %is
+end %it
+disp(sprintf('jittered transformations created for %2.0f subjects',nsubjs));
 %
 %create the conceptual coordinates of the stimulus sets
 %
+nparadigms=length(paradigm_names);
+sims=struct;
 for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
     sim=struct;
@@ -159,6 +173,7 @@ for ip=1:length(paradigm_names)
             rs_warning('unrecognized paradigm name',1);
     end
     sims.(paradigm_name)=sim;
+    disp(sprintf('coordinate sets created for paradigm %s',paradigm_name));
 end
 %
 %create the type names, e.g., conceptual coordinate [-3 0 4] -> 'am3 cp4'
@@ -201,8 +216,10 @@ for ip=1:length(paradigm_names)
     %
     if sim.if_findrays
         [sim.stimspace_rays,wmsg,sim.stimspace_findrays_auxout]=rs_findrays(sim.stimspace.sas{1},[],ray_opts);
+        disp(sprintf('ray structure created for paradigm %s',paradigm_name));
     else
         sim.stimspace_rays=struct();
+        disp(sprintf('ray structure skipped for paradigm %s',paradigm_name));
     end
     sims.(paradigm_name)=sim;
 end
@@ -210,7 +227,7 @@ end
 %set up a page for each paradigm, with space for multiple subplots,
 %and plot the conceptual coordinates
 %
-fig_rows=length(subjs_show)+1; %show 
+fig_rows=length(subjs_disp)+1; %show 
 fig_cols=ntransforms;
 aux_stimdisp=struct;
 for ip=1:length(paradigm_names)
@@ -229,7 +246,6 @@ for ip=1:length(paradigm_names)
     aux_stimdisp.opts_disp.callout_amount=0.3;
     aux_stimdisp.opts_disp.axis_labels=coord_labels;
     for it=1:ntransforms
-        %
         transform_name=transform_names{it};
         xforms=struct;
         xforms.ts{1}{ncoords}=transforms.(transform_name);
@@ -245,83 +261,71 @@ for ip=1:length(paradigm_names)
         aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
         if sim.if_findrays
             aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
-            sim.xformspace_disp_auxout=rs_disp_enh_coordsets(xformspace,aux_stimdisp,sim.stimspace_rays);
+            sim.xformspace_disp_auxout.(transform_name)=rs_disp_enh_coordsets(xformspace,aux_stimdisp,sim.stimspace_rays);
         else
             aux_stimdisp.opts_disp.data_label_method='list';
             aux_stimdisp.opts_disp.data_label_list=find(~contains(sim.stimspace.sas{1}.typenames,' ')); %label only the on-axis points (off-axis point names all have blanks)
-            sim.xformspace_disp_auxout=rs_disp_coordsets(xformspace,aux_stimdisp);
+            sim.xformspace_disp_auxout.(transform_name)=rs_disp_coordsets(xformspace,aux_stimdisp);
         end
         sim.xformspace.(transform_name)=xformspace;
     end %it: transforms
     sims.(paradigm_name)=sim;
 end
 %
-% apply each subject's transform to the stimuli in each stimulus set
+% apply each subject's transform to the stimuli in each stimulus set, and plot
 %
 for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
     sim=sims.(paradigm_name);
     %
-    data_xform_eachsubj=cell(1,nsubjs);
-    for is=1:nsubjs
-        xforms=struct;
-        xforms.ts{1}{ncoords}=xforms_subj{is};
-        data_xform_eachsubj{is}=rs_xform_apply(sim.stimspace,xforms);
-        %add noise, and fill in lower and higher dimensions
-        noise_subj=noise_add(1+mod(is-1,length(noise_add)));
-        data_nonoise=data_xform_eachsubj{is}.ds{1}{ncoords};
-        for ic=1:ncoords_tot
-            if ic<=ncoords
-                data_xform_eachsubj{is}.ds{1}{ic}=data_nonoise(:,[1:ic])+noise_subj*randn(sim.nstims,ic);
-            else
-                data_xform_eachsubj{is}.ds{1}{ic}=[data_nonoise,zeros(sim.nstims,ic-ncoords)]+noise_subj*randn(sim.nstims,ic);
+    for it=1:ntransforms
+        transform_name=transform_names{it};
+        xform_subj=cell(1,nsubjs);
+        for is=1:nsubjs
+            xforms=struct;
+            xforms.ts{1}{ncoords}=transforms_noisy{is}.(transform_name);
+            xform_subj{is}=rs_xform_apply(sim.stimspace,xforms);
+            %fill in lower and higher dimensions and add noise
+            for ic=1:ncoords_tot
+                xform_subj{is}.ds{1}{ic}=noise_add(is)*randn(sim.nstims,ic)+...
+                    [xform_subj{is}.ds{1}{ncoords}(:,1:min(ic,ncoords)),zeros(sim.nstims,max(0,ic-ncoords))];
             end
+            %adjust metadata
+            sets=xform_subj{is}.sets{1};
+            sets.dim_list=[1:ncoords_tot]; %since we added lower and higher dimensions
+            sets.subj_id=sprintf('%s%s','subject ',zpad(is,2));
+            sets.subj_id_short=sprintf('%s%s','s',zpad(is,2));
+            sets.label_long=sprintf('simulation: %s',transform_names{it});
+            sets.label=transform_names{it};
+            xform_subj{is}.sets{1}=sets;
         end
-        %adjust metadata
-        sets=data_xform_eachsubj{is}.sets{1};
-        sets.dim_list=[1:ncoords_tot]; %since we added lower and higher dimensions
-        sets.subj_id=sprintf('%s%s','subject ',zpad(is,2));
-        sets.subj_id_short=sprintf('%s%s','s',zpad(is,2));
-        sets.label_long=sprintf('simulation: affine transform');
-        sets.label='affine';
-        data_xform_eachsubj{is}.sets{1}=sets;
-    end
-    %concatenate datasets aross subjects
-    data_xform_allsubjs=data_xform_eachsubj{1};
-    for is=2:nsubjs
-        data_xform_allsubjs=rs_concat_coordsets(data_xform_allsubjs,data_xform_eachsubj{is});
-    end
-    sim.data_xform_eachsubj=data_xform_eachsubj;
-    sim.data_xform_allsubjs=data_xform_allsubjs;
+        %concatenate datasets aross subjects
+        dataspace=xform_subj{1};
+        for is=2:nsubjs
+            dataspace=rs_concat_coordsets(dataspace,xform_subj{is});
+        end
+        sim.dataspace.(transform_name)=dataspace;
+        %plot
+        aux_datadisp=struct;
+        for is_ptr=1:length(subjs_disp)
+            is=subjs_disp(is_ptr);
+            aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
+            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
+            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels');; %use defaults
+            aux_datadisp.opts_disp.set_select=is; %just show this subject
+            aux_datadisp.opts_disp.set_colors={'k'}; %black
+            %
+            figure(aux_datadisp.opts_disp.fig_handle); %activate the figure for this paradigm type
+            aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it+is_ptr*fig_cols)}; %show each transform in a separate column
+            %
+            if sim.if_findrays %setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout
+                aux_datadisp.opts_disp_enh=sim.xformspace_disp_auxout.(transform_name).opts_disp_enh; %had if_rings info
+                sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_enh_coordsets(dataspace,aux_datadisp,sim.stimspace_rays);
+            else
+                sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_coordsets(dataspace,aux_datadisp);
+            end
+         end %is
+         disp(sprintf('dataspace created for paradigm %20s and transform %s',paradigm_name,transform_name));
+    end %it
     sims.(paradigm_name)=sim;
 end
-
-%next is to apply the transformation and plot
-% [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
-%
-% 
-% xforms=cell(1,n_subjs);
-% for is=1:n_subjs
-%     noise_subj=+noise_xform(1+mod(is-1,length(noise_xform)));
-%     xforms{is}.T=xform_base.T+noise_subj*randn(ncoords,ncoords);
-%     xforms{is}.c=xform_base.c+noise_subj*randn(1,ncoords);
-%     xforms{is}.b=xform_base.b+noise_subj*randn(1);
-% end
-
-% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a rotation
-% The transformation is typically specified by rs_xform_specify, in which case the linear component (in ts.orthog) is guaranteed to be 
-%   orthogonal, but this will also work if the linear component is not orthogonal
-%
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   Stimuli should be identical across datasets
-% xforms: typically an output structure from rs_xform_specify
-%   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
-%     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
-%     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
-%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
-% aux: auxiliary inputs
-%  aux.opts_xform.if_warn: 1 (default) to show warnings
-%  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
-%                         1 for a general transformation, for future use 
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
-
