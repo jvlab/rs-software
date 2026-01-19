@@ -1,15 +1,13 @@
 function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
 %
-% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a rotation
-% The transformation is typically specified by rs_xform_specify, in which case the linear component (in ts.orthog) is guaranteed to be 
-%   orthogonal, but this will also work if the linear component is not orthogonal
+% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a translation.
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   *  data_in.da{k}{idim} should have size [nstims,idim]
 %   *  The output dimension is always equal to the input dimension.
 %   *  Stimuli (in sas{k}.typenames) should be identical across datasets
-% xforms: typically an output structure from rs_xform_specify
+% xforms: specification of the transformations, typically an output structure from rs_xform_specify
 %   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
 %     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
 %     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
@@ -35,8 +33,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %  The transformation produced by procrustes_consensus is the same as Matlab's procrustes.m, but with other field names
 %  (see procrustes_compat), and with the translation parameter c replicated for each data point
 %
-% If a dimension is present in data_in.ds{k}{ip} but xforms.ts{k}{ip} is empty, then the
-%   data_out.ds{k}{ip} will be empty, and a warning is generated.
+% If a dimension is present in data_in.ds{k}{idim} but xforms.ts{k}{idim} is empty, then the
+%   data_out.ds{k}{idim} will be empty, and a warning is generated.
 % Entries in length(xforms.ts) are cycled through (so if length is 1, xforms.ts{1} is applied to all datasets).
 %   If length is not 1, then it should match length(data_in.ds); otherwise warning is issued. 
 %
@@ -89,16 +87,16 @@ for k=1:nsets
     k_xform=mod(k-1,nsets_xform)+1;
     dim_list_out=[];
     data_out.ds{k}=cell(1,0);
-    for ip=1:length(data_in.ds{k})
-        coords=data_in.ds{k}{ip};
+    for idim=1:length(data_in.ds{k})
+        coords=data_in.ds{k}{idim};
         have_xform=0;
-        if ip<=length(xforms.ts{k_xform})
-            if isstruct(xforms.ts{k_xform}{ip})
+        if idim<=length(xforms.ts{k_xform})
+            if isstruct(xforms.ts{k_xform}{idim})
                 have_xform=1;
             end
         end
         if have_xform
-            ts=xforms.ts{k_xform}{ip};
+            ts=xforms.ts{k_xform}{idim};
             if ~isempty(coords) & ~isempty(ts)
                 if ((~isfield(ts,'b') | ~isfield(ts,'T') | ~isfield(ts,'c')) & (isfield(ts,'scaling') & isfield(ts,'orthog') & isfield(ts,'translation')))
                     ts=procrustes_compat(ts);
@@ -108,8 +106,8 @@ for k=1:nsets
         else
             coords_new=coords;
         end
-        data_out.ds{k}{1,ip}=coords_new;
-        dim_list_out=[dim_list_out,ip];
+        data_out.ds{k}{1,idim}=coords_new;
+        dim_list_out=[dim_list_out,idim];
     end
     data_out.sas{k}=data_in.sas{k};
     %sets is taken from input, other than pipeline and dimensions present   
