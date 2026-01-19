@@ -6,12 +6,15 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   orthogonal, but this will also work if the linear component is not orthogonal
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   Stimuli should be identical across datasets
+%   *  data_in.da{k}{idim} should have size [nstims,idim]
+%   *  The output dimension is always equal to the input dimension.
+%   *  Stimuli (in sas{k}.typenames) should be identical across datasets
 % xforms: typically an output structure from rs_xform_specify
 %   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
 %     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
 %     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
-%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
+%   xforms.pipeline is a structure that can serve as a starting pint for the pipeline subfield for sets in data_out
+%     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
 %  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
@@ -27,15 +30,12 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
 % [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
 %
-% If these fields are not present, but 'scaling','orthog',and 'translation' are pesent, then those values are used.
-%  This allows for direct compatibility with the transformations produced by procrustes_consensus
+% If these fields are not present, but 'scaling','orthog',and 'translation' are present, then those values are used.
+%  This allows for direct compatibility with the transformations produced by procrustes_consensus.
+%  The transformation produced by procrustes_consensus is the same as Matlab's procrustes.m, but with other field names
+%  (see procrustes_compat), and with the translation parameter c replicated for each data point
 %
-%  (data_in.da{k} should be nstims x idim)
-% Note that the output dimension is always equal to the input dimension.
-% The transformation is the same as Matlab's procrustes.m, but with other field names
-%  (see procrustes_compat), and with the translation replicated for each data point
-%
-% If a dimension is present in data_in.ds{k}{ip} but not xforms.ts{k}{ip} is empty, then the
+% If a dimension is present in data_in.ds{k}{ip} but xforms.ts{k}{ip} is empty, then the
 %   data_out.ds{k}{ip} will be empty, and a warning is generated.
 % Entries in length(xforms.ts) are cycled through (so if length is 1, xforms.ts{1} is applied to all datasets).
 %   If length is not 1, then it should match length(data_in.ds); otherwise warning is issued. 
