@@ -15,8 +15,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
-%  aux.opts_xform.if_gen: 0 (default) for a transformation specified by rs_xforms_apply
-%                         1 for a general transformation, for future use 
+%  aux.opts_xform.class: 'affine' (default), can also be 'projective','pwaffine','pwprojective'
+%     
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) after the transformation
@@ -25,18 +25,56 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-% The transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-% [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
-%
-% If these fields are not present, but 'scaling','orthog',and 'translation' are present, then those values are used.
-%  This allows for direct compatibility with the transformations produced by procrustes_consensus.
-%  The transformation produced by procrustes_consensus is the same as Matlab's procrustes.m, but with other field names
-%  (see procrustes_compat), and with the translation parameter c replicated for each data point
+% For class='affine', the transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
+%   [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
+% The parameters b, T, and c correspond to the parameters produced by Matlab's procrustes.m
+%   except that in Matlab's procrustes. c, the translation parameter c replicated for each data point
+% If these fields are not present and xform.class='affine', then
+%  alternative parameter names are allowed: 'scaling' for b, 'orthog' for T, and 'translation' for c.
+%  This allows for compatibility with the transformations produced by procrustes_consensus.
 %
 % If a dimension is present in data_in.ds{k}{idim} but xforms.ts{k}{idim} is empty, then the
 %   data_out.ds{k}{idim} will be empty, and a warning is generated.
 % Entries in length(xforms.ts) are cycled through (so if length is 1, xforms.ts{1} is applied to all datasets).
 %   If length is not 1, then it should match length(data_in.ds); otherwise warning is issued. 
+%
+% Definitions and parameters for the other classes, in addition to b, T, and c.
+% All must be supplied in xforms.ts{k}{idim}
+%
+%   projective: p: column vector of length idim
+%     The transformation adjoins a final 1 to each row of coordinates, and then applies the transformation.
+%       [bT| p]
+%       [-----]
+%       [c | 1]
+%    to each row of the coordinates producing coordinates of dimension idim+1. These are then divided by the final column.
+%    So if p=zero, then this reduces to an affine transformatoin , then divided by the final colummn
+%
+%   pwaffine (piecewise affine)
+%    T: is a stack of matrices, size [idim idm 2^ncuts], where ncuts is the number of cuts
+%      often ncuts=1, but in general, to transform a vector x:
+%      let sign_vecs=sign(x*vcut'-a), of size [npts,ncuts] (with equality going to 1)
+%      consider each row of sign_vecs:
+%      sign_ind=1       for sign_vec=[+ + .... +]
+%      sign_ind=2       for sign_vec=[- + .... +]
+%      sign_ind=3       for sign_vec=[+ - .... +]
+%      sign_ind=4       for sign_vec=[- - .... +]
+%         ....
+%      sign_ind=2^ncuts for sign_vec=[- - .... -]
+%      Then the transform used for x is T(:,:,sign_ind) for transformation
+%   c: stack of offsets, size [2^ncuts idim], use (sign_ind,:)
+%   vcut: unit vectors, stack of rows, size [ncuts dim_x], orthog to cut planes
+%   acut: vector of length ncuts, the cutpoints
+%      [y,sign_vecs,sign_inds,ypw,unsign_vecs]=psg_pwaffine_apply(ts{:},x) 
+%      
+%  pwprojective (piecewise projective)
+%
+% x: original coordinates, size=[npts,dim_x]
+%   T as in pwaffine
+%   b as in pwaffine
+%   c as in pwaffine
+%   vcut as in pwaffine
+%   acut as in pwaffine
+%   p: an array of size [idim, 2^ncuts], used as in projective; p(:,sign_ind) is used along with T(:,:,sign_ind)
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_XFORM_SPECIFY, RS_FORM_SPECIFY_APPLY_TEST,
 %  PSG_GEOMODELS_APPLY, PROCRUSTES_COMPAT.
@@ -45,9 +83,10 @@ if (nargin<=2)
     aux=struct;
 end
 %
+class_default='affine';
 aux=filldefault(aux,'opts_xform',struct); 
 aux.opts_xform=filldefault(aux.opts_xform,'if_warn',1);
-aux.opts_xform=filldefault(aux.opts_xform,'if_gen',0);
+aux.opts_xform=filldefault(aux.opts_xform,'class',class_default);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -72,6 +111,14 @@ typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
 %
+params_needed=struct;
+params_needed.affine={'b','T','c'};
+params_needed.projective={'b','T','c','p'};
+params_needed.pwaffine={'b','T','c','vcut','acut'};
+params_needed.pwprojective={'b','T','c','vcut','acut','p'};
+%
+missing_params=[];
+%
 %check number of transform sets
 %
 nsets_xform=length(xforms.ts);
@@ -83,6 +130,13 @@ data_out.ds=cell(1,nsets);
 data_out.sas=cell(1,nsets);
 data_out.sets=cell(1,nsets);
 %
+class=aux.opts_xform.class;
+if ~isfield(params_needed,class)
+    wmsg=sprintf('transformation class %s not recognized, set to %s',class,class_default);
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_xform.if_warn));
+    aux.opts_xform.class=class_default;
+    class=class_default;
+end
 for k=1:nsets
     k_xform=mod(k-1,nsets_xform)+1;
     dim_list_out=[];
@@ -95,16 +149,29 @@ for k=1:nsets
                 have_xform=1;
             end
         end
-        if have_xform
+        if have_xform %check that parameters are present and reformat if needed
             ts=xforms.ts{k_xform}{idim};
-            if ~isempty(coords) & ~isempty(ts)
-                if ((~isfield(ts,'b') | ~isfield(ts,'T') | ~isfield(ts,'c')) & (isfield(ts,'scaling') & isfield(ts,'orthog') & isfield(ts,'translation')))
-                    ts=procrustes_compat(ts);
+            if strcmp(aux.opts_xform.class,'affine') %check to see if alternate names are used
+                if ~isempty(ts)
+                    if ((~isfield(ts,'b') | ~isfield(ts,'T') | ~isfield(ts,'c')) & (isfield(ts,'scaling') & isfield(ts,'orthog') & isfield(ts,'translation')))
+                        ts=procrustes_compat(ts);
+                    end
                 end
-                coords_new=psg_geomodels_apply('affine',coords,ts);
             end
-        else
+            if isempty(ts)
+                ts=struct;
+            end
+            for ifn=1:length(params_needed.(class))
+                if ~isfield(ts,params_needed.(class){ifn})
+                    missing_params=strvcat(missing_params,params_needed.(class){ifn});
+                    have_xform=0;
+                end
+            end
+        end 
+        if have_xform==0 | isempty(coords)
             coords_new=coords;
+        else
+            coords_new=psg_geomodels_apply(aux.opts_xform.class,coords,ts);
         end
         data_out.ds{k}{1,idim}=coords_new;
         dim_list_out=[dim_list_out,idim];
@@ -121,5 +188,16 @@ for k=1:nsets
     data_out.sets{k}.pipeline.sets=data_in.sets{k};
     data_out.sets{k}.dim_list=dim_list_out;
 end
+if ~isempty(missing_params)
+    missing_params=unique(missing_params,'rows');
+    miss_string=[];
+    for imiss=1:size(missing_params,1)
+        miss_string=cat(2,miss_string,' ',missing_params(imiss,:));
+    end
+    wmsg=sprintf('transform specification is missing parameters: %s',deblank(miss_string));
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_xform.if_warn));
+end
+aux_out.opts_check=aux.opts_check;
+aux_out.opts_xform=aux.opts_xform;
 return
 end
