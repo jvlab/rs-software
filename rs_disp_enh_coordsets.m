@@ -43,7 +43,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 % Notes:
 %   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
 %
-%   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
+%   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS.
 %
 if (nargin<=2)
     rays=[];
@@ -58,6 +58,8 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rays',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
+%
+aux.opts_tn2c.paradigm_type=data_in.sets{1}.paradigm_type; %so that rs_typenames2colors knows the paradigm
 %
 if isempty(rays) | isempty(fieldnames(rays))
     aux.opts_disp_enh.if_rays=0;
@@ -91,7 +93,8 @@ if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
                 bidir_sorted=mb_sorted(:,2); %sorted in ascending order of magnitude
                 opts_disp_rays.data_show_list=[orig_ptr bidir_sorted']; %add origin to the beginning
                 %
-                [rgb,symb,vecs,opts_used]=psg_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),aux.opts_tn2c); %get standard colors and symbols
+                %[rgb,symb,vecs,opts_used]=psg_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),aux.opts_tn2c); %get standard colors and symbols
+                [rgb,symb]=rs_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),setfield(struct(),'opts_tn2c',aux.opts_tn2c));
                 opts_disp_rays.set_colors{1}=rgb;
                 if ~if_callout_colors_supplied
                     opts_disp_rays.callout_colors{1}=rgb;

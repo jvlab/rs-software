@@ -36,6 +36,7 @@
 %   rs_aux_defaults_define: set up a file with default values for auxiliary parameters
 %   rs_benchmark_compare: compare a test output with benchmarks
 %   rs_check_coordsets: check consistency among several coordinate sets
+%   rs_typenames2colors: convert a stimulus type to a clor and symbolfor plotting
 %   rs_plot_style: plot a line and points, customizing marker, color, alpha, style
 %   rs_plot_style_test: test rs_plot_style
 %   rs_template: a template for modules with an input and an output
