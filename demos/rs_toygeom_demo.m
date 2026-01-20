@@ -27,7 +27,6 @@
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
 %  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS
-%  PSG_GEO_TRANSFORMS_GETC.
 %
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 if (if_frozen~=0) 
@@ -45,7 +44,7 @@ if ~exist('ncoords') ncoords=3; end %can be modified to larger than 3
 ncoords=max(3,ncoords);
 %
 paradigm_types='toygeom';
-paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if this is edited, then change the computation of stimulus sets
+paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if this is edited, then change the computation of the cordinates of the stimulus sets
 coord_labels=cell(1,ncoords);
 for ic=1:ncoords
     coord_labels{ic}=char('a'+ic-1);
@@ -55,7 +54,7 @@ axis_samples=[2 4 6 8]; %sample points in each direction along each axis
 nangles=8; %number of sample points in a ring
 ring_radii=[4 6 8]; %radii for the rings
 nrandom=20; %number of random stimuli
-random_max=9; %maximum random value
+random_max=9; %maximum random value; plotted range will be [-1,1]*(random_max+1)
 %
 %define the simulations: several transformations of the stimulus space, of dimension ncoords
 %
@@ -75,6 +74,8 @@ ntransforms=length(transform_names);
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.5; end %controls difference in linear transforms of piecewise affine
+%
+%set up all transformations
 %
 %null transformation
 transforms.null.T=eye(ncoords);
@@ -105,20 +106,21 @@ transforms.projective=transforms.affine;
 transforms.projective.p=projective_mag*randn(ncoords,1);
 %
 transforms.pwaffine=transforms.affine;
+%construct by adding a linear transformation to a rectification
 %params needed to ensure continuity across boundary
-ncuts=1; %just one cut
-transforms.pwaffine.tdif=randn(1,ncoords);
-vcut=randn(1,ncoords);
-vcut=vcut./sqrt(vcut*vcut');
-transforms.pwaffine.vcut=vcut./sqrt(vcut*vcut'); %a random normalized vector
-T1=transforms.affine.T;
-T2=T1+vcut'*transforms.pwaffine.tdif;
-transforms.pwaffine.T=cat(3,T1,T2);
+pw_vcut=randn(1,ncoords);
+pw_vcut=pw_vcut./sqrt(pw_vcut*pw_vcut'); %random direction of unit normal to cutplane
+pw_acut=randn(1); %random offset
+pw_h=randn(1,ncoords); %the output of the rectification
+%the cutplane is x*pw_cut'=pw_acut.  
+Tcut=pw_vcut'*pw_h; %if x*pw_vcut'=pw_acut, then x*Tcut=a*pw_h,so x*Tcut-pw_acut*pw_h is zero on the boundary
+transforms.pwaffine.T=repmat((1-pwaffine_mag)*transforms.affine.T,[1 1 2])+pwaffine_mag*cat(3,Tcut,-Tcut);
+transforms.pwaffine.c_off=randn(1,ncoords);
+transforms.pwaffine.c=pwaffine_mag*pw_acut*[-pw_h;pw_h]+repmat(transforms.pwaffine.c_off,2,1);
 transforms.pwaffine.b=1;
-transforms.pwaffine.acut=randn(1); %random cutpoint
-transforms.pwaffine.cadd=randn(1,ncoords); %random offset so that cutpoint does not get mapped to zero
-transforms.pwaffine.c=repmat(transforms.pwaffine.cadd,2^ncuts,1)+...
-    psg_geo_transforms_getc(ncoords,transforms.pwaffine.T,transforms.pwaffine.vcut,transforms.pwaffine.acut); %find c so that transforms agree on cutpoint
+transforms.pwaffine.acut=pw_acut;
+transforms.pwaffine.vcut=pw_vcut;
+transforms.pwaffine.h=pw_h;
 %
 disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoords));
 %
@@ -131,10 +133,14 @@ noise_transform=noise_transform_mag*[0:nsubjs-1]/nsubjs; %sugbjects have increas
 if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian noise for each subject
 noise_add_base=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
 noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
-%create the transformed parameters corrupted by transform noise
+%
+%create the transformed parameters corrupted by transform noise, even if they won't be used
+%since some transforms are dependent on others
+%
 transforms_noisy=cell(1,nsubjs);
-for it=1:ntransforms
-    transform=transforms.(transform_names{it});
+for it=1:length(transform_names_avail)
+    transform_name=transform_names_avail{it};
+    transform=transforms.(transform_name);
     fns=fieldnames(transform);
     for is=1:nsubjs
          for ifn=1:length(fns)
@@ -143,28 +149,26 @@ for it=1:ntransforms
             else
                 noise_param_mult=1;
             end
-            transforms_noisy{is}.(transform_names{it}).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
+            transforms_noisy{is}.(transform_name).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
         end %fn
+        transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine contiunity
         %adjustments for pwaffine to ensure continuity at boundary       
-        if strcmp(transform_names{it},'pwaffine')
-            vcut_noisy=transforms_noisy{is}.pwaffine.vcut;
-            acut_noisy=transforms_noisy{is}.pwaffine.acut;
-            tdif_noisy=transforms_noisy{is}.pwaffine.tdif;
-            cadd_noisy=transforms_noisy{is}.pwaffine.cadd;
-            vcut_noisy=vcut_noisy./sqrt(vcut_noisy*vcut_noisy');
-            T1=transforms_noisy{is}.pwaffine.T(:,:,1);
-            T2=T1+vcut_noisy'*tdif_noisy;
+        if strcmp(transform_name,'pwaffine')
+            pw_vcut=transforms_noisy{is}.pwaffine.vcut;
+            pw_acut=transforms_noisy{is}.pwaffine.acut;
+            pw_h=transforms_noisy{is}.pwaffine.h;
             %
-            transforms_noisy{is}.T=cat(3,T1,T2);
-            transforms_noisy{is}.pwaffine.vcut=vcut_noisy;
-            transforms_noisy{is}.pwaffine.c=repmat(cadd_noisy,2^ncuts,1)+...
-                psg_geo_transforms_getc(ncoords,transforms_noisy{is}.pwaffine.T,vcut_noisy,acut_noisy); %find c so that transforms agree on cutpoint
+            pw_vcut=pw_vcut./sqrt(pw_vcut*pw_vcut'); %random direction of unit normal to cutplane
+            Tcut=pw_vcut'*pw_h; %if x*pw_vcut'=pw_acut, then x*Tcut=a*pw_h
+            transforms_noisy{is}.pwaffine.T=repmat((1-pwaffine_mag)*transforms_noisy{is}.affine.T,[1 1 2])+pwaffine_mag*cat(3,Tcut,-Tcut);
+            transforms_noisy{is}.pwaffine.c=pwaffine_mag*pw_acut*[-pw_h;pw_h]+repmat(transforms_noisy{is}.pwaffine.c_off,2,1);
+            transforms_noisy{is}.pwaffine.vcut=pw_vcut;
         end %pwaffine
     end %is
 end %it
 disp(sprintf('jittered transformations created for %2.0f subjects',nsubjs));
 %
-%create the conceptual coordinates of the stimulus sets
+%create the coordinates of the stimulus sets
 %
 nparadigms=length(paradigm_names);
 sims=struct;
