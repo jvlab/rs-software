@@ -1,25 +1,52 @@
-function [rgb,symb,aux_out]=rs_typenames2colors(typenames,aux)
-% [rgb,symb,vecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a plotting color and
+function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
+% [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a plotting color and
 % plotting symbol to a list of stimuli, designated by typenames
 %
 % typenames: a typename, or a cell array of tpenames, typically from data.sas{:}.typenames
 % aux.opts_tn2c: 
-%   opts_tn2c.paradigm_type: paradigm type, typically from data.sets{:}.paradigm_type, if omited, defaults to 'unknown'
-%   opts_tn2c.paradigms_reserved: paradigm types that are passed through to psg_typenames2colors:
+%   paradigm_type: paradigm type, typically from data.sets{:}.paradigm_type, if omited, defaults to 'unknown'
+%   paradigms_reserved: paradigm types that are passed through to psg_typenames2colors:
 %     defaults to 'btc','mpi_faces','mater','irgb'
+%   coord_lets: coordinate letters.  Defaults to 'abcdefghij'. Avoid including m, p, z.
+%     Overriding this will remove the default colors, which are assigned to [a-j].
+%   color: a structure, fields labeled by coord_lets, each containing an r,g,b triple
+%     Default values are given below in colors_def.
+%   colors_nomatch: rgb triplet if no color has been assigned to a coordinate, defaults to [0 0 0];
+%   if_color_average: 1 (default) to enable averaging of colors
 %
 %  rgb: an rgb color triplet
 %  symb: a plotting symbol
+%  cvecs: array of size length(typenames) x number of coordinates found,
+%    indicating the coordinates as decoded from the typename (NaN if coordinate not found)
 %
-
+%  It is expected that typenames will be strings that contain one or more
+%  segments of a letter, [a-j], followed by a numeric quantity, consisting
+%  either of a string of digits (assumed to represent a positive quantity),
+%  or a string of digits preceded by p, m (to represent a positive or negative quantity)
+%  or z (followed by any numbers), indicating zero. e.g.:
+%     'bp4 hm36' indicates +4 on the b axis, -36 on the h axis
+%     'z' indicates the origin
+%     'cm52' indicates -52 on the c axis
+%     'j17dm3' indicates 17 on the j axis, -3 on the c axis
+%
+% If more than one axis is present, and color values are given as rgb triples, and if_color_average=1, then colors are weighted by the magnitudes
+% Otherwise the largest color's rgb value will be used, ties broken by order of colors
+%  
 if (nargin<=1)
     aux=struct;
 end
+%
 %set up sub-structure options
 aux=filldefault(aux,'opts_tn2c',struct); %options for this module (psg_template)
 %
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','mpi_faces','mater','irgb'});
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigm_type','unknown');
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors',struct());
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors_nomatch',[0 0 0]);
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'coord_lets','abcdefghij');
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'if_color_average',1);
+%
+aux=rs_aux_customize(aux,'rs_typenames2colors');
 %
 if ~iscell(typenames)
     typenames=cellstr(typenames);
@@ -28,7 +55,7 @@ end
 %reserved paradigm type?
 %
 if length(strmatch(aux.opts_tn2c.paradigm_type,aux.opts_tn2c.paradigms_reserved,'exact'))>0
-    [rgb,symb,vecs,opts_used]=psg_typenames2colors(typenames,aux.opts_tn2c);
+    [rgb,symb,cvecs,opts_used]=psg_typenames2colors(typenames,aux.opts_tn2c);
     fns=fieldnames(opts_used);
     for ifn=1:length(fns)
         fn=fns{ifn};
@@ -36,13 +63,103 @@ if length(strmatch(aux.opts_tn2c.paradigm_type,aux.opts_tn2c.paradigms_reserved,
             aux.opts_tn2c.(fn)=opts_used.(fn);
         end
     end
-else
-    disp(' in rs typenames2colors')
-    rgb='g';
-    symb='h';
+    aux_out=aux;
+    return
 end
-aux=rs_aux_customize(aux,'rs_typenames2colors');
+%set up colors; override defaults by any provided in aux.opts_tn2c.colors
 %
+colors_def.a=[1.00 0.00 0.00];
+colors_def.b=[0.00 0.00 1.00];
+colors_def.c=[0.00 1.00 0.00];
+colors_def.d=[0.75 0.75 0.00];
+colors_def.e=0.5*(colors_def.a+colors_def.b);
+colors_def.f=0.5*(colors_def.b+colors_def.c);
+colors_def.g=0.5*(colors_def.c+colors_def.d);
+colors_def.h=0.5*(colors_def.d+colors_def.a);
+colors_def.i=[0.75 0.75 0.75];
+colors_def.j=[0.30 0.30 0.30];
+%
+nrgb=3;
+%
+color_regexp=cat(2,'[',aux.opts_tn2c.coord_lets,']');
+for ic=1:length(aux.opts_tn2c.coord_lets)
+    cl=aux.opts_tn2c.coord_lets(ic);
+    if isfield(aux.opts_tn2c.colors,cl)
+        colors.(cl)=aux.opts_tn2c.colors.(cl);
+    elseif isfield(colors_def,cl)
+        colors.(cl)=colors_def.(cl);
+    end
+end
+aux.opts_tn2c.colors=colors;
+%
+%go through each element in typenames, determine coordinates and signs
+%
+cvecs=NaN(length(typenames),length(aux.opts_tn2c.coord_lets));
+for it=1:length(typenames)
+    tn=typenames{it};
+    toks=regexp(tn,color_regexp);
+    if length(toks)>0
+        toks_aug=[toks length(tn)+1];
+        for itk=1:length(toks)
+            tok=tn(toks_aug(itk):toks_aug(itk+1)-1);
+            tok_coord=find(aux.opts_tn2c.coord_lets==tok(1));
+            tok_val=tok(2:end);
+            if length(tok_val)==0
+                val=NaN;
+            else
+                switch tok_val(1)
+                    case 'z'
+                        val=0;
+                    case 'm'
+                        val=-str2num(tok_val(2:end));
+                    case 'p'
+                        val=str2num(tok_val(2:end));
+                    otherwise
+                        val=str2num(tok_val);
+                end
+                if isempty(val)
+                    val=0;
+                end
+            end
+            cvecs(it,tok_coord)=val;
+        end
+    end
+end
+%compute the r,g,b value
+coords_found=find(any(~isnan(cvecs),1));
+if length(coords_found)==0
+    rgb=aux.opts_tn2c.colors_nomatch;
+elseif length(coords_found)==1
+    rgb=aux.opts_tn2c.colors.(aux.opts_tn2c.coord_lets(coords_found));
+else
+    can_average=1;
+    if aux.opts_tn2c.if_color_average==0
+        can_average=0;
+    else
+        color_vals=zeros(length(coords_found),nrgb);
+        for ic=1:length(coords_found)
+            cf=aux.opts_tn2c.coord_lets(coords_found(ic));
+            cv=aux.opts_tn2c.colors.(cf);
+            if isnumeric(cv)
+                if size(cv)==[1 nrgb]
+                    color_vals(ic,:)=cv;
+                else
+                    can_average=0;
+                end
+            else
+                can_average=0;
+            end
+        end
+    end
+    mean_abs=mean(abs(cvecs),1,'omitnan');
+    if (can_average)
+        rgb=mean_abs(coords_found)*color_vals/sum(mean_abs(coords_found));
+    else
+        large_color=min(find(mean_abs==max(mean_abs)));
+        rgb=aux.opts_tn2c.colors.(aux.opts_tn2c.coord_lets(large_color));
+    end
+end
+symb='h';
 aux_out=aux;
 return
 end
