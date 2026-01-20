@@ -14,19 +14,16 @@
 %
 % ??? apply pca to those 
 %
-% with rays and rings, or withouit
 %write the files
-% frozen random numbers 
 % adjustable jitters for transforms and additive noise
 % maybe illustrate
 % PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
-%
 %
 % then create additional datasets that trnsform these, via piecewise affine or projective
 % then model them, show results of modeling statistics, show model fits
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
-%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS
+%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS.
 %
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 if (if_frozen~=0) 
@@ -44,7 +41,7 @@ if ~exist('ncoords') ncoords=3; end %can be modified to larger than 3
 ncoords=max(3,ncoords);
 %
 paradigm_types='toygeom';
-paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if this is edited, then change the computation of the cordinates of the stimulus sets
+paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if edited, change definition of the coordinates of the stimulus sets
 coord_labels=cell(1,ncoords);
 for ic=1:ncoords
     coord_labels{ic}=char('a'+ic-1);
@@ -75,7 +72,7 @@ if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine t
 if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.5; end %controls difference in linear transforms of piecewise affine
 %
-%set up all transformations
+%define the transformations
 %
 %null transformation
 transforms.null.T=eye(ncoords);
@@ -134,8 +131,8 @@ if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian no
 noise_add_base=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
 noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
 %
-%create the transformed parameters corrupted by transform noise, even if they won't be used
-%since some transforms are dependent on others
+%create the transformations for each subject by corrupting the parameters of the basic transforms by noise
+%note that all transforms are treatd, even if they won't be used, since some transforms are dependent on others
 %
 transforms_noisy=cell(1,nsubjs);
 for it=1:length(transform_names_avail)
@@ -168,7 +165,7 @@ for it=1:length(transform_names_avail)
 end %it
 disp(sprintf('jittered transformations created for %2.0f subjects',nsubjs));
 %
-%create the coordinates of the stimulus sets
+%define the coordinates of the stimulus sets
 %
 nparadigms=length(paradigm_names);
 sims=struct;
