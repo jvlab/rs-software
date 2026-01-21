@@ -14,7 +14,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 % aux.opts_disp: these fields are starting points for customization for enhanced plots
 %  fields not specified are passed through to rs_disp_coordsets
 %                                  points     rays       rings    neighbors
-%    data_show_method:             'all'     'list'      'list'     'list' 
+%    data_show_method:             'all' *    'list'      'list'     'list' 
 %    data_label_method:            'none'*   'last'      'none'*    'none'*
 %    data_connect_method:                    'list'      'list'*    'list'
 %    connect_data_linestyles       'none'*  '--' or '-'#    ':'*     '-'*
@@ -42,6 +42,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %
 % Notes:
 %   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
+%   If if_rays=1 and if_points=0, legend is the ray label.  Otherwise legend is set label.
 %
 %   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS.
 %
@@ -128,7 +129,7 @@ end
 if aux.opts_disp_enh.if_points %plot individual points?
     %customize standard plot options for points
     opts_disp_points=aux.opts_disp;
-    opts_disp_points.data_show_method='all';
+    opts_disp_points=filldefault(opts_disp_points,'data_show_method','all');
     opts_disp_points=filldefault(opts_disp_points,'data_label_method','none');
     opts_disp_points=filldefault(opts_disp_points,'connect_data_linestyles','-');
     %
