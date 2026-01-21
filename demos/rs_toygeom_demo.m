@@ -317,8 +317,11 @@ for ip=1:length(paradigm_names)
         aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
         if sim.if_findrays
             aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
+            aux_stimdisp.opts_disp_enh.if_points=1; %so legends are set labels
+            aux_stimdisp.opts_disp.data_show_method='last'; %last point is random; plotting a point allows rs_disp_enh_coordsets to make simple legend
             sim.xformspace_disp_auxout.(transform_name)=rs_disp_enh_coordsets(xformspace,aux_stimdisp,sim.stimspace_rays);
         else
+            aux_stimdisp.opts_disp.data_show_method='all'; 
             aux_stimdisp.opts_disp.data_label_method='list';
             aux_stimdisp.opts_disp.data_label_list=find(~contains(sim.stimspace.sas{1}.typenames,' ')); %label only the on-axis points (off-axis point names all have blanks)
             sim.xformspace_disp_auxout.(transform_name)=rs_disp_coordsets(xformspace,aux_stimdisp);
