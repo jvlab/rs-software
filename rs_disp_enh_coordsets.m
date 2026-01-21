@@ -13,12 +13,12 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %
 % aux.opts_disp: these fields are starting points for customization for enhanced plots
 %  fields not specified are passed through to rs_disp_coordsets
-%                                  points     rays       rings    neighbors
-%    data_show_method:             'all' *    'list'      'list'     'list' 
+%                                  points     rays        rings    neighbors
+%    data_show_method:             'all' *    'list'     'list'     'list' 
 %    data_label_method:            'none'*   'last'      'none'*    'none'*
 %    data_connect_method:                    'list'      'list'*    'list'
-%    connect_data_linestyles       'none'*  '--' or '-'#    ':'*     '-'*
-%    set_markers                             'x' or '+'#            'none'
+%    connect_data_linestyles       'none'* '--' or '-'#    ': '*    '-'*
+%    set_markers                            'x' or '+'#  'none'*    'none'*
 %    set_tags                                 'rays'     'rings'    'nbrs'
 %    callout_amount                            0.5*
 %    set_colors                              per ray
@@ -143,6 +143,7 @@ if aux.opts_disp_enh.if_rings %connect rings
     opts_disp_rings=aux.opts_disp;
     opts_disp_rings.data_show_method='list';
     opts_disp_rings.connect_data_method='list';
+    opts_disp_rings=filldefault(opts_disp_rings,'set_markers','none');
     opts_disp_rings=filldefault(opts_disp_rings,'data_label_method','none');
     opts_disp_rings=filldefault(opts_disp_rings,'connect_data_linestyles',':');
     opts_disp_rings.set_tags='rings'; %to identify for legend
@@ -177,6 +178,7 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
         opts_disp_nbrs=aux.opts_disp;
         opts_disp_nbrs.data_show_method='list';
         opts_disp_nbrs.connect_data_method='list';
+        opts_disp_nbrs=filldefault(opts_disp_nbrs,'set_markers','none');
         opts_disp_nbrs=filldefault(opts_disp_nbrs,'data_label_method','none');
         opts_disp_nbrs=filldefault(opts_disp_nbrs,'connect_data_linestyles','-');
         opts_disp_nbrs.set_tags='nbrs'; %so that this will not be in legend
