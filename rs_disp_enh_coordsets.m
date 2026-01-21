@@ -18,16 +18,17 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %    data_label_method:            'none'*   'last'      'none'*    'none'*
 %    data_connect_method:                    'list'      'list'*    'list'
 %    connect_data_linestyles       'none'* '--' or '-'#    ': '*    '-'*
-%    set_markers                            'x' or '+'#  'none'*    'none'*
+%    set_markers                                @  '      none'*    'none'*
 %    set_tags                                 'rays'     'rings'    'nbrs'
 %    callout_amount                            0.5*
-%    set_colors                              per ray
+%    set_colors                              per ray@
 %    callout_colors                          per ray*
 %   *: an explicitly supplied value in aux.opts_disp is NOT overridden
-%   #:line style and set markers depends on whether the ray is negative or positive
+%   #:line style depends on whether the ray is negative or positive
+%   @:set marker determined by rs_typenames2colors
 % 
-% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors, in psg_typenames2colors
-%    usually empty
+% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors and symbols, can be empty,
+%    see rs_typenames2colors for details
 % 
 % rays: a standard ray structure, containing metadata for rays and rings
 %
@@ -100,13 +101,12 @@ if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
                 if ~if_callout_colors_supplied
                     opts_disp_rays.callout_colors{1}=rgb;
                 end               
+                opts_disp_rays.set_markers=symb;
                 switch isign
                     case 1
                         opts_disp_rays.connect_data_linestyles='-';
-                        opts_disp_rays.set_markers='+';
                     case -1
                         opts_disp_rays.connect_data_linestyles='--';
-                        opts_disp_rays.set_markers='x';
                 end
                 %
                 if isign==-1 | iray<rays.nrays

@@ -1,8 +1,9 @@
 function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 % [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a plotting color and
-% plotting symbol to a list of stimuli, designated by typenames
+% plotting symbol to a list of stimuli. The coordinates are extracted from the strings in typenames yielding
+% cvecs (see below). rgb indicates the axis, and symb indicates the sign
 %
-% typenames: a typename, or a cell array of tpenames, typically from data.sas{:}.typenames
+% typenames: a string, or cell array of strings, typically from data.sas{:}.typenames
 % aux.opts_tn2c: 
 %   paradigm_type: paradigm type, typically from data.sets{:}.paradigm_type, if omited, defaults to 'unknown'
 %   paradigms_reserved: paradigm types that are passed through to psg_typenames2colors:
@@ -12,25 +13,35 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %   color: a structure, fields labeled by coord_lets, each containing an r,g,b triple
 %     Default values are given below in colors_def.
 %   colors_nomatch: rgb triplet if no color has been assigned to a coordinate, defaults to [0 0 0];
-%   if_color_average: 1 (default) to enable averaging of colors
+%   if_color_arith: 1 (default) to enable averaging of colors
+%   symbs_nomatch: plotting symbol to be assigned if no coords can be found, defaults to .
+%   symbs.[z,p,m,pm,mp]: plotting symbol to be assigned, defaults in symbs_def below, if coords are:
+%      z: all zeros
+%      p: at least one positive value, no negatives
+%      m: at least one negative value, no positives
+%      pm: mixed values, positive occurs before negatives (by rows in cvecs)
+%      mp: mixed values, negative occurs before poistives (by rows in cvecs)
 %
 %  rgb: an rgb color triplet
 %  symb: a plotting symbol
-%  cvecs: array of size length(typenames) x number of coordinates found,
+%  cvecs: array of size [length(typenames) length(coord_lets)]
 %    indicating the coordinates as decoded from the typename (NaN if coordinate not found)
 %
-%  It is expected that typenames will be strings that contain one or more
-%  segments of a letter, [a-j], followed by a numeric quantity, consisting
-%  either of a string of digits (assumed to represent a positive quantity),
-%  or a string of digits preceded by p, m (to represent a positive or negative quantity)
-%  or z (followed by any numbers), indicating zero. e.g.:
+%  Typenames should be a cell array of strings, each of which contains one or more segments of a letter that designates
+%  a coordinate axis, typically [a-j] nless modified by opts_tn2c.coord_lets, followed by a numeric quantity.
+%  The numeric quantity consists either of string of digits (assumed to represent a positive quantity),
+%  or a string of digits preceded by p or m (to represent a positive or negative quantity), or z (followed by any numbers), indicating zero.
+%     Decimal points, +, and -  can be used, and the sign is multiplied by the sign designated by a preceding 'p' or 'm'
+%       e.g.:
 %     'bp4 hm36' indicates +4 on the b axis, -36 on the h axis
-%     'z' indicates the origin
+%     'z' indicates the origin, i.e., 0 on all coordinate axes
 %     'cm52' indicates -52 on the c axis
 %     'j17dm3' indicates 17 on the j axis, -3 on the c axis
+%     'hm1.4' and 'hm-1.4' indicate -1.4 on the h-axis but 'hm-1.4' indicates +1.4 on the h axis
 %
-% If more than one axis is present, and color values are given as rgb triples, and if_color_average=1, then colors are weighted by the magnitudes
-% Otherwise the largest color's rgb value will be used, ties broken by order of colors
+% Color assignment details: If ony one axis is present among typenames, then its color is used.  If more than one axis is present
+%   anong the typenames, and color values are given as rgb triples, and if_color_arith=1, then colors are weighted by the magnitudes.
+%   Otherwise the largest color's rgb value will be used, ties broken by order of axes
 %  
 if (nargin<=1)
     aux=struct;
@@ -41,10 +52,12 @@ aux=filldefault(aux,'opts_tn2c',struct); %options for this module (psg_template)
 %
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','mpi_faces','mater','irgb'});
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigm_type','unknown');
-aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors',struct());
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors',struct);
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors_nomatch',[0 0 0]);
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'coord_lets','abcdefghij');
-aux.opts_tn2c=filldefault(aux.opts_tn2c,'if_color_average',1);
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'if_color_arith',1);
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'symbs_nomatch','.');
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'symbs',struct);
 %
 aux=rs_aux_customize(aux,'rs_typenames2colors');
 %
@@ -66,6 +79,7 @@ if length(strmatch(aux.opts_tn2c.paradigm_type,aux.opts_tn2c.paradigms_reserved,
     aux_out=aux;
     return
 end
+%
 %set up colors; override defaults by any provided in aux.opts_tn2c.colors
 %
 colors_def.a=[1.00 0.00 0.00];
@@ -91,6 +105,22 @@ for ic=1:length(aux.opts_tn2c.coord_lets)
     end
 end
 aux.opts_tn2c.colors=colors;
+%
+%set up symbols; override defaults by any provided in aux.opts_tn2c.symbs
+%
+symbs_def=struct;
+symbs_def.z='o';
+symbs_def.m='*';
+symbs_def.p='+';
+symbs_def.pm='v'; %downward triangle
+symbs_def.mp='^'; %upward triangle
+%
+symbs_fns=fieldnames(symbs_def);
+for is=1:length(symbs_fns)
+    fn=symbs_fns{is};
+    aux.opts_tn2c.symbs=filldefault(aux.opts_tn2c.symbs,fn,symbs_def.(fn));
+end
+if isfield(aux.opts_tn2c.symbs,fn)
 %
 %go through each element in typenames, determine coordinates and signs
 %
@@ -131,15 +161,19 @@ if length(coords_found)==0
     rgb=aux.opts_tn2c.colors_nomatch;
 elseif length(coords_found)==1
     rgb=aux.opts_tn2c.colors.(aux.opts_tn2c.coord_lets(coords_found));
-else
-    can_average=1;
-    if aux.opts_tn2c.if_color_average==0
+else %more than one axis is present
+    can_average=1; %assume we can average, but verify
+    if aux.opts_tn2c.if_color_arith==0
         can_average=0;
     else
         color_vals=zeros(length(coords_found),nrgb);
         for ic=1:length(coords_found)
             cf=aux.opts_tn2c.coord_lets(coords_found(ic));
-            cv=aux.opts_tn2c.colors.(cf);
+            if ~isfield(aux.opts_tn2c.colors,cf)
+                cv=aux.opts_tn2c.colors_nomatch;
+            else
+                cv=aux.opts_tn2c.colors.(cf);
+            end
             if isnumeric(cv)
                 if size(cv)==[1 nrgb]
                     color_vals(ic,:)=cv;
@@ -159,210 +193,30 @@ else
         rgb=aux.opts_tn2c.colors.(aux.opts_tn2c.coord_lets(large_color));
     end
 end
-symb='h';
+%
+cvecs_trans=cvecs';
+sign_seq=sign(cvecs_trans(~isnan(cvecs_trans(:)))); %sequence of signed values
+if all(sign_seq==0)
+    symb=aux.opts_tn2c.symbs.z;
+else
+    sign_seq=sign_seq(sign_seq~=0); %consider only nonzero values
+    if all(sign_seq>0)
+        symb=aux.opts_tn2c.symbs.p;
+    elseif all(sign_seq<0)
+        symb=aux.opts_tn2c.symbs.m;
+    elseif min(find(sign_seq>0))<min(find(sign_seq<0))
+        symb=aux.opts_tn2c.symbs.pm;
+    elseif min(find(sign_seq>0))>min(find(sign_seq<0))
+        symb=aux.opts_tn2c.symbs.mp;
+    end
+end
+%make sure that at least some output is provided
+if ~exist('rgb') rgb=aux.opts_tn2c.colors_nomatch; end
+if isnumeric(rgb)
+    rgb=min(max(rgb,0),1);
+end
+if ~exist('symb') symb=aux.opts_tn2c.symbs_nomatch; end
+%
 aux_out=aux;
 return
 end
-%%%%%%%%%%%%%%
- %       opts=psg_typenames2colors_cs(opts,cs.faces_mpi);
-%         %set up colors and symbols with defaults for faces_mpi, unless provided in opts.colors
-%         color_fields=fieldnames(colors_def);
-%         for ifn=1:length(color_fields)
-%             opts.colors=filldefault(opts.colors,color_fields{ifn},colors_def.(color_fields{ifn}));
-%         end
-%         symb_fields=fieldnames(symbs_def);
-%         for ifn=1:length(symb_fields)
-%             opts.symbs=filldefault(opts.symbs,symb_fields{ifn},symbs_def.(symb_fields{ifn}));
-%         end
-%         %
-%         gender_col=strmatch('gender',table_order);
-%         age_col=strmatch('age',table_order);
-%         set_col=strmatch('set',table_order);
-%         emo_col=strmatch('emo',table_order);
-%         %assign color by gender and age; assign symbol by emotion and set
-%         for k=1:ntn 
-%             %assign tentative color by gender
-%             if ismember(attrib_table_num(k,gender_col),[1:size(opts.colors.gender,1)])
-%                 colors_gender=opts.colors.gender(attrib_table_num(k,gender_col),:);
-%             else
-%                 colors_gender=mean(opts.colors.gender,1);
-%             end
-%             %mix in age
-%             age_blendfac=1;
-%             if ismember(attrib_table_num(k,age_col),[1:length(opts.colors.age_blendfacs)])
-%                 age_blendfac=opts.colors.age_blendfacs(attrib_table_num(k,age_col));
-%             end
-%             colors_each(k,:)=(1-age_blendfac)*opts.colors.age_blendval+age_blendfac*colors_gender;
-%             %assign symbol based on emotion and set
-%             if isfield(opts.symbs,attrib_table_cell{k,emo_col}) & ismember(attrib_table_num(k,set_col),[1:length(opts.symbs.n)])
-%                 symbs_each{k}=opts.symbs.(attrib_table_cell{k,emo_col})(attrib_table_num(k,set_col));
-%             end
-%         end
-%         %
-%         opts.faces_mpi.colors_each=colors_each;
-%         opts.faces_mpi.symbs_each=symbs_each;
-%         rgb=mean(colors_each,1); %average the colors
-%         if length(unique(attrib_table_num(:,emo_col)))==1
-%             symb=symbs_each{1};
-%         end
-%     case 'btc' %color is used for axis, symbol is used for sign
-%         dict=btc_define;
-%         codel=dict.codel;
-%         nbtc=length(codel);
-%         %this assignment of colors for btc can be over-ridden by opts.colors;
-%         cs.btc.colors_def=struct;
-%         cs.btc.colors_def.g=[0.50 0.50 0.50];
-%         cs.btc.colors_def.b=[0.00 0.00 0.75];
-%         %cs.btc.colors_def.c=[0.25 0.25 1.00]; %modified 12Apr23
-%         cs.btc.colors_def.c=[0.00 0.80 0.80];
-%         cs.btc.colors_def.d=[0.00 0.75 0.00];
-%         cs.btc.colors_def.e=[0.00 1.00 0.10];
-%         %cs.btc.colors_def.t=[0.75 0.25 0.80];
-%         %cs.btc.colors_def.u=[0.50 0.25 0.80];
-%         %cs.btc.colors_def.v=[0.50 0.00 0.80];
-%         %cs.btc.colors_def.w=[0.75 0.00 0.80];
-%         cs.btc.colors_def.t=[0.85 0.60 0.30];
-%         cs.btc.colors_def.u=[0.75 0.65 0.20];
-%         cs.btc.colors_def.v=[1.00 0.90 0.20];
-%         cs.btc.colors_def.w=[0.85 0.75 0.20];
-%         cs.btc.colors_def.a=[1.00 0.00 0.00];
-%         %
-%         %this assignment of symbols for btc can be over-ridden by opts.colors;
-%         symbl='zmp';
-%         cs.btc.symbs_def=struct; %typo fixed 01Jul23
-%         cs.btc.symbs_def.z='o';
-%         cs.btc.symbs_def.m='*';
-%         cs.btc.symbs_def.p='+';
-%         cs.btc.symbs_def.pm='v'; %downward triangle
-%         cs.btc.symbs_def.mp='^'; %upward triangle
-%         %
-%         opts=psg_typenames2colors_cs(opts,cs.btc);
-%         %
-%         symbvals.z=0;
-%         symbvals.m=-1;
-%         symbvals.p=+1;
-%         %
-%         %replace any unspecified values
-%         for ibtc=1:nbtc
-%             if ~isfield(opts.colors,codel(ibtc))
-%                 opts.colors.(codel(ibtc))=colors_def.(codel(ibtc));
-%             end
-%         end
-%         for isymb=1:length(symbl)
-%             if ~isfield(opts.symbs,symbl(isymb))
-%                 opts.symbs.(symbl(isymb))=symbs_def.(symbl(isymb));
-%             end
-%         end
-%         if ~isfield(opts.symbs,'pm')
-%             opts.symbs.pm=symbs_def.pm;
-%         end
-%         if ~isfield(opts.symbs,'mp')
-%             opts.symbs.mp=symbs_def.mp;
-%         end
-%         %
-%         %values if we find single matches
-%         rgb=opts.colors_nomatch;
-%         symb=opts.symbs_nomatch;
-%         %
-%         nu=6;
-%         nc=2; %number of xchars before digits
-%         signs_found=[];
-%         lets_found=[]; %letters found for nonzero value
-%         vecs=[];
-%         for k=1:ntn %assume typename strings are in sets of nu(=6), like 'ap0300bm0100'
-%             tn=typenames{k};
-%             vec_new=NaN(1,nbtc);
-%             while length(tn)>=nu
-%                 substr=tn(1:nu);
-%                 if ismember(substr(1),codel) & ismember(substr(2),fieldnames(cs.btc.symbs_def))
-%                     val=symbvals.(substr(2))*str2num(substr(nc+1:nu))/(10^(nu-nc-1));
-%                     if val~=0
-%                         signs_found=[signs_found,substr(2)]; %moved after val~=0, 12Apr23
-%                         lets_found=[lets_found,substr(1)];
-%                         vec_new(find(dict.codel==substr(1)))=val;
-%                     end
-%                 end
-%                 tn=tn(nu+1:end);
-%             end
-%             if any(~isnan(vec_new))
-%                 vecs=[vecs;vec_new];
-%             end
-%         %    vecs
-%         end
-%         lets_found=unique(lets_found);
-%         if length(lets_found)==0
-%             if ~isempty(signs_found) %an explicit zero was found
-%                 symb=opts.symbs.z;
-%             end
-%         else
-%             signs_found_nz=setdiff(signs_found,'z');
-%             if length(signs_found_nz)==1
-%                 symb=opts.symbs.(signs_found_nz);
-%             elseif strcmp(signs_found,'pm')
-%                 symb=opts.symbs.pm;
-%             elseif strcmp(signs_found,'mp')
-%                 symb=opts.symbs.mp;
-%             end
-%             if length(lets_found)==1
-%                 rgb=opts.colors.(lets_found);
-%             else %average the colors
-%                 rgbs=zeros(length(lets_found),3);
-%                 for ifound=1:length(lets_found)
-%                     rgbs(ifound,:)=opts.colors.(lets_found(ifound));
-%                 end
-%                 rgb=mean(rgbs);
-%             end
-%         end
-% end %switch
-% rgb=psg_color2rgb(rgb); %14May24
-% % if ischar(rgb) %15Dec23
-% %     rgb=get(line('color',rgb,'Visible','off'),'color'); %idea from StackOverflow
-% % end
-% opts_used=opts;
-% return
-% 
-% function opts_filled=psg_typenames2colors_cs(opts,def)
-% %
-% %set up colors and symbols with defaults for btc, unless provided in opts.colors
-% color_fields=fieldnames(def.colors_def);
-% for ifn=1:length(color_fields)
-%     if isempty(opts.colors_anymatch)
-%         opts.colors=filldefault(opts.colors,color_fields{ifn},def.colors_def.(color_fields{ifn}));
-%     else
-%         opts.colors.(color_fields{ifn})=opts.colors_anymatch;
-%     end
-% end
-% symb_fields=fieldnames(def.symbs_def);
-% for ifn=1:length(symb_fields)
-%     if isempty(opts.symbs_anymatch)
-%         opts.symbs=filldefault(opts.symbs,symb_fields{ifn},def.symbs_def.(symb_fields{ifn}));
-%     else
-%         opts_symbs.(symb_fields{ifn})=opts.symbs_anymatch;
-%     end
-% end
-% opts_filled=opts;
-% return
-% 
-% 
-% 
-% %
-% % btc: color used for axis (btc coord), symbol used for sign
-% % faces_mpi: color used for gender and age, symbol used for emotion and set
-% %
-% % typenames: cell array of type names, such as {'gp0133','gp0267','gp0400'}
-% % opts: options: can be omitted
-% %  opts.colors.[g,b,c,d,e,t,u,v,w,a]: colors to assign to each ray
-% %  opts.symbs.[z,m,p]: symbols to assign to zero, positive, negative
-% %  opts.colors_anymatch: an rgb triplet which, if present, overrides the color assigned to any match
-% %  opts.symbs_anymatch: a symbol which, if present, overrides the symbol assigned to any match
-% %  rgb: an rgb color triplet
-% %  symb: a plotting symbol
-% %  vecs: array of the coordinates found, NaN if unspecified
-% %    e.g., typenames= {'gp0300','bm0100ap0500','gm0400'} yields 
-% %   vecs=[...
-% %         0.30   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN;...
-% %          NaN -0.10   NaN   NaN   NaN   NaN   NaN   NaN   NaN -0.50;...
-% %        -0.40   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN]
-% %
-% %  opts_used: options used
-% %
