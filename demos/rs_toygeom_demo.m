@@ -34,19 +34,25 @@ if (if_frozen~=0)
 else
     rng('shuffle');
 end
-%
-%define the stimuli
-%
+%define the coordinates
 if ~exist('ncoords') ncoords=3; end %can be modified to larger than 3
 ncoords=max(3,ncoords);
-%
-paradigm_types='toygeom';
-paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if edited, change definition of the coordinates of the stimulus sets
 coord_labels=cell(1,ncoords);
 for ic=1:ncoords
     coord_labels{ic}=char('a'+ic-1);
 end
-sign_chars={'m','z','p'}; %tokens for negative, zero, or positive
+if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have added noise on additional coordinates
+ncoords_tot=ncoords+ncoords_noise;
+%
+%define the paradigm (stimulus choices within each paradigm)
+%
+paradigm_type='toygeom';
+paradigm_names_avail={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if edited, change definition of the coordinates of the stimulus sets
+if ~exist('paradigm_use_list') paradigm_use_list=[1:length(paradigm_names_avail)]; end
+for ipptr=1:length(paradigm_use_list)
+    paradigm_names{ipptr}=paradigm_names_avail{paradigm_use_list(ipptr)};
+end
+%
 axis_samples=[2 4 6 8]; %sample points in each direction along each axis
 nangles=8; %number of sample points in a ring
 ring_radii=[4 6 8]; %radii for the rings
@@ -55,16 +61,12 @@ random_max=9; %maximum random value; plotted range will be [-1,1]*(random_max+1)
 %
 %define the simulations: several transformations of the stimulus space, of dimension ncoords
 %
-if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have added noise on additional coordinates
-ncoords_tot=ncoords+ncoords_noise;
-%
 transform_names_avail={'null','procrustes','affine','projective','pwaffine'};
 transform_classes_avail={'affine','affine','affine','projective','pwaffine'};
-%
-if ~exist('transforms_use_list') transforms_use_list=[1:5];end
-for itptr=1:length(transforms_use_list)
-    transform_names{itptr}=transform_names_avail{transforms_use_list(itptr)};
-    transform_classes{itptr}=transform_classes_avail{transforms_use_list(itptr)};
+if ~exist('transform_use_list') transform_use_list=[1:length(transform_names_avail)];end
+for itptr=1:length(transform_use_list)
+    transform_names{itptr}=transform_names_avail{transform_use_list(itptr)};
+    transform_classes{itptr}=transform_classes_avail{transform_use_list(itptr)};
 end
 %
 ntransforms=length(transform_names);
@@ -169,6 +171,7 @@ disp(sprintf('jittered transformations created for %2.0f subjects',nsubjs));
 %
 nparadigms=length(paradigm_names);
 sims=struct;
+sign_chars={'m','z','p'}; %tokens for negative, zero, or positive
 for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
     sim=struct;
@@ -256,7 +259,7 @@ for ip=1:length(paradigm_names)
     aux_stimspace.opts_import.nstims=sim.nstims;
     aux_stimspace.opts_import.typenames=typenames;
     aux_stimspace.opts_import.type_coords=sim.type_coords;
-    aux_stimspace.opts_import.paradigm_type='toygeom';
+    aux_stimspace.opts_import.paradigm_type=paradigm_type;
     aux_stimspace.opts_import.paradigm_name=paradigm_name;
     aux_stimspace.opts_import.subj_id='stimspace';
     aux_stimspace.opts_import.subj_id_short='stims';
@@ -315,6 +318,7 @@ for ip=1:length(paradigm_names)
         xformspace.sets{1}.dim_list=[1:ncoords_tot];
         aux_stimdisp.opts_disp.set_labels=cat(2,'stims ',transform_name);
         aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
+        %
         if sim.if_findrays
             aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
             aux_stimdisp.opts_disp_enh.if_points=1; %so legends are set labels
@@ -372,7 +376,7 @@ for ip=1:length(paradigm_names)
             is=subjs_disp(is_ptr);
             aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
             aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
-            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels');; %use defaults
+            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels'); %use defaults
             aux_datadisp.opts_disp.set_select=is; %just show this subject
             aux_datadisp.opts_disp.set_colors={'k'}; %black
             %
