@@ -56,7 +56,7 @@ end
 axis_samples=[2 4 6 8]; %sample points in each direction along each axis
 nangles=8; %number of sample points in a ring
 ring_radii=[4 6 8]; %radii for the rings
-nrandom=20; %number of random stimuli
+nrandom=16; %number of random stimuli
 random_max=9; %maximum random value; plotted range will be [-1,1]*(random_max+1)
 %
 %define the simulations: several transformations of the stimulus space, of dimension ncoords
