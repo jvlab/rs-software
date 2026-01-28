@@ -65,7 +65,7 @@ end
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    disp(test_descs{itest});
+    disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [data_outs{itest},aux_outs{itest}]=rs_import_coordsets(coords{itest},auxs{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     s=struct;

@@ -113,6 +113,7 @@ fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
     if ((aux_ins{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
+        disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         aux_ins{itest}.opts_read.if_log=0;
         [data_reads{itest},aux_reads{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
         %

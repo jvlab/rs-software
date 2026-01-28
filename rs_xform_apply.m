@@ -11,7 +11,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
 %     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
 %     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
-%   xforms.pipeline is a structure that can serve as a starting pint for the pipeline subfield for sets in data_out
+%   xforms.pipeline is a structure that can serve as a starting point for the pipeline subfield for sets in data_out
 %     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings

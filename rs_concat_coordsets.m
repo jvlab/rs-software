@@ -16,7 +16,6 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-%
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS.
 %
 if (nargin<=2)
