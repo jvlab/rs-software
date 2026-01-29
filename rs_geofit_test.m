@@ -25,7 +25,7 @@ aux_geofits=cell(1,ntests);
 opts_used=cell(1,ntests);
 signflips=cell(1,ntests);
 %
-test_descs{1}='transforming one animal-domain files to two other domains, all models, no nesting';
+test_descs{1}='transforming one animal-domain files to two other domains, all models to in dim 3, out dim 4, no shuffles, no nesting';
 filenames_in{1}={'./samples/animals/intermediate_texture_coords_S5.mat'};
 aux_ins{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{1}.nsets=1;
@@ -34,6 +34,10 @@ aux_outs{1}=aux_ins{1};
 aux_outs{1}.nsets=2;
 auxs{1}.opts_geof.model_list=getfield(psg_geomodels_define(),'model_types');
 auxs{1}.opts_geof.if_nestbymodel=0;
+auxs{1}.opts_geof.nshuffs=0;
+auxs{1}.opts_geof.dimpairs_method='all';
+auxs{1}.opts_geof.dim_max_in=3;
+auxs{1}.opts_geof.dim_max_out=4;
 %
 test_descs{2}='transforming three binary texture coordinate files to three others, mean, bogus,and procrustes models, maximal nesting, explicit dimensions';
 filenames_in{2}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat'};
@@ -43,8 +47,10 @@ filenames_out{2}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./s
 aux_outs{2}=aux_ins{2};
 auxs{2}.opts_geof.model_list={'mean','bogus','procrustes_noscale_nooffset','procrustes_scale_nooffset','procrustes_noscale_offset','procrustes_scale_offset'};
 auxs{2}.opts_geof.if_nestbymodel=-1;
+auxs{2}.opts_geof.if_nestbydim=-1; %nest by dimension, with pca
 auxs{2}.opts_geof.dimpairs_method='list';
 auxs{2}.opts_geof.dimpairs_list=[2 2;2 3;2 4;3 2;3 3;3 4;4 3;3 3;4 5];
+auxs{2}.opts_geof.nshuffs=3;
 %    
 test_descs{3}='transforming three binary texture coordinate files to three others, standard models, all nesting, leteq dims';
 filenames_in{3}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat'};
@@ -53,6 +59,7 @@ aux_ins{3}.nsets=3;
 filenames_out{3}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
 aux_outs{3}=aux_ins{3};
 auxs{3}.opts_geof.dimpairs_method='din_lteq_dout';
+auxs{3}.opts_geof.nshuffs=3;
 %
 test_descs{4}='unequal number of stimuli';
 filenames_in{4}={'./samples/animals/intermediate_texture_coords_S5.mat'};
@@ -67,6 +74,8 @@ aux_ins{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1
 aux_ins{5}.nsets=1;
 filenames_out{5}={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
 aux_outs{5}=aux_ins{5};
+auxs{5}.opts_geof.dim_max_in=5;
+auxs{5}.opts_geof.nshuffs=3;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

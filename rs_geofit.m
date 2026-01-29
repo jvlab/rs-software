@@ -30,21 +30,30 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    'din_lteq_dout': input dimension less than or equal to output dimension
 %    'din_gteq_dout': input dimension greater than or equal to output dimension
 %    'list': a two-column list of pairs (in, out)
-%  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
 %  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
 %  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
-%
-%  if_nestbydim:    1 to do statistics on nesting by dimension, 0 (default) to omit
-%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested model
+%  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
 %  nshuffs:         number of shuffles, defaults to 100
-%  if_warn: 1 (default) to show warnings
+%  if_nestbydim: +/-1 to do statistics for nesting by dimension within input dataset, 0 to omit
+%    Use +1 if the input dataset is built up, one dimension at a time, and each successive dimension
+%      matches the lower-dimensional model except for the added dimension -- that is, data_in.ds{k}{idim}=data_in.ds{k}{idim-1}.
+%      This will always be the case if the input dataset is created by multidimensional scaling of the same distance matrix,
+%      or by principal components analysis of a data matrix.
+%      But it will not be the case in general, e.g., if the coordinates from each dimension are created by a consensus procedure.
+%    Use -1 if this is not the case. For testing each added dimension, PCA around the centroid will be performed prior to the nesting calculation
+%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
+%  if_center: 1 (default) to center the data
+%  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
+%  if_fit_summary: 1 (default) to log summary of fitting
+%  if_fit_log: 1 (0: default) for detailed log
 %  if_log: 1 (default) to log progress
+%  if_warn: 1 (default) to show warnings
 %    
 % rs{k}.results{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
-%    from data_in.da{k} to data_out.da{k}, for dimensions din and dout
+%    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout
 % xs: the transformations, in a format compatible with rs_xform_apply
-%   xs.{iclass}.class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
-%   xs.{iclass}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
+%   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
+%   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
 %     (this will be empty if there is no transformation in rs{k}.results{idim,idim}
 %
 % aux_out: auxiliary outputs and parameter values used
@@ -83,9 +92,13 @@ aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_method','equal');
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_in',10);
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_out',aux.opts_geof.dim_max_in);
 aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.dim_max_in]',[1 2]));
+aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',100);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
-aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',100);
+aux.opts_geof=filldefault(aux.opts_geof,'if_center',1);
+aux.opts_geof=filldefault(aux.opts_geof,'if_frozen',1);
+aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
+aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
 %
@@ -104,7 +117,7 @@ rs=[];
 %
 [aux,aux_out]=rs_geofit_getmodels(aux,psg_geomodels_def,aux_out);
 %aux.opts_geof.model_list is model models in order to be evaluated
-%aux_opts_geof.model_definitions is the model definition structure
+%aux.opts_geof.model_definitions is the model definition structure
 nmodels=length(aux.opts_geof.model_list);
 %
 %check consistency within input and output
@@ -170,37 +183,69 @@ z.dimpairs_list=z.dimpairs_list(dp_sel,:);
 %
 nsets=max(check_in.nsets,check_out.nsets);
 rs=cell(1,nsets);
-xs=cell(1,nsets);
-
+xs=struct;
+for k=1:nmodels
+    model_name=z.model_list{k};
+    xs.(model_name)=struct;
+    xs.(model_name).class=z.model_definitions.(model_name).class;
+    xs.(model_name).xforms=struct;
+end    
 %
-% %
-% %validate input parameters for consistency, etc.
-% %
-% % for matlab style warnings
-% if (condition)
-%     wmsg=sprintf('xxx');
-%     warning(wmsg);
-%     aux_out.warnings=strvcat(aux_out.warnings,wmsg);
-%     aux_out.warn_bad=aux_out.warn_bad+1;
-% end
-% %for custom warnings with rs leadin
-% if (condition)
-%     wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
-%     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1)); %to force a warning output; second argument is a 1 if a bad warning
-%     %or%
-%     aux_out=rs_warning(wmsg,0,aux_out); %to accumulage warnings and log based on aux_out, first force a warning output
+opts_psgfit_base=struct;
+opts_psgfit_base.model_types_def=z.model_definitions;
+opts_psgfit_base.if_log=z.if_fit_log;
+opts_psgfit_base.if_summary=z.if_fit_summary;
+%fields copied with no change
+opts_psgfit_base.nshuffs=z.nshuffs;
+opts_psgfit_base.if_nestbydim=z.if_nestbydim;
+opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
+opts_psgfit_base.if_center=z.if_center;
+opts_psgfit_base.if_frozen=z.if_frozen;
+%
+for iset=1:nsets
+    iset_in=1+mod(iset-1,check_in.nsets);
+    iset_out=1+mod(iset-1,check_out.nsets);
+    d_adj=data_in.ds{iset_in};
+    d_ref=data_out.ds{iset_out};
+    if z.if_log
+        disp(sprintf('geometric model fits: input set %2.0f, output set %2.0f',iset_in,iset_out));
+    end
+    %
+    %do the fits
+    %
+    opts_psgfit=opts_psgfit_base;
+    opts_psgfit.adj_dim_list=unique(z.dimpairs_list(:,1)); %will need to change
+    opts_psgfit.ref_dim_list=unique(z.dimpairs_list(:,1)); %will need to change
+    [results,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
+    rs{iset}.results=results;
+    z.warnings_fit{iset}=opts_psgfit_used.warnings;
+    if (z.if_warn & ~isempty(z.warnings_fit{iset}))
+        disp('warnings encountered during fits:')
+        disp(z.warnings_fit{iset});
+    end
+    %
+    %format the transformations
+    %
+    for k=1:nmodels
+        model_name=z.model_list{k};
+        for idim=1:min(size(results))
+            if ~isempty(results{idim,idim})
+                if isfield(results{idim,idim},'transforms')
+                    xs.(model_name).xforms.ts{iset}{1,idim}=results{idim,idim}.transforms{k};
+                end
+            end
+        end
+    end
+%   xs.(model_name).class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
+%   xs.(model_name).xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
+%     (this will be empty if there is no transformation in rs{k}.results{idim,idim}
+
+end
 % 
-% end
-% 
-% % return options as used
+% return options as used
+%
 aux_out.opts_check=aux.opts_check;
 aux_out.opts_geof=z;
-% %
-% if aux_out.warn_bad==0
-% %process
-%     disp('cannot proceed');
-% end
-
 return
 end
 
