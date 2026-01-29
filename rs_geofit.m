@@ -63,9 +63,9 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %   warn_bad: count of warnings that prevent further processing
 %
 %   Note: mdef=rs_geofit() returns a model definition structure;
-%     mdef.model_types contains the names of available models
+%     mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
 %     mdef.(model_name) defines each model 
-%     mdef.(model_name).nested lists the nested models
+%     mdef.(model_name).nested lists the names of the nested models
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_DEFINE, PSG_GEOMODELS_NESTORDER.
 %
