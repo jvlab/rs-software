@@ -22,6 +22,7 @@
 %   rs_disp_coordsets_test3: test rs_disp_coordsets: rays, rings, neighbors (via rs_disp_enh_coordsets)
 %   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.
 %   rs_findrays: find rays from coordinates
+%   rs_geofit: fit geometrical models
 %   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli
 %   rs_knit_coordsets_test: test for above
 %   rs_xform_specify: specify a transformation (rotation and translation)

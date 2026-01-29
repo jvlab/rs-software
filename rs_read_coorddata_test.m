@@ -51,6 +51,7 @@ fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
     if ((auxs{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
+        disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         [data_outs{itest},aux_outs{itest}]=rs_read_coorddata(filenames_examples{itest},auxs{itest});
         fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
         s=struct;

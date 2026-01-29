@@ -96,6 +96,10 @@ generic.opts_disp.axis_label_prefix='dim'; %prefix for axis label
 generic.opts_rays.ray_reorder_ring=1; %standardize ray order
 generic.opts_rays.ray_plane_jit=10^-3; %standardize collapse of cycle to plane
 %
+%typically first used in rs_geofit
+%
+generic.opts_geof.model_list_default={'procrustes_scale_offset','affine_offset','projective'}; %models to fit
+%
 %these options override generic defaults when rs_aux_customize is called by a specific function
 %
 specific=struct;  %subfields will be applied to auxiliary parameters when called by a specific function
