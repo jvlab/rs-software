@@ -107,26 +107,21 @@ rs=struct;
 %aux_opts_geof.model_definitions is the model definition structure
 nmodels=length(aux.opts_geof.model_list);
 %
-%check consistency
+%check consistency within input and output
+%
 check_in=rs_check_coordsets(data_in,aux.opts_check);
 aux_out.warnings=strvcat(aux_out.warnings,check_in.warnings);
 check_out=rs_check_coordsets(data_out,aux.opts_check);
 aux_out.warnings=strvcat(aux_out.warnings,check_out.warnings);
-%
-%
-% check.nsets=nsets;
-% check.nstims_each=nstims_each;
-% check.dim_list_each=dim_list_each;
-% check.dim_list_union=dim_list_union;
-% check.dim_list_inter=dim_list_inter;
-% check.typenames_each=typenames_each;
-% check.typenames_union=typenames_union;
-% check.typenames_inter=typenames_inter;
-%
 if aux_out.warn_bad>0
     disp('cannot proceed');
     return
 end
+dim_list_in=check_in.dim_list_union;
+dim_list_out=check_out.dim_list_union;
+%
+%check consistency between input and output
+%
 nstims_in=check_in.nstims_each;
 nstims_out=check_out.nstims_each;
 if nstims_in~=nstims_out
