@@ -30,7 +30,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    'din_lteq_dout': input dimension less than or equal to output dimension
 %    'din_gteq_dout': input dimension greater than or equal to output dimension
 %    'list': a two-column list of pairs (in, out)
-%  dimpairs_list:  two-column array of pairs of dimensions to consider
+%  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
 %  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
 %  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
 %
@@ -80,9 +80,9 @@ aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_geof',struct); %options for this module
 aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_method','equal');
-aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',[]);
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_in',10);
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_out',aux.opts_geof.dim_max_in);
+aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.dim_max_in]',[1 2]));
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
 aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',100);
@@ -92,8 +92,6 @@ aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
 aux=rs_aux_customize(aux,'rs_geofit');
 %
 aux.opts_geof=filldefault(aux.opts_geof,'model_list',aux.opts_geof.model_list_default);
-%
-%************need to set up defaults***********
 %
 aux_out=struct;
 aux_out.warnings=[];
@@ -146,8 +144,6 @@ end
 nsets=max(check_in.nsets,check_out.nsets);
 rs=cell(1,nsets);
 xs=cell(1,nsets);
-
-%%%%determine order of models to compute
 
 %
 % %
