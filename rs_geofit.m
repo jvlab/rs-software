@@ -97,8 +97,8 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-xs=struct;
-rs=struct;
+xs=[];
+rs=[];
 %
 %parse model names and determine order of models to compute
 %
@@ -136,6 +136,38 @@ if aux_out.warn_bad>0
     disp('cannot proceed');
     return
 end
+z=aux.opts_geof;
+dp=meshgrid(1:max(dim_list_in),1:max(dim_list_out));
+dimpairs_all=[dp(:),reshape(dp',length(dp(:)),1)];
+if ((ndims(z.dimpairs_list)~=2) | (size(z.dimpairs_list,2)~=2))
+    wmsg=sprintf('dimension pairing list has unexpected shape; default pairing '' equal'' used');
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',z.if_warn));
+    z.dimpairs_method='equal';
+end
+switch z.dimpairs_method %determine coordinate groups
+    case 'all'
+        z.dimpairs_list=dimpairs_all;
+    case 'equal'
+        z.dimpairs_list=dimpairs_all(find(dimpairs_all(:,1)==dimpairs_all(:,2)),:);
+    case 'din_lteq_dout'
+        z.dimpairs_list=dimpairs_all(find(dimpairs_all(:,1)<=dimpairs_all(:,2)),:);
+    case 'din_gteq_dout'
+        z.dimpairs_list=dimpairs_all(find(dimpairs_all(:,1)>=dimpairs_all(:,2)),:);
+    case 'list'
+    otherwise
+        wmsg=sprintf('dimension pairing method  (%s) not recognized; ''equal'' used',z.dimpairs_method);
+        z.dimpairs_method='equal';
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',z.if_warn));
+end
+dp_bad=union(find(any(z.dimpairs_list<1,2)),find(any(z.dimpairs_list~=round(z.dimpairs_list),2)));
+if ~isempty(dp_bad)
+    wmsg=sprintf('dimension pairing list has non-integer values or values less than 1, ignored');
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',z.if_warn));
+    z.dimpairs_list=z.dimpairs_list(setdiff(1:size(z.dimpairs_list,1),dp_bad),:);
+end
+dp_sel=intersect(find(z.dimpairs_list(:,1)<=z.dim_max_in),find(z.dimpairs_list(:,2)<=z.dim_max_out));
+z.dimpairs_list=z.dimpairs_list(dp_sel,:);
+%
 nsets=max(check_in.nsets,check_out.nsets);
 rs=cell(1,nsets);
 xs=cell(1,nsets);
@@ -162,7 +194,7 @@ xs=cell(1,nsets);
 % 
 % % return options as used
 aux_out.opts_check=aux.opts_check;
-aux_out.opts_geof=aux.opts_geof;
+aux_out.opts_geof=z;
 % %
 % if aux_out.warn_bad==0
 % %process
