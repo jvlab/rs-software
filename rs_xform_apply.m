@@ -15,7 +15,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
-%  aux.opts_xform.class: 'affine' (default), can also be 'projective','pwaffine','pwprojective'
+%  aux.opts_xform.class: 'affine' (default), can also be 'mean','projective','pwaffine','pwprojective'
 %     
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -112,6 +112,7 @@ typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
 %
 params_needed=struct;
+params_needed.mean={'b','T','c'};
 params_needed.affine={'b','T','c'};
 params_needed.projective={'b','T','c','p'};
 params_needed.pwaffine={'b','T','c','vcut','acut'};
