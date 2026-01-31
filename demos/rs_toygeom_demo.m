@@ -25,7 +25,24 @@
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
 %  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS.
 %
+%these are the main parameters that may be edited, or have values set before running
+%
+if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; end %some may be deleted
+if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
+if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
+if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
+if ~exist('pwaffine_mag') pwaffine_mag=0.5; end %controls difference in linear transforms of piecewise affine
+%
+if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
+if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
+if ~exist('noise_transform_mag') noise_transform_mag=0.1; end %range of Gaussian jitter for each subject's transformation 
+if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian noise for each subject
+%
+if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
+if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
+%
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
+%
 if (if_frozen~=0) 
     rng('default');
     if (if_frozen<0)
@@ -35,23 +52,16 @@ else
     rng('shuffle');
 end
 %define the coordinates
-if ~exist('ncoords') ncoords=3; end %can be modified to larger than 3
 ncoords=max(3,ncoords);
 coord_labels=cell(1,ncoords);
 for ic=1:ncoords
     coord_labels{ic}=char('a'+ic-1);
 end
-if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have added noise on additional coordinates
 ncoords_tot=ncoords+ncoords_noise;
 %
 %define the paradigm (stimulus choices within each paradigm)
 %
 paradigm_type='toygeom';
-paradigm_names_avail={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; %if edited, change definition of the coordinates of the stimulus sets
-if ~exist('paradigm_use_list') paradigm_use_list=[1:length(paradigm_names_avail)]; end
-for ipptr=1:length(paradigm_use_list)
-    paradigm_names{ipptr}=paradigm_names_avail{paradigm_use_list(ipptr)};
-end
 %
 axis_samples=[2 4 6 8]; %sample points in each direction along each axis
 nangles=8; %number of sample points in a ring
@@ -62,19 +72,16 @@ random_max=9; %maximum random value; plotted range will be [-1,1]*(random_max+1)
 %define the simulations: several transformations of the stimulus space, of dimension ncoords
 %
 transform_names_avail={'null','procrustes','affine','projective','pwaffine'};
-transform_classes_avail={'affine','affine','affine','projective','pwaffine'};
-if ~exist('transform_use_list') transform_use_list=[1:length(transform_names_avail)];end
-for itptr=1:length(transform_use_list)
-    transform_names{itptr}=transform_names_avail{transform_use_list(itptr)};
-    transform_classes{itptr}=transform_classes_avail{transform_use_list(itptr)};
-end
-%
 ntransforms=length(transform_names);
-if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
-if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
-if ~exist('pwaffine_mag') pwaffine_mag=0.5; end %controls difference in linear transforms of piecewise affine
-%
-%define the transformations
+transform_class_table=struct;
+transform_class_table.null='affine';
+transform_class_table.procrustes='affine';
+transform_class_table.affine='affine';
+transform_class_table.projective='projective';
+transform_class_table.pwaffine='pwaffine';
+for it=1:ntransforms
+    transform_classes{it}=transform_class_table.(transform_names{it});
+end
 %
 %null transformation
 transforms.null.T=eye(ncoords);
@@ -125,11 +132,7 @@ disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoor
 %
 %define the number of subjects and levels of noise for each
 %
-if ~exist('nsubjs') nsubjs=4; end
-if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show
-if ~exist('noise_transform_mag') noise_transform_mag=0.1; end %range of Gaussian jitter for each subject's transformation 
 noise_transform=noise_transform_mag*[0:nsubjs-1]/nsubjs; %sugbjects have increasing amounts of noise
-if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian noise for each subject
 noise_add_base=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
 noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
 %
@@ -335,7 +338,7 @@ for ip=1:length(paradigm_names)
     sims.(paradigm_name)=sim;
 end
 %
-% apply each subject's transform to the stimuli in each stimulus set, and plot
+% apply each subject's transform to the stimuli in each stimulus set, and display
 %
 for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
