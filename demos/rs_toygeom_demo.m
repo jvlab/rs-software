@@ -397,3 +397,32 @@ for ip=1:length(paradigm_names)
     end %it
     sims.(paradigm_name)=sim;
 end
+%
+%for each transformation and subject, align and knit the data across paradigms
+%
+check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
+sims.knitted=struct;
+for it=1:ntransforms
+    transform_name=transform_names{it};
+    for is=1:nsubjs
+        concat=struct;
+        for ip=1:length(paradigm_names)
+            paradigm_name=paradigm_names{ip};
+            to_concat=struct;
+            to_concat.ds{1}=sims.(paradigm_name).dataspace.(transform_name).ds{is};
+            to_concat.sas{1}=sims.(paradigm_name).dataspace.(transform_name).sas{is};
+            to_concat.sets{1}=sims.(paradigm_name).dataspace.(transform_name).sets{is};
+            if ip==1
+                concat=to_concat;
+            else
+                concat=rs_concat_coordsets(concat,to_concat,check_nowarn);
+            end
+        end
+        disp(' ');
+        disp(sprintf('aligning data from subject %1.0f, transform %s, across paradigms',is,transform_name))
+        aligned=rs_align_coordsets(concat);
+        disp(sprintf('knitting data from subject %1.0f, transform %s, into a single dataset',is,transform_name))
+        knitted=rs_knit_coordsets(aligned);
+        sims.knitted.dataspace.(transform_name){is}=knitted;
+    end
+end
