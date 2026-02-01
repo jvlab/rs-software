@@ -57,11 +57,9 @@ aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_rays',struct);
+aux=filldefault(aux,'opts_import',struct); %%alignment needs to know how to set up type_coords if none are supplied
 %
 aux=rs_aux_customize(aux,'rs_align_coordsets');
-%
-%alignment needs to know how to set up type_coords if none are supplied
-opts_import=getfield(rs_aux_customize(setfield(struct(),'opts_import',[]),'rs_import_coordsets'),'opts_import');
 %
 data_out=struct;
 aux_out=struct;
@@ -146,7 +144,7 @@ if aux_out.warn_bad==0
     end
     %alignment needs to know how to set up type_coords if none are supplied
     [sets_align,ds_align,sas_align,ovlp_array,sa_pooled,opts_align_used]=...
-        psg_align_coordsets(data_in.sets,data_in.ds,data_in.sas,setfield(aux.opts_align,'type_coords_def',opts_import.type_coords_def));
+        psg_align_coordsets(data_in.sets,data_in.ds,data_in.sas,setfield(aux.opts_align,'type_coords_def',aux.opts_import.type_coords_def));
     %
     for iset=1:nsets
         [rays,wmsg,opts_rays_used]=rs_findrays(sas_align{iset},sets_align{iset}.label,aux.opts_rays);

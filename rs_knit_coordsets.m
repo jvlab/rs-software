@@ -127,6 +127,12 @@ typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
 %
+if min(nstims_each)~=max(nstims_each)
+    disp('cannot proceed');
+    disp(aux_out.warnings);
+    return
+end
+%
 %inspect input data to see where data are missing
 %note that a NaN can indicate that stimulus was present and response
 %was missing, OR, that the stimulus was not presented
