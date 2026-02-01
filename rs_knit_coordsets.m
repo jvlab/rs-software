@@ -1,7 +1,7 @@
 function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
-% with partially overlapping stimuli
-% data_in.sas{k}.typenames is used to establish stimulus identity
+% All datasets must list the same stimuli, and in the same order (as identified) by data_in.sas{k}.typenames
+% but data can be absent, as indicated by NaN entries in data_in.ds{k}{idim}
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   These are typically created by rs_align_coordsets, but could also be directly from
@@ -150,7 +150,7 @@ if any(all(coords_isnan,2))
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
-%if aux.sa_pooled is present, use it, otherwise, re=create
+%if aux.sa_pooled is present, use it, otherwise, re create
 if (isfield(aux,'sa_pooled') & isfield(aux,'data_align'))
     if (aux.opts_knit.if_log)
         disp('sa_pooled and data_align are supplied.');
