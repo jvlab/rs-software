@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=5;
+ntests=6;
 %
 test_descs=cell(1,ntests);
 coords=cell(1,ntests);
@@ -54,13 +54,12 @@ auxs{5}.opts_import.label='s123_data';
 auxs{5}.opts_import.extra='01Jan26';
 coords{5}=coords{1};
 %
-if if_auto_skip==0
-    disp('Suggest ''enter'' to accept the default for interactive responses.');
-    if_ok=0;
-    while (if_ok==0)
-        if_ok=getinp('1 if OK to proceed','d',[0 1],1);
-    end
-end
+test_descs{6}='basic import test with identity as type_coords values';
+nstims=11;
+auxs{6}=auxs{2};
+coords{6}=coords{2};
+auxs{6}.opts_import=rmfield(auxs{6}.opts_import,'type_coords');
+auxs{6}.opts_import.type_coords_def='eye';
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

@@ -16,7 +16,7 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %    *typename_ndigits: (integer) number of digits in auto-generated typenames
 %     type_coords: array of size [nstims *], conceptual coordinates, if omitted, will be set to eye(nstims)
 %             or ones(nstims,1), depending on opts.type_coords_def
-%    *type_coords_def: 'eye' (default) or 'ones', determines how type_coords are filled if not provided
+%    *type_coords_def: 'none' (default),'eye,' or 'ones', determines how type_coords are filled if not provided
 %
 %        fields relevant to data_out.sets
 %    *type: text string, overall source, suggest 'data' (default) for originating in experimental data or 'model' for originating in a computational model
@@ -58,7 +58,6 @@ aux.opts_import=filldefault(aux.opts_import,'nstims',0);
 %
 aux.opts_import=filldefault(aux.opts_import,'typenames',cell(0));
 aux.opts_import=filldefault(aux.opts_import,'type_coords',[]);
-aux.opts_import=filldefault(aux.opts_import,'type_coords_def','eye');
 %
 aux.opts_import=filldefault(aux.opts_import,'type','data');
 aux.opts_import=filldefault(aux.opts_import,'paradigm_type','unknown');

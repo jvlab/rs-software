@@ -75,7 +75,7 @@ clear k sigma_list
 %
 generic.opts_import.typename_prefix='type_'; %default prefix for typenames
 generic.opts_import.typename_ndigits=2; %number of digits in an auto-generated typename
-generic.opts_import.type_coords_def='eye';%default conceptual coordinates
+generic.opts_import.type_coords_def='none';%default conceptual coordinates
 %
 %typically first used in rs_write_coorddata
 %
