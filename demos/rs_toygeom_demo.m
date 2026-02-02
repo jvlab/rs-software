@@ -405,7 +405,7 @@ for ip=1:length(paradigm_names)
     sims.(paradigm_name)=sim;
 end
 %
-%for align and knit the stimuli across paradigms
+%align and knit the stimuli across paradigms
 %
 check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
 sims.knitted=struct;
@@ -427,8 +427,31 @@ disp('knitting data across paradigms');
 knitted=rs_knit_coordsets(aligned,aux_knit);
 sims.knitted.stimspace=knitted;
 %
+%for each transformation, align and knit the transformed space across paradigms
+%
+sims.knitted.xformspace=struct();
+for it=1:ntransforms
+    transform_name=transform_names{it};
+    for ip=1:length(paradigm_names)
+        paradigm_name=paradigm_names{ip};
+        xform_data=sims.(paradigm_name).xformspace.(transform_name);
+        if ip==1
+            concat=xform_data;
+        else
+            concat=rs_concat_coordsets(concat,xform_data,check_nowarn);
+        end
+    end
+    disp(' ');
+    disp(sprintf('aligning transform %s across paradigms',transform_name))
+    aligned=rs_align_coordsets(concat);
+    disp(sprintf('knitting data from transform %s across paradigms',transform_name))
+    knitted=rs_knit_coordsets(aligned,aux_knit);
+    sims.knitted.xformspace.(transform_name)=knitted;
+end
+%
 %for each transformation and subject, align and knit the data across paradigms
 %
+sims.knitted.dataspace=struct();
 for it=1:ntransforms
     transform_name=transform_names{it};
     for is=1:nsubjs
