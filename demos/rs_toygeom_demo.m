@@ -416,7 +416,7 @@ end
 disp('aligning stimuli across paradigms');
 aligned=rs_align_coordsets(concat);
 disp('knitting data across paradigms');
-knitted=rs_knit_coordsets(aligned);
+knitted=rs_knit_coordsets(aligned,aux_knit);
 sims.knitted.stimspace=knitted;
 %
 %for each transformation and subject, align and knit the data across paradigms
@@ -438,7 +438,7 @@ for it=1:ntransforms
         disp(sprintf('aligning data from subject %1.0f, transform %s, across paradigms',is,transform_name))
         aligned=rs_align_coordsets(concat);
         disp(sprintf('knitting data from subject %1.0f, transform %s, into a single dataset',is,transform_name))
-        knitted=rs_knit_coordsets(aligned);
+        knitted=rs_knit_coordsets(aligned,aux_knit);
         sims.knitted.dataspace.(transform_name){is}=knitted;
     end
 end
