@@ -398,10 +398,29 @@ for ip=1:length(paradigm_names)
     sims.(paradigm_name)=sim;
 end
 %
-%for each transformation and subject, align and knit the data across paradigms
+%for align and knit the stimuli across paradigms
 %
 check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
 sims.knitted=struct;
+%
+disp(' ');
+for ip=1:length(paradigm_names)
+    paradigm_name=paradigm_names{ip};
+    stim_data=sims.(paradigm_name).stimspace;
+    if ip==1
+        concat=stim_data;
+    else
+        concat=rs_concat_coordsets(concat,stim_data,check_nowarn);
+    end
+end
+disp('aligning stimuli across paradigms');
+aligned=rs_align_coordsets(concat);
+disp('knitting data across paradigms');
+knitted=rs_knit_coordsets(aligned);
+sims.knitted.stimspace=knitted;
+%
+%for each transformation and subject, align and knit the data across paradigms
+%
 for it=1:ntransforms
     transform_name=transform_names{it};
     for is=1:nsubjs
