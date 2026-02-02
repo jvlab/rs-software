@@ -13,7 +13,9 @@ function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
 %  wmsg: warning message, if any
 %  opts_rays_used: ray options used for psg_findrays
 %
-%   See also:  PSG_DEFOPTS, PSG_FINDRAYS.
+% 02Feb26: modularize psg_type_coords_util
+%
+%   See also:  PSG_DEFOPTS, PSG_FINDRAYS, PSG_TYPE_COORDS_DEF, PSG_TYPE_COORD_UTIL.
 %
 if (nargin<=1)
     label=[];
@@ -21,24 +23,13 @@ end
 if (nargin<=2)
     opts_rays=struct;
 end
-opts_rays=filldefault(opts_rays,'coord_names',getfield(psg_defopts,'coord_fields')); % was ,{'type_coords','btc_specoords','btc_augcoords'});
+opts_rays=filldefault(opts_rays,'coord_names',getfield(psg_defopts,'coord_fields')); % was {'type_coords','btc_specoords','btc_augcoords'});
 wmsg=[];
 rays=struct;
 opts_rays_used=struct; %in case psg_findrays is not called
-stim_coords=[];
-ncn=length(opts_rays.coord_names);
-icn_used=0;
-for icn=1:ncn
-    cn=opts_rays.coord_names{icn};
-    if isfield(sa,cn)
-        if isempty(stim_coords)
-            stim_coords=sa.(cn);
-            cn_used=icn;
-        end
-    end
-end
+[stim_coords,coord_names]=psg_type_coords_util(sa,opts_rays.coord_names);
 if ~isempty(stim_coords)
-    opts_rays=setfield(opts_rays,'coord_names',{opts_rays.coord_names{cn_used}});
+    opts_rays=setfield(opts_rays,'coord_names',{coord_names});
     if ~isempty(label)
         opts_rays=psg_findray_setopts(label,opts_rays);
     end

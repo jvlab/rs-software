@@ -10,12 +10,12 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 % aux:
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
-% data_out.ds{k},sas{k},sets{k}:  coordinates after processing
+% data_out.ds{k},sas{k},sets{k}:  concatenated dataset structures
 % aux_out: auxiliary outputs and parameter values used
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %
 if (nargin<=2)
     aux=struct;
@@ -30,11 +30,11 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-fns_concat={'ds','sas','sets'}; %fields to concatenate
+fns={'ds','sas','sets'}; %fields to concatenate
 %
-ns=zeros(2,length(fns_concat)); %check that fields to concatenate have same length
-for ifn=1:length(fns_concat)
-    fn=fns_concat{ifn};
+ns=zeros(2,length(fns)); %check that fields to concatenate have same length
+for ifn=1:length(fns)
+    fn=fns{ifn};
     ns(1,ifn)=length(data_in1.(fn));
     ns(2,ifn)=length(data_in2.(fn));
 end
@@ -46,8 +46,8 @@ end
 if aux_out.warn_bad==0
     n1=ns(1,1);
     n2=ns(2,1);
-    for ifn=1:length(fns_concat)
-        fn=fns_concat{ifn};
+    for ifn=1:length(fns)
+        fn=fns{ifn};
         data_out.(fn)=cell(1,n1+n2);
         for k=1:n1
             data_out.(fn){k}=data_in1.(fn){k};            

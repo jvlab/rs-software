@@ -23,7 +23,7 @@
 % then model them, show results of modeling statistics, show model fits
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
-%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS.
+%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS.
 %
 %these are the main parameters that may be edited, or have values set before running
 %
@@ -408,14 +408,11 @@ for it=1:ntransforms
         concat=struct;
         for ip=1:length(paradigm_names)
             paradigm_name=paradigm_names{ip};
-            to_concat=struct;
-            to_concat.ds{1}=sims.(paradigm_name).dataspace.(transform_name).ds{is};
-            to_concat.sas{1}=sims.(paradigm_name).dataspace.(transform_name).sas{is};
-            to_concat.sets{1}=sims.(paradigm_name).dataspace.(transform_name).sets{is};
+            subj_data=rs_extract_coordsets(sims.(paradigm_name).dataspace.(transform_name),is); %extract this subject's data
             if ip==1
-                concat=to_concat;
+                concat=subj_data;
             else
-                concat=rs_concat_coordsets(concat,to_concat,check_nowarn);
+                concat=rs_concat_coordsets(concat,subj_data,check_nowarn);
             end
         end
         disp(' ');
