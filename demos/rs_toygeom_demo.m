@@ -41,6 +41,7 @@ if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian no
 if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
 %
+if ~exist('if_plots') if_plots=1; end %set to 0 to suppress plots
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 %
 if (if_frozen~=0) 
@@ -293,18 +294,20 @@ for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
     sim=sims.(paradigm_name);
     %
-    figure;
-    set(gcf,'Position',[100 100 1400 800]);
-    set(gcf,'NumberTitle','off');
-    set(gcf,'Name',paradigm_name);
-    %
-    aux_stimdisp.opts_disp.fig_handle=gcf;
-    aux_stimdisp.opts_disp.fig_name=paradigm_name;
-    aux_stimdisp.opts_disp.axis_range='list';
-    aux_stimdisp.opts_disp.axis_range_list=[-1 1]*(1+random_max);
-    aux_stimdisp.opts_disp.callout_amount=0.3;
-    aux_stimdisp.opts_disp.axis_labels=coord_labels;
-    aux_stimdisp.opts_disp.legend_location='North';
+    if if_plots
+        figure;
+        set(gcf,'Position',[100 100 1400 800]);
+        set(gcf,'NumberTitle','off');
+        set(gcf,'Name',paradigm_name);
+        %
+        aux_stimdisp.opts_disp.fig_handle=gcf;
+        aux_stimdisp.opts_disp.fig_name=paradigm_name;
+        aux_stimdisp.opts_disp.axis_range='list';
+        aux_stimdisp.opts_disp.axis_range_list=[-1 1]*(1+random_max);
+        aux_stimdisp.opts_disp.callout_amount=0.3;
+        aux_stimdisp.opts_disp.axis_labels=coord_labels;
+        aux_stimdisp.opts_disp.legend_location='North';
+    end
     for it=1:ntransforms
         transform_name=transform_names{it};
         xforms=struct;
@@ -319,19 +322,21 @@ for ip=1:length(paradigm_names)
         end
         %adjust metadata
         xformspace.sets{1}.dim_list=[1:ncoords_tot];
-        aux_stimdisp.opts_disp.set_labels=cat(2,'stims ',transform_name);
-        aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
-        %
-        if sim.if_findrays
-            aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
-            aux_stimdisp.opts_disp_enh.if_points=1; %so legends are set labels
-            aux_stimdisp.opts_disp.data_show_method='last'; %last point is random; plotting a point allows rs_disp_enh_coordsets to make simple legend
-            sim.xformspace_disp_auxout.(transform_name)=rs_disp_enh_coordsets(xformspace,aux_stimdisp,sim.stimspace_rays);
-        else
-            aux_stimdisp.opts_disp.data_show_method='all'; 
-            aux_stimdisp.opts_disp.data_label_method='list';
-            aux_stimdisp.opts_disp.data_label_list=find(~contains(sim.stimspace.sas{1}.typenames,' ')); %label only the on-axis points (off-axis point names all have blanks)
-            sim.xformspace_disp_auxout.(transform_name)=rs_disp_coordsets(xformspace,aux_stimdisp);
+        if if_plots
+            aux_stimdisp.opts_disp.set_labels=cat(2,'stims ',transform_name);
+            aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
+            %
+            if sim.if_findrays
+                aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
+                aux_stimdisp.opts_disp_enh.if_points=1; %so legends are set labels
+                aux_stimdisp.opts_disp.data_show_method='last'; %last point is random; plotting a point allows rs_disp_enh_coordsets to make simple legend
+                sim.xformspace_disp_auxout.(transform_name)=rs_disp_enh_coordsets(xformspace,aux_stimdisp,sim.stimspace_rays);
+            else
+                aux_stimdisp.opts_disp.data_show_method='all'; 
+                aux_stimdisp.opts_disp.data_label_method='list';
+                aux_stimdisp.opts_disp.data_label_list=find(~contains(sim.stimspace.sas{1}.typenames,' ')); %label only the on-axis points (off-axis point names all have blanks)
+                sim.xformspace_disp_auxout.(transform_name)=rs_disp_coordsets(xformspace,aux_stimdisp);
+            end
         end
         sim.xformspace.(transform_name)=xformspace;
     end %it: transforms
@@ -375,24 +380,26 @@ for ip=1:length(paradigm_names)
         sim.dataspace.(transform_name)=dataspace;
         %plot
         aux_datadisp=struct;
-        for is_ptr=1:length(subjs_disp)
-            is=subjs_disp(is_ptr);
-            aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
-            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
-            aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels'); %use defaults
-            aux_datadisp.opts_disp.set_select=is; %just show this subject
-            aux_datadisp.opts_disp.set_colors={'k'}; %black
-            %
-            figure(aux_datadisp.opts_disp.fig_handle); %activate the figure for this paradigm type
-            aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it+is_ptr*fig_cols)}; %show each transform in a separate column
-            %
-            if sim.if_findrays %setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout
-                aux_datadisp.opts_disp_enh=sim.xformspace_disp_auxout.(transform_name).opts_disp_enh; %had if_rings info
-                sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_enh_coordsets(dataspace,aux_datadisp,sim.stimspace_rays);
-            else
-                sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_coordsets(dataspace,aux_datadisp);
-            end
-         end %is
+        if if_plots
+            for is_ptr=1:length(subjs_disp)
+                is=subjs_disp(is_ptr);
+                aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
+                aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
+                aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels'); %use defaults
+                aux_datadisp.opts_disp.set_select=is; %just show this subject
+                aux_datadisp.opts_disp.set_colors={'k'}; %black
+                %
+                figure(aux_datadisp.opts_disp.fig_handle); %activate the figure for this paradigm type
+                aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it+is_ptr*fig_cols)}; %show each transform in a separate column
+                %
+                if sim.if_findrays %setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout
+                    aux_datadisp.opts_disp_enh=sim.xformspace_disp_auxout.(transform_name).opts_disp_enh; %had if_rings info
+                    sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_enh_coordsets(dataspace,aux_datadisp,sim.stimspace_rays);
+                else
+                    sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_coordsets(dataspace,aux_datadisp);
+                end
+             end %is
+         end
          disp(sprintf('dataspace created for paradigm %20s and transform %s',paradigm_name,transform_name));
     end %it
     sims.(paradigm_name)=sim;
@@ -402,6 +409,7 @@ end
 %
 check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
 sims.knitted=struct;
+aux_knit=struct;
 %
 disp(' ');
 for ip=1:length(paradigm_names)
