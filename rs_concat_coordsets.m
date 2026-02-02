@@ -8,7 +8,6 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %   datasets, as listed in data_in[1|2].sas{k}.typenames
 %
 % aux:
-%  a structure with substructures such as opts_temp, opts_othr,
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates after processing
