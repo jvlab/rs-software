@@ -5,9 +5,6 @@
 %  See also:  RS_READ_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
 rs_module='read_coorddata';
-if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
-    if_auto_skip=0;
-end
 %
 ntests=5;
 %
@@ -39,28 +36,18 @@ test_descs{5}='reading animal-domain file';
 filenames_examples{5}={'./samples/animals/image_coords_S3'};
 auxs{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 %
-if if_auto_skip==0
-    disp('Suggest ''enter'' to accept the default for interactive responses.');
-    if_ok=0;
-    while (if_ok==0)
-        if_ok=getinp('1 if OK to proceed','d',[0 1],1);
-    end
-end
-%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    if ((auxs{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
-        disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
-        [data_outs{itest},aux_outs{itest}]=rs_read_coorddata(filenames_examples{itest},auxs{itest});
-        fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
-        s=struct;
-        s.data_out=data_outs{itest};
-        s.aux_out=aux_outs{itest};
-        rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
-        %compare with rs_get_coordsets
-        [data_outs_gsets{itest},aux_outs_gsets{itest}]=rs_get_coordsets(filenames_examples{itest},setfield(auxs{itest},'nsets',1));
-    end
+    disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
+    [data_outs{itest},aux_outs{itest}]=rs_read_coorddata(filenames_examples{itest},auxs{itest});
+    fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
+    s=struct;
+    s.data_out=data_outs{itest};
+    s.aux_out=aux_outs{itest};
+    rs_save_mat(cat(2,'tests',filesep,fns{itest}),s);
+    %compare with rs_get_coordsets
+    [data_outs_gsets{itest},aux_outs_gsets{itest}]=rs_get_coordsets(filenames_examples{itest},setfield(auxs{itest},'nsets',1));
 end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
