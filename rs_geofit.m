@@ -33,7 +33,10 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
 %  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
 %  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
-%  nshuffs:         number of shuffles, defaults to 100
+%  if_stats: 1 to enable statistics (0 is default; will override if_nestbymodel and if_nestbydim)
+%  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
+%  if_plot: 1 to plot statistics, defaults to if_stats
+%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
 %  if_nestbydim: +/-1 to do statistics for nesting by dimension within input dataset, 0 to omit
 %    Use +1 if the input dataset is built up, one dimension at a time, and each successive dimension
 %      matches the lower-dimensional model except for the added dimension -- that is, data_in.ds{k}{idim}=data_in.ds{k}{idim-1}.
@@ -41,7 +44,6 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %      or by principal components analysis of a data matrix.
 %      But it will not be the case in general, e.g., if the coordinates from each dimension are created by a consensus procedure.
 %    Use -1 if this is not the case. For testing each added dimension, PCA around the centroid will be performed prior to the nesting calculation
-%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
 %  if_center: 1 (default) to center the data
 %  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
 %  if_fit_summary: 1 (default) to log summary of fitting
@@ -50,7 +52,26 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  if_warn: 1 (default) to show warnings
 %    
 % rs{k}.results{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
-%    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout
+%    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout.
+%    Subfields are:
+%      model_types_def: model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is the names of the nested models tested
+%      ref_dim: dimension of reference dataset used for fitting (=dout)
+%      adj_dim: dimension of adjusted dataseet used for fitting (=din)
+%      d_shuff_dims: metadata for d_shuff and d_shuff_nestdim (normalization type 1: denom for d from surrogate, type 2: denom for d from data)
+%               d_shuff_dims: 'd1: model, d2: shuffle, d3: nested model, d4: normalization type'  
+%      surrogate_count_dims: metadata for surrogate_count and surrogate_count_nestdim
+%               surrogate_count_dims: 'd1: model, d2: nested model, d3: normalization type'
+%      opts_geofit: supplied options for rs_geofit
+%      d: dimensionless goodness of fit, for each of the models (length=length(model_types_def.model_types));
+%      transforms: the transforms for each of the models
+%      opts_model_used: model options, e.g., if_offset, if_scale, and fitting options
+%      d_shuff: goodness of fit for nesting by model (dims as in d_shuff_dims, d3 is indexed by position in model_types_def.(model_name).nested)
+%      surrogate_count: number of times surrogate (nesting by model) yields a smaller d than data (dims as in surrogate_count_dims, d3 is indexed by position in model_types_def.model_names)
+%      nestdim_list: the lower dimensions used in nesting by dimension
+%      opts_model_shuff_used_nestdim: options used for each model, shuffle, and nested model
+%      d_shuff_nestdim: goodness of fit, for each model, shuffle, nested dim, and normalization type (dims as in d_shuff_dims)
+%      surrogate_count_nestdim: number of times that surrogate (nesting by dim) yields a smaller d than data (dims as in surrogate_count_dims)
+%
 % xs: the transformations, in a format compatible with rs_xform_apply
 %   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
@@ -58,9 +79,8 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 % aux_out: auxiliary outputs and parameter values used
 %    opts_geofit: overall options used
-%    *may have additional fields, typically
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+%    warnings: warnings generated in creating arguments for psg_get_coordsets
+%    warn_bad: count of warnings that prevent further processing
 %
 %   Note: mdef=rs_geofit() returns a model definition structure
 %     mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
@@ -71,7 +91,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 psg_geomodels_def=psg_geomodels_define();
 %special case: display available models
-if nargin==0
+if nargin==0shuff
     [nr,order_ptrs,model_types_nested]=psg_geomodels_nestorder(psg_geomodels_def);
     rs=model_types_nested';
     disp(model_types_nested');
@@ -84,23 +104,32 @@ if (nargin<=1)
 end
 %set up sub-structure options
 %
-aux=filldefault(aux,'opts_check',struct); %options for other modules called
-aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
-%
 aux=filldefault(aux,'opts_geof',struct); %options for this module
 aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_method','equal');
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_in',10);
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_out',aux.opts_geof.dim_max_in);
 aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.dim_max_in]',[1 2]));
-aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',100);
-aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
+aux.opts_geof=filldefault(aux.opts_geof,'if_stats',1);
+aux.opts_geof=filldefault(aux.opts_geof,'if_plot',aux.opts_geof.if_stats);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
+aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_center',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_frozen',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
+%
+aux=filldefault(aux,'opts_check',struct); %options for other modules called
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
+%
+if aux.opts_geof.if_stats
+    aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',100);
+else
+    aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',0);
+    aux.opts_geof.if_nestbymodel=0;
+    aux.opts_geof.if_nestbydim=0;
+end
 %
 aux=rs_aux_customize(aux,'rs_geofit');
 %

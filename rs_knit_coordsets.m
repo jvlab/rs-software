@@ -58,7 +58,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
+%   if if_plot=1 (default if if_stats=1) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
 %     but also knit_stats_setup can be customized by setting 
 %         knit_stats_setup.dataset_labels
 %         knit_stats_setup.stimulus_labels
