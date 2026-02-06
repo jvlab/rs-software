@@ -20,10 +20,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
 %     Note that to just compute statistics of variance explained, without shuffles, set if_stats=1, nshuffs=0.
 %  if_plot: 1 to plot statistics, defaults to if_stats
+%  shuff_quantiles: quantiles to plot, defaults to [0.01 0.05 0.5 0.95 0.99];
 %  dim_max_in: maximum dimension of the component set to use, defaults to max available across all datasets
 %  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
 %  dim_aug: number of dimensions to augment by, defaults to 0
 %  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
+%  knit_stats, knit_stats setup:  only include to replot.  
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -58,19 +60,31 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if if_stats=1) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
-%     but also knit_stats_setup can be customized by setting 
-%         knit_stats_setup.dataset_labels
-%         knit_stats_setup.stimulus_labels
-%         knit_stats_setup.shuff_quantiles
+%   if if_plot=1 (default if if_stats=1) figure will be plotted.
 %   knit_stats_fig: handle to figure, if stats are plotted
 %   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
 %
-%  06Nov25: modularize consistency checking into RS_CHECK_COORDSETS
+% This can also be used to replot a previous calculation, with greater customization. To do this:
+%   data_in should be equal to that used in the previous calculation.
+%   aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation.
+%   aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
+%   the previous calculation, with the following possible modifications:
+%   In this mode, no further calculations are done, and data_out will be empty, and aux_out.knit_stats_fig will be the figure handle.
+%     but also aux.knit_stats_setup can be customized by setting the following fields
+%         knit_stats_setup.dataset_labels, as a cell array (defaults to data_in.sets{:}.label)
+%         knit_stats_setup.stimulus_labels, as a cell array (defaults to the typenames of the aligned datasets)
+%         knit_stats_setup.shuff_quantiles, as a vector (defaults to[0.01 0.05 0.5 0.95 0.99]);
+%         knit_stats_setup.figh: figure handle to plot into
+%         knit_stats_setup.nrows: number of rows in the figure
+%         knit_stats_setup.row: row to plot into
+%             Note: rows should be plotted in order, as plotting final row triggers an equalization of the color scale
+%
+%  06Nov25: modularize consistency checking into rs_check_coordsets
+%  06Feb26: add mode for just plotting
 %
 %  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
+%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %
 if (nargin<=1)
     aux=struct;
@@ -96,6 +110,7 @@ if aux.opts_knit.if_stats
 else
     aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',0);
 end
+aux.opts_knit=filldefault(aux.opts_knit,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -118,6 +133,14 @@ check=rs_check_coordsets(data_in,aux.opts_check);
 %
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
+%
+% replot mode
+%
+if isfield(aux,'knit_stats') & isfield(aux,'knit_stats_setup')
+    aux_out.knit_stats_fig=psg_knit_stats_plot(aux.knit_stats,aux.knit_stats_setup);
+    return
+end
+%
 nsets=check.nsets;
 nstims_each=check.nstims_each;
 dim_list_each=check.dim_list_each;
@@ -280,6 +303,7 @@ if aux_out.warn_bad==0
         end
         knit_stats_setup.stimulus_labels=typenames_all;
         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;
+        knit_stats_setup.shuff_quantiles=aux.opts_knit.shuff_quantiles;
         knit_stats_setup.nstims=nstims_all;
         %
         aux_out.knit_stats=ra;
