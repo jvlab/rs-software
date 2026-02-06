@@ -25,7 +25,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     Note: if empty, this is requested interactively.
 %  model_list_default: models when model_list is not specified, can modify in rs_aux_defaults_define
 %  dimpairs_method: pairs of dimensions considered between input and ouptut datasets
-%    'all': all pairings
+%    'all': all pairings up to min(available dimensions, dim_max_[in|out]
 %    'equal': input dimension= output dimension (default)
 %    'din_lteq_dout': input dimension less than or equal to output dimension
 %    'din_gteq_dout': input dimension greater than or equal to output dimension
@@ -179,8 +179,8 @@ if aux_out.warn_bad>0
     return
 end
 z=aux.opts_geof;
-dp=meshgrid(1:max(dim_list_in),1:max(dim_list_out));
-dimpairs_all=[dp(:),reshape(dp',length(dp(:)),1)];
+[dpx,dpy]=meshgrid(1:min(z.dim_max_in,max(dim_list_in)),1:min(z.dim_max_out,max(dim_list_out)));
+dimpairs_all=[dpx(:),dpy(:)];
 if ((ndims(z.dimpairs_list)~=2) | (size(z.dimpairs_list,2)~=2))
     wmsg=sprintf('dimension pairing list has unexpected shape; default pairing '' equal'' used');
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',z.if_warn));
@@ -243,8 +243,7 @@ for iset=1:nsets
     %do the fits
     %
     opts_psgfit=opts_psgfit_base;
-    opts_psgfit.adj_dim_list=unique(z.dimpairs_list(:,1)); %will need to change
-    opts_psgfit.ref_dim_list=unique(z.dimpairs_list(:,1)); %will need to change
+    opts_psgfit.dimpairs_list=z.dimpairs_list;
     [results,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
     rs{iset}.results=results;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;
