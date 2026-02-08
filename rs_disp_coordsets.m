@@ -112,6 +112,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 % aux_out: auxiliary outputs and parameter values used
 %   warnings: warnings generated in creating arguments for psg_get_coordsets, or related to graphics capabilities and alpha blending
 %   warn_bad: count of warnings that prevent further processing
+%   aux_out.opts_disp: the input structure opts_disp, with defaults and overrides, including aux_out.opts_disp.fig_handle, handle to the figure that was created
 %
 %  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_XFORM_APPLY,
 %     PSG_VISUALIZE, PSG_PLOTCOORDS, RS_PLOT_STYLE.
