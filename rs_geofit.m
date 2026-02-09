@@ -44,6 +44,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %      or by principal components analysis of a data matrix.
 %      But it will not be the case in general, e.g., if the coordinates from each dimension are created by a consensus procedure.
 %    Use -1 if this is not the case. For testing each added dimension, PCA around the centroid will be performed prior to the nesting calculation
+%    This option is only recommended if, whenever a model is fit for (din,dout), it is also fit for (din-1,dout). This is guaranteed for  dimpairs_method='all' or 'din_lteq_dout;
 %  if_center: 1 (default) to center the data
 %  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
 %  if_fit_summary: 1 (default) to log summary of fitting
