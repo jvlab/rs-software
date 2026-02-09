@@ -134,7 +134,7 @@ if nshuffs>0
     %
     %make a combined plot
     %
-    figh=figure;
+    fig_handle=figure;
     set(gcf,'Position',[100 100 1400 750]);
     set(gcf,'NumberTitle','off');
     knit_stats_setup=aux_knit_stats.knit_stats_setup;
@@ -149,7 +149,7 @@ if nshuffs>0
     aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
     %
     aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
-    aux_stats_replot.knit_stats_setup.figh=figh;
+    aux_stats_replot.knit_stats_setup.fig_handle=fig_handle;
     aux_stats_replot.knit_stats_setup.dataset_labels=paradigm_names;
     aux_stats_replot.knit_stats_setup.stimulus_labels=knit_stats_setup.stimulus_labels;
     aux_stats_replot.knit_stats_setup.nrows=2;

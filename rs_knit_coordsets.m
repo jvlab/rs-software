@@ -61,7 +61,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       See the ra field of psg_[knit|align]_stats for details on statistics
 %   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
 %   if if_plot=1 (default if if_stats=1) figure will be plotted.
-%   knit_stats_fig: handle to figure, if stats are plotted
+%   fig_handle: handle to figure, if stats are plotted
 %   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
 %
 % This can also be used to replot a previous calculation, with greater customization. To do this:
@@ -69,12 +69,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %   aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation.
 %   aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
 %   the previous calculation, with the following possible modifications:
-%   In this mode, no further calculations are done, and data_out will be empty, and aux_out.knit_stats_fig will be the figure handle.
+%   In this mode, no further calculations are done, and data_out will be empty, and aux_out.fig_handle will be the figure handle.
 %     but also aux.knit_stats_setup can be customized by setting the following fields
 %         knit_stats_setup.dataset_labels, as a cell array (defaults to data_in.sets{:}.label)
 %         knit_stats_setup.stimulus_labels, as a cell array (defaults to the typenames of the aligned datasets)
 %         knit_stats_setup.shuff_quantiles, as a vector (defaults to[0.01 0.05 0.5 0.95 0.99]);
-%         knit_stats_setup.figh: figure handle to plot into
+%         knit_stats_setup.fig_handle: figure handle to plot into
 %         knit_stats_setup.nrows: number of rows in the figure
 %         knit_stats_setup.row: row to plot into
 %             Note: rows should be plotted in order, as plotting final row triggers an equalization of the color scale
@@ -137,7 +137,11 @@ aux_out.warn_bad=check.warn_bad;
 % replot mode
 %
 if isfield(aux,'knit_stats') & isfield(aux,'knit_stats_setup')
-    aux_out.knit_stats_fig=psg_knit_stats_plot(aux.knit_stats,aux.knit_stats_setup);
+    knit_stats_setup_use=aux.knit_stats_setup;
+    if isfield(knit_stats_setup_use,'fig_handle') %psg_knit_stats_plot expects figure handle in figh
+        knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle;
+    end
+    aux_out.fig_handle=psg_knit_stats_plot(aux.knit_stats,knit_stats_setup_use);
     return
 end
 %
@@ -309,7 +313,11 @@ if aux_out.warn_bad==0
         aux_out.knit_stats=ra;
         aux_out.knit_stats_setup=knit_stats_setup;
         if aux.opts_knit.if_plot
-            aux_out.knit_stats_fig=psg_knit_stats_plot(aux_out.knit_stats,aux_out.knit_stats_setup);
+            knit_stats_setup_use=aux_out.knit_stats_setup;
+            if isfield(knit_stats_setup_use,'fig_handle')
+                knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle; %psg_knit_stats_plot expects figure handle in figh
+            end
+            aux_out.fig_handle=psg_knit_stats_plot(aux_out.knit_stats,knit_stats_setup_use);
         end
     end
     sas_knitted=sa_pooled;

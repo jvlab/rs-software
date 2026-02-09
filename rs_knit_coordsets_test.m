@@ -76,7 +76,7 @@ for itest=1:ntests
         %replot, two rows, different quantiles
         auxs{itest}.knit_stats=aux_outs{itest-1}.knit_stats;
         auxs{itest}.knit_stats_setup=aux_outs{itest-1}.knit_stats_setup;
-        auxs{itest}.knit_stats_setup.figh=figure;
+        auxs{itest}.knit_stats_setup.fig_handle=figure;
         set(gcf,'NumberTitle','off');
         set(gcf,'Position',[100 100 1400 750]);
         set(gcf,'Name','replot');
