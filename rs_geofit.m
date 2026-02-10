@@ -52,7 +52,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  if_log: 1 (default) to log progress
 %  if_warn: 1 (default) to show warnings
 %    
-% gfs{k}.results{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
+% gfs{k}.gf{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
 %    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout.
 %    Subfields are:
 %      model_types_def: model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is the names of the nested models tested
@@ -76,7 +76,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 % xs: the transformations, in a format compatible with rs_xform_apply
 %   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
-%     (this will be empty if there is no transformation in gfs{k}.results{idim,idim}
+%     (this will be empty if there is no transformation in gfs{k}.gf{idim,idim}
 %
 % aux_out: auxiliary outputs and parameter values used
 %    opts_geofit: overall options used
@@ -248,8 +248,8 @@ for iset=1:nsets
     opts_psgfit=opts_psgfit_base;
     opts_psgfit.dimpairs_list=z.dimpairs_list;
     opts_psgfit.if_keep_opts_model_used=0; %eliminate some un-needed fields
-    [results,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
-    gfs{iset}.results=results;
+    [gf,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
+    gfs{iset}.gf=gf;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;
     if (z.if_warn & ~isempty(z.warnings_fit{iset}))
         disp('warnings encountered during fits:')
@@ -260,17 +260,17 @@ for iset=1:nsets
     %
     for k=1:nmodels
         model_name=z.model_list{k};
-        for idim=1:min(size(results))
-            if ~isempty(results{idim,idim})
-                if isfield(results{idim,idim},'transforms')
-                    xs.(model_name).xforms.ts{iset}{1,idim}=results{idim,idim}.transforms{k};
+        for idim=1:min(size(gf))
+            if ~isempty(gf{idim,idim})
+                if isfield(gf{idim,idim},'transforms')
+                    xs.(model_name).xforms.ts{iset}{1,idim}=gf{idim,idim}.transforms{k};
                 end
             end
         end
     end
 %   xs.(model_name).class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name).xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
-%     (this will be empty if there is no transformation in gfs{k}.results{idim,idim}
+%     (this will be empty if there is no transformation in gfs{k}.gf{idim,idim}
 
 end
 % 
