@@ -88,7 +88,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     mdef.(model_name) defines each model 
 %     mdef.(model_name).nested lists the names of the nested models
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_DEFINE, PSG_GEOMODELS_NESTORDER.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE, PSG_GEOMODELS_NESTORDER.
 %
 psg_geomodels_def=psg_geomodels_define();
 %special case: display available models
@@ -245,6 +245,7 @@ for iset=1:nsets
     %
     opts_psgfit=opts_psgfit_base;
     opts_psgfit.dimpairs_list=z.dimpairs_list;
+    opts_psgfit.if_keep_opts_model_used=0; %eliminate some un-needed fields
     [results,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
     rs{iset}.results=results;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;
