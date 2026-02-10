@@ -1,5 +1,5 @@
-function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
-% [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux) fits one or more geometrical transformations
+function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
+% [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux) fits one or more geometrical transformations
 % to coordinate sets
 %
 % data_in.ds{k},sas{k},sets{k}: dataset structures that are the starting points for the transformation
@@ -52,7 +52,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  if_log: 1 (default) to log progress
 %  if_warn: 1 (default) to show warnings
 %    
-% rs{k}.results{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
+% gfs{k}.results{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
 %    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout.
 %    Subfields are:
 %      model_types_def: model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is the names of the nested models tested
@@ -76,7 +76,7 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 % xs: the transformations, in a format compatible with rs_xform_apply
 %   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
-%     (this will be empty if there is no transformation in rs{k}.results{idim,idim}
+%     (this will be empty if there is no transformation in gfs{k}.results{idim,idim}
 %
 % aux_out: auxiliary outputs and parameter values used
 %    opts_geofit: overall options used
@@ -88,13 +88,14 @@ function [rs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     mdef.(model_name) defines each model 
 %     mdef.(model_name).nested lists the names of the nested models
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE, PSG_GEOMODELS_NESTORDER.
+%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE,
+%    PSG_GEOMODELS_NESTORDER, RS_DISP_GEOFIT.
 %
 psg_geomodels_def=psg_geomodels_define();
 %special case: display available models
 if nargin==0shuff
     [nr,order_ptrs,model_types_nested]=psg_geomodels_nestorder(psg_geomodels_def);
-    rs=model_types_nested';
+    gfs=model_types_nested';
     disp(model_types_nested');
     xs=struct;
     aux_out=struct;
@@ -103,6 +104,7 @@ end
 if (nargin<=1)
     aux=struct;
 end
+%
 %set up sub-structure options
 %
 aux=filldefault(aux,'opts_geof',struct); %options for this module
@@ -141,7 +143,7 @@ aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
 xs=[];
-rs=[];
+gfs=[];
 %
 %parse model names and determine order of models to compute
 %
@@ -212,7 +214,7 @@ dp_sel=intersect(find(z.dimpairs_list(:,1)<=z.dim_max_in),find(z.dimpairs_list(:
 z.dimpairs_list=z.dimpairs_list(dp_sel,:);
 %
 nsets=max(check_in.nsets,check_out.nsets);
-rs=cell(1,nsets);
+gfs=cell(1,nsets);
 xs=struct;
 for k=1:nmodels
     model_name=z.model_list{k};
@@ -247,7 +249,7 @@ for iset=1:nsets
     opts_psgfit.dimpairs_list=z.dimpairs_list;
     opts_psgfit.if_keep_opts_model_used=0; %eliminate some un-needed fields
     [results,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
-    rs{iset}.results=results;
+    gfs{iset}.results=results;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;
     if (z.if_warn & ~isempty(z.warnings_fit{iset}))
         disp('warnings encountered during fits:')
@@ -268,7 +270,7 @@ for iset=1:nsets
     end
 %   xs.(model_name).class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name).xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
-%     (this will be empty if there is no transformation in rs{k}.results{idim,idim}
+%     (this will be empty if there is no transformation in gfs{k}.results{idim,idim}
 
 end
 % 

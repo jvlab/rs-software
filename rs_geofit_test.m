@@ -18,7 +18,7 @@ data_ins=cell(1,ntests);
 data_outs=cell(1,ntests);
 %
 auxs=cell(1,ntests);
-rs=cell(1,ntests);
+gfs=cell(1,ntests);
 xs=cell(1,ntests);
 aux_geofits=cell(1,ntests);
 %
@@ -93,7 +93,7 @@ for itest=1:ntests
         aux_outs{itest}.opts_read.if_log=0;
         [data_outs{itest},aux_outs{itest}]=rs_get_coordsets(filenames_out{itest},aux_outs{itest});
         %
-        [rs{itest},xs{itest},aux_geofits{itest}]=rs_geofit(data_ins{itest},data_outs{itest},auxs{itest});
+        [gfs{itest},xs{itest},aux_geofits{itest}]=rs_geofit(data_ins{itest},data_outs{itest},auxs{itest});
         %
         fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
         s=struct;
@@ -101,7 +101,7 @@ for itest=1:ntests
         s.data_out=data_outs{itest};
         s.aux_ins=aux_ins{itest};
         s.aux_outs=aux_ins{itest};
-        s.rs=rs{itest};
+        s.gfs=gfs{itest};
         s.xs=xs{itest};
         s.aux_geofits=aux_geofits{itest};
         %

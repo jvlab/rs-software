@@ -17,12 +17,6 @@
 %   rs_align_coordsets_test: test for above
 %   rs_check_coordsets: check consistency of a dataset structure
 %   rs_concat_coordsets: concatenate dataset structures
-%   rs_disp_coordsets: display one or more sets of coordinates
-%   rs_disp_coordsets_test1: test rs_disp_coordsets: rotations, data selection, connections, offsets, labels, callouts
-%   rs_disp_coordsets_test2: test rs_disp_coordsets: synthetic data, alpha blending
-%   rs_disp_coordsets_test3: test rs_disp_coordsets: rays, rings, neighbors (via rs_disp_enh_coordsets)
-%   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.
-%   rs_findrays: find rays from coordinates
 %   rs_extract_coordsets: extract a subset of dataset structures
 %   rs_geofit: fit geometrical models
 %   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli
@@ -32,6 +26,15 @@
 %   rs_xform_apply: apply a transformation from rs_xform_specify
 %   rs_xform_specify_apply_test: test rs_xform_[specify|apply]
 %
+% Visualization
+%   rs_disp_coordsets: display one or more sets of coordinates
+%   rs_disp_coordsets_test1: test rs_disp_coordsets: rotations, data selection, connections, offsets, labels, callouts
+%   rs_disp_coordsets_test2: test rs_disp_coordsets: synthetic data, alpha blending
+%   rs_disp_coordsets_test3: test rs_disp_coordsets: rays, rings, neighbors (via rs_disp_enh_coordsets)
+%   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.
+%   rs_disp_geofit: display goodness of fit and statistics of geometrical models
+%   rs_findrays: find rays from coordinates
+
 % Customization, version dependence, benchmarks
 %   rs_auto_test: run all tests ion automatic mode
 %   rs_aux_customize: customize defaults for auxiliary inputs
