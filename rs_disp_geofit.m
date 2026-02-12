@@ -50,8 +50,6 @@ aux=filldefault(aux,'opts_dgeo',struct); %options for this module
 %
 %plot format options
 %
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbymodel_show',[]); %1 for all comparisons, -1 for maximal, 0 for none, set to 1 below if shuffles are present
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_show',[]); %1 to show; default to 1 set below if shuffles are present
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'models_show_select',[]); %strings to select models to show
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',[]);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_level',0.05);
@@ -114,11 +112,14 @@ end
 gf_example=gf{dim_pairs(1,1),dim_pairs(1,2)};
 nshuffs=size(gf_example.d_shuff,2);
 if nshuffs==0
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbymodel_show',[]); %1 for all comparisons, -1 for maximal, 0 for none, set to 1 below if shuffles are present
     if ~isempty(aux.opts_dgeo.if_nestbymodel_show) & aux.opts_dgeo.if_nestbymodel_show~=0
         wmsg=sprintf('no shuffes are present, but analysis of nesting by models requested; ignored');
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn)); %to accumulate warnings and log based on aux_out
     end
     aux.opts_dgeo.if_nestbymodel_show=0;
+    %
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_show',[]); %1 to show; default to 1 set below if shuffles are present
     if ~isempty(aux.opts_dgeo.if_nestbydim_show) & aux.opts_dgeo.if_nestbydim_show~=0
         wmsg=sprintf('no shuffes are present, but analysis of nesting by dimension requested; ignored');
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn)); %to accumulate warnings and log based on aux_out
