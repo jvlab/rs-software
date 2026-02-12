@@ -39,30 +39,31 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out: auxiliary outputs and parameter values used
-%    opts_knit: overall options used
+%    warnings: warnings generated in creating arguments for psg_get_coordsets
+%    warn_bad: count of warnings that prevent further processing
+%    opts_knit: aux.opts_knit, as used
+%    opts_rays: options used for finding rays in the kniited set
 %    opts_pcon{id}: options used in Procrustes alignment for model dimension id
 %    coords_havedata: [stims x sets] is 1 where data are present.
 %       Note that this may differ from aux_out.ovlp_array in rs_align_coordsets,
 %       in that if an input file lists a stimulus but the response is NaN, then
 %       it will appear as present in rs_align_coordsets output aux_out.ovlp_array,
 %       but as absent in rs_knit_coordsets.aux_out.coords_havedata
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
-%   rayss{1}: ray structure for knitted datasets
-%   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
+%    rayss{1}: ray structure for knitted datasets
+%    components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
-%   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
+%    knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
 %       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
 %          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
 %       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
 %       This does *not* take into account the further rotation of the consensus carried out if if_pca=1.
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
-%   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if if_stats=1) figure will be plotted.
-%   fig_handle: handle to figure, if stats are plotted
-%   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
+%    knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
+%       if if_plot=1 (default if if_stats=1) figure will be plotted.
+%    fig_handle: handle to figure (present only if stats are plotted)
+%    details: details of the convergence towards knitting (present only if aux.opts_knit.keepd_details=1)
+%    ts_pca{ip}{iset}: transformation from components to consensus, taking into account final pca if if_pca=1 (present only if if_pca=1) 
 %
 % This can also be used to replot a previous calculation, with greater customization. To do this:
 %   data_in should be equal to that used in the previous calculation.

@@ -4,7 +4,7 @@
 %
 rs_module='knit_coordsets';
 %
-ntests=4;
+ntests=5;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -57,6 +57,13 @@ aux_ins{3}.nsets=2;
 test_descs{4}='replot';
 auxs{4}=auxs{3};
 aux_ins{4}=aux_ins{3};
+%
+%
+test_descs{5}='non-interactive reading of two binary texture coordinate files, stimuli disagree, logging, keep only if stimuli present in either, do stats and plot, pca after consensus';
+filenames_examples{5}=filenames_examples{3};
+auxs{5}=auxs{3};
+auxs{5}.opts_knit.if_pca=1;
+aux_ins{5}=aux_ins{3};
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

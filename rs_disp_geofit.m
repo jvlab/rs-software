@@ -33,7 +33,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 % aux_out: auxiliary outputs and parameter values used
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
-%   aux_out.opts_dgeo: aux.opts_dgeo, as used
+%   aux_out.opts_dgeo: aux.opts_dgeo, as used, and also:
 %     opts_dgeo.fig_handles is a cell array of handles to the figures created
 %     opts_dgeo.fig_names is a cell array of names of the figures created; no special chars, suitable for use in a file name
 %     opts_dgeo.models_shown: names of models shown
