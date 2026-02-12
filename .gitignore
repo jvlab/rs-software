@@ -6,5 +6,7 @@ tests
 svd_issue
 benchmarks/*.zip
 junk*.*
+*.ppt*
+*.doc*
 *.asv
 

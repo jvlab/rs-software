@@ -459,6 +459,7 @@ end
 sims.knitted.dataspace=struct();
 for it=1:ntransforms
     transform_name=transform_names{it};
+    concat_knitted=struct;
     for is=1:nsubjs
         concat=struct;
         for ip=1:length(paradigm_names)
@@ -475,8 +476,13 @@ for it=1:ntransforms
         aligned=rs_align_coordsets(concat,aux_align);
         disp(sprintf('knitting data from subject %1.0f, transform %s, into a single dataset',is,transform_name))
         knitted=rs_knit_coordsets(aligned,aux_knit);
-        sims.knitted.dataspace.(transform_name){is}=knitted;
+        if is==1
+            concat_knitted=knitted;
+        else
+            concat_knitted=rs_concat_coordsets(concat_knitted,knitted);
+        end
     end
+    sims.knitted.dataspace.(transform_name)=concat_knitted;
 end
 %
 %fit models to transformation between stimulus space and data space
