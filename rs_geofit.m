@@ -35,7 +35,6 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
 %  if_stats: 1 to enable statistics (0 is default; will override if_nestbymodel and if_nestbydim)
 %  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
-%  if_plot: 1 to plot statistics, defaults to if_stats
 %  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
 %  if_nestbydim: +/-1 to do statistics for nesting by dimension within input dataset, 0 to omit
 %    Use +1 if the input dataset is built up, one dimension at a time, and each successive dimension
@@ -113,7 +112,6 @@ aux.opts_geof=filldefault(aux.opts_geof,'dim_max_in',10);
 aux.opts_geof=filldefault(aux.opts_geof,'dim_max_out',aux.opts_geof.dim_max_in);
 aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.dim_max_in]',[1 2]));
 aux.opts_geof=filldefault(aux.opts_geof,'if_stats',1);
-aux.opts_geof=filldefault(aux.opts_geof,'if_plot',aux.opts_geof.if_stats);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_center',1);

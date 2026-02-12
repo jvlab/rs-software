@@ -44,6 +44,8 @@ if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to sh
 if ~exist('if_plots') if_plots=1; end %set to 0 to suppress plots
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 %
+if ~exist('nshuffs') nshuffs=20; end %number of shuffles for geometric model stats
+%
 if (if_frozen~=0) 
     rng('default');
     if (if_frozen<0)
@@ -476,3 +478,31 @@ for it=1:ntransforms
         sims.knitted.dataspace.(transform_name){is}=knitted;
     end
 end
+%
+%fit models to transformation between stimulus space and data space
+%
+paradigms_all=fieldnames(sims); %includes original paradigms and knitted
+aux_geof=struct;
+aux_geof.opts_geof=struct;
+aux_geof.opts_geof.model_list={'procrustes_scale_offset','affine_offset','projective','pwaffine'};
+aux_geof.opts_geof.dimairs_method='all';
+aux_geof.opts_geof.if_stats=1;
+aux_geof.opts_geof.nshuffs=nshuffs;
+aux_geof.opts_geof.if_nestbymodel=-1;
+aux_geof.opts_geof.if_nestbydim=-1;
+aux_geof.opts_geof.if_log=0;
+aux_geof.opts_geof.if_fit_summary=0;
+%
+gfs=cell(ntransforms,length(paradigms_all));
+aux_geof_out=cell(ntransforms,length(paradigms_all));
+for it=1:ntransforms
+    transform_name=transform_names{it};
+    for ip=1:length(paradigms_all)
+        paradigm_name=paradigms_all{ip};
+        disp(sprintf('modeling transformation %20s from stimulus space to subject space with paradigm %20s',transform_name,paradigm_name));
+        data_in=sims.(paradigm_name).stimspace;
+        data_out=sims.(paradigm_name).dataspace.(transform_name);
+        [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
+    end
+end
+
