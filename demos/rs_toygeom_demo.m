@@ -12,17 +12,15 @@
 % 
 % Main data structures in sims.(paradigm_name)
 %
-% ??? apply pca to those 
+% Key params can be configured by running rs_toygeom_scenario*.m first
 %
-%write the files
 % adjustable jitters for transforms and additive noise
-% maybe illustrate
-% PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
+% maybe illustrate PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
 %
 % then create additional datasets that trnsform these, via piecewise affine or projective
 % then model them, show results of modeling statistics, show model fits
 %
-%  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS,
+%  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_GEOFIT,
 %  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS.
 %
 %these are the main parameters that may be edited, or have values set before running
@@ -43,8 +41,6 @@ if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to sh
 %
 if ~exist('if_plots') if_plots=1; end %set to 0 to suppress plots
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
-%
-if ~exist('nshuffs') nshuffs=20; end %number of shuffles for geometric model stats
 %
 if (if_frozen~=0) 
     rng('default');
@@ -387,7 +383,7 @@ for ip=1:length(paradigm_names)
                 is=subjs_disp(is_ptr);
                 aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
                 aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
-                aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'set_labels'); %use defaults
+                aux_datadisp.opts_disp.set_labels=sprintf('subj %1.0f',is);
                 aux_datadisp.opts_disp.set_select=is; %just show this subject
                 aux_datadisp.opts_disp.set_colors={'k'}; %black
                 %
@@ -488,16 +484,23 @@ end
 %fit models to transformation between stimulus space and data space
 %
 paradigms_all=fieldnames(sims); %includes original paradigms and knitted
-aux_geof=struct;
+if ~exist('opts_geof') opts_geof=struct; end
 aux_geof.opts_geof=struct;
-aux_geof.opts_geof.model_list={'procrustes_scale_offset','affine_offset','projective','pwaffine'};
-aux_geof.opts_geof.dimpairs_method='all';
-aux_geof.opts_geof.if_stats=1;
-aux_geof.opts_geof.nshuffs=nshuffs;
-aux_geof.opts_geof.if_nestbymodel=-1;
-aux_geof.opts_geof.if_nestbydim=-1;
-aux_geof.opts_geof.if_log=0;
-aux_geof.opts_geof.if_fit_summary=0;
+opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset','projective','pwaffine'});
+opts_geof=filldefault(opts_geof,'dimpairs_method','all');
+opts_geof=filldefault(opts_geof,'if_stats',1);
+opts_geof=filldefault(opts_geof,'nshuffs',20);
+opts_geof=filldefault(opts_geof,'if_nestbymodel',-1);
+opts_geof=filldefault(opts_geof,'if_nestbydim',-1);
+opts_geof=filldefault(opts_geof,'if_log',0);
+opts_geof=filldefault(opts_geof,'if_fit_summary',0);
+aux_geof=struct;
+aux_geof.opts_geof=opts_geof;
+%
+if ~exist('if_disp_geofit') if_disp_geofit=0; end
+if ~exist('opts_dgeo') opts_dgeo=struct; end
+aux_dgeo=struct;
+aux_dgeo.opts_dgeo=opts_dgeo;
 %
 gfs=cell(ntransforms,length(paradigms_all));
 aux_geof_out=cell(ntransforms,length(paradigms_all));
@@ -509,6 +512,22 @@ for it=1:ntransforms
         data_in=sims.(paradigm_name).stimspace;
         data_out=sims.(paradigm_name).dataspace.(transform_name);
         [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
+        if (if_disp_geofit)
+            for is=1:nsubjs
+                aux_dgeo_out=rs_disp_geofit(gfs{it,ip}{is}.gf,aux_dgeo);
+                fig_handles=aux_dgeo_out.opts_dgeo.fig_handles;
+                fig_names=aux_dgeo_out.opts_dgeo.fig_names;
+                for ifig=1:length(fig_handles)
+                    figure(fig_handles{ifig});
+                    axes('Position',[0.50,0.05,0.01,0.01]); %for text
+                    text(0,0,fig_names{ifig},'Interpreter','none');
+                    axis off;
+                    axes('Position',[0.50,0.02,0.01,0.01]); %for text
+                    text(0,0,sprintf('transform: %s, paradigm %s, subj %1.0f',transform_name,paradigm_name,is),'Interpreter','none');
+                    axis off;
+                end             
+            end %subject
+        end %if_disp_geofit
     end
 end
 
