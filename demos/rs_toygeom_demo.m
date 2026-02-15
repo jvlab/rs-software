@@ -504,28 +504,34 @@ aux_dgeo.opts_dgeo=opts_dgeo;
 %
 gfs=cell(ntransforms,length(paradigms_all));
 aux_geof_out=cell(ntransforms,length(paradigms_all));
+if ~exist('transforms_fit_show') transforms_fit_show=transform_names; end
+if ~exist('paradigms_fit_show') paradigms_fit_show=paradigms_all; end
+if ~exist('subjs_fit_show') subjs_fit_show=[1:nsubjs]; end
 for it=1:ntransforms
     transform_name=transform_names{it};
+    disp(' ');
     for ip=1:length(paradigms_all)
         paradigm_name=paradigms_all{ip};
-        disp(sprintf('modeling transformation %20s from stimulus space to subject space with paradigm %20s',transform_name,paradigm_name));
+        disp(sprintf('modeling transform %20s from stimulus space to subject space with paradigm %20s',transform_name,paradigm_name));
         data_in=sims.(paradigm_name).stimspace;
         data_out=sims.(paradigm_name).dataspace.(transform_name);
         [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
         if (if_disp_geofit)
             for is=1:nsubjs
-                aux_dgeo_out=rs_disp_geofit(gfs{it,ip}{is}.gf,aux_dgeo);
-                fig_handles=aux_dgeo_out.opts_dgeo.fig_handles;
-                fig_names=aux_dgeo_out.opts_dgeo.fig_names;
-                for ifig=1:length(fig_handles)
-                    figure(fig_handles{ifig});
-                    axes('Position',[0.50,0.05,0.01,0.01]); %for text
-                    text(0,0,fig_names{ifig},'Interpreter','none');
-                    axis off;
-                    axes('Position',[0.50,0.02,0.01,0.01]); %for text
-                    text(0,0,sprintf('transform: %s, paradigm %s, subj %1.0f',transform_name,paradigm_name,is),'Interpreter','none');
-                    axis off;
-                end             
+                if ~isempty(strmatch(transform_name,transforms_fit_show,'exact'))  & ~isempty(strmatch(paradigm_name,paradigms_fit_show,'exact')) & ismember(is,subjs_fit_show)
+                    aux_dgeo_out=rs_disp_geofit(gfs{it,ip}{is}.gf,aux_dgeo);
+                    fig_handles=aux_dgeo_out.opts_dgeo.fig_handles;
+                    fig_names=aux_dgeo_out.opts_dgeo.fig_names;
+                    for ifig=1:length(fig_handles)
+                        figure(fig_handles{ifig});
+                        axes('Position',[0.50,0.05,0.01,0.01]); %for text
+                        text(0,0,fig_names{ifig},'Interpreter','none');
+                        axis off;
+                        axes('Position',[0.50,0.02,0.01,0.01]); %for text
+                        text(0,0,sprintf('transform: %s, paradigm %s, subj %1.0f',transform_name,paradigm_name,is),'Interpreter','none');
+                        axis off;
+                    end 
+                end
             end %subject
         end %if_disp_geofit
     end
