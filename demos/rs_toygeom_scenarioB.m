@@ -17,4 +17,7 @@ opts_geof.nshuffs=20;
 % opts_geof=filldefault(opts_geof,'if_log',0);
 % opts_geof=filldefault(opts_geof,'if_fit_summary',0);
 if_disp_geofit=1;
+if ~exist('opts_dgeo') opts_dgeo=struct; end
+opts_dgeo.if_nestbymodel_show=0;
+opts_dgeo.models_show_select={'affine_offset'};
 rs_toygeom_demo;
