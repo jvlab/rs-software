@@ -1,11 +1,12 @@
-% rs_toygeom_scenarioA.m
-%sets up a scenario for rs_toygeom_demo: general illustration
-scenario_namme='scenario A';
-paradigm_names={'Axes'}; 
-transform_names={'affine','projective'};
-nsubjs=2;
+% rs_toygeom_scenarioB.m
+%sets up a scenario for rs_toygeom_demo: rings have inadequate number of dimensions
+%scenario_namme='scenario B';
+ncoords=4;
+paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23'}; 
+transform_names={'affine'};
+nsubjs=1;
 opts_geof=struct;
-opts_geof.nshuffs=10;
+opts_geof.nshuffs=20;
 %these are the main custoomizable params
 % opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset','projective','pwaffine'});
 % opts_geof=filldefault(opts_geof,'dimpairs_method','all');
