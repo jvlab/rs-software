@@ -524,6 +524,7 @@ for it=1:ntransforms
                     fig_names=aux_dgeo_out.opts_dgeo.fig_names;
                     for ifig=1:length(fig_handles)
                         figure(fig_handles{ifig});
+                        set(gcf,'Name',cat(2,fig_names,' subj %1.0f',is));
                         axes('Position',[0.50,0.05,0.01,0.01]); %for text
                         text(0,0,fig_names{ifig},'Interpreter','none');
                         axis off;
