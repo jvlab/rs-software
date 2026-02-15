@@ -39,8 +39,10 @@ if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian no
 if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
 %
-if ~exist('if_plots') if_plots=1; end %set to 0 to suppress plots
+if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
+%
+if ~exist('if_disp_geofit') if_disp_geofit=0; end
 %
 if (if_frozen~=0) 
     rng('default');
@@ -292,7 +294,7 @@ for ip=1:length(paradigm_names)
     paradigm_name=paradigm_names{ip};
     sim=sims.(paradigm_name);
     %
-    if if_plots
+    if if_disp_coordsets
         figure;
         set(gcf,'Position',[100 100 1400 800]);
         set(gcf,'NumberTitle','off');
@@ -320,7 +322,7 @@ for ip=1:length(paradigm_names)
         end
         %adjust metadata
         xformspace.sets{1}.dim_list=[1:ncoords_tot];
-        if if_plots
+        if if_disp_coordsets
             aux_stimdisp.opts_disp.set_labels=cat(2,'stims ',transform_name);
             aux_stimdisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
             %
@@ -335,6 +337,7 @@ for ip=1:length(paradigm_names)
                 aux_stimdisp.opts_disp.data_label_list=find(~contains(sim.stimspace.sas{1}.typenames,' ')); %label only the on-axis points (off-axis point names all have blanks)
                 sim.xformspace_disp_auxout.(transform_name)=rs_disp_coordsets(xformspace,aux_stimdisp);
             end
+            drawnow;
         end
         sim.xformspace.(transform_name)=xformspace;
     end %it: transforms
@@ -378,7 +381,7 @@ for ip=1:length(paradigm_names)
         sim.dataspace.(transform_name)=dataspace;
         %plot
         aux_datadisp=struct;
-        if if_plots
+        if if_disp_coordsets
             for is_ptr=1:length(subjs_disp)
                 is=subjs_disp(is_ptr);
                 aux_datadisp.opts_disp=sim.xformspace_disp_auxout.(transform_name).opts_disp; %starting point for plot is how the transforms were plotted
@@ -396,6 +399,7 @@ for ip=1:length(paradigm_names)
                 else
                     sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_coordsets(dataspace,aux_datadisp);
                 end
+                drawnow;
              end %is
          end
          disp(sprintf('dataspace created for paradigm %20s and transform %s',paradigm_name,transform_name));
@@ -517,7 +521,6 @@ end
 if ~exist('opts_dgeo') opts_dgeo=struct; end
 aux_dgeo=struct;
 aux_dgeo.opts_dgeo=opts_dgeo;
-if ~exist('if_disp_geofit') if_disp_geofit=0; end
 if ~exist('transforms_fit_show') transforms_fit_show=transform_names; end
 if ~exist('paradigms_fit_show') paradigms_fit_show=paradigms_all; end
 if ~exist('subjs_fit_show') subjs_fit_show=[1:nsubjs]; end
