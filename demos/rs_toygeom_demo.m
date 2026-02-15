@@ -497,16 +497,9 @@ opts_geof=filldefault(opts_geof,'if_fit_summary',0);
 aux_geof=struct;
 aux_geof.opts_geof=opts_geof;
 %
-if ~exist('if_disp_geofit') if_disp_geofit=0; end
-if ~exist('opts_dgeo') opts_dgeo=struct; end
-aux_dgeo=struct;
-aux_dgeo.opts_dgeo=opts_dgeo;
 %
 gfs=cell(ntransforms,length(paradigms_all));
 aux_geof_out=cell(ntransforms,length(paradigms_all));
-if ~exist('transforms_fit_show') transforms_fit_show=transform_names; end
-if ~exist('paradigms_fit_show') paradigms_fit_show=paradigms_all; end
-if ~exist('subjs_fit_show') subjs_fit_show=[1:nsubjs]; end
 for it=1:ntransforms
     transform_name=transform_names{it};
     disp(' ');
@@ -516,7 +509,23 @@ for it=1:ntransforms
         data_in=sims.(paradigm_name).stimspace;
         data_out=sims.(paradigm_name).dataspace.(transform_name);
         [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
-        if (if_disp_geofit)
+    end
+end
+%
+%display
+%
+if ~exist('opts_dgeo') opts_dgeo=struct; end
+aux_dgeo=struct;
+aux_dgeo.opts_dgeo=opts_dgeo;
+if ~exist('if_disp_geofit') if_disp_geofit=0; end
+if ~exist('transforms_fit_show') transforms_fit_show=transform_names; end
+if ~exist('paradigms_fit_show') paradigms_fit_show=paradigms_all; end
+if ~exist('subjs_fit_show') subjs_fit_show=[1:nsubjs]; end
+if (if_disp_geofit)
+    for it=1:ntransforms
+        transform_name=transform_names{it};
+        for ip=1:length(paradigms_all)
+            paradigm_name=paradigms_all{ip};
             for is=1:nsubjs
                 if ~isempty(strmatch(transform_name,transforms_fit_show,'exact'))  & ~isempty(strmatch(paradigm_name,paradigms_fit_show,'exact')) & ismember(is,subjs_fit_show)
                     aux_dgeo_out=rs_disp_geofit(gfs{it,ip}{is}.gf,aux_dgeo);
@@ -532,9 +541,8 @@ for it=1:ntransforms
                         text(0,0,sprintf('transform: %s, paradigm %s, subj %1.0f',transform_name,paradigm_name,is),'Interpreter','none');
                         axis off;
                     end 
-                end
+                end %select
             end %subject
-        end %if_disp_geofit
-    end
-end
-
+        end %paradigm name
+    end %transform
+end %if_disp_geofit

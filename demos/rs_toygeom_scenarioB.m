@@ -17,6 +17,4 @@ opts_geof.nshuffs=20;
 % opts_geof=filldefault(opts_geof,'if_log',0);
 % opts_geof=filldefault(opts_geof,'if_fit_summary',0);
 if_disp_geofit=1;
-paradigms_fit_show={'Axes'};
-subjs_fit_show=2;
 rs_toygeom_demo;
