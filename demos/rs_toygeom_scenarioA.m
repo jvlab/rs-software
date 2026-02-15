@@ -17,5 +17,5 @@ opts_geof.nshuffs=10;
 % opts_geof=filldefault(opts_geof,'if_fit_summary',0);
 if_disp_geofit=1;
 paradigms_fit_show={'Axes'};
-subjects_fit_show=2;
+subjs_fit_show=2;
 rs_toygeom_demo;
