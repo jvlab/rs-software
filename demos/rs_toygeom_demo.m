@@ -39,6 +39,8 @@ if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian no
 if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
 %
+if ~exist('noise_mult_subj') noise_mult_subj=[1:nsubjs]; end % each subject has progressively more noise
+%
 if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 %
@@ -134,7 +136,7 @@ disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoor
 %define the number of subjects and levels of noise for each
 %
 noise_transform=noise_transform_mag*[0:nsubjs-1]/nsubjs; %sugbjects have increasing amounts of noise
-noise_add_base=noise_add_mag*[1 2]; %subjects alternate in amount of additive noise
+noise_add_base=noise_add_mag*noise_mult_subj; %subjects alternate in amount of additive noise
 noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
 %
 %create the transformations for each subject by corrupting the parameters of the basic transforms by noise
