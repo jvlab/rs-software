@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=6;
+ntests=7;
 %
 test_descs=cell(1,ntests);
 coords=cell(1,ntests);
@@ -60,6 +60,10 @@ auxs{6}=auxs{2};
 coords{6}=coords{2};
 auxs{6}.opts_import=rmfield(auxs{6}.opts_import,'type_coords');
 auxs{6}.opts_import.type_coords_def='eye';
+%
+test_descs{7}='test with array input';
+auxs{7}=auxs{2};
+coords{7}=coords{2}{end};
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

@@ -2,8 +2,9 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports a set of coordinates
 % into a data structure for use by the rs package
 %
-% coords: a cell array of coordinates
-%   coords{1,id} should be either empty, or an array of size [nstims id],
+% coords: an array of size [nstims dmax] of coordinates or, a cell array coords{1,dmax}
+%   If an array, then each subarray coords(:,1:id) is taken as the coordinate set for a model of dimension id
+%   If a cell array, then coords{1,id} should be either empty, or an array of size [nstims id],for each dimension for which there is a model
 %
 % aux:
 %  aux.opts_import: a structure with fields
@@ -75,14 +76,23 @@ aux_out.warn_bad=0;
 %
 set_fields_xfr={'type','paradigm_type','paradigm_name','subj_id','subj_id_short','extra','label_long','label'};
 %
-ds=coords;
 dim_list=[];
-for k=1:length(coords)
-    if ~isempty(coords{k})
+if iscell(coords)
+    coords_use=coords;
+else
+    nds=size(coords,2);
+    coords_use=cell(1,nds);
+    for id=1:nds
+        coords_use{id}=coords(:,[1:id]);
+    end
+end
+ds=coords_use;
+for k=1:length(coords_use)
+    if ~isempty(coords_use{k})
         if aux.opts_import.nstims==0
-            aux.opts_import.nstims=size(coords{k},1);
+            aux.opts_import.nstims=size(coords_use{k},1);
         end
-        dim_list=[dim_list,size(coords{k},2)];
+        dim_list=[dim_list,size(coords_use{k},2)];
     end
 end
 nstims=aux.opts_import.nstims;
