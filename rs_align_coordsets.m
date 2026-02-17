@@ -149,7 +149,7 @@ if aux_out.warn_bad==0
     for iset=1:nsets
         [rays,wmsg,opts_rays_used]=rs_findrays(sas_align{iset},sets_align{iset}.label,aux.opts_rays);
         if ~isempty(wmsg)
-            aux_out=rs_warning(wmsg,0,aux_out);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
         end
         aux_out.opts_rays{iset}=opts_rays_used;
         aux_out.rayss{iset}=rays;

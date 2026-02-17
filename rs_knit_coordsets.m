@@ -9,7 +9,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % aux.opts_knit:
-%  if_log: 1 to log progress
+%  if_log: 1 to log progress (default=1)+-
 %  allow_reflection: 1 to allow reflection (default=1)
 %  allow_offset: 1 to allow offset (default=1) 
 %  allow_scale: 1 to allow scale, (default=0)
@@ -346,7 +346,7 @@ if aux_out.warn_bad==0
     %find rays
     [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
     if ~isempty(wmsg)
-        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
     end
     %
     %dim list and pipeline for component sets
