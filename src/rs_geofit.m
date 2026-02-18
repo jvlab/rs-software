@@ -23,7 +23,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    'pwaffine'                   : piecwise affine with one cutplane; two linear transformations with agreement on the cut
 %    'pwaffine_2'                 : piecwise affine with two cutplanes: four linear transformations, with agreement on the cuts
 %     Note: if empty, this is requested interactively.
-%  model_list_default: models when model_list is not specified, can modify in rs_aux_defaults_define
+%  model_list_default: models when model_list is not specified.  {'procrustes_scale_offset','affine_offset','projective'} but can modify in rs_aux_defaults_define
 %  dimpairs_method: pairs of dimensions considered between input and ouptut datasets
 %    'all': all pairings up to min(available dimensions, dim_max_[in|out]
 %    'equal': input dimension= output dimension (default)
