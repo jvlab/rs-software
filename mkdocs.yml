@@ -1,0 +1,27 @@
+site_name: "Representational spaces"
+
+theme:
+  name: material
+
+plugins:
+- search
+- autorefs
+- mkdocstrings:
+    default_handler: matlab
+    handlers:
+        python:
+            paths: [src]
+            options:
+              docstring_section_style: list
+        matlab:
+            paths: [src] 
+            paths_recursive: true 
+            options:
+                docstring_section_style: list
+    
+    
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Modules: modules.md
+  - List of functions: list-functions.md
