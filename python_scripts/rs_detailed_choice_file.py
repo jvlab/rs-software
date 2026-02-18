@@ -40,52 +40,50 @@ def parse_click_sequence(row):
 
 def generate_comparisons(reference, clicks, trial_num):
     """
-   Enumerate all pairwise triadic distance comparisons for one trial
-   based on the observed click order of stimuli relative to a reference.
+    Enumerate all pairwise triadic distance comparisons for one trial
+    based on the observed click order of stimuli relative to a reference.
 
-   Given a reference stimulus and an ordered list of non-reference stimuli
-   clicked during a trial, this function generates all (n choose 2) pairwise
-   comparisons between stimulus pairs (s_i, s_j), each expressed as a
-   triadic comparison of the form:
+    Given a reference stimulus and an ordered list of non-reference stimuli
+    clicked during a trial, this function generates all (n choose 2) pairwise
+    comparisons between stimulus pairs (s_i, s_j), each expressed as a
+    triadic comparison of the form:
 
        D(reference, s2) > D(reference, s4)
 
-   For each unordered pair {s_i, s_j}:
-     consider their relative order in the click sequence to determine the
-     behavioral judgment, then log the comparison using a consistent
-     ordering of stimulus labels (s2, s4). If the logged order differs from
-     the click order, the judgment is flipped accordingly.
+    For each unordered pair {s_i, s_j}:
+    consider their relative order in the click sequence to determine the behavioral judgment,
+    then log the comparison using a consistent ordering of stimulus labels (s2, s4). If the
+    logged order differs from the click order, the judgment is flipped accordingly.
 
-   Each generated comparison dictionary contains:
+    Each generated comparison dictionary contains:
      - 'trial'    : the trial index for this comparison
      - 's1', 's3' : the reference stimulus (appears in both pairs)
      - 's2', 's4' : the non-reference stimuli defining the comparison
      - 'operator': the comparison operator ('>')
      - 'judgment': a binary indicator encoding the outcome of the comparison
 
-   Parameters
-   ----------
-   reference : str
-       Label of the reference stimulus for the trial.
+    Parameters
+    ----------
+    reference : str
+        Label of the reference stimulus for the trial.
 
-   clicks : list of str
-       Ordered list of non-reference stimulus labels, in the order they were
-       clicked during the trial.
+    clicks : list of str
+        Ordered list of non-reference stimulus labels, in the order they were clicked during the trial.
 
-   trial_num : int
-       Trial index to assign to all generated comparisons.
+    trial_num : int
+        Trial index to assign to all generated comparisons.
 
-   Returns
-   -------
-   comparisons : list of dict
-       A list of comparison dictionaries, one for each unordered stimulus
-       pair, representing all triadic distance judgments for the trial.
+    Returns
+    -------
+    comparisons : list of dict
+        A list of comparison dictionaries, one for each unordered stimulus pair, representing
+        all triadic distance judgments for the trial.
 
-   Notes
-   -----
-   - The number of generated comparisons is "n choose 2", where n = number of comparison stimuli.
-   - Each unordered stimulus pair appears exactly once per trial.
-   - Canonicalization of comparison keys and stimulus ID remapping are handled by downstream processing steps.
+    Notes
+    -----
+     - The number of generated comparisons is "n choose 2", where n = number of comparison stimuli.
+      - Each unordered stimulus pair appears exactly once per trial.
+      - Canonicalization of comparison keys and stimulus ID remapping are handled by downstream processing steps.
     """
     comparisons = []
     for i in range(len(clicks)):
@@ -205,12 +203,24 @@ def standardize_comparison_keys(comparisons, comparison_type='triadic'):
     on alphabetical order of the non-ref elements.
     example - for pairs (k, l), (c, k) -> s1=k, s2=c, s3=k, s4=l
 
-    N/A here:
-    Tetradic comparisons: The first pair is the one with the first element alphabetically. Within pairs, order
+    Parameters:
+    -----------
+    comparisons : list of dictionaries
+        a list of comparisons and judgments with the following keys: s1, s2, s3, s4 and judgment
+    comparison_type : str
+        'triadic' by default and the only type implemented as of 02/17/2026
+
+    Returns:
+    --------
+    comparisons : list of dictionaries
+        the same list of comparisons with the fieldnames put into a standardized order.
+
+    Notes:
+    -------
+    Tetradic comparisons are not yet implemented.
+    Here, the first pair is the one with the first element alphabetically. Within pairs, order
     of elements again depends on alphabetical order.
     example - for pairs (k, l), (h, w) -> s1=h, s2=w, s3=k, s4=l
-    @param: comparisons list [dict]
-    @return: comparisons list[dict]
     """
     if comparison_type == 'tetradic':
         for i in range(len(comparisons)):

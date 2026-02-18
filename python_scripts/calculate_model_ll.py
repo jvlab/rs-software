@@ -1,7 +1,7 @@
 import pandas as pd
 
-from analysis.model_fitting.pairwise_likelihood_analysis import log_likelihood_of_choice_probs
-from analysis.util import read_out_median_bias, bias_dict
+from pairwise_likelihood_analysis import log_likelihood_of_choice_probs
+from util import read_out_median_bias, bias_dict
 
 DATA_DIR = '/Users/suniyya/Dropbox/Research/Thesis_Work/Psychophysics_Aim1/geometric-modeling/euclidean'
 

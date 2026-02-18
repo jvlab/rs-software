@@ -6,7 +6,7 @@ import os
 import numpy as np
 from scipy.io import savemat
 
-import rs_detailed_choice_file as rs_dcf
+from python_scripts import rs_detailed_choice_file as rs_dcf
 
 
 if __name__ == '__main__':
