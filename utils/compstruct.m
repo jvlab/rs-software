@@ -29,6 +29,7 @@ function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
 %
 %  13Apr21: edit made to fix bug in comparenum when inputs have different dimensions
 %  26Dec25: edit made to avoid errors if grpahics objects are being compared
+%  06Feb26: edit made to avoid errors if cell arrays are empty and have different dimensions
 
 ifdif=[];
 if nargin<4;
@@ -121,39 +122,49 @@ return;
 
 function ifdif=comparecell(parent1,x1,parent2,x2,tol,fid);    %function to compare cell arrays
 ifdif=[];
-if any((size(x1)==size(x2))==0);                              %check to see if lengths of x1 and x2 are not the same
+%conditional added by JV 06Feb26
+if length(size(x1)) ~=length(size(x2))
+    uneq=1;
     txt=['size(' parent1 ') ~= size(' parent2 ')'];
     if (fid~=1)
        fprintf(fid,[txt '\n']);
     end
     ifdif=strvcat(ifdif,txt);
-else ~any((size(x1)==size(x2))==0);                           %if x1 and x2 have the same length 
-	for i=1:prod(size(x1));                                 %loop through the elements of x1 and x2
-        if strcmp(class(x1{i}),class(x2{i}));           %if the classes of the elements x1 and x2 are the same
-           if isstruct(x1{i});                          %if the elements of x1 and x2 are the structs
-               tmp1=sprintf('%s{%i}',parent1,i);
-               tmp2=sprintf('%s{%i}',parent2,i);
-               txt=comparestruct(tmp1,x1{i},tmp2,x2{i},tol,fid);    %send the element of x1 and x2 to function comparestruct
-            	ifdif=strvcat(ifdif,txt);   
-            elseif iscell(x1{i});                        %if the elements of x1 and x2 are the cell arrays
-               tmp1=sprintf('%s{%i}',parent1,i);
-               tmp2=sprintf('%s{%i}',parent2,i);
-               txt=comparecell(tmp1,x1{i},tmp2,x2{i},tol,fid);      %send the element of x1 and x2 to function comparecell
-            	ifdif=strvcat(ifdif,txt);   
-           else                                         %if the elements of x1 and x2 are numerics, strings, logicals, or chars
-               tmp1=sprintf('%s{%i}',parent1,i);
-               tmp2=sprintf('%s{%i}',parent2,i);
-               txt=comparenum(tmp1,x1{i},tmp2,x2{i},tol,fid);       %send the element of x1 and x2 to function comparenum
-            	ifdif=strvcat(ifdif,txt);   
+else
+    if any((size(x1)==size(x2))==0);                              %check to see if lengths of x1 and x2 are not the same
+        txt=['size(' parent1 ') ~= size(' parent2 ')'];
+        if (fid~=1)
+           fprintf(fid,[txt '\n']);
+        end
+        ifdif=strvcat(ifdif,txt);
+    else ~any((size(x1)==size(x2))==0);                           %if x1 and x2 have the same length 
+	    for i=1:prod(size(x1));                                 %loop through the elements of x1 and x2
+            if strcmp(class(x1{i}),class(x2{i}));           %if the classes of the elements x1 and x2 are the same
+               if isstruct(x1{i});                          %if the elements of x1 and x2 are the structs
+                   tmp1=sprintf('%s{%i}',parent1,i);
+                   tmp2=sprintf('%s{%i}',parent2,i);
+                   txt=comparestruct(tmp1,x1{i},tmp2,x2{i},tol,fid);    %send the element of x1 and x2 to function comparestruct
+            	    ifdif=strvcat(ifdif,txt);   
+                elseif iscell(x1{i});                        %if the elements of x1 and x2 are the cell arrays
+                   tmp1=sprintf('%s{%i}',parent1,i);
+                   tmp2=sprintf('%s{%i}',parent2,i);
+                   txt=comparecell(tmp1,x1{i},tmp2,x2{i},tol,fid);      %send the element of x1 and x2 to function comparecell
+            	    ifdif=strvcat(ifdif,txt);   
+               else                                         %if the elements of x1 and x2 are numerics, strings, logicals, or chars
+                   tmp1=sprintf('%s{%i}',parent1,i);
+                   tmp2=sprintf('%s{%i}',parent2,i);
+                   txt=comparenum(tmp1,x1{i},tmp2,x2{i},tol,fid);       %send the element of x1 and x2 to function comparenum
+            	    ifdif=strvcat(ifdif,txt);   
+               end;
+           elseif ~strcmp(class(x1{i}),class(x2{i}));       %if the classes of the elements x1 and x2 are not the same
+               txt=['Classes are different: ' parent1 ' is a ' class(x1) ' , and ' parent2 ' is a ' class(x2) ];
+               if (fid~=1)
+                   fprintf(fid,[txt '\n']);
+    		      end
+    		      ifdif=strvcat(ifdif,txt);
            end;
-       elseif ~strcmp(class(x1{i}),class(x2{i}));       %if the classes of the elements x1 and x2 are not the same
-           txt=['Classes are different: ' parent1 ' is a ' class(x1) ' , and ' parent2 ' is a ' class(x2) ];
-           if (fid~=1)
-               fprintf(fid,[txt '\n']);
-    		  end
-    		  ifdif=strvcat(ifdif,txt);
-       end;
-	end;
+	    end;
+    end;
 end;
 return;
 

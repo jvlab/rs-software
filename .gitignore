@@ -1,5 +1,12 @@
 __pycache__
 ./*/__pycache__
 .DS_Store
-.idea
 ./python_scripts/.idea
+.idea
+tests
+svd_issue
+benchmarks/*.zip
+junk*.*
+*.ppt*
+*.doc*
+*.asv

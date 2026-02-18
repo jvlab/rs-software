@@ -14,8 +14,9 @@
 %  custom labeling of datasets based on subject ID
 %  connecting corresponding points between plots
 %  selection of data points to label based on length of stimulus name
+% also illustrates rs_concat_coordsets
 %
-%  See also:  RS_DISP_COORDSETS, RS_DISP_COORDSETS_DEMO2, RS_DISP_COORDSETS_DEMO3.
+%  See also:  RS_DISP_COORDSETS, RS_CONCAT_COORDSETS, RS_DISP_COORDSETS_TEST1, RS_DISP_COORDSETS_TEST2, RS_DISP_COORDSETS_TEST3.
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nsets=length(filenames);
@@ -90,11 +91,10 @@ opts_disp_cons.fig_name='consensus';
 opts_disp_cons.set_select=[1:nsets+1];
 opts_disp_cons.axis_label_prefix='cons dim';
 opts_disp_cons.data_label_list=data_label_list_consensus;
+%
 %concatenate the comnponent data and the consensus
-data_cons=aux_knit.components;
-data_cons.ds{nsets+1}=data_consensus.ds{1};
-data_cons.sas{nsets+1}=data_consensus.sas{1};
-data_cons.sets{nsets+1}=data_consensus.sets{1};
+data_cons=rs_concat_coordsets(aux_knit.components,data_consensus);
+%
 opts_disp_cons.set_labels{nsets+1}='consensus';
 opts_disp_cons.connect_sets_method='star_last';
 for k=1:nsets

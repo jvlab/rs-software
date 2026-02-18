@@ -78,7 +78,7 @@ for iset=1:nsets
     end
     dim_list_each{iset}=max(1,round(dim_list_each{iset}));
     if any(diff(dim_list_each{iset})<=0)
-        wmsg=sprintf('dimension list for set %3.0f have unique values',iset);
+        wmsg=sprintf('dimension list for set %3.0f has non-unique values',iset);
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     dim_list_each{iset}=unique(dim_list_each{iset});

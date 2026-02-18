@@ -20,8 +20,7 @@
 %
 %  Note: when using data from components, rays also need to be taken from components (as is done here)
 %
-%  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, RS_DISP_COORDSETS_DEMO, RS_DISP_COORDSETS_DEMO3,
-%   PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
+%  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
 %
 filename_paradigms{1}={... 
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 

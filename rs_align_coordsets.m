@@ -15,16 +15,16 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % aux.opts_align.min: minimum number of datasets that must contain a stimulus, in order for the stimulus to be included
 %   default is 1 (legacy behavior: all stimuli used), can also be 'any'; 
 %   'all': stimuli must be present in all datasets to be kept
-% aux.opts_align.if_btc_specoords_remake:  this usually can be ignored or set to [].
+% aux.opts_align.if_type_coords_remake:  this usually can be ignored or set to [].
 %   Setting to 0 forces a merging of the stimulus coordinates, this is
-%     appropriate if the stimuli have meaningful a priori coordinates in the setup file, and then in btc_specoords
-%     (e.g., binary textures, faces)
+%     appropriate if the stimuli have meaningful a priori coordinates from a setup file in btc_specoords  (e.g., binary textures, faces)
+%     or imported into type_coords
 %   Setting to 1 forces btc_specoords of the aligned data to be remade as unique rows of an identity matrix
 %     this is appropriate if the stimuli do NOT have meaningful a priori coordinates in the setup file,
 %     and then in sa.btc_specoords (e.g, animals)
 %   An empty entry (default) determines the behavior from the coordinates of the component datasets: 
 %     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
-%   The behavior used is reported in aux_out.opts_align.if_btc_specoords_remake
+%   The behavior used is reported in aux_out.opts_align.if_type_coords_remake
 % aux.opts_align.if_btcremz: set to 1 (default) to simplify augmented coordinates
 % aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
@@ -57,6 +57,7 @@ aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_rays',struct);
+aux=filldefault(aux,'opts_import',struct); %%alignment needs to know how to set up type_coords if none are supplied
 %
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 %
@@ -141,13 +142,14 @@ if aux_out.warn_bad==0
     if aux.opts_align.if_log
         disp(sprintf('proceeding with alignment of %3.0f datasets, paradigm type %s, stimuli must be present in %s',nsets,paradigm_type,min_string));
     end
+    %alignment needs to know how to set up type_coords if none are supplied
     [sets_align,ds_align,sas_align,ovlp_array,sa_pooled,opts_align_used]=...
-        psg_align_coordsets(data_in.sets,data_in.ds,data_in.sas,aux.opts_align);
+        psg_align_coordsets(data_in.sets,data_in.ds,data_in.sas,setfield(aux.opts_align,'type_coords_def',aux.opts_import.type_coords_def));
     %
     for iset=1:nsets
         [rays,wmsg,opts_rays_used]=rs_findrays(sas_align{iset},sets_align{iset}.label,aux.opts_rays);
         if ~isempty(wmsg)
-            aux_out=rs_warning(wmsg,0,aux_out);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
         end
         aux_out.opts_rays{iset}=opts_rays_used;
         aux_out.rayss{iset}=rays;

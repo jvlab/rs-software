@@ -1,16 +1,18 @@
 % rs_xform_coordsets_demo: demonstrate specification and application of simple linear transformations
 %
-%****also try out generic transformations and buff up documentation in rs_xform_apply
-%
 % plot options illustrated:
 %  choice of dimension and coordinates to plot
 %  several plots into same figure
 %  custom arrangement of subplots
 %  custom colors for data points
 %  custom marker sizes for points
+%  custom symbol choice
+%  custom symbol fills
+%  custom alpha blending
 %  custom axis labels
 %  custom axis ranges
 %  custom labeling of datasets based on subject ID and paradigm name
+%  callouts for stimulus label
 %  selection of data points to label based on length of stimulus name
 %  custom choice of data points to connect between sets
 %  custom line style and color for connections between sets
@@ -44,9 +46,10 @@ aux_knit_pc.opts_knit.if_pca=1; %turn on pca rotation
 %rotate to consensus and pc rotation
 [data_consensus_pc,aux_knit_pc]=rs_knit_coordsets(data_align,aux_knit_pc);
 %
-set_labels=cell(1,nsets);
+set_labels=cell(1,2*nsets); %plot two original datasets and two transformed datasets
 for iset=1:nsets
     set_labels{iset}=cat(2,data_read.sets{iset}.subj_id,': ',data_read.sets{iset}.paradigm_name);
+    set_labels{nsets+iset}=cat(2,'transformed ',set_labels{iset});
 end
 %label the stimuli with short names
 label_maxlength=5; %max length of a stimulus label
@@ -60,13 +63,14 @@ end
 %
 dlist=[2 3]; %dimensions to show
 nds=length(dlist);
-data_start={'raw','raw','consensus','consensus','consensus_pc'};
+data_start={'raw','raw','raw','consensus','consensus','consensus','consensus','consensus_pc'};
 nxforms=length(data_start);
 aux_outs=cell(2,nds,nxforms); %d1: init or transformed, d2: dimension, d3: which transform
 %
 xform=cell(1,nxforms);
 aux_spec_outs=cell(1,nxforms);
 aux_xform_outs=cell(1,nxforms);
+data_xform=cell(1,nxforms);
 %
 for ixform=1:nxforms
     switch data_start{ixform}
@@ -82,29 +86,65 @@ for ixform=1:nxforms
     end
     opts_xform=struct;
     switch ixform
-        case 1
+        case 1 %specify linear transformations by hand for dims 2 and 3
+            opts_xform.mode=[];
+            xform{ixform}.pipeline=[];
+            ts=cell(1,3);
+            ts{2}.b=0.9;
+            ts{2}.T=[cos(0.1) sin(0.1);-sin(0.1) cos(0.1)];
+            ts{2}.c=[-.2 -.3];
+            ts{3}.b=0.7;
+            ts{3}.T=[cos(0.1) sin(0.1) 0;-sin(0.1) cos(0.1) 0;0 0 1.2]; %rotate on coords 1 and 2, magnify on coord 3
+            ts{3}.c=[-.2 -.3 .5];
+            xform{ixform}.ts{1}=ts;
+            desc='rotate in dims 1 and 2, dliate dim 3';
+        case 2
             opts_xform.mode='translate';
             opts_xform.source='global';
             opts_xform.centering_specifier='value';
             opts_xform.centering_value=0.5*[1:10];
-        otherwise
+        case 3
             opts_xform.mode='translate';
+            opts_xform.source='local';
+            opts_xform.centering_specifier='typename';
+            opts_xform.centering_typename='ant';
+        case 4
+            opts_xform.mode='offset_pca';
+            opts_xform.source='local';
+            opts_xform.centering_specifier='none';
+            opts_xform.centering_typename='snake'; %just for labeling, ignored in specification of transformation
+        case 5
+            opts_xform.mode='offset_pca';
+            opts_xform.source='local';
+            opts_xform.centering_specifier='typename';
+            opts_xform.centering_typename='snake';
+        case 6
+            opts_xform.mode='offset_pca';
             opts_xform.source='global';
-            opts_xform.centering_specifier='value';
-            opts_xform.centering_value=-0.5*[1:10];
+            opts_xform.centering_specifier='typename';
+            opts_xform.centering_typename='snake';
+        case {7,8}
+            opts_xform.mode='translate_then_pca';
+            opts_xform.source='global';
+            opts_xform.centering_specifier='typename';
+            opts_xform.centering_typename='snake';
     end
     %specify the transformation
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
-    [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
+    if isempty(xform{ixform})
+        [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
+        desc=sprintf('mode: %s (%s), centering specified by %s',opts_xform.mode,opts_xform.source,opts_xform.centering_specifier);
+        if isfield(opts_xform,'centering_typename')
+            desc=cat(2,desc,sprintf(' (%s)',opts_xform.centering_typename));
+        end
+    end
     %do the transformations
-    [data_xform,aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
+    [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
     %plot: top row is untransformed data, dims 2 and 3; bottom row is transfornmed data
     hfig=figure;
-    haxes=cell(2,nds);
-    for ix=1:2
-        for id=1:nds
-            haxes{ix,id}=subplot(2,nds,id+(ix-1)*nds);
-        end
+    haxes=cell(1,nds);
+    for id=1:nds
+        haxes{1,id}=subplot(1,nds,id);
     end
     opts_disp_init=struct;
     opts_disp_init.fig_handle=hfig;
@@ -112,11 +152,18 @@ for ixform=1:nxforms
     opts_disp_init.axis_label_prefix=axis_label_prefix;
     opts_disp_init.set_labels=set_labels;
     opts_disp_init.set_colors={'r',[0 0.6 0.1]'};
-    opts_disp_init.set_markersizes=12;
+    opts_disp_init.set_markers={'o'};
+    opts_disp_init.set_filled=[1 1 0 0]; %transformed sets are unfilled
+    opts_disp_init.set_alphas=[0.3 0.3 1 1]; %untransformed sets are alpha-blended
+    opts_disp_init.set_markersizes=6;
     opts_disp_init.data_label_method='list';
-    opts_disp_init.data_label_list=data_label_list;
+    if strcmp(opts_xform.mode,'offset_pca') | strcmp(opts_xform.mode,'translate_then_pca') %just label the stimlus used for offset, and one more stimulus
+        opts_disp_init.data_label_list=[1,strmatch(opts_xform.centering_typename,data_align.sas{1}.typenames,'exact')];
+    else
+        opts_disp_init.data_label_list=data_label_list;
+    end
     opts_disp_init.data_label_font_size=7;
-    opts_disp_init.callout_amount=0.5;
+    opts_disp_init.callout_amount=0.2;
     opts_disp_init.connect_sets_data_method='labeled';
     opts_disp_init.connect_sets_linestyles={':'};
     opts_disp_init.connect_sets_color_mode='list';
@@ -124,154 +171,30 @@ for ixform=1:nxforms
     %
     if strcmp(data_start{ixform},'raw')
         opts_disp_init.data_label_setsel_method='all';
-        opts_disp_init.connect_sets_method='none';
+        opts_disp_init.connect_sets_method='list';
+        opts_disp_init.connect_sets_list=[1 3;2 4]; %connect each dataset with its transform
         opts_disp_init.axis_range='tight';
     else
-        opts_disp_init.data_label_setsel_method='first';
-        opts_disp_init.connect_sets_method='all';
+        opts_disp_init.data_label_setsel_method='list';
+        opts_disp_init.data_label_setsel_list=[1 2];
+        opts_disp_init.connect_sets_method='list';
+        opts_disp_init.connect_sets_list=[1 2;1 3;2 4]; %connect the two raw datasets to eachother and each one to its transform
         opts_disp_init.axis_range='list';
         opts_disp_init.axis_range_list=[-10 10;-7 7;-5 5]; %fixed scales to make transforms easier to see
-
     end
+    data_disp=struct;
+    data_disp.ds=[data_use.ds,data_xform{ixform}.ds];
+    data_disp.sas=[data_use.sas,data_xform{ixform}.sas];
+    data_disp.sets=[data_use.sets,data_xform{ixform}.sets];
     for id=1:nds
         opts_disp_init.axis_handles=haxes(1,id);
         opts_disp_init.dim_select=dlist(id);
-        aux_outs{1,id,ixform}=rs_disp_coordsets(data_use,setfield(struct,'opts_disp',opts_disp_init));
+        aux_outs{1,id,ixform}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp_init));
     end
-    %
-    opts_disp_xform=opts_disp_init;
-    opts_disp_xform.if_legend=0; %don't need a legend
-    for id=1:nds
-        opts_disp_xform.axis_handles=haxes(2,id);
-        opts_disp_xform.dim_select=dlist(id);
-        aux_outs{2,id,ixform}=rs_disp_coordsets(data_xform,setfield(struct,'opts_disp',opts_disp_xform));
-    end
+    axes('Position',[0.01,0.03,0.01,0.01]);
+    text(0,0,desc,'Interpreter','none');
+    axis off
+    axes('Position',[0.01,0.06,0.01,0.01]);
+    text(0,0,xform_name,'Interpreter','none');
+    axis off
 end %ixform
-
-% 
-% test_descs=cell(1,ntests);
-% filenames_examples=cell(1,ntests);
-% auxs=cell(1,ntests);
-% signflips=cell(1,ntests);
-% ignore=cell(nsubmodules,ntests);
-% data_reads=cell(1,ntests);
-% aux_ins=cell(1,ntests);
-% xforms=cell(1,ntests);
-% aux_outs=cell(nsubmodules,ntests);
-% auxs=cell(1,ntests);
-% data_outs=cell(1,ntests);
-% %
-% test_descs{1}='three binary texture coordinate files, second file is a model, no centering';
-% filenames_examples{1}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
-% aux_ins{1}=struct;
-% aux_ins{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{[1 2],1,1});
-% aux_ins{1}.nsets=3;
-% auxs{1}=struct;
-% signflips{1}={{'data_read','ds'},{'data_out','ds'}};
-% %
-% test_descs{2}='four animal-domain files, centering by typename, global, translate';
-% filenames_examples{2}={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
-% aux_ins{2}=struct;
-% aux_ins{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
-% aux_ins{2}.nsets=4;
-% auxs{2}=struct;
-% auxs{2}.opts_xform.mode='translate';
-% auxs{2}.opts_xform.source='global';
-% auxs{2}.opts_xform.centering_specifier='typename';
-% auxs{2}.opts_xform.centering_typename='ant';
-% %
-% test_descs{3}='four animal-domain files, centering by typename, local, translate';
-% filenames_examples{3}=filenames_examples{2};
-% aux_ins{3}=aux_ins{2};
-% auxs{3}=struct;
-% auxs{3}.opts_xform.mode='translate';
-% auxs{3}.opts_xform.source='local';
-% auxs{3}.opts_xform.centering_specifier='typename';
-% auxs{3}.opts_xform.centering_typename='ant';
-% %
-% test_descs{4}='four animal-domain files, centering by centroid, source = set 2, translate';
-% filenames_examples{4}=filenames_examples{2};
-% aux_ins{4}=aux_ins{2};
-% auxs{4}=struct;
-% auxs{4}.opts_xform.mode='translate';
-% auxs{4}.opts_xform.source=2;
-% auxs{4}.opts_xform.centering_specifier='centroid';
-% %
-% test_descs{5}='four animal-domain files, centering by fixed value, translate';
-% filenames_examples{5}=filenames_examples{2};
-% aux_ins{5}=aux_ins{2};
-% auxs{5}=struct;
-% auxs{5}.opts_xform.mode='translate';
-% auxs{5}.opts_xform.source='global';
-% auxs{5}.opts_xform.centering_specifier='value';
-% auxs{5}.opts_xform.centering_value=0.1*[1:10];
-% %
-% test_descs{6}='four animal-domain files, centering by index, global, offset_pca';
-% filenames_examples{6}=filenames_examples{2};
-% aux_ins{6}=aux_ins{2};
-% auxs{6}=struct;
-% auxs{6}.opts_xform.mode='offset_pca';
-% auxs{6}.opts_xform.source='global';
-% auxs{6}.opts_xform.centering_specifier='index';
-% auxs{6}.opts_xform.centering_index=17;
-% if if_ignore_svdambig
-%     ignore{1,6}={{'xform_out','ts'}};
-%     ignore{2,6}={{'xform_out','ts'},{'data_out','ds'}};
-% end
-% %
-% test_descs{7}='four animal-domain files, centering by index, global, translate_then_pca';
-% filenames_examples{7}=filenames_examples{2};
-% aux_ins{7}=aux_ins{2};
-% auxs{7}=struct;
-% auxs{7}.opts_xform.mode='translate_then_pca';
-% auxs{7}.opts_xform.source='local';
-% auxs{7}.opts_xform.centering_specifier='index';
-% auxs{7}.opts_xform.centering_index=17;
-% if if_ignore_svdambig
-%     ignore{1,7}={{'xform_out','ts'}};
-%     ignore{2,7}={{'xform_out','ts'},{'data_out','ds'}};
-% end
-% %
-% test_descs{8}='three binary texture coordinate files, no models, centering by typename, local, translate_then_pca';
-% filenames_examples{8}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
-% aux_ins{8}=struct;
-% aux_ins{8}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
-% aux_ins{8}.nsets=3;
-% auxs{8}=struct;
-% auxs{8}.opts_xform.mode='translate_then_pca';
-% auxs{8}.opts_xform.source='local';
-% auxs{8}.opts_xform.centering_specifier='typename';
-% auxs{8}.opts_xform.centering_typname='bp0600';
-% if if_ignore_svdambig
-%     ignore{1,8}={{'xform_out','ts'}};
-%     ignore{2,8}={{'xform_out','ts'},{'data_out','ds'}};
-% end
-% %
-% fns=cell(nsubmodules,ntests);
-% ifdif=cell(nsubmodules,ntests);
-% for itest=1:ntests
-%     if ((aux_ins{itest}.opts_read.if_auto==1) | (if_auto_skip==0))
-%         aux_ins{itest}.opts_read.if_log=0;
-%         [data_reads{itest},aux_reads{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
-%         %
-%         %xform_specify
-%         [xforms{itest},aux_outs{1,itest}]=rs_xform_specify(data_reads{itest},auxs{itest});
-%         %
-%         fns{1,itest}=sprintf('rs_%s_test_%1.0f',rs_submodules{1},itest);
-%         s=struct;
-%         s.data_read=data_reads{itest};
-%         s.aux_out=aux_outs{1,itest};
-%         s.xform_out=xforms{itest};
-%         rs_save_mat(cat(2,'tests',filesep,fns{1,itest}),s);
-%         %
-%         %xform_apply
-%         [data_outs{itest},aux_outs{2,itest}]=rs_xform_apply(data_reads{itest},xforms{itest},struct());
-%         %
-%         fns{2,itest}=sprintf('rs_%s_test_%1.0f',rs_submodules{2},itest);
-%         s=struct;
-%         s.data_out=data_outs{itest};
-%         s.aux_out=aux_outs{2,itest};
-%         s.xform_out=xforms{itest};
-%         rs_save_mat(cat(2,'tests',filesep,fns{2,itest}),s);
-%     end
-% end

@@ -1,29 +1,31 @@
 function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
-% with partially overlapping stimuli
-% data_in.sas{k}.typenames is used to establish stimulus identity
+% All datasets must list the same stimuli, and in the same order (as identified) by data_in.sas{k}.typenames
+% but data can be absent, as indicated by NaN entries in data_in.ds{k}{idim}
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These are typically created by rs_align_coordsets, but could also be directly from 
-%   rs_get_coordsets or rs_read_coorddata if stimuli are identical across
-%   datasets, as listed in data_in.sas{k}.typenames
+%   These are typically created by rs_align_coordsets, but could also be directly from
+%   rs_get_coordsets or rs_read_coorddata if stimuli are identical across datasets, as listed in data_in.sas{k}.typenames
 % The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % aux.opts_knit:
-%  if_log: 1 to log progress
+%  if_log: 1 to log progress (default=1)+-
 %  allow_reflection: 1 to allow reflection (default=1)
 %  allow_offset: 1 to allow offset (default=1) 
 %  allow_scale: 1 to allow scale, (default=0)
 %  if_normscale: 1 to normalize consensus to size of data (default=0)
 %  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
-%  if_stats: 1 to do statistics via shuffling labels (0 is default)
+%  if_stats: 1 to do statistics of variance explained (0 is default)
 %  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
+%     Note that to just compute statistics of variance explained, without shuffles, set if_stats=1, nshuffs=0.
 %  if_plot: 1 to plot statistics, defaults to if_stats
+%  shuff_quantiles: quantiles to plot, defaults to [0.01 0.05 0.5 0.95 0.99];
 %  dim_max_in: maximum dimension of the component set to use, defaults to max available across all datasets
 %  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
 %  dim_aug: number of dimensions to augment by, defaults to 0
 %  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
+%  knit_stats, knit_stats setup:  only include to replot.  
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -37,40 +39,53 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out: auxiliary outputs and parameter values used
-%    opts_knit: overall options used
+%    warnings: warnings generated in creating arguments for psg_get_coordsets
+%    warn_bad: count of warnings that prevent further processing
+%    opts_knit: aux.opts_knit, as used
+%    opts_rays: options used for finding rays in the kniited set
 %    opts_pcon{id}: options used in Procrustes alignment for model dimension id
 %    coords_havedata: [stims x sets] is 1 where data are present.
 %       Note that this may differ from aux_out.ovlp_array in rs_align_coordsets,
 %       in that if an input file lists a stimulus but the response is NaN, then
 %       it will appear as present in rs_align_coordsets output aux_out.ovlp_array,
 %       but as absent in rs_knit_coordsets.aux_out.coords_havedata
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
-%   rayss{1}: ray structure for knitted datasets
-%   components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
+%    rayss{1}: ray structure for knitted datasets
+%    components.ds{k},sas{k},sets{k},rayss{k}: % coordinates and dataset descriptors of individual dataseets, after rotation/translation to alignment
 %       coordinates will be NaN if not present
-%   details: details of the convergence towards knitting
-%   knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
+%    knit_stats: statistics of knitting, and the transformations used from the component sets data_in.ds{iset} to consensus data_out.ds{1}
 %       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
 %          If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
 %       The transformation in knit_stats.ts{ip}{iset} is the transformation from the component set to the consensus
 %       This does *not* take into account the further rotation of the consensus carried out if if_pca=1.
 %       For this, see aux_out.ts_pca{ip}{iset} 
 %       See the ra field of psg_[knit|align]_stats for details on statistics
-%   knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
-%   if if_plot=1 (default if nshuffs>0) figure will be plotted by psg_knit_stats_plot(knit_stats,knit_stats_setup), 
-%     but also knit_stats_setup can be customized by setting 
-%         knit_stats_setup.dataset_labels
-%         knit_stats_setup.stimulus_labels
-%         knit_stats_setup.shuff_quantiles
-%   knit_stats_fig: handle to figure, if stats are plotted
-%   ts_pca{ip}{iset}: (present only if if_pca=1) transformation from components to consensus, taking into account final pca if if_pca=1
+%    knit_stats_setup: statistics parameters, extracted from input, to be used for plotting
+%       if if_plot=1 (default if if_stats=1) figure will be plotted.
+%    fig_handle: handle to figure (present only if stats are plotted)
+%    details: details of the convergence towards knitting (present only if aux.opts_knit.keepd_details=1)
+%    ts_pca{ip}{iset}: transformation from components to consensus, taking into account final pca if if_pca=1 (present only if if_pca=1) 
 %
-%  06Nov25: modularize consistency checking into RS_CHECK_COORDSETS
+% This can also be used to replot a previous calculation, with greater customization. To do this:
+%   data_in should be equal to that used in the previous calculation.
+%   aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation.
+%   aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
+%   the previous calculation, with the following possible modifications:
+%   In this mode, no further calculations are done, and data_out will be empty, and aux_out.fig_handle will be the figure handle.
+%     but also aux.knit_stats_setup can be customized by setting the following fields
+%         knit_stats_setup.dataset_labels, as a cell array (defaults to data_in.sets{:}.label)
+%         knit_stats_setup.stimulus_labels, as a cell array (defaults to the typenames of the aligned datasets)
+%         knit_stats_setup.shuff_quantiles, as a vector (defaults to[0.01 0.05 0.5 0.95 0.99]);
+%         knit_stats_setup.fig_handle: figure handle to plot into
+%         knit_stats_setup.nrows: number of rows in the figure
+%         knit_stats_setup.row: row to plot into
+%             Note: rows should be plotted in order, as plotting final row triggers an equalization of the color scale
+%
+%  06Nov25: modularize consistency checking into rs_check_coordsets
+%  06Feb26: add mode for just plotting
 %
 %  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS.
+%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %
 if (nargin<=1)
     aux=struct;
@@ -96,6 +111,7 @@ if aux.opts_knit.if_stats
 else
     aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',0);
 end
+aux.opts_knit=filldefault(aux.opts_knit,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -118,6 +134,18 @@ check=rs_check_coordsets(data_in,aux.opts_check);
 %
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
+%
+% replot mode
+%
+if isfield(aux,'knit_stats') & isfield(aux,'knit_stats_setup')
+    knit_stats_setup_use=aux.knit_stats_setup;
+    if isfield(knit_stats_setup_use,'fig_handle') %psg_knit_stats_plot expects figure handle in figh
+        knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle;
+    end
+    aux_out.fig_handle=psg_knit_stats_plot(aux.knit_stats,knit_stats_setup_use);
+    return
+end
+%
 nsets=check.nsets;
 nstims_each=check.nstims_each;
 dim_list_each=check.dim_list_each;
@@ -126,6 +154,12 @@ dim_list_inter=check.dim_list_inter;
 typenames_each=check.typenames_each;
 typenames_union=check.typenames_union;
 typenames_inter=check.typenames_inter;
+%
+if min(nstims_each)~=max(nstims_each)
+    disp('cannot proceed');
+    disp(aux_out.warnings);
+    return
+end
 %
 %inspect input data to see where data are missing
 %note that a NaN can indicate that stimulus was present and response
@@ -150,7 +184,7 @@ if any(all(coords_isnan,2))
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
-%if aux.sa_pooled is present, use it, otherwise, re=create
+%if aux.sa_pooled is present, use it, otherwise, re create
 if (isfield(aux,'sa_pooled') & isfield(aux,'data_align'))
     if (aux.opts_knit.if_log)
         disp('sa_pooled and data_align are supplied.');
@@ -231,7 +265,7 @@ if aux_out.warn_bad==0
         end
     end
     ds_knitted=ra.ds_knitted;
-    ds_components=ra.ds_components(:);
+    ds_components=ra.ds_components;
     opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
     details=details'; %make a column for consistency
     %
@@ -274,12 +308,17 @@ if aux_out.warn_bad==0
         end
         knit_stats_setup.stimulus_labels=typenames_all;
         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;
+        knit_stats_setup.shuff_quantiles=aux.opts_knit.shuff_quantiles;
         knit_stats_setup.nstims=nstims_all;
         %
         aux_out.knit_stats=ra;
         aux_out.knit_stats_setup=knit_stats_setup;
         if aux.opts_knit.if_plot
-            aux_out.knit_stats_fig=psg_knit_stats_plot(aux_out.knit_stats,aux_out.knit_stats_setup);
+            knit_stats_setup_use=aux_out.knit_stats_setup;
+            if isfield(knit_stats_setup_use,'fig_handle')
+                knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle; %psg_knit_stats_plot expects figure handle in figh
+            end
+            aux_out.fig_handle=psg_knit_stats_plot(aux_out.knit_stats,knit_stats_setup_use);
         end
     end
     sas_knitted=sa_pooled;
@@ -307,7 +346,7 @@ if aux_out.warn_bad==0
     %find rays
     [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
     if ~isempty(wmsg)
-        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
     end
     %
     %dim list and pipeline for component sets

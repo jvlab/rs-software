@@ -1,8 +1,8 @@
 % rs_knit_coordsets_demo: demonstrate knitting across datasets with partially overlapping stimuli
-% calculation of statistics, with and without scaling
-% plotting two sets of stats on same figure, tweaking stimulus names
+% calculates statistics, without and with scaling allowed between datasets
+% plots both sets of stats on same figure , adjusting dataset and stimulus names
 %
-%  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS
+%  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
 %
 verbosity=getinp('pipeline display verbosity','d',[0 2],0);
 if_write=getinp('1 to write the knitted sets','d',[0 1]);
@@ -122,31 +122,47 @@ if nshuffs>0
     aux_stats.opts_knit.nshuffs=nshuffs;
     aux_stats.opts_knit.if_plot=0; %plot locally
     %
-    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats); %compute stats
+    %knit and compute stats without allowing scaling between sets
     %
-    knit_stats=aux_knit_stats.knit_stats;
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats);
+    %
+    %knit and compute stats, allow scaling between sets;
+    aux_allowscale_stats=aux_stats;
+    aux_allowscale_stats.opts_knit.allow_scale=1;
+    aux_allowscale_stats.opts_knit.if_normscale=1;
+    [data_knit_allowscale_stats,aux_knit_allowscale_stats]=rs_knit_coordsets(data_align,aux_allowscale_stats);
+    %
+    %make a combined plot
+    %
+    fig_handle=figure;
+    set(gcf,'Position',[100 100 1400 750]);
+    set(gcf,'NumberTitle','off');
     knit_stats_setup=aux_knit_stats.knit_stats_setup;
-    knit_stats_setup.dataset_labels=paradigm_names;
-%    strrep(knit_stats_setup.dataset_labels,'samples/bwtextures/',''); %shorten dataset labels
     for k=1:length(knit_stats_setup.stimulus_labels) %thin stimulus labels
         if mod(k,3)~=1
             knit_stats_setup.stimulus_labels{k}='';
         end
     end
-    knit_stats_setup.nrows=2; %reserve two rows
-    knit_stats_setup.row=1; %plot in row 1
-    figh_stats=psg_knit_stats_plot(knit_stats,knit_stats_setup);
+    %plot non-rescaled analysis
+    aux_stats_replot=aux_stats;
     %
-    aux_allowscale_stats=aux_stats;
-    aux_allowscale_stats.opts_knit.allow_scale=1;
-    aux_allowscale_stats.opts_knit.if_normscale=1;
+    aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
     %
-    [data_knit_allowscale_stats,aux_knit_allowscale_stats]=rs_knit_coordsets(data_align,aux_allowscale_stats);
+    aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
+    aux_stats_replot.knit_stats_setup.fig_handle=fig_handle;
+    aux_stats_replot.knit_stats_setup.dataset_labels=paradigm_names;
+    aux_stats_replot.knit_stats_setup.stimulus_labels=knit_stats_setup.stimulus_labels;
+    aux_stats_replot.knit_stats_setup.nrows=2;
+    aux_stats_replot.knit_stats_setup.row=1;
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_replot);
+    %plot rescaled analysis
+    aux_stats_allowscale_replot=aux_stats_replot;
     %
-    knit_allowscale_stats=aux_knit_allowscale_stats.knit_stats;
-    knit_stats_setup.row=2;
-    knit_stats_setup.figh=figh_stats;
-    psg_knit_stats_plot(knit_allowscale_stats,knit_stats_setup); %plot allowscale stats in second row
+    aux_stats_allowscale_replot.knit_stats=aux_knit_allowscale_stats.knit_stats;
+    %
+    aux_stats_allowscale_replot.knit_stats_setup.row=2;
+    %
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_allowscale_replot);
 end %nshuffs
 %
 %write datasets if requested

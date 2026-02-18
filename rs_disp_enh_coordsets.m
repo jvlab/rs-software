@@ -6,28 +6,29 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 % aux.opts_disp_enh: controls which enhanced features are added to plots
 %   if_points: 1 (default) to display each data point
 %   if_rays:   1 (default) to display rays, set to zero if rays is not present or empty
-%   if_rings:  1 to display rings (default: 0), , set to zero if rays is not present or empty
+%   if_rings:  1 to display rings (default: 0), set to zero if rays is not present or empty
 %   if_nbrs:   1 (default) to connect nearest-neighbors
 %   if_nbrs_nosameray: 1 (default) to suppress nearest-neighbor connections 
 %      if both points are on the same ray, or next to origin, and rays are displayed
 %
 % aux.opts_disp: these fields are starting points for customization for enhanced plots
 %  fields not specified are passed through to rs_disp_coordsets
-%                                  points     rays       rings    neighbors
-%    data_show_method:             'all'     'list'      'list'     'list' 
+%                                  points     rays        rings    neighbors
+%    data_show_method:             'all' *    'list'     'list'     'list' 
 %    data_label_method:            'none'*   'last'      'none'*    'none'*
 %    data_connect_method:                    'list'      'list'*    'list'
-%    connect_data_linestyles       'none'*  '--' or '-'#    ':'*     '-'*
-%    set_markers                             'x' or '+'#            'none'
+%    connect_data_linestyles       'none'* '--' or '-'#    ': '*    '-'*
+%    set_markers                                @  '      none'*    'none'*
 %    set_tags                                 'rays'     'rings'    'nbrs'
 %    callout_amount                            0.5*
-%    set_colors                              per ray
+%    set_colors                              per ray@
 %    callout_colors                          per ray*
 %   *: an explicitly supplied value in aux.opts_disp is NOT overridden
-%   #:line style and set markers depends on whether the ray is negative or positive
+%   #:line style depends on whether the ray is negative or positive
+%   @:set marker determined by rs_typenames2colors
 % 
-% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors, in psg_typenames2colors
-%    usually empty
+% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors and symbols, can be empty,
+%    see rs_typenames2colors for details
 % 
 % rays: a standard ray structure, containing metadata for rays and rings
 %
@@ -42,8 +43,9 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %
 % Notes:
 %   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
+%   If if_rays=1 and if_points=0, legend is the ray label.  Otherwise legend is set label.
 %
-%   See also: RS_DISP_COORDSETS, PSG_TYPENAMES2COLORS.
+%   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS.
 %
 if (nargin<=2)
     rays=[];
@@ -59,13 +61,15 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
 %
-if isempty(rays)
+aux.opts_tn2c.paradigm_type=data_in.sets{1}.paradigm_type; %so that rs_typenames2colors knows the paradigm
+%
+if isempty(rays) | isempty(fieldnames(rays))
     aux.opts_disp_enh.if_rays=0;
     aux.opts_disp_enh.if_rings=0;
     aux.opts_disp_enh.if_nbrs=0;
 end
 %
-if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
+if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
     %customize standard plot options for rays
     opts_disp_rays=aux.opts_disp;
     opts_disp_rays.data_show_method='list';
@@ -91,18 +95,18 @@ if aux.opts_disp_enh.if_rays %plot points along each ra,y, in designated colors
                 bidir_sorted=mb_sorted(:,2); %sorted in ascending order of magnitude
                 opts_disp_rays.data_show_list=[orig_ptr bidir_sorted']; %add origin to the beginning
                 %
-                [rgb,symb,vecs,opts_used]=psg_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),aux.opts_tn2c); %get standard colors and symbols
+                %[rgb,symb,vecs,opts_used]=psg_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),aux.opts_tn2c); %get standard colors and symbols
+                [rgb,symb]=rs_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),setfield(struct(),'opts_tn2c',aux.opts_tn2c));
                 opts_disp_rays.set_colors{1}=rgb;
                 if ~if_callout_colors_supplied
                     opts_disp_rays.callout_colors{1}=rgb;
                 end               
+                opts_disp_rays.set_markers=symb;
                 switch isign
                     case 1
                         opts_disp_rays.connect_data_linestyles='-';
-                        opts_disp_rays.set_markers='+';
                     case -1
                         opts_disp_rays.connect_data_linestyles='--';
-                        opts_disp_rays.set_markers='x';
                 end
                 %
                 if isign==-1 | iray<rays.nrays
@@ -125,7 +129,7 @@ end
 if aux.opts_disp_enh.if_points %plot individual points?
     %customize standard plot options for points
     opts_disp_points=aux.opts_disp;
-    opts_disp_points.data_show_method='all';
+    opts_disp_points=filldefault(opts_disp_points,'data_show_method','all');
     opts_disp_points=filldefault(opts_disp_points,'data_label_method','none');
     opts_disp_points=filldefault(opts_disp_points,'connect_data_linestyles','-');
     %
@@ -139,6 +143,7 @@ if aux.opts_disp_enh.if_rings %connect rings
     opts_disp_rings=aux.opts_disp;
     opts_disp_rings.data_show_method='list';
     opts_disp_rings.connect_data_method='list';
+    opts_disp_rings=filldefault(opts_disp_rings,'set_markers','none');
     opts_disp_rings=filldefault(opts_disp_rings,'data_label_method','none');
     opts_disp_rings=filldefault(opts_disp_rings,'connect_data_linestyles',':');
     opts_disp_rings.set_tags='rings'; %to identify for legend
@@ -173,6 +178,7 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
         opts_disp_nbrs=aux.opts_disp;
         opts_disp_nbrs.data_show_method='list';
         opts_disp_nbrs.connect_data_method='list';
+        opts_disp_nbrs=filldefault(opts_disp_nbrs,'set_markers','none');
         opts_disp_nbrs=filldefault(opts_disp_nbrs,'data_label_method','none');
         opts_disp_nbrs=filldefault(opts_disp_nbrs,'connect_data_linestyles','-');
         opts_disp_nbrs.set_tags='nbrs'; %so that this will not be in legend
