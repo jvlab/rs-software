@@ -33,7 +33,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
 %  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
 %  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
-%  if_stats: 1 to enable statistics (0 is default; will override if_nestbymodel and if_nestbydim)
+%  if_stats: 1 to enable statistics (default; if set to 0, this will will override if_nestbymodel and if_nestbydim)
 %  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
 %  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
 %  if_nestbydim: +/-1 to do statistics for nesting by dimension within input dataset, 0 to omit
