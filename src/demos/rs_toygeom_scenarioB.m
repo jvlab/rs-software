@@ -1,6 +1,6 @@
 % rs_toygeom_scenarioB.m
 %sets up a scenario for rs_toygeom_demo: rings have inadequate number of dimensions
-%scenario_namme='scenario B';
+%scenario_name='scenario B';
 ncoords=4;
 paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23'}; 
 transform_names={'affine'};
