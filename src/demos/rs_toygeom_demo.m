@@ -33,8 +33,8 @@ if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear 
 %
 if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
 if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
-if ~exist('noise_transform_mag') noise_transform_mag=0.1; end %range of Gaussian jitter for each subject's transformation 
-if ~exist('noise_add_mag') noise_add_mag=0.1; end %range of additive Gaussian noise for each subject
+if ~exist('noise_transform_mag') noise_transform_mag=1; end %range of Gaussian jitter for each subject's transformation 
+if ~exist('noise_add_mag') noise_add_mag=1.0; end %range of additive Gaussian noise for each subject
 %
 if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
@@ -44,6 +44,7 @@ if ~exist('noise_mult_subj') noise_mult_subj=[1:nsubjs]; end % each subject has 
 if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 %
+if ~exist('if_knit') if_knit=0; end
 if ~exist('if_disp_geofit') if_disp_geofit=0; end
 %
 if (if_frozen~=0) 
@@ -409,83 +410,85 @@ for ip=1:length(paradigm_names)
     sims.(paradigm_name)=sim;
 end
 %
-%align and knit the stimuli across paradigms
+%optinally align and knit the stimuli across paradigms
 %
-check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
-sims.knitted=struct;
-aux_align=struct;
-aux_align.opts_align.if_log=0;
-aux_knit=struct;
-aux_knit.opts_knit.if_log=0;
-%
-disp(' ');
-for ip=1:length(paradigm_names)
-    paradigm_name=paradigm_names{ip};
-    stim_data=sims.(paradigm_name).stimspace;
-    if ip==1
-        concat=stim_data;
-    else
-        concat=rs_concat_coordsets(concat,stim_data,check_nowarn);
-    end
-end
-disp('aligning stimuli across paradigms');
-aligned=rs_align_coordsets(concat,aux_align);
-disp('knitting data across paradigms');
-knitted=rs_knit_coordsets(aligned,aux_knit);
-sims.knitted.stimspace=knitted;
-%
-%for each transformation, align and knit the transformed space across paradigms
-%
-sims.knitted.xformspace=struct();
-for it=1:ntransforms
-    transform_name=transform_names{it};
+if if_knit
+    check_nowarn=setfield(struct,'opts_check',setfield(struct,'if_warn',0));
+    sims.knitted=struct;
+    aux_align=struct;
+    aux_align.opts_align.if_log=0;
+    aux_knit=struct;
+    aux_knit.opts_knit.if_log=0;
+    %
+    disp(' ');
     for ip=1:length(paradigm_names)
         paradigm_name=paradigm_names{ip};
-        xform_data=sims.(paradigm_name).xformspace.(transform_name);
+        stim_data=sims.(paradigm_name).stimspace;
         if ip==1
-            concat=xform_data;
+            concat=stim_data;
         else
-            concat=rs_concat_coordsets(concat,xform_data,check_nowarn);
+            concat=rs_concat_coordsets(concat,stim_data,check_nowarn);
         end
     end
-    disp(' ');
-    disp(sprintf('aligning transform %s across paradigms',transform_name))
+    disp('aligning stimuli across paradigms');
     aligned=rs_align_coordsets(concat,aux_align);
-    disp(sprintf('knitting data from transform %s across paradigms',transform_name))
+    disp('knitting data across paradigms');
     knitted=rs_knit_coordsets(aligned,aux_knit);
-    sims.knitted.xformspace.(transform_name)=knitted;
-end
-%
-%for each transformation and subject, align and knit the data across paradigms
-%
-sims.knitted.dataspace=struct();
-for it=1:ntransforms
-    transform_name=transform_names{it};
-    concat_knitted=struct;
-    for is=1:nsubjs
-        concat=struct;
+    sims.knitted.stimspace=knitted;
+    %
+    %for each transformation, align and knit the transformed space across paradigms
+    %
+    sims.knitted.xformspace=struct();
+    for it=1:ntransforms
+        transform_name=transform_names{it};
         for ip=1:length(paradigm_names)
             paradigm_name=paradigm_names{ip};
-            subj_data=rs_extract_coordsets(sims.(paradigm_name).dataspace.(transform_name),is); %extract this subject's data
+            xform_data=sims.(paradigm_name).xformspace.(transform_name);
             if ip==1
-                concat=subj_data;
+                concat=xform_data;
             else
-                concat=rs_concat_coordsets(concat,subj_data,check_nowarn);
+                concat=rs_concat_coordsets(concat,xform_data,check_nowarn);
             end
         end
         disp(' ');
-        disp(sprintf('aligning data from subject %1.0f, transform %s, across paradigms',is,transform_name))
+        disp(sprintf('aligning transform %s across paradigms',transform_name))
         aligned=rs_align_coordsets(concat,aux_align);
-        disp(sprintf('knitting data from subject %1.0f, transform %s, into a single dataset',is,transform_name))
+        disp(sprintf('knitting data from transform %s across paradigms',transform_name))
         knitted=rs_knit_coordsets(aligned,aux_knit);
-        if is==1
-            concat_knitted=knitted;
-        else
-            concat_knitted=rs_concat_coordsets(concat_knitted,knitted);
-        end
+        sims.knitted.xformspace.(transform_name)=knitted;
     end
-    sims.knitted.dataspace.(transform_name)=concat_knitted;
-end
+    %
+    %for each transformation and subject, align and knit the data across paradigms
+    %
+    sims.knitted.dataspace=struct();
+    for it=1:ntransforms
+        transform_name=transform_names{it};
+        concat_knitted=struct;
+        for is=1:nsubjs
+            concat=struct;
+            for ip=1:length(paradigm_names)
+                paradigm_name=paradigm_names{ip};
+                subj_data=rs_extract_coordsets(sims.(paradigm_name).dataspace.(transform_name),is); %extract this subject's data
+                if ip==1
+                    concat=subj_data;
+                else
+                    concat=rs_concat_coordsets(concat,subj_data,check_nowarn);
+                end
+            end
+            disp(' ');
+            disp(sprintf('aligning data from subject %1.0f, transform %s, across paradigms',is,transform_name))
+            aligned=rs_align_coordsets(concat,aux_align);
+            disp(sprintf('knitting data from subject %1.0f, transform %s, into a single dataset',is,transform_name))
+            knitted=rs_knit_coordsets(aligned,aux_knit);
+            if is==1
+                concat_knitted=knitted;
+            else
+                concat_knitted=rs_concat_coordsets(concat_knitted,knitted);
+            end
+        end
+        sims.knitted.dataspace.(transform_name)=concat_knitted;
+    end
+end %if_knit
 %
 %fit models to transformation between stimulus space and data space
 %

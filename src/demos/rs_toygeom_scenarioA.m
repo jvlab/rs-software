@@ -3,10 +3,10 @@
 scenario_name='scenario A';
 paradigm_names={'Axes'}; 
 transform_names={'affine','projective'};
-nsubjs=2;
+nsubjs=3;
 opts_geof=struct;
 opts_geof.nshuffs=10;
-%these are the main custoomizable params
+%these are the main customizable params
 % opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset','projective','pwaffine'});
 % opts_geof=filldefault(opts_geof,'dimpairs_method','all');
 % opts_geof=filldefault(opts_geof,'if_stats',1);
