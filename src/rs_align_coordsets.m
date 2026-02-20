@@ -2,12 +2,14 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % [data_out,aux_out]=rs_align_coordsets(data_in,aux): align coordinate datasets with partially overlapping stimuli
 % data_in.sas{k}.typenames is used to establish stimulus identity
 % 
-% for each entry in data_in, there is an entry in data_out, listed in alphabetical order (evenif no alignment is needed)
+% For each stimulus in any of the data_in, there is a stimulus in data_out.
+% Stimulus identity is determined by thpenames
+% Stimuli listed in alphabetical order, so there may be a reordering, even if no alignment is needed)
 % * this only aligns the datasets so that the stimuli are in identical order, it does not change the coordinates
 % * stimulus identity is determined by typenames
 % * coordinates for missing stimuli are NaN
-% * see rs_knit_coordsets for finding a consensus set of coordinates 
-% The 'type' field of data_in.sets{k} must agree, and is propagated to data_out.sets{1}
+% See rs_knit_coordsets for finding a consensus set of coordinates across data_in.ds{:}
+% The 'type' field of data_in.sets{:} must agree, and is propagated to data_out.sets{1}
 %
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returned by rs_get_coordsets or rs_read_coorddata
 %      sas{k}.typenames is a strvcat, and is used to determine stimulus identity
@@ -35,6 +37,8 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %       stimulus is present in dataset k, even if the response is NaN
 %    sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
 %       This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
+%       Note that if  a typename occurs in more than one of the data_in{:} files,
+%       then the entry in sa_pooled for this stimulus is taken from the first occurrence, without checking for conflicts.
 %    opts*: values used for opts_align, opts_rays
 %    warnings: warnings generated in creating arguments for psg_get_coordsets
 %    warn_bad: count of warnings that prevent further processing
