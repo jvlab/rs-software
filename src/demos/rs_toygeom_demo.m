@@ -25,21 +25,21 @@
 %
 %these are the main parameters that may be edited, or have values set before running
 %
-if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','RandomAndAxisEnds'}; end %some may be deleted
+if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
 if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
 %
-if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
-if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
-if ~exist('noise_transform_mag') noise_transform_mag=1; end %range of Gaussian jitter for each subject's transformation 
-if ~exist('noise_add_mag') noise_add_mag=1.0; end %range of additive Gaussian noise for each subject
-%
-if ~exist('nsubjs') nsubjs=4; end % number of subjects to simulate; at least 1; subjects have progressively more noise
+if ~exist('nsubjs') nsubjs=1; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
 %
-if ~exist('noise_mult_subj') noise_mult_subj=[1:nsubjs]; end % each subject has progressively more noise
+if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
+if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
+if ~exist('noise_transform_mag') noise_transform_mag=0.2; end %range of transformation noise
+if ~exist('noise_transform_subj') noise_transform_subj=[1:nsubjs]; end % multiplies noise_transform_ma to vary transform noise for each subject
+if ~exist('noise_add_mag') noise_add_mag=0.5; end %additive Gaussian noise
+if ~exist('noise_add_subj') noise_add_subj=[1:nsubjs]; end % mutliplies noise_add_mag to vary noise for each subject
 %
 if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
@@ -136,9 +136,10 @@ disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoor
 %
 %define the number of subjects and levels of noise for each
 %
-noise_transform=noise_transform_mag*[0:nsubjs-1]/nsubjs; %sugbjects have increasing amounts of noise
-noise_add_base=noise_add_mag*noise_mult_subj; %subjects alternate in amount of additive noise
-noise_add=noise_add_base(1+mod(0:nsubjs-1,2));
+noise_transform_base=noise_transform_mag*noise_transform_subj; %subjects have varying amounts of noise in transform
+noise_transform=noise_transform_base(1+mod([0:nsubjs-1],length(noise_transform_base))); %in case noise_transform_subj is too short
+noise_add_base=noise_add_mag*noise_add_subj; %subjects have varying amounts of additive noise
+noise_add=noise_add_base(1+mod([0:nsubjs-1],length(noise_add_base))); %in case noise_add_subj is too short
 %
 %create the transformations for each subject by corrupting the parameters of the basic transforms by noise
 %note that all transforms are treatd, even if they won't be used, since some transforms are dependent on others
@@ -216,18 +217,25 @@ for ip=1:length(paradigm_names)
             end
             sim.if_findrays=1;
             sim.if_rings=1;
-        case 'RandomAndAxisEnds'
-            sim.nstims=2*ncoords+nrandom+1; %bidirectional samples at the ends of the axes, random samples, and the origin
+        case {'Random','RandomAndAxisEnds'}
+            if strcmp(paradigm_name,'RandomAndAxisEnds')
+                if_axend=1;
+            else
+                if_axend=0;
+            end
+            sim.nstims=nrandom+if_axend*(2*ncoords+nrandom+1); %random samples and possibly (bidirectional samples at the ends of the axes and the origin)
             sim.type_coords=zeros(sim.nstims,ncoords);
             random_vals=[[-random_max:-1] [1:random_max]]; %random values avoid the axes;
             rand_samps=ceil(2*random_max*rand(nrandom,ncoords));
             sim.type_coords(1:nrandom,:)=random_vals(rand_samps);
-            %make the samples at the ends of the axes
-            coord_ptr=nrandom;
-            for ic=1:ncoords
-                for isign=-1:2:1
-                    coord_ptr=coord_ptr+1;
-                    sim.type_coords(coord_ptr,ic)=isign*axis_samples(end);
+            if if_axend
+                %make the samples at the ends of the axes
+                coord_ptr=nrandom;
+                for ic=1:ncoords
+                    for isign=-1:2:1
+                        coord_ptr=coord_ptr+1;
+                        sim.type_coords(coord_ptr,ic)=isign*axis_samples(end);
+                    end
                 end
             end
             sim.if_findrays=0;
@@ -495,7 +503,7 @@ end %if_knit
 paradigms_all=fieldnames(sims); %includes original paradigms and knitted
 if ~exist('opts_geof') opts_geof=struct; end
 aux_geof.opts_geof=struct;
-opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset','projective','pwaffine'});
+opts_geof=filldefault(opts_geof,'model_list',{'procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'});
 opts_geof=filldefault(opts_geof,'dimpairs_method','all');
 opts_geof=filldefault(opts_geof,'if_stats',1);
 opts_geof=filldefault(opts_geof,'nshuffs',20);
@@ -542,13 +550,21 @@ if (if_disp_geofit)
                     for ifig=1:length(fig_handles)
                         figure(fig_handles{ifig});
                         set(gcf,'Name',cat(2,fig_names{ifig},sprintf(' subj %1.0f',is),' ',transform_name,' ',paradigm_name));
+                        if exist('scenario_name')
+                            axes('Position',[0.80,0.05,0.01,0.01]); %for text
+                            text(0,0,scenario_name,'Interpreter','none');
+                            axis off;
+                        end
                         axes('Position',[0.50,0.05,0.01,0.01]); %for text
                         text(0,0,fig_names{ifig},'Interpreter','none');
                         axis off;
-                        axes('Position',[0.50,0.02,0.01,0.01]); %for text
-                        text(0,0,sprintf('transform: %s, paradigm %s, subj %1.0f',transform_name,paradigm_name,is),'Interpreter','none');
+                        axes('Position',[0.50,0.03,0.01,0.01]); %for text
+                        text(0,0,sprintf('transform: %s, paradigm %s',transform_name,paradigm_name),'Interpreter','none');
                         axis off;
-                    end 
+                        axes('Position',[0.50,0.01,0.01,0.01]);
+                        text(0,0,sprintf('subject %2.0f: transform noise %4.2f additive noise %4.2f',is,noise_transform(is),noise_add(is)));
+                        axis off;
+                   end 
                 end %select
             end %subject
         end %paradigm name

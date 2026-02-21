@@ -7,7 +7,7 @@ nsubjs=3;
 opts_geof=struct;
 opts_geof.nshuffs=10;
 %these are the main customizable params
-% opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset','projective','pwaffine'});
+% opts_geof=filldefault(opts_geof,'model_list',{procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'});
 % opts_geof=filldefault(opts_geof,'dimpairs_method','all');
 % opts_geof=filldefault(opts_geof,'if_stats',1);
 % opts_geof=filldefault(opts_geof,'nshuffs',20);
