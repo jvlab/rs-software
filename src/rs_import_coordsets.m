@@ -15,9 +15,9 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %             if omitted will be set to opts_import.typename_prefix followed by opts.typename_ndigits         
 %    *typename_prefix: string, defaults to 'type_'; prefix for auto-generated typenames
 %    *typename_ndigits: (integer) number of digits in auto-generated typenames
-%     type_coords: array of size [nstims *], conceptual coordinates, if omitted, will be set to empty([]), eye(nstims)
-%             or ones(nstims,1), depending on opts.type_coords_def
-%    *type_coords_def: 'none' (default),'eye,' or 'ones', determines how type_coords are filled if not provided
+%     type_coords: array of size [nstims *], conceptual coordinates, if omitted, will be set depending on opts.type_coords_def
+%        to [], eye(nstims), zeros(nstims,1), or ones(nstims,1), 
+%    *type_coords_def: 'none' (default),'eye,' or 'zeros', or 'ones', determines how type_coords are filled if not provided
 %        fields relevant to data_out.sets
 %    *type: text string, overall source, suggest 'data' (default) for originating in experimental data or 'model' for originating in a computational model
 %    *paradigm_type: string, overall category of experiment, defaults to 'unknown'
