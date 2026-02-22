@@ -36,14 +36,21 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  if_stats: 1 to enable statistics (default; if set to 0, this will will override if_nestbymodel and if_nestbydim)
 %  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
 %  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
-%  if_nestbydim: +/-1 to do statistics for nesting by dimension within input dataset, 0 to omit
-%    Use +1 if the input dataset is built up, one dimension at a time, and each successive dimension
-%      matches the lower-dimensional model except for the added dimension -- that is, data_in.ds{k}{idim}=data_in.ds{k}{idim-1}.
-%      This will always be the case if the input dataset is created by multidimensional scaling of the same distance matrix,
-%      or by principal components analysis of a data matrix.
-%      But it will not be the case in general, e.g., if the coordinates from each dimension are created by a consensus procedure.
-%    Use -1 if this is not the case. For testing each added dimension, PCA around the centroid will be performed prior to the nesting calculation
+%  if_nestbydim: +/-1 to also do statistics for nesting by dimension within each k-dimensional model of the adjusted dataset, or 0 (default) to omit
+%       i.e., whether the k dimensions of the k-dimensional model have greater explanatory power than the first m dimensions of that model.   
+%     Use +1 if, for each k-dimensional model, the lower m dimensions (m<k) should be considered as nested.
+%     Use -1 if PCA should be applied within each k-dimensional model, to ensure that the lower m dimensions (m<k)
+%        explain as much of the variance as possible.
+%     A choice of +1 is appropriate if each k-dimensional is created by MDS of a distance matrix, or by PCA of a response matrix,
+%       (though not necessarily the same distance matrix or response matrix for each k)
+%       It is also appropriate if for each k, data_in{:}{k} and data_in{:}{k-1} agree on the first k-1 dimensions
+%     A choice of -1 is appropriate if a k-dimensional model is an arbitrary rotation of a coordinate set.  By applying PCA
+%       to the k-dimensional model to obtain the coords for m<k, this ensures that it is tested against models that account for 
+%       as much as posible of the variance
+%     Note that to compare the explanatory power of the k-dimensional coords in data_in{:}{k} against the coordinates in a lower dimensional model, e.g., data_in{:}{m},
+%       then one should ensure that data_in{:}{k}(:,1:m)=data_in{:}{m} and use if_nestbydim=+1
 %    This option is only recommended if, whenever a model is fit for (din,dout), it is also fit for (din-1,dout). This is guaranteed for  dimpairs_method='all' or 'din_lteq_dout;
+%
 %  if_center: 1 (default) to center the data
 %  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
 %  if_fit_summary: 1 (default) to log summary of fitting
