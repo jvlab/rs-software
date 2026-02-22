@@ -1,29 +1,41 @@
 % rs_toygeom_demo: demonstrate geometric modeling with toy simulated datasets
 %
-% Creates several stimulus sets ('paradigm types'): three axes, rings, axis ends and random
-% The stimulus domain has ncoords coordinates, 'a','b','c',..., which can have values in [-9:9].
-% This is stimspace.
+% This illustrates fitting of geometric models via creation of simulated coordinate set structures. 
+% It is intended that several of the parameters, especially paradigm_names, transform_names, are edited, 
+% or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.
 %
-% Considers ntransforms transformations:  null, procrustes (rotation with inversion), affine (with offset)
-% Applies each of these to the coordinate sets.  This is xformspace.
+% Creates several stimulus sets in a space of ncoords dimensions, designated by the strings in paradigm_names
+%     Axes: points in positive and negative directions along each of he axes
+%     Rings_C12, Rings_C13, Rings_C23: concentric rings in planes (1,2), (1,3), and (2,3)
+%     Random: random points that avoid the axes
+%     RandomAndAxisEnds: random points and the endponts of Axes
+%   These coordinate set structures imported into sims.(paradigm_name).stimspace, using rs_import_coordsets.
 %
-% Sets up nsubjs subjects.  Each applies a jittered version of the transformations, and also adds noise,
-% and optionally adds extra dimensions (ncoords_noise) that are just noise. This is dataspace.
+% Constructs several transformations, designated by the strings in transform_names:
+%     null: the identity
+%     procrustes: rotation, no offset, inversion forced
+%     affine: affine (linear) transformation, no offset
+%     projective: projective transformation
+%     pwaffine: piecewise affine transformation with one cutplane
+% These, are applied to each of the above coordinate set structures using rs_xform_apply, creating the
+% coordinate set structures sims.(paradigm_name).xformspace.(transform_name), and displayed with rs_disp_coordsets or rs_disp_enh_coordsets.
 % 
-% Main data structures in sims.(paradigm_name)
+% Sets up nsubjs subjects.  For each subject, the parameters of the above transformations are jittered and applied to stimspace using rs_xform_apply,
+%     noise is added, and, optionally, extra dimensions (ncoords_noise) with just noise are added.  These are in sims.(paradigm_name).dataspace.(transform_name).
+%     and are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.%
 %
-% Key params can be configured by running rs_toygeom_scenario*.m first
-%
-% adjustable jitters for transforms and additive noise
-% maybe illustrate PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
-%
-% then create additional datasets that trnsform these, via piecewise affine or projective
-% then model them, show results of modeling statistics, show model fits
+% Optionally knits together the data for each transform across pardigms, creating the
+%    coordinate set structure sims.knitted.xformspace.(transform_name) and, for each subject, sims.knitted.dataspace.(transform_name)
+% 
+% The transformation from stimspace to dataspace are then fitted with geometric models with rs_geofit.
+%   The model list defaults to {procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'}),
+%   but can modified by setting opts.geof.model_names).
+% Results of the fitting are displayed with rs_disp_geofit.
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_GEOFIT,
 %  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS.
 %
-%these are the main parameters that may be edited, or have values set before running
+%these are the main simulation parameters that may be edited, or have values set before running
 %
 if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
 if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
@@ -46,6 +58,8 @@ if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, 
 %
 if ~exist('if_knit') if_knit=0; end
 if ~exist('if_disp_geofit') if_disp_geofit=0; end
+%
+if ~exist('model_list') model_list={'procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'}; end
 %
 if (if_frozen~=0) 
     rng('default');
@@ -502,8 +516,7 @@ end %if_knit
 %
 paradigms_all=fieldnames(sims); %includes original paradigms and knitted
 if ~exist('opts_geof') opts_geof=struct; end
-aux_geof.opts_geof=struct;
-opts_geof=filldefault(opts_geof,'model_list',{'procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'});
+opts_geof=filldefault(opts_geof,'model_list',model_list);
 opts_geof=filldefault(opts_geof,'dimpairs_method','all');
 opts_geof=filldefault(opts_geof,'if_stats',1);
 opts_geof=filldefault(opts_geof,'nshuffs',20);

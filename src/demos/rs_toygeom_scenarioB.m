@@ -9,7 +9,7 @@ nsubjs=1;
 if_knit=1;
 opts_geof=struct;
 opts_geof.nshuffs=20;
-opts_geof=filldefault(opts_geof,'model_list',{'procrustes_scale_offset','affine_offset'});
+model_list={'procrustes_scale_offset','affine_offset'};
 %these are the main customizable params
 % opts_geof=filldefault(opts_geof,'model_list',{procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'});
 % opts_geof=filldefault(opts_geof,'dimpairs_method','all');
