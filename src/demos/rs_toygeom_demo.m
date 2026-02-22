@@ -4,6 +4,13 @@
 % It is intended that several of the parameters, especially paradigm_names, transform_names, are edited, 
 % or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.
 %
+% Constructs several transformations, designated by the strings in transform_names:
+%     null: the identity
+%     procrustes: rotation, no offset, inversion forced
+%     affine: affine (linear) transformation, no offset
+%     projective: projective transformation
+%     pwaffine: piecewise affine transformation with one cutplane
+%
 % Creates several stimulus sets in a space of ncoords dimensions, designated by the strings in paradigm_names
 %     Axes: points in positive and negative directions along each of he axes
 %     Rings_C12, Rings_C13, Rings_C23: concentric rings in planes (1,2), (1,3), and (2,3)
@@ -11,25 +18,20 @@
 %     RandomAndAxisEnds: random points and the endponts of Axes
 %   These coordinate set structures imported into sims.(paradigm_name).stimspace, using rs_import_coordsets.
 %
-% Constructs several transformations, designated by the strings in transform_names:
-%     null: the identity
-%     procrustes: rotation, no offset, inversion forced
-%     affine: affine (linear) transformation, no offset
-%     projective: projective transformation
-%     pwaffine: piecewise affine transformation with one cutplane
-% These, are applied to each of the above coordinate set structures using rs_xform_apply, creating the
-% coordinate set structures sims.(paradigm_name).xformspace.(transform_name), and displayed with rs_disp_coordsets or rs_disp_enh_coordsets.
+% The transformations are applied to each of the coordinate set structures in stimspace, using rs_xform_apply, creating the
+% coordinate set structures sims.(paradigm_name).xformspace.(transform_name), which are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.
 % 
 % Sets up nsubjs subjects.  For each subject, the parameters of the above transformations are jittered and applied to stimspace using rs_xform_apply,
 %     noise is added, and, optionally, extra dimensions (ncoords_noise) with just noise are added.  These are in sims.(paradigm_name).dataspace.(transform_name).
-%     and are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.%
+%     and are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.
 %
 % Optionally knits together the data for each transform across pardigms, creating the
 %    coordinate set structure sims.knitted.xformspace.(transform_name) and, for each subject, sims.knitted.dataspace.(transform_name)
 % 
 % The transformation from stimspace to dataspace are then fitted with geometric models with rs_geofit.
-%   The model list defaults to {procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'}),
-%   but can modified by setting opts.geof.model_names).
+%   The model list defaults to {procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'})
+%    but can modified by changing model_list
+%
 % Results of the fitting are displayed with rs_disp_geofit.
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_GEOFIT,
@@ -37,11 +39,12 @@
 %
 %these are the main simulation parameters that may be edited, or have values set before running
 %
-if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
 if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
+%
+if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
 %
 if ~exist('nsubjs') nsubjs=1; end % number of subjects to simulate; at least 1; subjects have progressively more noise
 if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
@@ -172,7 +175,7 @@ for it=1:length(transform_names_avail)
             end
             transforms_noisy{is}.(transform_name).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
         end %fn
-        transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine contiunity
+        transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine continuity
         %adjustments for pwaffine to ensure continuity at boundary       
         if strcmp(transform_name,'pwaffine')
             pw_vcut=transforms_noisy{is}.pwaffine.vcut;
