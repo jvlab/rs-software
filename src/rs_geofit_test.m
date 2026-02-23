@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=5;
+ntests=6;
 %
 test_descs=cell(1,ntests);
 filenames_in=cell(1,ntests);
@@ -80,6 +80,16 @@ auxs{5}.opts_geof.if_nestbymodel=0;
 auxs{5}.opts_geof.if_nestbydim=1; %nest by dimension, not pca
 auxs{5}.opts_geof.dim_max_in=5;
 auxs{5}.opts_geof.nshuffs=3;
+%
+test_descs{6}='different stimulus names, just nest by dim, not pca, all dim pairs';
+filenames_in{6}=filenames_in{5};
+aux_ins{6}=aux_ins{5};
+filenames_out{6}=filenames_out{5};
+aux_outs{6}=aux_ins{5};
+auxs{6}=auxs{5};
+auxs{6}.opts_geof.dim_max_in=3;
+auxs{6}.opts_geof.nshuffs=10;
+auxs{6}.opts_geof.dimpairs_method='all';
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
