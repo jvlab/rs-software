@@ -148,6 +148,10 @@ end
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 %
 for itest=1:ntests
+    if ~isempty(aux_reads{itest}.warnings)
+        disp('warnings encountered during reading:')
+        disp(aux_reads{itest}.warnings)
+    end
     if ~isempty(data_reads{itest})
          for isub=1:nsubmodules
             disp(sprintf('testing rs_%s: %s (sequential test %3.0f, sub-module %3.0f)',rs_module,test_descs{itest},itest,isub));

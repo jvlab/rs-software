@@ -116,8 +116,18 @@ for itest=1:ntests
     if ~isempty(data_outs{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
+        if ~(strcmp(test_descs{itest},'replot'))
+            if ~isempty(aux_reads{itest}.warnings)
+                disp('warnings encountered during reading:')
+                disp(aux_reads{itest}.warnings)
+            end
+            if ~isempty(aux_aligns{itest}.warnings)
+                disp('warnings encountered during alignment:')
+                disp(aux_aligns{itest}.warnings)
+            end
+        end
         if ~isempty(aux_outs{itest}.warnings)
-            disp('warnings encountered during test:')
+            disp('warnings encountered during knitting:')
             disp(aux_outs{itest}.warnings)
         end
     end
