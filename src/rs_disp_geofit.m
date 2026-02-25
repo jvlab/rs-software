@@ -21,6 +21,8 @@ function aux_out=rs_disp_geofit(gf,aux)
 %      if not provided, will be 1 if all values are on-diagonal, otherwise 0
 %   sig_level: significance level
 %   if_showsig: which significance flags to show for d (goodness of fit): 0: none, 1: based on original denom, 2 based on shuffle denom, 3: both (default)
+%   if_nestbydim_showd: 1 (default) to show d-values for nested model
+%     This sets the defaults for if_nestbydim_in_showd and if_nestbydim_out_showd, but these can also be separately supplied
 %   if_showquant: 1 to show quantile at significance level sig_level (defaults to 0)
 %   ref_label: label for first  coordinate of gf{}, defaults to 'output dim'
 %   adj_label: label for second coordinate of gf{}, defaults to 'input dim'
@@ -56,6 +58,9 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'models_show_select',[]); %strings to se
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',[]);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_level',0.05);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_showsig',3); % which significance flags to show(0: none, 1: orig, 2: shuff, 3: both','d',[0 3],3);
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_showd',1); %1 to show nested-by-dim d-values
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_in_showd',aux.opts_dgeo.if_nestbydim_showd);
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_out_showd',aux.opts_dgeo.if_nestbydim_showd);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_showquant',0); %1 to show quantile at requested significance level (sig_level)
 %
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_symbols',{'+','x'});
