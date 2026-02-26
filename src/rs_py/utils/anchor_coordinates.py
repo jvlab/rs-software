@@ -66,3 +66,49 @@ def anchor_points(points):
     R = Q.T @ points
     # put rotated points in the correct format
     return R.T
+
+
+def params_to_points(x0, num_stimuli, n_dim):
+    """
+    Takes a vector of parameters and separates it into points
+    :param x0: all stimulus coordinates (that are nonzero) vectorized
+    :param num_stimuli: (int) number of points
+    :param n_dim: (int) dimensionality of space points come from
+    :return: points is a 2D array containing point coordinates.
+            size: num_stimuli x n_dim
+    """
+    points = zeros((num_stimuli, n_dim))
+    pointer = 0
+    for i in range(1, min(n_dim, num_stimuli)):
+        points[i, 0: i] = x0[pointer: i + pointer]
+        pointer = i + pointer
+    for j in range(n_dim, num_stimuli):
+        points[j] = x0[pointer: pointer + n_dim]
+        pointer += n_dim
+    return points
+
+
+def points_to_params(points):
+    """
+    points is a matrix with at least as many rows as columns.
+    d is the number of columns
+    n is the number of rows (points)
+    This function takes a matrix of the form
+    [[0, ..., 0],
+    [x1, 0..., 0],
+    [x2, x3, ..., 0],
+    ...
+    [xk, xk+1, ...xl, 0],
+    [xl+1, ..., xl+d]
+    ...]
+    such that the first d points have 0, 1, 2, ..., d non zero params and the following rows all have nonzero params
+
+    Return the nonzero params in an array
+    """
+    d = points.shape[1]
+    params = []
+    for row_idx in range(d):
+        values = points[row_idx, 0:row_idx]
+        params += [element for element in values]
+    params = params + list(points[d:, :].flatten())
+    return params

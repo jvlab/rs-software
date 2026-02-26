@@ -16,15 +16,14 @@ import logging
 from numpy import mean, ones, sqrt
 from scipy.spatial import procrustes
 from scipy import optimize
-from analysis.model_fitting import gram_schmidt as gs, mds, pairwise_likelihood_analysis as analysis
-from analysis import util
-from analysis.model_fitting.pairwise_likelihood_analysis import find_probabilities, calculate_ll
-from analysis.geometry.hyperbolic import loid_map, hyperbolic_distances, sphere_map, spherical_distances
-from analysis.model_fitting.minimization import gradient_descent
+from ..utils.minimize import gradient_descent
+from ..geometry.hyperbolic import loid_map, hyperbolic_distances
+from ..geometry.spherical import sphere_map, spherical_distances
+from ..utils import anchor_coordinates as ac, mds_embedding as mds, util
+from ..choices.choice_likelihoods import calculate_ll, dist_model_ll_vectorized, find_probabilities
 
-logging.basicConfig(level=logging.DEBUG)
+
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
 
 
 def points_of_best_fit(judgments, number_repeats, args, start_points=None, minimization='gradient-descent'):
@@ -46,8 +45,8 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None, minim
     fmin_costs = []
 
     def cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
-        vectors = analysis.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
-        ll, is_bad = analysis.dist_model_ll_vectorized(pair_a, pair_b, counts, repeats, parameters, vectors)
+        vectors = ac.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
+        ll, is_bad = dist_model_ll_vectorized(pair_a, pair_b, counts, repeats, parameters, vectors)
         LOG.debug('geometry is good: {}'.format(not is_bad))
         # fmin_costs.append(-1 * ll)  # debugging fmin
         return -1 * ll
@@ -60,11 +59,11 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None, minim
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
     else:
         start_0 = start_points
-    start = gs.anchor_points(start_0)
+    start = ac.anchor_points(start_0)
     LOG.info("########  Procrustes distance between start and anchored start: {}".format(
         procrustes(start, start_0)[2]))
     # turn points to params
-    start_params = analysis.points_to_params(start)
+    start_params = ac.points_to_params(start)
     LOG.info('######## Run minimization on MDS start points (scipy minimize)')
     # make maxiter 60000 for 5D geometry
     options_min = {
@@ -89,12 +88,12 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None, minim
         solution_ll = optimal.fun
     else:
         solution = gradient_descent(cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)
-        stim = analysis.params_to_points(solution, args['num_stimuli'], args['n_dim'])
-        ll_final, is_model_bad = analysis.dist_model_ll_vectorized(pairs_a, pairs_b, response_counts, comp_repeats, args, stim)
+        stim = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
+        ll_final, is_model_bad = dist_model_ll_vectorized(pairs_a, pairs_b, response_counts, comp_repeats, args, stim)
         solution_ll = -1 * ll_final
         LOG.info("Final Model is good/ feasible: {}".format(not is_model_bad))
 
-    coordinates = analysis.params_to_points(solution, args['num_stimuli'], args['n_dim'])
+    coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
 
     try:
         procr_dist = procrustes(start, coordinates)[2]
@@ -119,8 +118,8 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
     fmin_costs = []
 
     def hyperbolic_cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
-        curvature = args['curvature']
-        vectors = analysis.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
+        curvature = args['scripts']
+        vectors = ac.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
         # mean center points
         vectors = vectors.T
         center = mean(vectors, 1)
@@ -145,12 +144,12 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
     else:
         start_0 = start_points
-    start = gs.anchor_points(start_0)
+    start = ac.anchor_points(start_0)
 
     LOG.info("########  Procrustes distance between start and anchored start: {}".format(
         procrustes(start, start_0)[2]))
     # turn points to params
-    start_params = analysis.points_to_params(start)
+    start_params = ac.points_to_params(start)
     LOG.info('######## Run minimization on MDS start points (scipy minimize)')
     # make maxiter 60000 for 5D geometry
     options_min = {
@@ -166,7 +165,7 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
     solution_ll = hyperbolic_cost(solution, pairs_a, pairs_b, response_counts, comp_repeats, args)
     # plt.plot(fmin_costs, 'o-')
     # plt.show()
-    coordinates = analysis.params_to_points(solution, args['num_stimuli'], args['n_dim'])
+    coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
     LOG.info('########  Procrustes distance between anchored start and final solution: {}'.format(
         procrustes(start, coordinates)[2])
     )
@@ -190,8 +189,8 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
     fmin_costs = []
 
     def spherical_cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
-        curvature = args['curvature']
-        vectors = analysis.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
+        curvature = args['scripts']
+        vectors = ac.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
         # mean center points
         vectors = vectors.T
         center = mean(vectors, 1)
@@ -216,12 +215,12 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
     else:
         start_0 = start_points
-    start = gs.anchor_points(start_0)
+    start = ac.anchor_points(start_0)
 
     LOG.info("########  Procrustes distance between start and anchored start: {}".format(
         procrustes(start, start_0)[2]))
     # turn points to params
-    start_params = analysis.points_to_params(start)
+    start_params = ac.points_to_params(start)
     LOG.info('######## Run minimization on MDS start points (scipy minimize)')
     # make maxiter 60000 for 5D geometry
     options_min = {
@@ -237,7 +236,7 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
     solution_ll = spherical_cost(solution, pairs_a, pairs_b, response_counts, comp_repeats, args)
     # plt.plot(fmin_costs, 'o-')
     # plt.show()
-    coordinates = analysis.params_to_points(solution, args['num_stimuli'], args['n_dim'])
+    coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
     try:
         procr_dist = procrustes(start, coordinates)[2]
     except ValueError:
@@ -246,3 +245,4 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         procr_dist)
     )
     return coordinates, solution_ll  # , sum_residual_squares
+

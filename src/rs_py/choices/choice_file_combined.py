@@ -35,17 +35,16 @@ import numpy as np
 from scipy.io import savemat, loadmat
 
 
-def combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
+def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
     """
         Combine judgments across repeated traidic or tetradic comparisons across all trials
     """
     data = loadmat(input_mat_path, squeeze_me=True)
 
     responses = data['responses']
-    colnames = list(data['response_colnames'])
+    colnames = [name.strip() for name in data['response_colnames']]
     metadata = data['metadata']
 
-    COL_TRIAL = colnames.index("trial")
     COL_S1 = colnames.index("s1")
     COL_S2 = colnames.index("s2")
     COL_S3 = colnames.index("s3")
@@ -93,7 +92,7 @@ def combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
         'response_colnames': comb_response_colnames,
         'responses': comb_responses
     }
-    output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")
+    output_path = os.path.join(output_dir, f"{exp_name}_combined_choices_{subject}.mat")
     savemat(output_path, combined_choices)
     print(f"Saved results to {output_path}")
 

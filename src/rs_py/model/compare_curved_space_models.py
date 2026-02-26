@@ -3,12 +3,12 @@ Here, given a data set, generate surrogate datasets that are drawn from the orig
 Then, for each surrogate dataset, essentially calculate LLs for a range of curvatures and (chosen/ adjusted)
 sigma values.
 
-This should yield a scatterplot of model LLs by curvature values. We start by doing so for the 2D case and we can
+This should yield a scatterplot of model LLs by scripts values. We start by doing so for the 2D case and we can
 progress to higher dimensions as needed.
 ######## DEPRECATED - DO NOT USE ###########
 
 The inputs are
-- a range of curvature values
+- a range of scripts values
 - dimensions for which to apply the analysis. Minimum dimension is 2.
 - path to json files for individual datasets.
 - optionally, can and probably should pass in a legend for when multiple curves are drawn
@@ -20,18 +20,8 @@ import pprint
 import copy
 import logging
 import numpy as np
-from analysis.model_fitting import run_mds_seed as rs
 import pandas as pd
-from analysis.util import read_in_params, json_to_pairwise_choice_probs
-
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
-
-CONFIG, STIMULI, NAMES_TO_ID, ID_TO_NAME = read_in_params()
-# disable unneeded params
-CONFIG['curvature'] = None
-CONFIG['spherical'] = None
-CONFIG['hyperbolic'] = None
+import fit_geometric_models as rs
 
 
 def run(args):
@@ -54,13 +44,13 @@ def run(args):
         elif curvature > 0:
             # fit spherical model
             curvature_val = curvature
-            params_copy['curvature'] = curvature_val
+            params_copy['scripts'] = curvature_val
             x, ll = rs.spherical_points_of_best_fit(similarity_judgments, repeats, params_copy, start_points)
             ll = -1 * ll / total_num_triads
         else:
             # fit hyperbolic model
             curvature_val = -1 * curvature
-            params_copy['curvature'] = curvature_val
+            params_copy['scripts'] = curvature_val
             x, ll = rs.hyperbolic_points_of_best_fit(similarity_judgments, repeats, params_copy, start_points)
             ll = -1 * ll / total_num_triads
         return ll, curvature, noise, x
@@ -127,35 +117,3 @@ def run(args):
     return df
 
 
-# NOTE: ########################################
-# Values of lambda and mu are hard-coded inside run function
-# curvature was lambda^2 and mu^2 = 1/R^2 according to definition of Gaussian curvature...
-# now corrected to lambda for hyp and 2mu for sph
-
-print(CONFIG)
-
-domain = input('Domain: ')
-SUBJECTS = input('Subjects (separated by spaces): ').split(' ')
-print(SUBJECTS)
-proceed = input('If subjects correct, press "y" to proceed')
-if proceed != 'y':
-    raise IOError
-
-DIM = int(input('Number of Dimensions: '))
-OUTDIR = input('Output directory for LLs and coordinates: ')
-
-
-for subject in SUBJECTS:
-    print(subject)
-    INPUT_DATA = '/Users/suniyya/Dropbox/Research/Thesis_Work/Psychophysics_Aim1/experiments/' \
-                 'experiments/{}_exp/subject-data/preprocessed/{}_{}_exp.json'.format(domain, subject, domain)
-    judgments, repeats = json_to_pairwise_choice_probs(INPUT_DATA)
-
-    dfs = []
-    ARGS = (judgments, repeats, CONFIG, subject, domain, DIM, OUTDIR)
-    result = run(ARGS)
-    dfs.append(result)
-
-    total_df = pd.concat(dfs)
-    print(total_df)
-    total_df.to_csv('{}/curvature_and_LL_{}-{}-{}_combined_likelihoods.csv'.format(OUTDIR, subject, domain, DIM))

@@ -19,7 +19,6 @@ import logging
 import numpy as np
 from sklearn.manifold import smacof
 
-logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
 
@@ -90,3 +89,4 @@ def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9, seed=None):
     LOG.info('#################  Running MDS')
     coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon)
     return coordinates, stress
+

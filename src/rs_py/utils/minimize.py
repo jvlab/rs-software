@@ -1,19 +1,16 @@
 
 import logging
 import numpy as np
-from numpy import eye, tile, apply_along_axis
 
-logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
 
 
 def calculate_gradient(costfunc, vector, pair_a, pair_b, counts, repeats, params, vector_length, delta=1e-03):
     baseline_loss = costfunc(vector, pair_a, pair_b, counts, repeats, params)
-    deltas = eye(vector_length) * delta
-    vectors = tile(vector.reshape(vector_length, 1), (1, vector_length))
+    deltas = np.eye(vector_length) * delta
+    vectors = np.tile(vector.reshape(vector_length, 1), (1, vector_length))
     delta_vectors = vectors + deltas
-    new_loss_vector = apply_along_axis(costfunc, 0, delta_vectors, pair_a, pair_b, counts, repeats, params)
+    new_loss_vector = np.apply_along_axis(costfunc, 0, delta_vectors, pair_a, pair_b, counts, repeats, params)
     gradient = new_loss_vector - baseline_loss
     return gradient
 

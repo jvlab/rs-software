@@ -1,5 +1,5 @@
 """
-To demo the script rs_detailed_choice_file.py
+To demo the script choice_file_detailed.py
 """
 
 import os

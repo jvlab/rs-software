@@ -6,19 +6,20 @@ import pandas as pd
 from sklearn.manifold import smacof
 from scipy.spatial.distance import pdist
 
-import mds as mds
-import run_mds_seed as rs
-import pairwise_likelihood_analysis as an
-from util import read_in_params, json_to_pairwise_choice_probs
-
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
+import src.rs_py.utils.mds_embedding as mds
+import src.rs_py.model.fit_geometric_models as rs
+import src.rs_py.choices.choice_likelihoods as an
+from src.rs_py.utils.helpers import read_in_params
+from src.rs_py.utils.util import json_to_pairwise_choice_probs
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    LOG = logging.getLogger(__name__)
+
     SHOW_MDS = False
     CONFIG, STIMULI, NAMES_TO_ID, ID_TO_NAME = read_in_params()
-    ORIGINAL_CURVATURE = CONFIG['curvature']
+    ORIGINAL_CURVATURE = CONFIG['scripts']
 
     # enter path to subject data (json file)
     FILEPATH = input("Path to json file containing subject's preprocessed data"

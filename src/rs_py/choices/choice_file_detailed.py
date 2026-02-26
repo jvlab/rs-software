@@ -19,6 +19,8 @@ the subject identifier, and the task.
 import os
 import ast
 import csv
+import numpy as np
+from scipy.io import savemat
 
 
 def get_response_files(directory, suffix="responses", extension="csv"):
@@ -62,20 +64,14 @@ def generate_comparisons(reference, clicks, trial_num):
      - 'operator': the comparison operator ('>')
      - 'judgment': a binary indicator encoding the outcome of the comparison
 
-    Parameters
-    ----------
-    reference : str
-        Label of the reference stimulus for the trial.
-
-    clicks : list of str
-        Ordered list of non-reference stimulus labels, in the order they were clicked during the trial.
-
-    trial_num : int
-        Trial index to assign to all generated comparisons.
+    Parameters:
+        reference : (str) Label of the reference stimulus for the trial.
+        clicks : (list of str) Ordered list of non-reference stimulus labels, in the order they were clicked during the trial.
+        trial_num : (int) Trial index to assign to all generated comparisons.
 
     Returns
     -------
-    comparisons : list of dict
+   - comparisons : list of dict
         A list of comparison dictionaries, one for each unordered stimulus pair, representing
         all triadic distance judgments for the trial.
 
@@ -152,10 +148,8 @@ def process_subject_data(input_directory):
         A flat list of comparison dictionaries. Each dictionary corresponds
         to a single triadic comparison and contains at least the keys:
         'trial', 's1', 's2', 'operator', 's3', 's4', and 'judgment'.
-
     stimuli : set
-        A set containing the labels of all stimuli encountered across all
-        processed trials, including reference and non-reference stimuli.
+        A set containing the labels of all stimuli encountered across all processed trials, including reference and non-reference stimuli.
 
     Notes
     -----
@@ -172,6 +166,11 @@ def process_subject_data(input_directory):
 
     resp_files = sorted(get_response_files(input_directory))
     # open response csv files and go through line by line
+    if len(resp_files) == 0:
+        raise ValueError(
+            "No comparisons generated from input directory: {}.\n"
+            "Check that files exist.".format(input_directory)
+        )
     for file in resp_files:
         with open(file, newline='', encoding='utf-8-sig') as csv_file:
             reader = csv.DictReader(csv_file)
@@ -185,6 +184,11 @@ def process_subject_data(input_directory):
                 stimuli.add(row['ref'])
                 all_comparisons += comparisons
                 trial_num += 1
+    if len(all_comparisons) == 0:
+        raise ValueError(
+            f"No comparisons generated from input directory: {input_directory}\n"
+            "Check CSV format and make sure files aren't empty."
+        )
     return all_comparisons, stimuli
 
 
@@ -300,14 +304,14 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
         `stimuli_set`. The list is modified in place.
 
     stimuli_set : set
-        Set of all stimulus labels to be mapped to integer IDs. IDs are assigned
-        starting from 1, in alphabetical order of the labels.
+        Set of all stimulus labels to be mapped to integer IDs. IDs are assigned starting from 1, in alphabetical order of the labels.
 
     Returns
     -------
     comparisons : list of dict
         The input list of comparison dictionaries with stimulus labels replaced
         by integer stimulus IDs.
+        The mapping of IDs to stimuli
 
     Notes
     -----
@@ -318,12 +322,58 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
     """
     stimuli = sorted(list(stimuli_set))
     names_to_id = dict(zip(stimuli, range(1, len(stimuli) + 1)))
+    id_to_name = dict(zip(['s' + str(x) for x in range(1, len(stimuli)+1)], stimuli))
     stim_keys = ['s1', 's2', 's3', 's4']
     for i in range(len(comparisons)):
         c = comparisons[i]
         for k in stim_keys:
             c[k] = names_to_id[c[k]]
-    return comparisons
+    return comparisons, id_to_name
+
+
+def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata):
+    # Process rank orderings to pairwise comparisons between a reference and two stimuli
+    pairwise_comparisons, stimulus_set = process_subject_data(input_dir)
+    # Swap stimulus names with numeric stimulus ids
+    comparisons_with_stim_ids, stim_id_to_name = replace_stimuli_with_ids(pairwise_comparisons, stimulus_set)
+    # Standardize the orders in which stimuli will appear, such that if two pairs are compared across different
+    # trials, they are referenced with the same identifier (s1,s2,s3,s4). This imposes a standard way of ordering
+    # two pairs and the stimuli within each pair. Judgments reflect whether D(s1,s2) > D(s3,s4).
+    standardized_comparisons = standardize_comparison_keys(comparisons_with_stim_ids, metadata['judgment_type'])
+
+    # Build output structure and write to a mat file in the output_dir
+    total_comparisons = len(standardized_comparisons)
+    responses_col_names = ['trial', 's1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))']
+    # Column mapping for clarity
+    COL_TRIAL = 0
+    COL_S1 = 1
+    COL_S2 = 2
+    COL_S3 = 3
+    COL_S4 = 4
+    COL_JUDGMENT = 5
+
+    responses = np.zeros((total_comparisons, len(responses_col_names)), dtype=int)
+    for i, comp in enumerate(standardized_comparisons):
+        responses[i, COL_TRIAL] = comp['trial']
+        responses[i, COL_S1] = comp['s1']
+        responses[i, COL_S2] = comp['s2']
+        responses[i, COL_S3] = comp['s3']
+        responses[i, COL_S4] = comp['s4']
+        responses[i, COL_JUDGMENT] = comp['judgment']
+
+    results = {
+        'metadata': metadata,
+        'response_colnames': responses_col_names,
+        'responses': responses
+    }
+
+    results['metadata']['id_to_stimulus'] = stim_id_to_name
+    results['metadata']['total_judgments'] = total_comparisons
+
+    output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")
+    savemat(output_path, results)
+    print(f"Saved results to {output_path}")
+    return
 
 
 # if __name__ == '__main__':

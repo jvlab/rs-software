@@ -19,68 +19,16 @@ But if sigma_point > 0, then the noise is the square root of a sum of squares of
 Gaussian distributions, which is not exactly Gaussian. So erf is merely an approximation of the probability,
 since it only accounts for Gaussian sources of noise.
 """
-import json
 
 import yaml
 import logging
 import numpy as np
-from numpy import sqrt, zeros, concatenate, log2
+from numpy import concatenate, log2
 from scipy.special import erf
 from scipy.spatial.distance import pdist, squareform
-import analysis.util as util
+from ..utils import util
 
-logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
-
-with open('./analysis/config.yaml', "r") as stream:
-    data = yaml.safe_load(stream)
-    EPSILON = float(data['epsilon'])
-
-
-def params_to_points(x0, num_stimuli, n_dim):
-    """
-    Takes a vector of parameters and separates it into points
-    :param x0: all stimulus coordinates (that are nonzero) vectorized
-    :param num_stimuli: (int) number of points
-    :param n_dim: (int) dimensionality of space points come from
-    :return: points is a 2D array containing point coordinates.
-            size: num_stimuli x n_dim
-    """
-    points = zeros((num_stimuli, n_dim))
-    pointer = 0
-    for i in range(1, min(n_dim, num_stimuli)):
-        points[i, 0: i] = x0[pointer: i + pointer]
-        pointer = i + pointer
-    for j in range(n_dim, num_stimuli):
-        points[j] = x0[pointer: pointer + n_dim]
-        pointer += n_dim
-    return points
-
-
-def points_to_params(points):
-    """
-    points is a matrix with at least as many rows as columns.
-    d is the number of columns
-    n is the number of rows (points)
-    This function takes a matrix of the form
-    [[0, ..., 0],
-    [x1, 0..., 0],
-    [x2, x3, ..., 0],
-    ...
-    [xk, xk+1, ...xl, 0],
-    [xl+1, ..., xl+d]
-    ...]
-    such that the first d points have 0, 1, 2, ..., d non zero params and the following rows all have nonzero params
-
-    Return the nonzero params in an array
-    """
-    d = points.shape[1]
-    params = []
-    for row_idx in range(d):
-        values = points[row_idx, 0:row_idx]
-        params += [element for element in values]
-    params = params + list(points[d:, :].flatten())
-    return params
 
 
 def calculate_ll(counts, probs, num_repeats):
@@ -199,3 +147,12 @@ def log_likelihood_of_choice_probs(json_file_path, path_to_npy_file, noise_st_de
     rand_ll = random_choice_ll(pairwise_responses, pairwise_num_repeats)[0]
     best_ll = best_model_ll(pairwise_responses, pairwise_num_repeats)[0]
     return ll / num_triads, rand_ll / num_triads, best_ll / num_triads
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
+
+    with open('./analysis/config.yaml', "r") as stream:
+        data = yaml.safe_load(stream)
+        EPSILON = float(data['epsilon'])
