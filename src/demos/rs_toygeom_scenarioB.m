@@ -10,17 +10,7 @@ if_knit=1;
 opts_geof=struct;
 opts_geof.nshuffs=20;
 model_list={'procrustes_scale_offset','affine_offset'};
-%these are the main customizable params
-% opts_geof=filldefault(opts_geof,'model_list',{procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'});
-% opts_geof=filldefault(opts_geof,'dimpairs_method','all');
-% opts_geof=filldefault(opts_geof,'if_stats',1);
-% opts_geof=filldefault(opts_geof,'nshuffs',20);
-% opts_geof=filldefault(opts_geof,'if_nestbymodel',-1);
-% opts_geof=filldefault(opts_geof,'if_nestbydim',-1);
-% opts_geof=filldefault(opts_geof,'if_log',0);
-% opts_geof=filldefault(opts_geof,'if_fit_summary',0);
-if_disp_geofit=1;
-if ~exist('opts_dgeo') opts_dgeo=struct; end
-%opts_dgeo.if_nestbymodel_show=0;
-opts_dgeo.models_show_select={'affine_offset'};
+%
 rs_toygeom_demo;
+opts_dgeo.models_show_select={'affine_offset'};
+rs_toygeom_disp;

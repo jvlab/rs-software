@@ -31,10 +31,10 @@
 %   The model list defaults to {procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'})
 %    but can modified by changing model_list
 %
-% Results of the fitting are displayed with rs_disp_geofit.
+% Results of the fitting are displayed with rs_toygeom_disp, which invokes rs_disp_geofit.
 %
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_GEOFIT,
-%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS.
+%  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS, RS_TOYGEOM_DISP.
 %
 %these are the main simulation parameters that may be edited, or have values set before running
 %
@@ -50,7 +50,7 @@ if ~exist('ring_angles') ring_angles=8; end %number of sample points in a ring
 if ~exist('nrandom') nrandom=16; end %number of random stimuli
 %
 if ~exist('nsubjs') nsubjs=1; end % number of subjects to simulate; at least 1; subjects have progressively more noise
-if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots
+if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to show in plots of response space
 %
 if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
 if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
@@ -63,7 +63,6 @@ if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress pl
 if ~exist('if_frozen') if_frozen=1; end %set to 0 for random numbers each time, negative integer for fixed alternative seeds
 %
 if ~exist('if_knit') if_knit=0; end
-if ~exist('if_disp_geofit') if_disp_geofit=0; end
 %
 if ~exist('model_list') model_list={'procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'}; end
 %
@@ -504,45 +503,21 @@ for it=1:ntransforms
         [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
     end
 end
+sims.transform_names=transform_names;
+sims.paradigm_names=paradigm_names;
+sims.paradigms_all=paradigms_all;
+sims.nsubjs=nsubjs;
+sims.gfs=gfs;
+sims.aux_geof_out=aux_geof_out;
 %
-%display
+sims.ncoords=ncoords;
+sims.ncoords_noise=ncoords_noise;
+sims.noise_transform_mag=noise_transform_mag;
+sims.noise_transform_subj=noise_transform_subj;
+sims.noise_transform=noise_transform;
+sims.noise_add_mag=noise_add_mag;
+sims.noise_add_subj=noise_add_subj;
+sims.noise_add=noise_add;
+sims.model_list=model_list;
 %
-if ~exist('opts_dgeo') opts_dgeo=struct; end
-aux_dgeo=struct;
-aux_dgeo.opts_dgeo=opts_dgeo;
-if ~exist('transforms_fit_show') transforms_fit_show=transform_names; end
-if ~exist('paradigms_fit_show') paradigms_fit_show=paradigms_all; end
-if ~exist('subjs_fit_show') subjs_fit_show=[1:nsubjs]; end
-if (if_disp_geofit)
-    for it=1:ntransforms
-        transform_name=transform_names{it};
-        for ip=1:length(paradigms_all)
-            paradigm_name=paradigms_all{ip};
-            for is=1:nsubjs
-                if ~isempty(strmatch(transform_name,transforms_fit_show,'exact'))  & ~isempty(strmatch(paradigm_name,paradigms_fit_show,'exact')) & ismember(is,subjs_fit_show)
-                    aux_dgeo_out=rs_disp_geofit(gfs{it,ip}{is}.gf,aux_dgeo);
-                    fig_handles=aux_dgeo_out.opts_dgeo.fig_handles;
-                    fig_names=aux_dgeo_out.opts_dgeo.fig_names;
-                    for ifig=1:length(fig_handles)
-                        figure(fig_handles{ifig});
-                        set(gcf,'Name',cat(2,fig_names{ifig},sprintf(' subj %1.0f',is),' ',transform_name,' ',paradigm_name));
-                        if exist('scenario_name')
-                            axes('Position',[0.80,0.05,0.01,0.01]); %for text
-                            text(0,0,scenario_name,'Interpreter','none');
-                            axis off;
-                        end
-                        axes('Position',[0.50,0.05,0.01,0.01]); %for text
-                        text(0,0,fig_names{ifig},'Interpreter','none');
-                        axis off;
-                        axes('Position',[0.50,0.03,0.01,0.01]); %for text
-                        text(0,0,sprintf('transform: %s, paradigm %s',transform_name,paradigm_name),'Interpreter','none');
-                        axis off;
-                        axes('Position',[0.50,0.01,0.01,0.01]);
-                        text(0,0,sprintf('subject %2.0f: transform noise %4.2f additive noise %4.2f',is,noise_transform(is),noise_add(is)));
-                        axis off;
-                   end 
-                end %select
-            end %subject
-        end %paradigm name
-    end %transform
-end %if_disp_geofit
+disp('consider saving the structure ''sims'', and using rs_toygeom_demo to display results')
