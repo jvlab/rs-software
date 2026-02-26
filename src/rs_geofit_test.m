@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=5;
+ntests=7;
 %
 test_descs=cell(1,ntests);
 filenames_in=cell(1,ntests);
@@ -81,6 +81,31 @@ auxs{5}.opts_geof.if_nestbydim=1; %nest by dimension, not pca
 auxs{5}.opts_geof.dim_max_in=5;
 auxs{5}.opts_geof.nshuffs=3;
 %
+test_descs{6}='different stimulus names, just nest by dim, not pca, all dim pairs';
+filenames_in{6}=filenames_in{5};
+aux_ins{6}=aux_ins{5};
+filenames_out{6}=filenames_out{5};
+aux_outs{6}=aux_ins{5};
+auxs{6}=auxs{5};
+auxs{6}.opts_geof.dim_max_in=3;
+auxs{6}.opts_geof.nshuffs=10;
+auxs{6}.opts_geof.dimpairs_method='all';
+%
+test_descs{7}='transforming one binary texture coordinate file to one other, mean, procrustes, affine, explicit dimensions, all nestings no pca';
+filenames_in{7}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
+aux_ins{7}=aux_ins{2};
+aux_ins{7}.nsets=1;
+filenames_out{7}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat'};
+aux_outs{7}=aux_ins{2};
+aux_outs{7}.nsets=1;
+auxs{7}.opts_geof.model_list={'mean','procrustes_noscale_nooffset','procrustes_scale_nooffset','affine_offset'};
+auxs{7}.opts_geof.if_stats=1;
+auxs{7}.opts_geof.if_nestbymodel=1;
+auxs{7}.opts_geof.if_nestbydim=1; %nest by dimension, no pca
+auxs{7}.opts_geof.dimpairs_method='list';
+auxs{7}.opts_geof.dimpairs_list=[1 1;1 2;1 4; 1 6;3 1;3 2;3 4;3 6;5 1;5 2;5 4;5 6;7 1;7 2;7 4]; %input dims: 1,3,5,7; output dims 1 2,4,6, all pairs except (7,6)
+auxs{7}.opts_geof.nshuffs=5;
+%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
@@ -88,10 +113,10 @@ for itest=1:ntests
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         %read the input and output data structures
         aux_ins{itest}.opts_read.if_log=0;
-        [data_ins{itest},aux_ins{itest}]=rs_get_coordsets(filenames_in{itest},aux_ins{itest});
+        [data_ins{itest},aux_read_ins{itest}]=rs_get_coordsets(filenames_in{itest},aux_ins{itest});
         %
         aux_outs{itest}.opts_read.if_log=0;
-        [data_outs{itest},aux_outs{itest}]=rs_get_coordsets(filenames_out{itest},aux_outs{itest});
+        [data_outs{itest},aux_read_outs{itest}]=rs_get_coordsets(filenames_out{itest},aux_outs{itest});
         %
         [gfs{itest},xs{itest},aux_geofits{itest}]=rs_geofit(data_ins{itest},data_outs{itest},auxs{itest});
         %
@@ -115,9 +140,18 @@ for itest=1:ntests
     if ~isempty(data_outs{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));
-        if ~isempty(aux_outs{itest}.warnings)
-            disp('warnings encountered during test:')
-            disp(aux_outs{itest}.warnings)
+        if ~isempty(aux_read_ins{itest}.warnings)
+            disp('warnings encountered during reading of input data:')
+            disp(aux_read_ins{itest}.warnings)
         end
+        if ~isempty(aux_read_outs{itest}.warnings)
+            disp('warnings encountered during reading of output data:')
+            disp(aux_read_outs{itest}.warnings)
+        end
+        if ~isempty(aux_geofits{itest}.warnings)
+            disp('warnings encountered during geofit:')
+            disp(aux_geofits{itest}.warnings)
+        end
+        
     end
 end

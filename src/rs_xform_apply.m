@@ -15,7 +15,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
 % aux: auxiliary inputs
 %  aux.opts_xform.if_warn: 1 (default) to show warnings
-%  aux.opts_xform.class: 'affine' (default), can also be 'mean','projective','pwaffine','pwprojective'
+%  aux.opts_xform.class: 'affine' (default), can also be 'mean','procrustes','projective','pwaffine','pwprojective'
 %     
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -25,7 +25,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
 %   warn_bad: count of warnings that prevent further processing
 %
-% For class='affine', the transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
+% For class='affine' or 'procrustes', the transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
 %   [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
 % The parameters b, T, and c correspond to the parameters produced by Matlab's procrustes.m
 %   except that in Matlab's procrustes. c, the translation parameter c replicated for each data point
@@ -113,6 +113,7 @@ typenames_inter=check.typenames_inter;
 %
 params_needed=struct;
 params_needed.mean={'b','T','c'};
+params_needed.procrustes={'b','T','c'};
 params_needed.affine={'b','T','c'};
 params_needed.projective={'b','T','c','p'};
 params_needed.pwaffine={'b','T','c','vcut','acut'};

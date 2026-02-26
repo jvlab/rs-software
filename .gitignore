@@ -3,9 +3,9 @@ __pycache__
 .DS_Store
 src/rs_py/.idea
 .idea
-tests
+src/tests
 svd_issue
-benchmarks/*.zip
+src/benchmarks/*.zip
 junk*.*
 *.ppt*
 *.doc*

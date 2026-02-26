@@ -4,12 +4,14 @@ function aux_out=rs_disp_geofit(gf,aux)
 % This is largely a wrapper for psg_geomodel_plot, but with some defaults are changed, and some consistency checks
 %
 % gf: a cell array of geometrical fit data, typically gfs{k}.gf, where gfs is the output of rs_geofit
-%   gf{d_out,d_in} contains goodness of fit data for transforming a dataset of d_in dimensions to one with d_out dimensions
+%   and gf{d_out,d_in} contains goodness of fit data for transforming a dataset of d_in dimensions to one with d_out dimensions
 % aux:
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %  aux.opts_dgeo: options for display
 %   if_nestbymodel_show: 1 to show all nested models, -1 to show only maximally nested models, 0 to show none; will default to 1 if shuffles are present and 0 if not
 %   if_nestbydim_show: 1 to show nesting by dimension; will default to 1 if shuffles are present and 0 if not
+%   if_nestbydim_in_show: 1 to show nesting by dimension for input, 0 if not, defaults to value of if_nestbydim_show
+%   if_nestbydim_out_show: 1 to show nesting by dimension for output, 0 if not, defaults to value of if_nestbydim_show
 %   models_show_select: string, or cell array of strings, that select which models are shown
 %      For a model to be shown, at least one of the strings in models_show_select{:} must be present in the model type
 %      e.g., {'_offset','affine'} will select any model whose name contains _offset or affine
@@ -19,6 +21,8 @@ function aux_out=rs_disp_geofit(gf,aux)
 %      if not provided, will be 1 if all values are on-diagonal, otherwise 0
 %   sig_level: significance level
 %   if_showsig: which significance flags to show for d (goodness of fit): 0: none, 1: based on original denom, 2 based on shuffle denom, 3: both (default)
+%   if_nestbydim_showd: 1 (default) to show d-values for nested model
+%     This sets the defaults for if_nestbydim_in_showd and if_nestbydim_out_showd, but these can also be separately supplied
 %   if_showquant: 1 to show quantile at significance level sig_level (defaults to 0)
 %   ref_label: label for first  coordinate of gf{}, defaults to 'output dim'
 %   adj_label: label for second coordinate of gf{}, defaults to 'input dim'
@@ -54,6 +58,9 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'models_show_select',[]); %strings to se
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',[]);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_level',0.05);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_showsig',3); % which significance flags to show(0: none, 1: orig, 2: shuff, 3: both','d',[0 3],3);
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_showd',1); %1 to show nested-by-dim d-values
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_in_showd',aux.opts_dgeo.if_nestbydim_showd);
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_out_showd',aux.opts_dgeo.if_nestbydim_showd);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_showquant',0); %1 to show quantile at requested significance level (sig_level)
 %
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_symbols',{'+','x'});
@@ -111,23 +118,50 @@ if if_onlydiag & (aux.opts_dgeo.if_diag==0)
 end
 gf_example=gf{dim_pairs(1,1),dim_pairs(1,2)};
 nshuffs=size(gf_example.d_shuff,2);
+%
+%check that requests for nesting display are consistent with presence of statistics
 if nshuffs==0
     aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbymodel_show',[]); %1 for all comparisons, -1 for maximal, 0 for none, set to 1 below if shuffles are present
-    if ~isempty(aux.opts_dgeo.if_nestbymodel_show) & aux.opts_dgeo.if_nestbymodel_show~=0
-        wmsg=sprintf('no shuffes are present, but analysis of nesting by models requested; ignored');
+    ask_out=0;
+    if ~isempty(aux.opts_dgeo.if_nestbymodel_show)
+        ask_out=double(aux.opts_dgeo.if_nestbymodel_show~=0);
+    end
+    if ask_out
+        wmsg=sprintf('no shuffes are present, but display of nesting by models requested; ignored');
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn)); %to accumulate warnings and log based on aux_out
     end
     aux.opts_dgeo.if_nestbymodel_show=0;
     %
     aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_show',[]); %1 to show; default to 1 set below if shuffles are present
-    if ~isempty(aux.opts_dgeo.if_nestbydim_show) & aux.opts_dgeo.if_nestbydim_show~=0
-        wmsg=sprintf('no shuffes are present, but analysis of nesting by dimension requested; ignored');
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_in_show',[]);
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_out_show',[]);
+    if ~isempty(aux.opts_dgeo.if_nestbydim_show)
+        ask_nbd=double(aux.opts_dgeo.if_nestbydim_show~=0);
+    else
+        ask_nbd=0;
+    end
+    if ~isempty(aux.opts_dgeo.if_nestbydim_in_show)
+        ask_nbd_in=double(aux.opts_dgeo.if_nestbydim_in_show~=0);
+    else
+        ask_nbd_in=0;
+    end
+    if ~isempty(aux.opts_dgeo.if_nestbydim_out_show)
+        ask_nbd_out=double(aux.opts_dgeo.if_nestbydim_out_show~=0);
+    else
+        ask_nbd_out=0;
+    end
+    if ask_nbd | ask_nbd_in | ask_nbd_out
+        wmsg=sprintf('no shuffes are present, but display of nesting by dimension requested; ignored');
         aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn)); %to accumulate warnings and log based on aux_out
     end
     aux.opts_dgeo.if_nestbydim_show=0;
+    aux.opts_dgeo.if_nestbydim_in_show=0;
+    aux.opts_dgeo.if_nestbydim_out_show=0;
 else
-    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbymodel_show',1); %1 for all comparisons, -1 for maximal, 0 for none
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbymodel_show',1); %1 for all comparisons, -1 for only maximal, 0 for none
     aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_show',1); %1 to show
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_in_show',aux.opts_dgeo.if_nestbydim_show);
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_out_show',aux.opts_dgeo.if_nestbydim_show);
 end
 %
 %create the plots

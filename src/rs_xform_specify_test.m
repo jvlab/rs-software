@@ -137,8 +137,12 @@ for itest=1:ntests
         opts_compare.signflips=signflips{itest};
         opts_compare.ignore=ignore{itest};
         [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},opts_compare);
+        if ~isempty(aux_reads{itest}.warnings)
+            disp('warnings encountered during reading:')
+            disp(aux_reads{itest}.warnings)
+        end
         if ~isempty(aux_outs{itest}.warnings)
-            disp('warnings encountered during test:')
+            disp('warnings encountered during transformation:')
             disp(aux_outs{itest}.warnings)
         end
     end
