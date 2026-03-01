@@ -40,7 +40,7 @@
 %
 if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
-if ~exist('projective_mag') projective_mag=0.2; end %controls amount of distortion in projective transform
+if ~exist('projective_mag') projective_mag=0.1; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
 %
 if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
