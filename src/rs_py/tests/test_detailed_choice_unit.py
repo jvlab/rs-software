@@ -302,7 +302,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
 
         stimuli_set = {"A", "B", "C"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_name = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertEqual(out[0]["s1"], 1)
         self.assertEqual(out[0]["s2"], 2)
@@ -316,7 +316,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
 
         stimuli_set = {"Z", "A", "M"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         # Alphabetical: A=1, M=2, Z=3
         self.assertEqual(out[0]["s1"], 3)
@@ -337,7 +337,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
 
         stimuli_set = {"A", "B", "C"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertEqual(out[0]["judgment"], 1)
         self.assertEqual(out[0]["trial"], 5)
@@ -350,7 +350,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
         original = comparisons
         stimuli_set = {"A", "B", "C"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertIs(out, original)
 
@@ -362,7 +362,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
 
         stimuli_set = {"A", "B", "C"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertEqual(out[0]["s1"], out[1]["s2"])  # A → same ID everywhere
         self.assertEqual(out[0]["s4"], out[1]["s1"])  # C → same ID everywhere
@@ -381,7 +381,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
         comparisons = []
         stimuli_set = {"A", "B"}
 
-        out = replace_stimuli_with_ids(comparisons, stimuli_set)
+        out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertEqual(out, [])
 
@@ -421,7 +421,7 @@ class TestFullMatPipelineWithOverlappingTriad(unittest.TestCase):
             # ---------- Run pipeline ----------
             pairwise, stim_set = process_subject_data(tmpdir)
 
-            with_ids = replace_stimuli_with_ids(pairwise, stim_set)
+            with_ids, _id = replace_stimuli_with_ids(pairwise, stim_set)
 
             standardized = standardize_comparison_keys(
                 with_ids, comparison_type="triadic"

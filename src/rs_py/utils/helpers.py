@@ -9,17 +9,26 @@ from scipy.spatial.distance import pdist
 def stimulus_names(stimfile):
     # each stim on a separate line
     # Read in parameters from config file
-    stimuli = open(stimfile).read().split('\n')
+    with open(stimfile, "r") as f:
+        stimuli = [line.strip() for line in f.readlines()]
+        stimuli = [s for s in stimuli if s != ""]  # drop empty lines
+        stimuli = sorted(stimuli)   # sort stim
     return stimuli
 
 
-def stimulus_name_to_id(stimlist):
-    names_to_id = dict(zip(stimlist, range(len(stimlist))))
+def stimulus_name_to_id(stimlist, *, one_indexed=True):
+    if not one_indexed:
+        names_to_id = dict(zip(stimlist, range(len(stimlist))))
+    else:
+        names_to_id = dict(zip(stimlist, range(1, len(stimlist)+1)))
     return names_to_id
 
 
-def stimulus_id_to_name(stimlist):
-    id_to_name = dict(zip(range(len(stimlist)), stimlist))
+def stimulus_id_to_name(stimlist, *, one_indexed=True):
+    if not one_indexed:
+        id_to_name = dict(zip(range(len(stimlist)), stimlist))
+    else:
+        id_to_name = dict(zip(range(1, len(stimlist)+1), stimlist))
     return id_to_name
 
 
