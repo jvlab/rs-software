@@ -1,3 +1,7 @@
+"""
+    Demo to fit models of Euclidean spaces of different dimensions, from tallied similarity judgments.
+    Enter '0' to use default values.
+"""
 import logging
 import pprint
 import random
@@ -10,57 +14,57 @@ import src.rs_py.choices.choice_likelihoods as an
 from src.rs_py.utils.helpers import read_in_params
 from src.rs_py.utils.util import read_combined_choices
 
+
+def demo_inputs():
+    """
+    Populate demo defaults.
+    Adjust the default filepath/outdir to wherever your sample materials live.
+    """
+    user_params, stimuli, names_to_id, id_to_name = read_in_params()
+
+    defaults = {
+        "filepath": "../samples/choice_files/animals_combined_choices_S4.mat",
+        "exp_name": "animals",
+        "subject": "S4",
+        "outdir": "../samples/models",
+        'sigma': user_params['sigma'],
+        'num_stimuli': user_params['model_fit']['num_stimuli'],
+        'learning_rate': user_params['model_fit']['learning_rate'],
+        'tolerance': user_params['model_fit']['tolerance']
+    }
+    return defaults
+
+
+def _use_default(val):
+    if val.strip == "" or val.strip() == "0":
+        return True
+    else:
+        return False
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     LOG = logging.getLogger(__name__)
 
-    SHOW_MDS = False
-    CONFIG, STIMULI, NAMES_TO_ID, ID_TO_NAME = read_in_params()
-    ORIGINAL_CURVATURE = CONFIG['scripts']
-
-
-    def demo_inputs():
-        """
-        Populate demo defaults.
-        Adjust the default filepath/outdir to wherever your sample materials live.
-        """
-        CONFIG, STIMULI, NAMES_TO_ID, ID_TO_NAME = read_in_params()
-
-        defaults = {
-            "filepath": "./sample-materials/subject-data/preprocessed/S7_sample_word_exp.json",
-            "exp_name": "sample_word",
-            "subject": "S7",
-            "outdir": "./sample-materials/subject-data",
-            "use_default_sigma": True,
-            "sigma_value": CONFIG["sigmas"]["compare"] + CONFIG["sigmas"]["dist"],
-            "show_mds": False,
-            "config": CONFIG,  # pass through for convenience
-        }
-        return defaults
-
-
-    def _use_default(val):
-        if val.strip == "" or val.strip() == "0":
-            return True
-        else:
-            return False
-
-
     # enter path to subject data (json file)
-    FILEPATH = input("Path to json file containing subject's preprocessed data"
-                     " (e.g., ./sample-materials/subject-data/preprocessed/S7_sample_word_exp.json: ")
-    EXP = input("Experiment name (e.g., sample_word): ")
-    SUBJECT = input("Subject name or ID (e.g., S7): ")
-    OUTDIR = input("Output directory (e.g., ./sample-materials/subject-data) : ")
-    SIGMA = input("Enter number or 'y' to use default ({}):".format(str(
-        CONFIG['sigmas']['compare'] + CONFIG['sigmas']['dist'])))
-    if SIGMA != 'y':
-        CONFIG['sigmas'] = {
-            'dist': 0,
-            'compare': float(SIGMA)
-        }
-    if OUTDIR[-1] == '/':
-        OUTDIR = OUTDIR[:-1]
+    FILEPATH = input("Path to the combined choices file for a participant: ")
+    EXP = input("Experiment name: ")
+    SUBJECT = input("Subject name or ID: ")
+    OUTDIR = input("Output directory : ")
+    SIGMA_COMPARE = input("Enter a noise level to model error in comparing distances: ")
+    SIGMA_DIST = input("Enter a noise level if you would like to also model error in computing"
+                       " distances between stimuli: ")
+
+    CONFIG = demo_inputs()
+    # fill in defaults for missing arguments
+    FILEPATH = CONFIG['filepath'] if _use_default(FILEPATH) else FILEPATH
+    EXP = CONFIG['exp_name'] if _use_default(EXP) else EXP
+    SUBJECT = CONFIG['subject'] if _use_default(SUBJECT) else SUBJECT
+    OUTDIR = CONFIG['outdir'] if _use_default(OUTDIR) else OUTDIR
+    SIGMA_COMPARE = CONFIG['sigma']['compare'] if _use_default(SIGMA_COMPARE) else SIGMA_COMPARE
+    SIGMA_DIST = CONFIG['sigma']['dist'] if _use_default(SIGMA_DIST) else SIGMA_DIST
+
+    # print and verify arguments before beginning
     pprint.pprint(CONFIG)
     ok = input("Ok to proceed? (y/n)")
     if ok != 'y':
