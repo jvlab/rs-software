@@ -23,10 +23,8 @@ def gradient_descent(costfunc, start, pair_a, pair_b, counts, repeats, params):
     """
     vector = np.array(start)
     vector_length = len(vector)
-    # breakpoint()
     # vector = vector.reshape(len(vector), 1)  # in case it was a row, vector, make column vector
     for _ in range(params['max_iterations']):
-        # print(_)
         diff = -params['learning_rate'] * calculate_gradient(costfunc, vector, pair_a, pair_b,
                                                              counts, repeats, params, vector_length)
         if np.all(np.abs(diff) <= params['tolerance']):
