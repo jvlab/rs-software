@@ -1,3 +1,4 @@
+import os
 import glob
 import numpy as np
 import pandas as pd
@@ -26,10 +27,60 @@ def read_in_params():
     # Read in parameters from config file
     from src.rs_py.utils.config import CONFIG as USER_PARAMS
     # Fix type of all inputs
-    USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['experiment']['stimfile'])
+    USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['dataset']['stimfile'])
     return (USER_PARAMS,
             stimulus_name_to_id(USER_PARAMS['stim_list']),
             stimulus_id_to_name(USER_PARAMS['stim_list']))
+
+
+def create_coords_file(points, lls, args, tolerance=0.5, samples=70):
+    """
+    Edited on Aug 3, 2023
+    Add LL and biases too
+    @param directory: input dir - dir in which is a domain dir then a subject dir
+    @param subject:
+    @param outdir:
+    @param min_dim:
+    @param max_dim:
+    @return:
+    """
+    data = {'stim_labels': args['stimuli']}
+    bias_df = bias_dict()  # for LL bias estimation
+    rms_dists_by_dim = {}
+    for d in args['model_dimensions']:
+        # enter coordinates for each model dimension
+        points = points[d]
+        data["dim{}".format(d)] = points
+        distances = pdist(points)
+        rms_dists_by_dim[d] = np.sqrt(np.mean([d ** 2 for d in distances]))
+
+    data['rawLLs'] = []  # enter raw log-likelihoods
+    data['debiasedRelativeLL'] = []
+    data['biasEstimate'] = []
+
+    data['bestModelLL'] = lls['best']
+    data['randModelLL'] = lls['random']
+
+    raw_lls = np.array([lls['models'][d] for d in args['model_dimensions']])
+    bias_estimate = np.array(
+        [float(read_out_median_bias(bias_df, d, rms_dists_by_dim[d], tolerance=tolerance, samples=samples))
+            for d in args['model_dimensions']]
+    )
+    debiased_relative_lls = raw_lls - np.array([lls['best']*len(raw_lls)]) + bias_estimate
+
+    data["rawLLs"] = raw_lls
+    data["biasEstimate"] = bias_estimate
+    data["debiasedRelativeLL"] = debiased_relative_lls
+    data['metadata'] = ("README\n\nrawLLs[i] is the raw model LL for model with i dimensions\n"
+                        "biasEstimate[i] is the median bias estimated for the i-dimensional model, \n"
+                        "  based on the RMS distance: sigma\n\n"
+                        "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
+                        "--------------------------------------------------------------------------")
+
+    # ---- save ----
+    outpath = os.path.join(args['outdir'], f"{args['exp_name']}_coords_{args['subject']}.mat")
+    savemat(outpath, data)
+    return outpath
 
 
 def combine_model_npy_files_to_mat(directory, domain, subject, outdir='.', min_dim=1, max_dim=7):
