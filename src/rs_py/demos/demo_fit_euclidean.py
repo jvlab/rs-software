@@ -3,7 +3,6 @@
     Enter '0' to use default values.
 """
 import logging
-import pprint
 import random
 import numpy as np
 import pandas as pd
@@ -20,23 +19,27 @@ def demo_inputs():
     Populate demo defaults.
     Adjust the default filepath/outdir to wherever your sample materials live.
     """
-    user_params, stimuli, names_to_id, id_to_name = read_in_params()
+    user_params, names_to_id, id_to_name = read_in_params()
 
     defaults = {
         "filepath": "../samples/choice_files/animals_combined_choices_S4.mat",
         "exp_name": "animals",
         "subject": "S4",
         "outdir": "../samples/models",
-        'sigma': user_params['sigma'],
-        'num_stimuli': user_params['model_fit']['num_stimuli'],
-        'learning_rate': user_params['model_fit']['learning_rate'],
-        'tolerance': user_params['model_fit']['tolerance']
+        'sigma': user_params['inputs']['model_fit']['sigma'],
+        'model_dimensions': user_params['inputs']['model_fit']['model_dimensions'],
+        'num_stimuli': user_params['inputs']['model_fit']['num_stimuli'],
+        'learning_rate': user_params['inputs']['model_fit']['learning_rate'],
+        'tolerance': user_params['inputs']['model_fit']['tolerance'],
+        'max_trials': None,
+        'max_iterations': user_params['inputs']['model_fit']['max_iterations'],
+        'minimization': user_params['inputs']['model_fit']['minimization']
     }
     return defaults
 
 
 def _use_default(val):
-    if val.strip == "" or val.strip() == "0":
+    if val.strip() == "" or val.strip() == "0":
         return True
     else:
         return False
@@ -51,40 +54,99 @@ if __name__ == '__main__':
     EXP = input("Experiment name: ")
     SUBJECT = input("Subject name or ID: ")
     OUTDIR = input("Output directory : ")
-    SIGMA_COMPARE = input("Enter a noise level to model error in comparing distances: ")
-    SIGMA_DIST = input("Enter a noise level if you would like to also model error in computing"
+    NUM_STIMULI = input("Enter the number of stimuli in experiment: ")
+    print("The following arguments are optional. ")
+    MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list: ")
+    SIGMA_COMPARE = input("\tEnter a noise level to model error in comparing distances: ")
+    SIGMA_DIST = input("\tEnter a noise level if you would like to also model error in computing"
                        " distances between stimuli: ")
+    FILTER_TRIALS = input("\tEnter the maximum number of triadic judgments to use. Enter 0 to use all data.")
+    MAX_ITER = input("\tEnter the maximum number of iterations before returning the final model: ")
+    LEARN_RATE = input("\tEnter learning rate to use for minimization: ")
+    TOLERANCE = input("\tEnter acceptable tolerance for difference between iterations (stopping criterion): ")
+    MINIM = input("\tEnter minimization algorithm (opts: nelder-mead, gradient-descent): ")
 
     CONFIG = demo_inputs()
-    # fill in defaults for missing arguments
-    FILEPATH = CONFIG['filepath'] if _use_default(FILEPATH) else FILEPATH
-    EXP = CONFIG['exp_name'] if _use_default(EXP) else EXP
-    SUBJECT = CONFIG['subject'] if _use_default(SUBJECT) else SUBJECT
-    OUTDIR = CONFIG['outdir'] if _use_default(OUTDIR) else OUTDIR
-    SIGMA_COMPARE = CONFIG['sigma']['compare'] if _use_default(SIGMA_COMPARE) else SIGMA_COMPARE
-    SIGMA_DIST = CONFIG['sigma']['dist'] if _use_default(SIGMA_DIST) else SIGMA_DIST
+    # fill in defaults if missing arguments - for demo provide defaults for required args.
+    # in the accompanying script, missing required args will cause an error to be thrown.
+    ARGS = {'filepath': CONFIG['filepath'] if _use_default(FILEPATH) else FILEPATH,
+            'exp_name': CONFIG['exp_name'] if _use_default(EXP) else EXP,
+            'subject': CONFIG['subject'] if _use_default(SUBJECT) else SUBJECT,
+            'outdir': CONFIG['outdir'] if _use_default(OUTDIR) else OUTDIR,
+            'num_stimuli': CONFIG['num_stimuli'] if _use_default(NUM_STIMULI) else int(NUM_STIMULI),
+            'max_iterations': CONFIG['max_iterations'] if _use_default(MAX_ITER) else int(MAX_ITER),
+            'learning_rate': CONFIG['learning_rate'] if _use_default(LEARN_RATE) else float(LEARN_RATE),
+            'tolerance': CONFIG['tolerance'] if _use_default(TOLERANCE) else float(TOLERANCE),
+            'minimization': CONFIG['minimization'] if _use_default(MINIM) else MINIM}
 
-    # print and verify arguments before beginning
-    pprint.pprint(CONFIG)
-    ok = input("Ok to proceed? (y/n)")
-    if ok != 'y':
-        raise InterruptedError
+    SIGMA_COMPARE = CONFIG['sigma']['compare'] if _use_default(SIGMA_COMPARE) else float(SIGMA_COMPARE)
+    SIGMA_DIST = CONFIG['sigma']['dist'] if _use_default(SIGMA_DIST) else float(SIGMA_DIST)
+    ARGS['sigma'] = {'compare': SIGMA_COMPARE, 'dist': SIGMA_DIST}
+    if _use_default(MODEL_DIMENSIONS):
+        ARGS['model_dimensions'] = CONFIG['model_dimensions']
+    else:
+        ARGS['model_dimensions'] = [int(x) for x in MODEL_DIMENSIONS.split(',')]
+    effective_var = 2 * ARGS['sigma']['dist'] ** 2 + ARGS['sigma']['compare'] ** 2
+    effective_sigma = np.sqrt(effective_var)
+    ARGS['noise_st_dev'] = effective_sigma
+    FILTER_TRIALS = CONFIG['max_trials'] if _use_default(FILTER_TRIALS) else int(FILTER_TRIALS)
+
+    print("\n" + "=" * 70)
+    print("GEOMETRIC MODEL FIT DEMO")
+    print("=" * 70)
+
+    print("DATA")
+    print("-" * 70)
+    print(f"Filepath:            {ARGS['filepath']}")
+    print(f"Experiment:          {ARGS['exp_name']}")
+    print(f"Subject:             {ARGS['subject']}")
+    print(f"Output directory:    {ARGS['outdir']}")
+    print(f"Max trials used:     {FILTER_TRIALS}")
+
+    print("\nOPTIMIZATION SETTINGS")
+    print("-" * 70)
+    print(f"Max iterations:      {ARGS['max_iterations']}")
+    print(f"Learning rate:       {ARGS['learning_rate']}")
+    print(f"Tolerance:           {ARGS['tolerance']}")
+
+    print("\nNOISE PARAMETERS")
+    print("-" * 70)
+    print(f"Sigma (compare):     {ARGS['sigma']['compare']:.6f}")
+    print(f"Sigma (distance):    {ARGS['sigma']['dist']:.6f}")
+    print(f"Effective variance:  {effective_var:.6f}")
+    print(f"Effective sigma:     {effective_sigma:.6f}")
+
+    print("=" * 70)
 
     # break up ranking responses into pairwise judgments
-    pairwise_responses, pairwise_num_repeats = read_combined_choices(FILEPATH)
+    pairwise_responses, pairwise_num_repeats = read_combined_choices(ARGS['filepath'])
+
+    print("\nLoaded pairwise judgments")
+    print("-" * 60)
+    print(f"Number of unique comparisons: {len(pairwise_responses)}")
+    print(f"Total triads (including repeats): {sum(pairwise_num_repeats.values())}")
+    print("-" * 60)
 
     # only consider a subset of trials
-    if CONFIG["max_trials"] < len(pairwise_responses):
-        all_keys = list(pairwise_responses.keys())
-        chosen = random.sample(all_keys, CONFIG["max_trials"])
-        subset = {k: pairwise_responses[k] for k in chosen}
+    subset = {}
+    if FILTER_TRIALS:
+        if FILTER_TRIALS < len(pairwise_responses):
+            all_keys = list(pairwise_responses.keys())
+            chosen = random.sample(all_keys, FILTER_TRIALS)
+            subset = {k: pairwise_responses[k] for k in chosen}
+
+            print("\nUsing subset of trials")
+            print("-" * 60)
+            print(f"Trials used: {len(subset)}")
+            print(f"Total triads used: {sum(pairwise_num_repeats[k] for k in subset)}")
+            print("=" * 60)
     else:
         subset = pairwise_responses
 
     # initialize results dataframe
     total_num_triads = sum([pairwise_num_repeats[k] for k in subset.keys()])
     if total_num_triads == 0:
-        raise ValueError("No triads found (total_num_triads == 0). Check input data.")
+        raise ValueError("No triads found (total_num_triads == 0). Check input data or arguments.")
 
     # initialize results
     result = {
@@ -98,32 +160,38 @@ if __name__ == '__main__':
 
     # Euclidean models across dimensions
     num_trials = len(subset)
-    for dim in CONFIG['model_dimensions']:
-        LOG.info("####### %s dimensional model", dim)
-        model_name = f"{dim}D"
-        CONFIG["n_dim"] = dim
+    for dim in ARGS['model_dimensions']:
+        print("\n" + "=" * 60)
+        print(f"FITTING {dim}D EUCLIDEAN MODEL")
+        print("=" * 60)
 
-        x, ll_nd = rs.points_of_best_fit(subset, pairwise_num_repeats, CONFIG)
+        model_name = f"{dim}D"
+        ARGS["n_dim"] = dim
+
+        model_coords, ll_nd = rs.points_of_best_fit(subset, pairwise_num_repeats, ARGS)
 
         # (Distances computed previously; keep if useful for debugging)
-        _ = pdist(x)
+        _ = pdist(model_coords)
 
-        LOG.info("Points: ")
-        print(x)
+        print("\nOptimized embedding:")
+        print("-" * 60)
+        print(f"Shape: {model_coords.shape}")
+        print(f"Mean coordinate value: {np.mean(model_coords):.4f}")
+        print(f"Std of coordinates:    {np.std(model_coords):.4f}")
+        print(f"Min/Max coordinate:    {np.min(model_coords):.4f} / {np.max(model_coords):.4f}")
+        print("-" * 60)
+
         outfilename = '{}/{}_{}_anchored_points_sigma_{}_dim_{}'.format(
-            OUTDIR,
-            SUBJECT, EXP,
-            str(CONFIG['sigmas']['compare'] + CONFIG['sigmas']['dist']),
-            dim
+            ARGS['outdir'], ARGS['subject'], ARGS['exp_name'], effective_sigma, dim
         )
-        np.save(outfilename, x)
+        np.save(outfilename, model_coords)
 
         ll_nd = -ll_nd / float(total_num_triads)
-        LOG.info('####### LL: {}'.format(np.round(ll_nd, 4)))
+        print(f"Negative Log Likelihood per triad of the model: {ll_nd:.4f}")
 
         result['Model'].append(model_name)
         result['Log Likelihood'].append(ll_nd)
-        result['number of points'].append(CONFIG['num_stimuli'])
+        result['number of points'].append(ARGS['num_stimuli'])
         result['Curvature'].append('')
 
     # ---- Best and random baselines ----
@@ -131,29 +199,41 @@ if __name__ == '__main__':
         subset, pairwise_num_repeats)[0] / float(total_num_triads)
     result['Model'].append('best')
     result['Log Likelihood'].append(ll_best)
-    result['number of points'].append(CONFIG['num_stimuli'])
+    result['number of points'].append(ARGS['num_stimuli'])
     result['Curvature'].append('')
 
     ll_random = an.random_choice_ll(
         subset, pairwise_num_repeats)[0] / float(total_num_triads)
     result['Model'].append('random')
     result['Log Likelihood'].append(ll_random)
-    result['number of points'].append(CONFIG['num_stimuli'])
+    result['number of points'].append(ARGS['num_stimuli'])
     result['Curvature'].append('')
+
+    print("\n" + "=" * 60)
+    print("BASELINE COMPARISON")
+    print("=" * 60)
+    print(f"Best possible model LL:   {ll_best:.4f}")
+    print(f"Random choice model LL:   {ll_random:.4f}")
+    print("=" * 60)
 
     # Fill Experiment/Subject columns to match row count
     n_rows = len(result["Model"])
-    result["Experiment"] = [EXP] * n_rows
-    result["Subject"] = [SUBJECT] * n_rows
+    result["Experiment"] = [ARGS['exp_name']] * n_rows
+    result["Subject"] = [ARGS['subject']] * n_rows
 
     # ---- Output results ----
     data_frame = pd.DataFrame(result)
-    sigma = CONFIG['sigmas']['compare'] + CONFIG['sigmas']['dist']
-    data_frame.to_csv('{}/{}-{}-geometry-likelihoods_with_{}_trials_sigma_{}_{}pts_anchored.csv'
-                      .format(OUTDIR,
-                              SUBJECT,
-                              EXP,
-                              CONFIG['max_trials'],
-                              sigma,
-                              CONFIG['num_stimuli']
+
+    print("\nFINAL MODEL COMPARISON")
+    print("=" * 60)
+    print(data_frame.to_string(index=False))
+    print("=" * 60)
+
+    data_frame.to_csv('{}/{}-{}-geometry-likelihoods_with_{}_trials_sigma_{}_{}_pts_anchored.csv'
+                      .format(ARGS['outdir'],
+                              ARGS['subject'],
+                              ARGS['exp_name'],
+                              'all' if not ARGS['max_trials'] else ARGS['max_trials'],
+                              effective_sigma,
+                              ARGS['num_stimuli']
                               ), index=False)
