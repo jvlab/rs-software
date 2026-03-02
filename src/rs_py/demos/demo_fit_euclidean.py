@@ -192,7 +192,6 @@ if __name__ == '__main__':
         result['Model'].append(model_name)
         result['Log Likelihood'].append(ll_nd)
         result['number of points'].append(ARGS['num_stimuli'])
-        result['Curvature'].append('')
 
     # ---- Best and random baselines ----
     ll_best = an.best_model_ll(
@@ -200,14 +199,12 @@ if __name__ == '__main__':
     result['Model'].append('best')
     result['Log Likelihood'].append(ll_best)
     result['number of points'].append(ARGS['num_stimuli'])
-    result['Curvature'].append('')
 
     ll_random = an.random_choice_ll(
         subset, pairwise_num_repeats)[0] / float(total_num_triads)
     result['Model'].append('random')
     result['Log Likelihood'].append(ll_random)
     result['number of points'].append(ARGS['num_stimuli'])
-    result['Curvature'].append('')
 
     print("\n" + "=" * 60)
     print("BASELINE COMPARISON")
@@ -233,7 +230,27 @@ if __name__ == '__main__':
                       .format(ARGS['outdir'],
                               ARGS['subject'],
                               ARGS['exp_name'],
-                              'all' if not ARGS['max_trials'] else ARGS['max_trials'],
+                              'all' if not FILTER_TRIALS else FILTER_TRIALS,
                               effective_sigma,
                               ARGS['num_stimuli']
                               ), index=False)
+
+    # coords_by_dim = {1: coords1, 2: coords2, 3: coords3}
+    # lls_by_dim = {1: ll1, 2: ll2, 3: ll3}
+    # best_ll = ll_best
+    # random_ll = ll_random
+    # stim_labels = stimulus_names()  # or args['stimuli']
+    #
+    # mat_path = create_coords_file_from_dict_lls(
+    #     outdir=outdir,
+    #     domain=domain,
+    #     subject=subject,
+    #     model_dimensions=[1, 2, 3],
+    #     coords_by_dim=coords_by_dim,
+    #     lls_by_dim=lls_by_dim,
+    #     best_ll=best_ll,
+    #     random_ll=random_ll,
+    #     stim_labels=stim_labels,
+    #     debias=True
+    # )
+    # print("Saved:", mat_path)
