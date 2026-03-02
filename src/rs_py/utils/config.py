@@ -22,19 +22,17 @@ CONFIG = {
         },
         'model_fit': {
             'num_stimuli': 37,
-            'num_stimuli_per_trial': 8,  # daikho
-            'overlap': 2,  # daikho,
+            # 'num_stimuli_per_trial': 8,  # daikho
+            # 'overlap': 2,  # daikho,
             'sigma': {
                 'compare': 1,
                 'dist': 0
             },
             'stimlist': [],  # to be populated
-            'max_trials': 6000,  # daikho
+            'max_trials': 10000,
             'model_dimensions': [1, 2, 3, 4, 5, 6, 7],
-            'num_repeats': 5,  # daikho
             'minimization': 'gradient-descent',
             'tolerance': 1e-6,  # is this used?
-            'fatol': 1e-5,  # used for NM,
             'max_iterations': 35000,
             'learning_rate': 0.05,
         },
