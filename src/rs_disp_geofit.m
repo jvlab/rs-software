@@ -33,6 +33,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 %   lw_model: line width for model, default=2
 %   lw_nest: line width for nested model, default=2
 %   lw_quant: line width for quantile, default=1
+%   view: 3-d view descriptor, defaults to 3 (standard 3-d view), can also be azimuth-elevation pair, standard 3-d view is [-37.5 30])
 % 
 % aux_out: auxiliary outputs and parameter values used
 %   warnings: warnings generated in creating arguments for psg_get_coordsets
@@ -75,6 +76,7 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_omnicolors',1); %1 to use colors fro
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'adj_label','input dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'ref_label','output dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'dia_label','dim');
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',3);
 %
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_log',0);
 %

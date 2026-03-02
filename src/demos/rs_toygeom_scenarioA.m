@@ -13,4 +13,5 @@ opts_geof.if_stats=0;
 rs_toygeom_demo;
 paradigms_fit_show={'Axes'};
 subjs_fit_show=[1:nsubjs];
+
 rs_toygeom_disp;
