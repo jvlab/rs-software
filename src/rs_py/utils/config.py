@@ -1,8 +1,5 @@
 CONFIG = {
-    'common': {
-        'epsilon': 1e-30,
-        'verbose': False
-    },
+    'verbose': False,
     'dataset': {
         'name': 'animals',                # required
         'subject': 'S4',                       # required
