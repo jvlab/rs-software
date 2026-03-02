@@ -1,5 +1,4 @@
 import glob
-import yaml
 import numpy as np
 import pandas as pd
 from scipy.io import savemat
@@ -25,12 +24,12 @@ def stimulus_id_to_name(stimlist):
 
 def read_in_params():
     # Read in parameters from config file
-    from src.rs_py.utils.config import CONFIG as user_params
+    from src.rs_py.utils.config import CONFIG as USER_PARAMS
     # Fix type of all inputs
-    user_params['stim_list'] = stimulus_names(user_params['experiment']['stimfile'])
-    return (user_params,
-            stimulus_name_to_id(user_params['stim_list']),
-            stimulus_id_to_name(user_params['stim_list']))
+    USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['experiment']['stimfile'])
+    return (USER_PARAMS,
+            stimulus_name_to_id(USER_PARAMS['stim_list']),
+            stimulus_id_to_name(USER_PARAMS['stim_list']))
 
 
 def combine_model_npy_files_to_mat(directory, domain, subject, outdir='.', min_dim=1, max_dim=7):
