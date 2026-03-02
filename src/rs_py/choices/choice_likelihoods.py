@@ -20,7 +20,6 @@ Gaussian distributions, which is not exactly Gaussian. So erf is merely an appro
 since it only accounts for Gaussian sources of noise.
 """
 
-import yaml
 import logging
 import numpy as np
 from numpy import concatenate, log2
@@ -29,6 +28,7 @@ from scipy.spatial.distance import pdist, squareform
 from ..utils import util
 
 LOG = logging.getLogger(__name__)
+EPSILON = 1e-30
 
 
 def calculate_ll(counts, probs, num_repeats):
@@ -55,12 +55,12 @@ def dist_model_ll_vectorized(pair_a, pair_b, judgment_counts, judgment_repeats, 
     that takes into account noise as Gaussian sources. """
     # get geometry probabilities and join counts and geometry prob for each trial (N, p)
     interstimulus_distances = squareform(pdist(stimuli))
-    probs = find_probabilities(interstimulus_distances, pair_a, pair_b, params['noise_st_dev'], params['no_noise'])
+    probs = find_probabilities(interstimulus_distances, pair_a, pair_b, params['noise_st_dev'])
     # calculate log-likelihood, is_bad flag
     return calculate_ll(judgment_counts, probs, judgment_repeats)
 
 
-def find_probabilities(distances, pair_a, pair_b, noise_st_dev, no_noise=False):
+def find_probabilities(distances, pair_a, pair_b, noise_st_dev):
     """
     @param distances: a matrix of distances size (number of stimuli, number of stimuli)
     @param pair_a: a 2D numpy array with a pair of stimulus indices in each row, denoting the first distance
@@ -69,7 +69,7 @@ def find_probabilities(distances, pair_a, pair_b, noise_st_dev, no_noise=False):
     @param noise_st_dev: combined noise from compare and dist for two possible noise sources
     """
     difference = distances[pair_a[:, 0], pair_a[:, 1]] - distances[pair_b[:, 0], pair_b[:, 1]]
-    if noise_st_dev == 0 or no_noise is True:
+    if noise_st_dev == 0:
         # if (sigmas['compare'] + sigmas['dist'] == 0) or no_noise is True:
         probabilities = (difference < 0) * 0 + (difference > 0) * 1 + (difference == 0) * 0.5
     else:
@@ -148,11 +148,3 @@ def log_likelihood_of_choice_probs(json_file_path, path_to_npy_file, noise_st_de
     best_ll = best_model_ll(pairwise_responses, pairwise_num_repeats)[0]
     return ll / num_triads, rand_ll / num_triads, best_ll / num_triads
 
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-
-
-    with open('./analysis/config.yaml', "r") as stream:
-        data = yaml.safe_load(stream)
-        EPSILON = float(data['epsilon'])
