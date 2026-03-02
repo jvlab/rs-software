@@ -26,7 +26,7 @@ from ..choices.choice_likelihoods import calculate_ll, dist_model_ll_vectorized,
 LOG = logging.getLogger(__name__)
 
 
-def points_of_best_fit(judgments, number_repeats, args, start_points=None, minimization='gradient-descent'):
+def points_of_best_fit(judgments, number_repeats, args, start_points=None):
     """
     Given judgments, number of stimuli and dimensions of space,
     find the lowest likelihood points that give that fit
@@ -68,13 +68,13 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None, minim
     # make maxiter 60000 for 5D geometry
     options_min = {
         'disp': True,
-        'fatol': args['fatol']}
+        'fatol': args['tolerance']}
     if args['n_dim'] < 4:
         options_min['maxiter'] = 85000
     elif args['n_dim'] >= 4:
         options_min['maxiter'] = 110000
     pairs_a, pairs_b, response_counts, comp_repeats = util.judgments_to_arrays(judgments, number_repeats)
-    if minimization == 'nelder-mead':
+    if args['minimization'] == 'nelder-mead':
         optimal = optimize.minimize(cost, start_params,
                                     args=(pairs_a, pairs_b, response_counts, comp_repeats, args),
                                     method='Nelder-Mead',
@@ -151,20 +151,11 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
     # turn points to params
     start_params = ac.points_to_params(start)
     LOG.info('######## Run minimization on MDS start points (scipy minimize)')
-    # make maxiter 60000 for 5D geometry
-    options_min = {
-        'disp': True,
-        'fatol': args['fatol']}
-    if args['n_dim'] < 4:
-        options_min['maxiter'] = 85000
-    elif args['n_dim'] >= 4:
-        options_min['maxiter'] = 110000
 
     pairs_a, pairs_b, response_counts, comp_repeats = util.judgments_to_arrays(judgments, number_repeats)
     solution = gradient_descent(hyperbolic_cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)
     solution_ll = hyperbolic_cost(solution, pairs_a, pairs_b, response_counts, comp_repeats, args)
-    # plt.plot(fmin_costs, 'o-')
-    # plt.show()
+
     coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
     LOG.info('########  Procrustes distance between anchored start and final solution: {}'.format(
         procrustes(start, coordinates)[2])
@@ -222,20 +213,11 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
     # turn points to params
     start_params = ac.points_to_params(start)
     LOG.info('######## Run minimization on MDS start points (scipy minimize)')
-    # make maxiter 60000 for 5D geometry
-    options_min = {
-        'disp': True,
-        'fatol': args['fatol']}
-    if args['n_dim'] < 4:
-        options_min['maxiter'] = 85000
-    elif args['n_dim'] >= 4:
-        options_min['maxiter'] = 110000
 
     pairs_a, pairs_b, response_counts, comp_repeats = util.judgments_to_arrays(judgments, number_repeats)
     solution = gradient_descent(spherical_cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)
     solution_ll = spherical_cost(solution, pairs_a, pairs_b, response_counts, comp_repeats, args)
-    # plt.plot(fmin_costs, 'o-')
-    # plt.show()
+
     coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
     try:
         procr_dist = procrustes(start, coordinates)[2]
