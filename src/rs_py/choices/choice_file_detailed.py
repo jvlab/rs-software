@@ -22,6 +22,8 @@ import csv
 import numpy as np
 from scipy.io import savemat
 
+from src.rs_py.utils.helpers import stimulus_names, stimulus_name_to_id, stimulus_id_to_name
+
 
 def get_response_files(directory, suffix="responses", extension="csv"):
     # directory is path to exp/subject-data
@@ -321,8 +323,8 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
       a KeyError will be raised.
     """
     stimuli = sorted(list(stimuli_set))
-    names_to_id = dict(zip(stimuli, range(1, len(stimuli) + 1)))
-    id_to_name = dict(zip(['s' + str(x) for x in range(1, len(stimuli)+1)], stimuli))
+    names_to_id = stimulus_name_to_id(stimuli, one_indexed=True)
+    id_to_name = stimulus_id_to_name(stimuli, one_indexed=True)
     stim_keys = ['s1', 's2', 's3', 's4']
     for i in range(len(comparisons)):
         c = comparisons[i]
