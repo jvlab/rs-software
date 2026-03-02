@@ -2,7 +2,8 @@
 % Scenario A for rs_toygeom_demo: 
 % general illustration of gemoetric models, without statistics
 %
-% shows that:
+% Geometric models simulated: procrustes, affine, projective, and piecewise affine (3 dimensions each)
+% Shows that:
 % * geometric models can be distinguished
 % * procurstes is also fit by affine, projective, and piecewise affine
 % * affine is also fit by projective and piecewise affine
@@ -22,7 +23,7 @@ nrandom=48;
 nsubjs=1;
 ncoords_noise=0;
 noise_transform_mag=0; %ensure that the Procrustes model is truly Procrustes
-noise_add_subj=0.1; %small amount of noise
+noise_add_subj=0.05; %small amount of noise
 %
 %geometric model selection
 model_list={'procrustes_scale_offset','affine_offset','projective','pwaffine'};
@@ -36,6 +37,6 @@ rs_toygeom_demo; %create the stimuli and datasets, and fit the models
 paradigms_fit_show={'Axes','Random'};
 subjs_fit_show=[1:nsubjs];
 opts_dgeo=struct;
-opts_dgeo.view=[-25 20];
+opts_dgeo.view=[-40 20];
 %
 rs_toygeom_disp; %display model-fitting results

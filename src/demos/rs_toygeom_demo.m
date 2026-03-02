@@ -54,9 +54,9 @@ if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to sh
 %
 if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
 if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
-if ~exist('noise_transform_mag') noise_transform_mag=0.2; end %range of transformation noise
+if ~exist('noise_transform_mag') noise_transform_mag=0; end %set to nonzero (e..g, 0.2) to allow each subject's transformation to differ
 if ~exist('noise_transform_subj') noise_transform_subj=[1:nsubjs]; end % multiplies noise_transform_mag to vary transform noise for each subject
-if ~exist('noise_add_mag') noise_add_mag=0.5; end %additive Gaussian noise
+if ~exist('noise_add_mag') noise_add_mag=1; end %additive Gaussian noise
 if ~exist('noise_add_subj') noise_add_subj=[1:nsubjs]; end % mutliplies noise_add_mag to vary noise for each subject
 %
 if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets for stimuli and subjects
