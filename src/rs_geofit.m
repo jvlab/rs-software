@@ -127,6 +127,7 @@ aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
+aux.opts_geof=filldefault(aux.opts_geof,'persp_method','fmin');
 %
 aux=filldefault(aux,'opts_check',struct); %options for other modules called
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -238,6 +239,7 @@ opts_psgfit_base.if_nestbydim=z.if_nestbydim;
 opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
 opts_psgfit_base.if_center=z.if_center;
 opts_psgfit_base.if_frozen=z.if_frozen;
+opts_psgfit_base.persp_method=z.persp_method;
 %
 for iset=1:nsets
     iset_in=1+mod(iset-1,check_in.nsets);

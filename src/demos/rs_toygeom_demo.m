@@ -491,6 +491,7 @@ aux_geof.opts_geof=opts_geof;
 %
 %
 gfs=cell(ntransforms,length(paradigms_all));
+xs=cell(ntransforms,length(paradigms_all));
 aux_geof_out=cell(ntransforms,length(paradigms_all));
 for it=1:ntransforms
     transform_name=transform_names{it};
@@ -500,7 +501,7 @@ for it=1:ntransforms
         disp(sprintf('modeling transform %20s from stimulus space to subject space with paradigm %20s',transform_name,paradigm_name));
         data_in=sims.(paradigm_name).stimspace;
         data_out=sims.(paradigm_name).dataspace.(transform_name);
-        [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
+        [gfs{it,ip},xs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
     end
 end
 sims.transform_names=transform_names;
@@ -508,6 +509,7 @@ sims.paradigm_names=paradigm_names;
 sims.paradigms_all=paradigms_all;
 sims.nsubjs=nsubjs;
 sims.gfs=gfs;
+sims.xs=xs;
 sims.aux_geof_out=aux_geof_out;
 %
 sims.ncoords=ncoords;
