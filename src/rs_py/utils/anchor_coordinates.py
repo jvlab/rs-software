@@ -77,7 +77,7 @@ def params_to_points(x0, num_stimuli, n_dim):
     :return: points is a 2D array containing point coordinates.
             size: num_stimuli x n_dim
     """
-    points = zeros((num_stimuli, n_dim))
+    points = np.zeros((num_stimuli, n_dim))
     pointer = 0
     for i in range(1, min(n_dim, num_stimuli)):
         points[i, 0: i] = x0[pointer: i + pointer]
