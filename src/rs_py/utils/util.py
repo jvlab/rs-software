@@ -1,12 +1,14 @@
 """
 Some utilities to help with processing psychophysical data files
 """
-import glob
-import yaml
+
 import json
 import numpy as np
-import pandas as pd
 from itertools import combinations
+
+from scipy.io import loadmat
+
+from src.rs_py.utils.helpers import stimulus_name_to_id
 
 
 def all_distance_pairs(trial_key):
@@ -18,41 +20,6 @@ def all_distance_pairs(trial_key):
         return '{},{}<{},{}'.format(ref, x[0], ref, x[1])
 
     return list(map(helper, pairs))
-
-
-def ranking_to_pairwise_comparisons_per_trial(distance_pairs, ranked_stimuli):
-    # TODO
-    # refactor or delete
-    """ Convert ranking data to comparisons of pairs of pairs of stimuli
-
-    @param distance_pairs:
-    :type distance_pairs: list
-    :param ranked_stimuli:
-    :type ranked_stimuli: list
-    """
-    # ranked_stimuli is a list of lists. each list is a 'repeat'
-    rank = {}
-    stimulus_pairs = []  # ((s1, s2), (s3, s4))
-    judgments = []
-    num_repeats = []
-    comparator = ['<']
-
-    for stimulus_list in ranked_stimuli:
-        for index in range(len(stimulus_list)):
-            rank[stimulus_list[index]] = index
-        for pair in distance_pairs:
-            dists = pair.split('<')
-            stim1 = dists[0].split(',')[1]
-            stim2 = dists[1].split(',')[1]
-            stimulus_pairs.append((stim1))
-            if pair not in comparisons:
-                comparisons[pair] = 1 if rank[stim1] < rank[stim2] else 0
-                num_repeats[pair] = 1
-            else:
-                num_repeats[pair] += 1
-                if rank[stim1] < rank[stim2]:
-                    comparisons[pair] += 1
-    return comparisons, num_repeats
 
 
 def ranking_to_pairwise_comparisons(distance_pairs, ranked_stimuli):
@@ -98,6 +65,31 @@ def judgments_to_arrays(judgments_dict, repeats):
     return first_pair, second_pair, comparison_counts, comparison_repeats
 
 
+def read_combined_choices(filepath):
+    # input path to combined choice file
+    matfile = loadmat(filepath)
+    responses = matfile["responses"]
+
+    pairwise_responses = {}
+    pairwise_num_repeats = {}
+
+    for row in responses:
+        s1, s2, s3, s4 = int(row[0]), int(row[1]), int(row[2]), int(row[3])
+        count = int(row[4])
+        repeats = int(row[5])
+
+        # subtract 1 as MATLAB 1-based indices
+        key = ((s1-1, s2-1), (s3-1, s4-1))
+        if key not in pairwise_responses:
+            pairwise_responses[key] = count
+            pairwise_num_repeats[key] = repeats
+        else:
+            pairwise_responses[key] += count
+            pairwise_num_repeats[key] += repeats
+
+    return pairwise_responses, pairwise_num_repeats
+
+
 def json_to_pairwise_choice_probs(filepath):
     names_to_id = stimulus_name_to_id()
     with open(filepath) as file:
@@ -125,13 +117,6 @@ def json_to_pairwise_choice_probs(filepath):
     return pairwise_comparison_responses, pairwise_comparison_num_repeats
 
 
-# if __name__ == '__main__':
-#     subjects = ['JF']  # 'MC', 'SJ', 'SAW', 'YCL', 'AJ', 'SN', 'ZK', 'BL', 'EFV', 'SA', 'NK', 'CME']   # 'JF' , 'CME',
-#     for subject in subjects:
-#         combine_model_npy_files_to_mat(
-#             '/Users/suniyya/Dropbox/Research/Thesis_Work/Psychophysics_Aim1/geometric-modeling/euclidean',
-#             'texture',
-#             subject, outdir='.', min_dim=1, max_dim=7)
 #         write_choice_probs_to_mat(
 #         #     '/Users/suniyya/Dropbox/Research/Thesis_Work/Psychophysics_Aim1/experiments/experiments'
 #         #     '/{}_exp/subject-data/preprocessed/{}_{}_exp.json'.format(domain, subject, domain),
