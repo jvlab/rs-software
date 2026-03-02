@@ -32,8 +32,8 @@ def gradient_descent(costfunc, start, pair_a, pair_b, counts, repeats, params):
             break
         vector += diff
         if _ % 1000 == 0:
-            print('{} Iterations done'.format(_))
-    print("Stopped on Iteration number {}".format(_))
+            print('\tIterations completed: \t\t{}'.format(_))
+    print("\tStopped on Iteration number {}".format(_))
     # vector = vector.reshape(1, len(vector))  # returned vector must be a regular 1D array
     return vector
 
