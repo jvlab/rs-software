@@ -174,6 +174,11 @@ for it=1:length(transform_names_avail)
             transforms_noisy{is}.(transform_name).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
         end %fn
         transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine continuity
+        %adjustment for procrustes to ensure that the transform is isotropic
+        if strcmp(transform_name,'procrustes')
+            [Torth,Torthonormal]=grmscmdt(transforms_noisy{is}.procrustes.T);
+            transforms_noisy{is}.procrustes.T=Torthonormal;
+        end
         %adjustments for pwaffine to ensure continuity at boundary       
         if strcmp(transform_name,'pwaffine')
             pw_vcut=transforms_noisy{is}.pwaffine.vcut;

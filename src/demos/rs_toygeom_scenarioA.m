@@ -22,7 +22,7 @@ nrandom=48;
 %subject customizations
 nsubjs=1;
 ncoords_noise=0;
-noise_transform_mag=0; %ensure that the Procrustes model is truly Procrustes
+noise_transform_mag=0;
 noise_add_subj=0.05; %small amount of noise
 %
 %geometric model selection
