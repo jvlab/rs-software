@@ -50,7 +50,8 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     Note that to compare the explanatory power of the k-dimensional coords in data_in{:}{k} against the coordinates in a lower dimensional model, e.g., data_in{:}{m},
 %       then one should ensure that data_in{:}{k}(:,1:m)=data_in{:}{m} and use if_nestbydim=+1
 %    This option is only recommended if, whenever a model is fit for (din,dout), it is also fit for (din-1,dout). This is guaranteed for  dimpairs_method='all' or 'din_lteq_dout;
-%  if_center: 1 (default) to center the data
+%  if_center: 1 (default) to center the data, i.e., subtract the mean across stimuli from data_in and data_out
+%     Note that with this option, the transformations returned in gfs and xs apply to the centered data.
 %  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
 %  if_fit_summary: 1 (default) to log summary of fitting
 %  if_fit_log: 1 (0: default) for detailed log
