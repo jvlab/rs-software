@@ -40,7 +40,7 @@
 %
 if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
-if ~exist('projective_mag') projective_mag=0.03; end %controls amount of distortion in projective transform
+if ~exist('projective_mag') projective_mag=0.1; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
 %
 if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
@@ -54,9 +54,9 @@ if ~exist('subjs_disp') subjs_disp=unique([1,nsubjs]); end %which subjects to sh
 %
 if ~exist('ncoords') ncoords=3; end %number of coordinates in stimulus set, should be at least 3
 if ~exist('ncoords_noise') ncoords_noise=2; end %simulations can have noise on additional coordinates
-if ~exist('noise_transform_mag') noise_transform_mag=0.2; end %range of transformation noise
-if ~exist('noise_transform_subj') noise_transform_subj=[1:nsubjs]; end % multiplies noise_transform_ma to vary transform noise for each subject
-if ~exist('noise_add_mag') noise_add_mag=0.5; end %additive Gaussian noise
+if ~exist('noise_transform_mag') noise_transform_mag=0; end %set to nonzero (e..g, 0.2) to allow each subject's transformation to differ
+if ~exist('noise_transform_subj') noise_transform_subj=[1:nsubjs]; end % multiplies noise_transform_mag to vary transform noise for each subject
+if ~exist('noise_add_mag') noise_add_mag=1; end %additive Gaussian noise
 if ~exist('noise_add_subj') noise_add_subj=[1:nsubjs]; end % mutliplies noise_add_mag to vary noise for each subject
 %
 if ~exist('if_disp_coordsets') if_disp_coordsets=1; end %set to 0 to suppress plots of coordinate sets for stimuli and subjects
@@ -174,6 +174,11 @@ for it=1:length(transform_names_avail)
             transforms_noisy{is}.(transform_name).(fns{ifn})=transform.(fns{ifn})+noise_param_mult*noise_transform(is)*randn(size(transform.(fns{ifn})));
         end %fn
         transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine continuity
+        %adjustment for procrustes to ensure that the transform is isotropic
+        if strcmp(transform_name,'procrustes')
+            [Torth,Torthonormal]=grmscmdt(transforms_noisy{is}.procrustes.T);
+            transforms_noisy{is}.procrustes.T=Torthonormal;
+        end
         %adjustments for pwaffine to ensure continuity at boundary       
         if strcmp(transform_name,'pwaffine')
             pw_vcut=transforms_noisy{is}.pwaffine.vcut;
@@ -491,6 +496,7 @@ aux_geof.opts_geof=opts_geof;
 %
 %
 gfs=cell(ntransforms,length(paradigms_all));
+xs=cell(ntransforms,length(paradigms_all));
 aux_geof_out=cell(ntransforms,length(paradigms_all));
 for it=1:ntransforms
     transform_name=transform_names{it};
@@ -500,7 +506,7 @@ for it=1:ntransforms
         disp(sprintf('modeling transform %20s from stimulus space to subject space with paradigm %20s',transform_name,paradigm_name));
         data_in=sims.(paradigm_name).stimspace;
         data_out=sims.(paradigm_name).dataspace.(transform_name);
-        [gfs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
+        [gfs{it,ip},xs{it,ip},aux_geof_out{it,ip}]=rs_geofit(data_in,data_out,aux_geof);
     end
 end
 sims.transform_names=transform_names;
@@ -508,6 +514,7 @@ sims.paradigm_names=paradigm_names;
 sims.paradigms_all=paradigms_all;
 sims.nsubjs=nsubjs;
 sims.gfs=gfs;
+sims.xs=xs;
 sims.aux_geof_out=aux_geof_out;
 %
 sims.ncoords=ncoords;
