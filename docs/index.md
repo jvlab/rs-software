@@ -1,6 +1,6 @@
-# Welcome to my MATLAB Library
+# Welcome to Representational spaces sofware (rs-software)
 
-## Purpose
+## Description and purpose
 
 
 ## How to cite

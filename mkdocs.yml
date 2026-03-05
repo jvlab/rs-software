@@ -1,10 +1,16 @@
 site_name: "Representational spaces"
-
+site_url: https://jvlab.github.io/rs-software/
 theme:
   name: material
+  features:
+    - toc.integrate 
+
+hooks:
+  - docs/hooks.py
 
 plugins:
 - search
+- autolinks 
 - autorefs
 - mkdocstrings:
     default_handler: matlab
@@ -14,14 +20,35 @@ plugins:
             options:
               docstring_section_style: list
         matlab:
-            paths: [src] 
+            #paths: [src] 
             paths_recursive: true 
             options:
                 docstring_section_style: list
-    
-    
+                show_root_heading: true
+                show_signature: true
+                separate_signature: false
+                signature_crossrefs: false
+                parse_arguments: true
+                docstring_style: google
+                
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+
+extra_css:
+  - css/extra.css
+     
 nav:
   - Home: index.md
   - Installation: installation.md
   - Modules: modules.md
-  - List of functions: list-functions.md
+  - Function index: function-index.md
+  - Function index - python: function-index-python.md
+  - Demos: demos.md
+  - Data structures: data_structures.md
+
+not_in_nav: mfiles/*

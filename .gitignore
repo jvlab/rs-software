@@ -10,3 +10,5 @@ junk*.*
 *.ppt*
 *.doc*
 *.asv
+site/
+*__pycache__*

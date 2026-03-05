@@ -1,0 +1,11 @@
+/* Increase overall content width */
+.md-grid {
+  max-width: 2000px;  /* Default is usually 1220px */
+}
+
+/* Specifically increase code block width */
+.md-typeset pre > code {
+  max-width: 100%;
+  display: block;
+}
+

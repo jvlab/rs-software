@@ -2,44 +2,22 @@
 
 The library is organized in different modules
 
-## Data input
-
-### Raw triplet responses
-
-Behavioral data can be input as raw triplet responses, that is, the responses as they occur during the experiment, with each row corresponding to a trial.
-
-This type of input needs (?) to be transformed to an aggregated format. This step can be done with function
-`aggregate_triplets`. For example,
-
-```
-data = readcsv(...)
-agg_data = aggregate_triplets(data)
-```
-
-returns the variable `agg_data` with the aggregated data.
+**(WIP: to be edited)**
 
 
-### Aggregated triplet responses
+## Data checking
 
-Input can also be triplet responses tallied across repetitions.
-In this case ...
+- [`rs_check_coordsets`](rs_check_coordsets.md) Checks consistency of datasets and gets available stimuli, dimensions, and typenames.
 
-...
+## Transformations
 
+- [`rs_concat_coordsets`](rs_concat_coordsets.md) Concatenates two dataset structures and checks concatenated dataset structure for consistency
 
+## Visualizations
 
-
-## Data transformation
-
-...
-...
-
+- [`rs_disp_coordsets`](rs_disp_coordsets.md) Displays one or more views of a set of coordinates
 
 ## Utilities
 
-- [`procrustes_consensus`](mfiles/procrustes_consensus.md) Procrustes_consensus
-- [`procrustes_consensus-corrected-style`](mfiles/procrustes_consensus_corrected_style.md) Procrustes_consensus
-- ...
-
-
+- [`procrustes_consensus`](procrustes_consensus.md) Procrustes_consensus
 
