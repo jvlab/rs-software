@@ -10,7 +10,7 @@ from scipy.spatial.distance import pdist
 
 import src.rs_py.model.fit_geometric_models as rs
 import src.rs_py.choices.choice_likelihoods as an
-from src.rs_py.utils.helpers import read_in_params
+from src.rs_py.utils.helpers import read_in_params, create_coords_file
 from src.rs_py.utils.util import read_combined_choices
 
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     print("=" * 70)
 
     # break up ranking responses into pairwise judgments
-    pairwise_responses, pairwise_num_repeats = read_combined_choices(ARGS['filepath'])
+    pairwise_responses, pairwise_num_repeats, metadata = read_combined_choices(ARGS['filepath'])
 
     print("\nLoaded pairwise judgments")
     print("-" * 60)
@@ -154,11 +154,13 @@ if __name__ == '__main__':
         "Log Likelihood": [],
         "number of points": [],
         "Experiment": [],
-        "Subject": [],
-        "Curvature": [],
+        "Subject": []
     }
 
     # Euclidean models across dimensions
+    coords_by_dim = {}
+    lls_by_dim = {}
+
     num_trials = len(subset)
     for dim in ARGS['model_dimensions']:
         print("\n" + "=" * 60)
@@ -172,6 +174,8 @@ if __name__ == '__main__':
 
         # (Distances computed previously; keep if useful for debugging)
         _ = pdist(model_coords)
+        coords_by_dim[dim] = model_coords
+        lls_by_dim[dim] = ll_nd
 
         print("\nOptimized embedding:")
         print("-" * 60)
@@ -235,22 +239,21 @@ if __name__ == '__main__':
                               ARGS['num_stimuli']
                               ), index=False)
 
-    # coords_by_dim = {1: coords1, 2: coords2, 3: coords3}
-    # lls_by_dim = {1: ll1, 2: ll2, 3: ll3}
-    # best_ll = ll_best
-    # random_ll = ll_random
-    # stim_labels = stimulus_names()  # or args['stimuli']
-    #
-    # mat_path = create_coords_file_from_dict_lls(
-    #     outdir=outdir,
-    #     domain=domain,
-    #     subject=subject,
-    #     model_dimensions=[1, 2, 3],
-    #     coords_by_dim=coords_by_dim,
-    #     lls_by_dim=lls_by_dim,
-    #     best_ll=best_ll,
-    #     random_ll=random_ll,
-    #     stim_labels=stim_labels,
-    #     debias=True
-    # )
-    # print("Saved:", mat_path)
+    # write combined file with coords and lls
+    stimuli = metadata['stim_labels']
+    stim_ids = metadata['stim_ids']
+    stim_labels = [stim for _, stim in sorted(zip(stim_ids, stimuli))]
+    lls_by_dim['best'] = ll_best
+    lls_by_dim['random'] = ll_random
+
+    mat_path = create_coords_file(
+        outdir=ARGS['outdir'],
+        exp=ARGS['exp_name'],
+        subject=ARGS['subject'],
+        model_dimensions=ARGS['model_dimensions'],
+        points=coords_by_dim,
+        lls=lls_by_dim,
+        stim_labels=stim_labels,
+        stim_ids=stim_ids
+    )
+    print("Saved:", mat_path)

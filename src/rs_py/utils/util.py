@@ -69,6 +69,7 @@ def read_combined_choices(filepath):
     # input path to combined choice file
     matfile = loadmat(filepath)
     responses = matfile["responses"]
+    metadata = matfile["metadata"]
 
     pairwise_responses = {}
     pairwise_num_repeats = {}
@@ -87,7 +88,7 @@ def read_combined_choices(filepath):
             pairwise_responses[key] += count
             pairwise_num_repeats[key] += repeats
 
-    return pairwise_responses, pairwise_num_repeats
+    return pairwise_responses, pairwise_num_repeats, metadata
 
 
 def json_to_pairwise_choice_probs(filepath):

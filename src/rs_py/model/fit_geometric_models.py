@@ -41,18 +41,15 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
     @param judgments:
     @param number_repeats:
     """
-    # for debugging
-    fmin_costs = []
 
     def cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
         vectors = ac.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
         ll, is_bad = dist_model_ll_vectorized(pair_a, pair_b, counts, repeats, parameters, vectors)
         LOG.debug('geometry is good: {}'.format(not is_bad))
-        # fmin_costs.append(-1 * ll)  # debugging fmin
         return -1 * ll
 
     # calculate noise before continuing
-    total_st_dev = sqrt((args['sigmas']['dist'] ** 2) + args['sigmas']['compare'] ** 2)
+    total_st_dev = sqrt((args['sigma']['dist'] ** 2) + args['sigma']['compare'] ** 2)
     args['noise_st_dev'] = total_st_dev
     if start_points is None:
         # if not specified start minimization at coordiates returned by MDS after calculation of win-loss distances
@@ -84,14 +81,14 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
             '######## {} Iterations completed: {}. Model Dim: {}.'.format(optimal.message, optimal.nit,
                                                                           args['n_dim'])
         )
-        solution = optimal.x
+        solution = optimal.model_coords
         solution_ll = optimal.fun
     else:
         solution = gradient_descent(cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)
         stim = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
         ll_final, is_model_bad = dist_model_ll_vectorized(pairs_a, pairs_b, response_counts, comp_repeats, args, stim)
         solution_ll = -1 * ll_final
-        LOG.info("Final Model is good/ feasible: {}".format(not is_model_bad))
+        LOG.debug("Final Model is good/ feasible: {}".format(not is_model_bad))
 
     coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
 
@@ -99,7 +96,7 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
         procr_dist = procrustes(start, coordinates)[2]
     except ValueError:
         procr_dist = 'WARNING - problem with the coordinates. Nans or infs possible.'
-    LOG.info('########  Procrustes distance between anchored start and final solution: {}'.format(
+    LOG.debug('########  Procrustes distance between anchored start and final solution: {}'.format(
         procr_dist)
     )
     return coordinates, solution_ll  # , sum_residual_squares
@@ -114,8 +111,6 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
     :param start_points: optional arg, can use to start minimization at ground truth or other location
     :return: optimal (points (x), minimum negative log-likelihood (y))
     """
-    # for debugging
-    fmin_costs = []
 
     def hyperbolic_cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
         curvature = args['scripts']
@@ -129,7 +124,7 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
         hyperboloid_points = loid_map(vectors, curvature)
         # compute distances
         distances = hyperbolic_distances(hyperboloid_points, curvature)
-        probs = find_probabilities(distances, pair_a, pair_b, parameters['noise_st_dev'], parameters['no_noise'])
+        probs = find_probabilities(distances, pair_a, pair_b, parameters['noise_st_dev'])
         # calculate log-likelihood, is_bad flag
         ll, is_bad = calculate_ll(counts, probs, repeats)
         LOG.debug('geometry is good: {}'.format(not is_bad))
@@ -146,7 +141,7 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
         start_0 = start_points
     start = ac.anchor_points(start_0)
 
-    LOG.info("########  Procrustes distance between start and anchored start: {}".format(
+    LOG.debug("########  Procrustes distance between start and anchored start: {}".format(
         procrustes(start, start_0)[2]))
     # turn points to params
     start_params = ac.points_to_params(start)
@@ -157,7 +152,7 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
     solution_ll = hyperbolic_cost(solution, pairs_a, pairs_b, response_counts, comp_repeats, args)
 
     coordinates = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
-    LOG.info('########  Procrustes distance between anchored start and final solution: {}'.format(
+    LOG.debug('########  Procrustes distance between anchored start and final solution: {}'.format(
         procrustes(start, coordinates)[2])
     )
     return coordinates, solution_ll  # , sum_residual_squares
@@ -191,7 +186,7 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         sph_points = sphere_map(vectors, 1/curvature)
         # compute distances
         distances = spherical_distances(sph_points, 1/curvature)
-        probs = find_probabilities(distances, pair_a, pair_b, parameters['noise_st_dev'], parameters['no_noise'])
+        probs = find_probabilities(distances, pair_a, pair_b, parameters['noise_st_dev'])
         # calculate log-likelihood, is_bad flag
         ll, is_bad = calculate_ll(counts, probs, repeats)
         LOG.debug('geometry is good: {}'.format(not is_bad))
@@ -208,7 +203,7 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         start_0 = start_points
     start = ac.anchor_points(start_0)
 
-    LOG.info("########  Procrustes distance between start and anchored start: {}".format(
+    LOG.debug("########  Procrustes distance between start and anchored start: {}".format(
         procrustes(start, start_0)[2]))
     # turn points to params
     start_params = ac.points_to_params(start)
@@ -223,7 +218,7 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         procr_dist = procrustes(start, coordinates)[2]
     except ValueError:
         procr_dist = 'WARNING - problem with the coordinates. Nans or infs possible.'
-    LOG.info('########  Procrustes distance between anchored start and final solution: {}'.format(
+    LOG.debug('########  Procrustes distance between anchored start and final solution: {}'.format(
         procr_dist)
     )
     return coordinates, solution_ll  # , sum_residual_squares

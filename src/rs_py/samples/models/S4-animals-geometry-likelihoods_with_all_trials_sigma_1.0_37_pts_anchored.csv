@@ -1,4 +1,4 @@
-Model,Log Likelihood,number of points,Experiment,Subject,Curvature
-4D,-0.31648976447548716,37,animals,S4,
-best,-0.18639713059987925,37,animals,S4,
-random,-1.0,37,animals,S4,
+Model,Log Likelihood,number of points,Experiment,Subject
+3D,-0.6358578100613211,37,animals,S4
+best,-0.18639713059987925,37,animals,S4
+random,-1.0,37,animals,S4

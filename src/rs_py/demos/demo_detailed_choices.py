@@ -84,8 +84,8 @@ if __name__ == '__main__':
     metadata = {
         'exp_name': exp_name,
         'subject': subject,
-        'stimulus_list': np.array(stimuli, dtype=object),  # user inputted, unsorted
-        'id_to_stimulus': None,
+        'stim_labels': None,
+        'stim_ids': None,
         'num_sessions': int(num_sessions),
         'num_trials': int(num_trials),
         'total_judgments': None,

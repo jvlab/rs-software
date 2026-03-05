@@ -27,10 +27,10 @@ CONFIG = {
             },
             'stimlist': [],  # to be populated
             'max_trials': 10000,
-            'model_dimensions': [1, 2, 3, 4, 5, 6, 7],
+            'model_dimensions': [3],
             'minimization': 'gradient-descent',
             'tolerance': 1e-6,  # is this used?
-            'max_iterations': 35000,
+            'max_iterations': 50,
             'learning_rate': 0.05,
         },
         'curve_model_fit': {

@@ -1,6 +1,9 @@
 import logging
 import pandas as pd
-from ..model.compare_curved_space_models import run
+
+from src.rs_py.utils.helpers import read_in_params
+from src.rs_py.utils.util import json_to_pairwise_choice_probs
+from src.rs_py.model.compare_curved_space_models import run
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -11,26 +14,17 @@ if __name__ == '__main__':
     # scripts was lambda^2 and mu^2 = 1/R^2 according to definition of Gaussian scripts...
     # now corrected to lambda for hyp and 2mu for sph
 
-
     CONFIG, STIMULI, NAMES_TO_ID, ID_TO_NAME = read_in_params()
-    # disable unneeded params
-    CONFIG['scripts'] = None
-    CONFIG['spherical'] = None
-    CONFIG['hyperbolic'] = None
 
-
-    print(CONFIG)
-
-    domain = input('Domain: ')
-    SUBJECTS = input('Subjects (separated by spaces): ').split(' ')
+    domain = input('Domain: ')      # required
+    SUBJECTS = input('Subjects (separated by spaces): ').split(' ') # required
     print(SUBJECTS)
     proceed = input('If subjects correct, press "y" to proceed')
     if proceed != 'y':
         raise IOError
 
-    DIM = int(input('Number of Dimensions: '))
-    OUTDIR = input('Output directory for LLs and coordinates: ')
-
+    DIM = int(input('Number of Dimensions: '))      # required
+    OUTDIR = input('Output directory for LLs and coordinates: ')  # required
 
     for subject in SUBJECTS:
         print(subject)

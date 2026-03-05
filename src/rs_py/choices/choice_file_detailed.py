@@ -22,7 +22,7 @@ import csv
 import numpy as np
 from scipy.io import savemat
 
-from src.rs_py.utils.helpers import stimulus_names, stimulus_name_to_id, stimulus_id_to_name
+from src.rs_py.utils.helpers import stimulus_name_to_id, stimulus_id_to_name_for_mat
 
 
 def get_response_files(directory, suffix="responses", extension="csv"):
@@ -324,7 +324,7 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
     """
     stimuli = sorted(list(stimuli_set))
     names_to_id = stimulus_name_to_id(stimuli, one_indexed=True)
-    id_to_name = stimulus_id_to_name(stimuli, one_indexed=True)
+    id_to_name = stimulus_id_to_name_for_mat(stimuli)
     stim_keys = ['s1', 's2', 's3', 's4']
     for i in range(len(comparisons)):
         c = comparisons[i]
@@ -369,7 +369,8 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
         'responses': responses
     }
 
-    results['metadata']['id_to_stimulus'] = stim_id_to_name
+    results['metadata']['stim_labels'] = [stim_id_to_name[k] for k in stim_id_to_name.keys()]
+    results['metadata']['stim_ids'] = [k for k in stim_id_to_name.keys()]
     results['metadata']['total_judgments'] = total_comparisons
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")

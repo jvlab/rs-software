@@ -6,13 +6,45 @@ from scipy.io import savemat
 from scipy.spatial.distance import pdist
 
 
+def bias_dict(use_all=False):
+    path_to_bias_files = '../bias-estimation/simulation_simple_ranking*.csv'
+    if use_all:
+        path_to_bias_files2 = '../bias-estimation/*/simulation_simple_ranking*.csv'
+    else:
+        path_to_bias_files2 = ''
+    # access simulation results and from these read out bias from RMS dist: sigma.
+    sim_files = glob.glob(path_to_bias_files)
+    sim_files2 = glob.glob(path_to_bias_files2)
+    sim_files = sim_files + sim_files2
+    df = pd.concat([pd.read_csv(f) for f in sim_files])
+    return df
+
+
+def read_out_median_bias(bias_df, dim, rms_ratio, tolerance=0.5, samples=40):
+    # For a given value of RMS distance to sigma, read out the median bias between geometrically unconstrained
+    # "best" model LL and the ground truth LL
+    # for figure 5 variant, used tolerance of 0.5 for rms >= 0.5, tol =0.2 for rms <0.5 and samples =40
+    biases_df = bias_df[bias_df['True Model'] == str(dim) + 'D']
+    if rms_ratio < 0.5:
+        tol_val = 0.4
+    else:
+        tol_val = tolerance
+    df_temp = biases_df[biases_df['RMS:Sigma'].between(rms_ratio - tol_val, rms_ratio + tol_val)]
+    if len(df_temp) < samples:
+        print('WARNING: FEW SAMPLES TO ESTIMATE BIAS FOR RATIO ', np.round(rms_ratio, 2), dim)
+        raise ValueError
+    # print('Num samples ', len(df_temp), 'rms_ratio: ', rms_ratio)
+    median_bias = np.quantile(df_temp['Best LL - Ground Truth LL'].sample(n=samples, random_state=942), 0.5)
+    return median_bias
+
+
 def stimulus_names(stimfile):
     # each stim on a separate line
     # Read in parameters from config file
     with open(stimfile, "r") as f:
         stimuli = [line.strip() for line in f.readlines()]
         stimuli = [s for s in stimuli if s != ""]  # drop empty lines
-        stimuli = sorted(stimuli)   # sort stim
+        stimuli = sorted(stimuli)  # sort stim
     return stimuli
 
 
@@ -20,15 +52,13 @@ def stimulus_name_to_id(stimlist, *, one_indexed=True):
     if not one_indexed:
         names_to_id = dict(zip(stimlist, range(len(stimlist))))
     else:
-        names_to_id = dict(zip(stimlist, range(1, len(stimlist)+1)))
+        names_to_id = dict(zip(stimlist, range(1, len(stimlist) + 1)))
     return names_to_id
 
 
-def stimulus_id_to_name(stimlist, *, one_indexed=True):
-    if not one_indexed:
-        id_to_name = dict(zip(range(len(stimlist)), stimlist))
-    else:
-        id_to_name = dict(zip(range(1, len(stimlist)+1), stimlist))
+def stimulus_id_to_name_for_mat(stimlist):
+    # keys start with 's' so readable in matlab
+    id_to_name = dict(zip(range(1, len(stimlist) + 1), stimlist))
     return id_to_name
 
 
@@ -39,10 +69,10 @@ def read_in_params():
     USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['dataset']['stimfile'])
     return (USER_PARAMS,
             stimulus_name_to_id(USER_PARAMS['stim_list']),
-            stimulus_id_to_name(USER_PARAMS['stim_list']))
+            stimulus_id_to_name_for_mat(USER_PARAMS['stim_list']))
 
 
-def create_coords_file(points, lls, args, tolerance=0.5, samples=70):
+def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim_labels, stim_ids, tolerance=0.5, samples=70):
     """
     Edited on Aug 3, 2023
     Add LL and biases too
@@ -53,10 +83,10 @@ def create_coords_file(points, lls, args, tolerance=0.5, samples=70):
     @param max_dim:
     @return:
     """
-    data = {'stim_labels': args['stimuli']}
+    data = {}
     bias_df = bias_dict()  # for LL bias estimation
     rms_dists_by_dim = {}
-    for d in args['model_dimensions']:
+    for d in model_dimensions:
         # enter coordinates for each model dimension
         points = points[d]
         data["dim{}".format(d)] = points
@@ -70,24 +100,25 @@ def create_coords_file(points, lls, args, tolerance=0.5, samples=70):
     data['bestModelLL'] = lls['best']
     data['randModelLL'] = lls['random']
 
-    raw_lls = np.array([lls['models'][d] for d in args['model_dimensions']])
+    raw_lls = np.array([lls[d] for d in model_dimensions])
     bias_estimate = np.array(
         [float(read_out_median_bias(bias_df, d, rms_dists_by_dim[d], tolerance=tolerance, samples=samples))
-            for d in args['model_dimensions']]
+         for d in model_dimensions]
     )
-    debiased_relative_lls = raw_lls - np.array([lls['best']*len(raw_lls)]) + bias_estimate
+    debiased_relative_lls = raw_lls - np.array([lls['best'] * len(raw_lls)]) + bias_estimate
 
     data["rawLLs"] = raw_lls
     data["biasEstimate"] = bias_estimate
     data["debiasedRelativeLL"] = debiased_relative_lls
-    data['metadata'] = ("README\n\nrawLLs[i] is the raw model LL for model with i dimensions\n"
+    data["readme"] = ("README\n\nrawLLs[i] is the raw model LL for model with i dimensions\n"
                         "biasEstimate[i] is the median bias estimated for the i-dimensional model, \n"
                         "  based on the RMS distance: sigma\n\n"
                         "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
                         "--------------------------------------------------------------------------")
-
+    data['stim_labels'] = np.array(stim_labels)
+    data['stim_ids'] = np.array(stim_ids)
     # ---- save ----
-    outpath = os.path.join(args['outdir'], f"{args['exp_name']}_coords_{args['subject']}.mat")
+    outpath = os.path.join(outdir, f"{exp}_coords_{subject}.mat")
     savemat(outpath, data)
     return outpath
 
@@ -275,35 +306,3 @@ def write_choice_probs_to_mat(filepath, outdir, outfilename, include_names=False
         data['s1_name'] = s1_name
         data['s2_name'] = s2_name
     savemat("{}/{}.mat".format(outdir, outfilename), data)
-
-
-def bias_dict(use_all=False):
-    path_to_bias_files = './analysis/bias-estimation/simulation_simple_ranking*.csv'
-    if use_all:
-        path_to_bias_files2 = './analysis/bias-estimation/*/simulation_simple_ranking*.csv'
-    else:
-        path_to_bias_files2 = ''
-    # access simulation results and from these read out bias from RMS dist: sigma.
-    sim_files = glob.glob(path_to_bias_files)
-    sim_files2 = glob.glob(path_to_bias_files2)
-    sim_files = sim_files + sim_files2
-    df = pd.concat([pd.read_csv(f) for f in sim_files])
-    return df
-
-
-def read_out_median_bias(bias_df, dim, rms_ratio, tolerance=0.5, samples=40):
-    # For a given value of RMS distance to sigma, read out the median bias between geometrically unconstrained
-    # "best" model LL and the ground truth LL
-    # for figure 5 variant, used tolerance of 0.5 for rms >= 0.5, tol =0.2 for rms <0.5 and samples =40
-    biases_df = bias_df[bias_df['True Model'] == str(dim) + 'D']
-    if rms_ratio < 0.5:
-        tol_val = 0.4
-    else:
-        tol_val = tolerance
-    df_temp = biases_df[biases_df['RMS:Sigma'].between(rms_ratio - tol_val, rms_ratio + tol_val)]
-    if len(df_temp) < samples:
-        print('WARNING: FEW SAMPLES TO ESTIMATE BIAS FOR RATIO ', np.round(rms_ratio, 2), dim)
-        raise ValueError
-    # print('Num samples ', len(df_temp), 'rms_ratio: ', rms_ratio)
-    median_bias = np.quantile(df_temp['Best LL - Ground Truth LL'].sample(n=samples, random_state=942), 0.5)
-    return median_bias
