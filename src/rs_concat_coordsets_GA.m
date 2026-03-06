@@ -1,18 +1,20 @@
 function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
-% Concatenates two dataset structures and checks concatenated dataset structure for consistency
+% Concatenates two dataset structures and checks the result for consistency.
 %
 % Args:
-%   data_in1 (struct): First dataset structure, with fields
-%
-%     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets: `set metadata structure`, sets{k} is the set metadata for the kth record
-%
-%   data_in2 (struct): Second dataset structure, same format as `data_in1`
-%
+%   data_in1 (struct): First set of coordinate structures, with fields `ds`
+%     (cell array of coordinate structures), `sas` (cell array of metadata
+%     structures where `sas{k}.typenames` lists stimulus names), and `sets`
+%     (cell array of additional metadata structures). Typically created by
+%     `rs_align_coordsets`, but can also come directly from `rs_get_coordsets`,
+%     `rs_read_coorddata`, or `rs_import_coordsets` if stimuli are identical
+%     across datasets.
+%   data_in2 (struct): Second set of coordinate structures, same format as
+%     `data_in1`.
 %   aux (struct): Auxiliary options, with field `opts_check` (struct) containing
-%     `if_warn` (int, default 1) to show warnings when datasets are checked for consistency.
-% 
+%     `if_warn` (int, default 1) to show warnings when datasets are checked
+%     for consistency.
+%
 % Returns:
 %   data_out (struct): Concatenated dataset structures, with fields `ds`
 %     (cell array of concatenated coordinate structures), `sas` (cell array
@@ -22,12 +24,6 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %     fields `warnings` (warnings generated while creating arguments for
 %     `psg_get_coordsets`) and `warn_bad` (int, count of warnings that prevent
 %     further processing).
-%
-% Notes:
-%   `data_in1` and `data_in2` are typcally created by `rs_align_coordsets`
-%   but could also be directly from 
-%   rs_get_coordsets or rs_read_coorddata or rs_import_coordsets if stimuli are identical across
-%   datasets, as listed in data_in[1|2].sas{k}.typenames
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %

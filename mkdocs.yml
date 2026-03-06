@@ -7,6 +7,10 @@ theme:
 
 hooks:
   - docs/hooks.py
+  - docs/hook_ignore.py
+
+watch:
+  - src
 
 plugins:
 - search
@@ -15,10 +19,6 @@ plugins:
 - mkdocstrings:
     default_handler: matlab
     handlers:
-        python:
-            paths: [src]
-            options:
-              docstring_section_style: list
         matlab:
             #paths: [src] 
             paths_recursive: true 
@@ -47,7 +47,6 @@ nav:
   - Installation: installation.md
   - Modules: modules.md
   - Function index: function-index.md
-#  - Function index - python: function-index-python.md
   - Demos: demos.md
   - Data structures: data_structures.md
 
