@@ -1,33 +1,19 @@
 function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
-% Concatenates two dataset structures and checks concatenated dataset structure for consistency
+% [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
+% concatenates two dataset structures and checks concatenated dataset structure for consistency
 %
-% Args:
-%   data_in1 (struct): First dataset structure, with fields
-%
-%     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets: `set metadata structure`, sets{k} is the set metadata for the kth record
-%
-%   data_in2 (struct): Second dataset structure, same format as `data_in1`
-%
-%   aux (struct): Auxiliary options, with field `opts_check` (struct) containing
-%     `if_warn` (int, default 1) to show warnings when datasets are checked for consistency.
-% 
-% Returns:
-%   data_out (struct): Concatenated dataset structures, with fields `ds`
-%     (cell array of concatenated coordinate structures), `sas` (cell array
-%     of concatenated metadata structures), and `sets` (cell array of
-%     concatenated additional metadata structures).
-%   aux_out (struct): Auxiliary outputs and parameter values used, with
-%     fields `warnings` (warnings generated while creating arguments for
-%     `psg_get_coordsets`) and `warn_bad` (int, count of warnings that prevent
-%     further processing).
-%
-% Notes:
-%   `data_in1` and `data_in2` are typcally created by `rs_align_coordsets`
-%   but could also be directly from 
+% data_in[1|2].ds{k},sas{k},sets{k}: two sets of structures of coordinates (ds) and metadata (sas,sets)
+%   These are typically created by rs_align_coordsets, but could also be directly from 
 %   rs_get_coordsets or rs_read_coorddata or rs_import_coordsets if stimuli are identical across
 %   datasets, as listed in data_in[1|2].sas{k}.typenames
+%
+% aux:
+%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+% 
+% data_out.ds{k},sas{k},sets{k}:  concatenated dataset structures
+% aux_out: auxiliary outputs and parameter values used
+%   warnings: warnings generated in creating arguments for psg_get_coordsets
+%   warn_bad: count of warnings that prevent further processing
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %
