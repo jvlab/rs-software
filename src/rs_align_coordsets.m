@@ -1,5 +1,5 @@
 function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
-% [data_out,aux_out]=rs_align_coordsets(data_in,aux): align coordinate datasets with partially overlapping stimuli
+% [data_out,aux_out]=rs_align_coordsets(data_in,aux): align coordinate datasets with partially overlapping stimuli 
 % data_in.sas{k}.typenames is used to establish stimulus identity
 % 
 % For each stimulus in any of the data_in, there is a stimulus in data_out.
