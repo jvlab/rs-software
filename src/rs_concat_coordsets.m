@@ -2,32 +2,31 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 % Concatenates two dataset structures and checks concatenated dataset structure for consistency
 %
 % Args:
-%   data_in1 (struct): First dataset structure, with fields
+%   data_in1 (struct): first dataset structure, containing k_1 records, with fields
 %
-%     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets: `set metadata structure`, sets{k} is the set metadata for the kth record
+%     - ds: `coordinate structure`, ds{k_1}{idim} is an array of [nstims idim] of coordinates for the (k_1)th record
+%     - sas: `stimulus metadata structure`, sas{k_1} is the stimulus metadata for the (k_1)th record
+%     - sets: `set metadata structure`, sets{k_1} is the response metadata for the (k_1)th record
 %
-%   data_in2 (struct): Second dataset structure, same format as `data_in1`
+%   data_in2 (struct): second dataset structure, containing k_2 records, same format as `data_in1`
 %
-%   aux (struct): Auxiliary options, with field `opts_check` (struct) containing
-%     `if_warn` (int, default 1) to show warnings when datasets are checked for consistency.
+%   aux (struct): auxiliary options, may be omitted, with field
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%       - if_warn (int) 1 (default) to show warnings when datasets are checked for consistency; otherwise 0
 % 
 % Returns:
-%   data_out (struct): Concatenated dataset structures, with fields `ds`
-%     (cell array of concatenated coordinate structures), `sas` (cell array
-%     of concatenated metadata structures), and `sets` (cell array of
-%     concatenated additional metadata structures).
-%   aux_out (struct): Auxiliary outputs and parameter values used, with
-%     fields `warnings` (warnings generated while creating arguments for
-%     `psg_get_coordsets`) and `warn_bad` (int, count of warnings that prevent
-%     further processing).
+%   data_out (struct): concatenated dataset structure with k_1+k_2 records, same format as  as `data_in1`
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - opts_check (struct): options used for consistency checking
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
 %
 % Notes:
-%   `data_in1` and `data_in2` are typcally created by `rs_align_coordsets`
-%   but could also be directly from 
-%   rs_get_coordsets or rs_read_coorddata or rs_import_coordsets if stimuli are identical across
-%   datasets, as listed in data_in[1|2].sas{k}.typenames
+%   `data_in1` and `data_in2` are typically created by `rs_get_coordsets`, `rs_align_coordsets`, or `rs_import_coordsets`
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %
