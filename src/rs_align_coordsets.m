@@ -3,7 +3,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % data_in.sas{k}.typenames is used to establish stimulus identity
 % 
 % For each stimulus in any of the data_in, there is a stimulus in data_out.
-% Stimulus identity is determined by thpenames
+% Stimulus identity is determined by typenames
 % Stimuli listed in alphabetical order, so there may be a reordering, even if no alignment is needed)
 % * this only aligns the datasets so that the stimuli are in identical order, it does not change the coordinates
 % * stimulus identity is determined by typenames
@@ -27,7 +27,10 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %   An empty entry (default) determines the behavior from the coordinates of the component datasets: 
 %     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
 %   The behavior used is reported in aux_out.opts_align.if_type_coords_remake
-% aux.opts_align.if_btcremz: set to 1 (default) to simplify augmented coordinates
+% aux.opts_align.if_btcremz: Relevant only for binary texture data. Simplifies fields sas{k}.spec_labels and sas{k}.typenames
+%    when the specified coordinates are zero. In data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'.
+%    In data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'
+%
 % aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 % 
 % data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
@@ -44,8 +47,11 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %    warn_bad: count of warnings that prevent further processing
 %    rayss{k}: ray structure for dataset k
 %
-%  06Nov25: check internal consistency of data files with rs_check_coordsets.
-%
+%  Notes:  order of stimuli is alphabetized. 
+%    What happens to pipeline:
+%    data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
+%    data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in
+% 
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
 if (nargin<=1)
