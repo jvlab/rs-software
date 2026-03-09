@@ -14,7 +14,7 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %
 %     - opts_extract (struct): options for consistency checking, with field
 %
-%       - if_warn (int) 1 (default) to show warnings
+%       - if_warn (int): 1 to show warnings, 0 to suppress. . Default is 1.)
 % 
 % Returns:
 %   data_out (struct): concatenated dataset structure with length(extract_list) records, same format as  as `data_in1`
@@ -26,8 +26,8 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %     - warn_bad (int): number of warnings that prevent further processing
 %
 % Notes:
-%   -  aux may be omitted; defaults are filled in
-%   -  data_out.sets{k}.pipeline is copied from data_in, and is not updated.
+%   -  aux may be omitted; defaults are filled in.
+%   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
 %
 %  See also: RS_CONCAT_COORDSETS.
 %

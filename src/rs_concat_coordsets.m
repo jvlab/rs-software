@@ -2,22 +2,22 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 % Concatenates two dataset structures and checks concatenated dataset structure for consistency
 %
 % Args:
-%   data_in1 (struct): first dataset structure, containing n_1 records, with fields
+%   data_in1 (struct): first dataset structure, containing $n_1$ records, with fields
 %
 %     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
 %     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets: `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   data_in2 (struct): second dataset structure, containing n_2 records, same format as `data_in1`
+%   data_in2 (struct): second dataset structure, containing $n_2$ records, same format as `data_in1`
 %
 %   aux (struct): auxiliary options, may be omitted, with field
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%       - if_warn (int) 1 (default) to show warnings when datasets are checked for consistency; otherwise 0
+%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress. Default is 1.
 % 
 % Returns:
-%   data_out (struct): concatenated dataset structure with n_1 + n_2 records, same format as  as `data_in1`
+%   data_out (struct): concatenated dataset structure with $n_1 + n_2$ records, same format as  as `data_in1`
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -26,9 +26,9 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %     - warn_bad (int): number of warnings that prevent further processing
 %
 % Notes:
-%   -  aux may be omitted; defaults are filled in
+%   -  aux may be omitted; defaults are filled in.
 %   - `data_in1` and `data_in2` are typically created by `rs_get_coordsets`, `rs_align_coordsets`, or `rs_import_coordsets`.
-%   -  data_out.sets{k}.pipeline is copied from data_in1 or data_in2, and is not updated.
+%   -  data_out.sets{k}.pipeline is copied from data_in1 or data_in2 and is not updated.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %

@@ -51,6 +51,9 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %    What happens to pipeline:
 %    data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
 %    data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in
+%
+% Cautions:
+%   - this is a caution
 % 
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
