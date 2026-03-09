@@ -2,11 +2,11 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 % Extracts or permutes the records in a dataset structure
 %
 % Args:
-%   data_in (struct): dataset structure, containing n records, with fields
+%   data_in (struct): `dataset structure` containing n records, with fields
 %
-%     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets: `set metadata structure`, sets{k} is the response metadata for the kth record
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
 %   extract_list (int 1-D array): a subset of [1:n] to extract, the records to extract
 %
@@ -17,7 +17,7 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %       - if_warn (int): 1 to show warnings, 0 to suppress. . Default is 1.)
 % 
 % Returns:
-%   data_out (struct): concatenated dataset structure with length(extract_list) records, same format as  as `data_in1`
+%   data_out (struct): extracted `dataset structure` with length(extract_list) records, same format as  as `data_in1`
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %

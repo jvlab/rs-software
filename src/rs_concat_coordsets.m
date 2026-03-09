@@ -2,13 +2,13 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 % Concatenates two dataset structures and checks concatenated dataset structure for consistency
 %
 % Args:
-%   data_in1 (struct): first dataset structure, containing $n_1$ records, with fields
+%   data_in1 (struct): first `dataset structure`, containing $n_1$ records, with fields
 %
-%     - ds: `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas: `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets: `set metadata structure`, sets{k} is the response metadata for the kth record
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   data_in2 (struct): second dataset structure, containing $n_2$ records, same format as `data_in1`
+%   data_in2 (struct): second `dataset structure`, containing $n_2$ records, same format as `data_in1`
 %
 %   aux (struct): auxiliary options, may be omitted, with field
 %
@@ -17,7 +17,7 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress. Default is 1.
 % 
 % Returns:
-%   data_out (struct): concatenated dataset structure with $n_1 + n_2$ records, same format as  as `data_in1`
+%   data_out (struct): concatenated `dataset structure` with $n_1 + n_2$ records, same format as  as `data_in1`
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
