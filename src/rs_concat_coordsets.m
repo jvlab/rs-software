@@ -1,5 +1,5 @@
 function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
-% Concatenates two dataset structures and checks concatenated dataset structure for consistency
+% Concatenates two `dataset structures` and checks concatenated `dataset structure` for consistency
 %
 % Args:
 %   data_in1 (struct): first `dataset structure`, containing $n_1$ records, with fields
@@ -21,9 +21,9 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
-%     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_check (struct): aux.opts_check, with defaults filled in
 %
 % Notes:
 %   -  aux may be omitted; defaults are filled in.

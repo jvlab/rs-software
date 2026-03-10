@@ -1,5 +1,5 @@
 function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
-% Extracts or permutes the records in a dataset structure
+% Extracts or permutes the records in a `dataset structure`
 %
 % Args:
 %   data_in (struct): `dataset structure` containing n records, with fields
@@ -21,9 +21,9 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
-%     - opts_extract (struct): aux.opts_extract, with defaults filled in
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_extract (struct): aux.opts_extract, with defaults filled in
 %
 % Notes:
 %   -  aux may be omitted; defaults are filled in.

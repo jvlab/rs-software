@@ -1,22 +1,38 @@
 function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
-% [data_out,aux_out]=rs_align_coordsets(data_in,aux): align coordinate datasets with partially overlapping stimuli 
-% data_in.sas{k}.typenames is used to establish stimulus identity
-% 
-% For each stimulus in any of the data_in, there is a stimulus in data_out.
-% Stimulus identity is determined by typenames
-% Stimuli listed in alphabetical order, so there may be a reordering, even if no alignment is needed)
-% * this only aligns the datasets so that the stimuli are in identical order, it does not change the coordinates
-% * stimulus identity is determined by typenames
-% * coordinates for missing stimuli are NaN
-% See rs_knit_coordsets for finding a consensus set of coordinates across data_in.ds{:}
-% The 'type' field of data_in.sets{:} must agree, and is propagated to data_out.sets{1}
+% Aligns a `dataset structure` with partially overlapping stimuli
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) returned by rs_get_coordsets or rs_read_coorddata
-%      sas{k}.typenames is a strvcat, and is used to determine stimulus identity
-% aux.opts_align.if_log: 1 to log progress
-% aux.opts_align.min: minimum number of datasets that must contain a stimulus, in order for the stimulus to be included
-%   default is 1 (legacy behavior: all stimuli used), can also be 'any'; 
-%   'all': stimuli must be present in all datasets to be kept
+% Each of the records in the `dataset structure` data_in contains the responses to one or more stimuli,
+% with stimulus identity in record k determined by the strings in data_in.sas{k}.typenames. The stimuli
+% in each of the records may differ, and may overlap.
+%
+% Each of the corresponding records in the `dataset structure` data_out contains an entry a stimulus set
+% equal to the union of all of the stimuli in any of the records of data_in.  For a stimulus in the kth record of
+% data_out for which there is no entry in data_in, the coordinates are NaN. See note below regarding stimulus coordinates.
+%
+% The stimulus labels in data_out.sas{k}.typenames are in alphabetical order, and are identical for all of the records
+% Thus, even if there is complete overlap between the stimuli in data_in, the `dataset structure` data_out may differ.
+%
+% The stimulus coordinates in data_out.sas{k}, .
+%
+% Args:
+%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
+%
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+% 
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_align (struct): options for consistency checking, with fields
+%
+%       - if_log (int): 1 to log progress, 0 to suppress. Default is 0.
+%       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out.
+%             default is 1, equivalent to 'any';  can also be 'all': stimuli must be present in all datasets to be kept
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress. Default is 1.
+%
 % aux.opts_align.if_type_coords_remake:  this usually can be ignored or set to [].
 %   Setting to 0 forces a merging of the stimulus coordinates, this is
 %     appropriate if the stimuli have meaningful a priori coordinates from a setup file in btc_specoords  (e.g., binary textures, faces)
@@ -31,26 +47,35 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %    when the specified coordinates are zero. In data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'.
 %    In data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'
 %
-% aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
-% 
-% data_out.ds{k},sas{k},sets{k}:  coordinates and dataset descriptors after alignment
-%    coordinates will be NaN if not present
-% aux_out: auxiliary outputs and parameter values used
-%    ovlp_array: [stims x sets] each row is a stimulus in data_out, kth column is a 1 if
-%       stimulus is present in dataset k, even if the response is NaN
-%    sa_pooled: sa metadata structure (stimulus params and coords) for pooled data
-%       This can differ from data_out.sas{k}, which will have NaN's for stimulus coords if stimuli are  missing
-%       Note that if  a typename occurs in more than one of the data_in{:} files,
-%       then the entry in sa_pooled for this stimulus is taken from the first occurrence, without checking for conflicts.
-%    opts*: values used for opts_align, opts_rays
-%    warnings: warnings generated in creating arguments for psg_get_coordsets
-%    warn_bad: count of warnings that prevent further processing
-%    rayss{k}: ray structure for dataset k
+% Returns:
+%   data_out (struct): aligned `dataset structure` with n records, same format as  as `data_in`
 %
-%  Notes:  order of stimuli is alphabetized. 
-%    What happens to pipeline:
-%    data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
-%    data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_align (struct): aux.opts_align, with defaults filled in
+%     - ovlp_array (integer array): overlap array: ovlp_array(s,k)=1 if the
+%       stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
+%     - sa_pooled: (struct): the `stimulus metadata structure` for the pooled stimulus set.  See note below regarding stimulus coordinates.
+%     -  rayss{k}: ray structure for dataset k
+%     -  opts_btcremz: {[]  [1×1 struct]}
+%     -  opts_rays: {[1×1 struct]  [1×1 struct]}
+%     -  rayss: {[1×1 struct]  [1×1 struct]}
+%
+%   Need to add to documentation opts_import for default for type_coords, and opts_rays
+% 
+%
+% Notes:
+%     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
+%     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
+%       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
+%
+% Special note regarding stimulus coordinates:
+%     - Stimulus coordinates, optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords, are also aligned.
+%     - In the aligned 'stimulus metadata structure' data_out.sas{k}, if the stimulus typename is not present in data_in.sas{k}, stimulus coordinates are NaN.
+%     - In the pooled 'stimulus metadata structure' aux_out.sa_pooled, stimulus coordinates are taken from the first occurence of the typename in data_in.sas{:} is used.
 %
 % Cautions:
 %   - this is a caution
