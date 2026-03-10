@@ -25,47 +25,39 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %     - opts_align (struct): options for consistency checking, with fields
 %
-%       - if_log (int): 1 to log progress, 0 to suppress. Default is 0.
-%       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out.
-%             default is 1, equivalent to 'any';  can also be 'all': stimuli must be present in all datasets to be kept
+%       - if_log (int): 1 to log progress, 0 to suppress; default is o.
+%       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
+%             default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
+%       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates.
+%       - if_btcremz (int): typically omitted, defaults to 1, see note below regarding labels for binary texture coordinates
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress. Default is 1.
+%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-% aux.opts_align.if_type_coords_remake:  this usually can be ignored or set to [].
-%   Setting to 0 forces a merging of the stimulus coordinates, this is
-%     appropriate if the stimuli have meaningful a priori coordinates from a setup file in btc_specoords  (e.g., binary textures, faces)
-%     or imported into type_coords
-%   Setting to 1 forces btc_specoords of the aligned data to be remade as unique rows of an identity matrix
-%     this is appropriate if the stimuli do NOT have meaningful a priori coordinates in the setup file,
-%     and then in sa.btc_specoords (e.g, animals)
-%   An empty entry (default) determines the behavior from the coordinates of the component datasets: 
-%     if they are an identity matrix, then type 1 behavior is executed; if they are not, then type 0 behavior is executed.
-%   The behavior used is reported in aux_out.opts_align.if_type_coords_remake
-% aux.opts_align.if_btcremz: Relevant only for binary texture data. Simplifies fields sas{k}.spec_labels and sas{k}.typenames
-%    when the specified coordinates are zero. In data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'.
-%    In data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'
+%     - opts_import (struct): options for stimulus coordinates, typically omitted, see note below regarding stimulus coordinates
+%     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
 %
 % Returns:
 %   data_out (struct): aligned `dataset structure` with n records, same format as  as `data_in`
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
-%     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
 %     - opts_align (struct): aux.opts_align, with defaults filled in
-%     - ovlp_array (integer array): overlap array: ovlp_array(s,k)=1 if the
-%       stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
-%     - sa_pooled: (struct): the `stimulus metadata structure` for the pooled stimulus set.  See note below regarding stimulus coordinates.
-%     -  rayss{k}: ray structure for dataset k
-%     -  opts_btcremz: {[]  [1×1 struct]}
-%     -  opts_rays: {[1×1 struct]  [1×1 struct]}
-%     -  rayss: {[1×1 struct]  [1×1 struct]}
 %
-%   Need to add to documentation opts_import for default for type_coords, and opts_rays
-% 
+%       - aux_out.opts_align.ovlp_array_all (integer array): the overlap array for the pooled dataset.  Each row corresponds to one of the 
+%       typenames (see sa_pooled below) contained in any of the input records; ovlp_array_all(s,k)=1 if the stmulus is present in record
+%       k of data_in
+%
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%     - opts_import (struct): aux.opts_import, with defaults filled in
+%     - opts_rays (cell array): opts_rays{k} is a structure which contains the options used for creating rays in record k in data_out
+%     - ovlp_array (integer array): overlap array: ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
+%     - sa_pooled (struct): the `stimulus metadata structure` for the pooled stimulus set.  See note below regarding stimulus coordinates.
+%     - rayss (cell array): rayss{k} is the `ray structure` for record k in data_out.  See note below regarding rays.
+%     - opts_btcremz (cell array): See note below regarding labels for binary texture coordinates.
 %
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -73,19 +65,41 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
 %
 % Note regarding stimulus coordinates:
-%     - Stimulus coordinates, optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords, are also aligned.
-%     - In the aligned 'stimulus metadata structure' data_out.sas{k}, if the stimulus typename is not present in data_in.sas{k}, stimulus coordinates are NaN.
-%     - In the pooled 'stimulus metadata structure' aux_out.sa_pooled, stimulus coordinates are taken from the first occurence of the typename in data_in.sas{:} is used.
+%     - Stimulus coordinates are optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords.
+%     Their treatment is governed by aux.opts_align.if_type_coords_remake.
+%     If this field is omitted or [], behavior is determined by the stimulus coordinates supplied in data_in.sas{k}.
+%     A value of 0 attempts to merge the coordinates, a value of 1 does not.
+%
+%     - Merging (if_type_coords_remake=0, or, stimulus coordinates are not all 0 or 1, or a non-square array with at least 2 columns):
+%     In the aligned `stimulus metadata structure` data_out.sas{k}, if the stimulus typename is not present in data_in.sas{k}, stimulus coordinates are NaN.
+%     In the pooled `stimulus metadata structure` aux_out.sa_pooled, stimulus coordinates are taken from the first occurence of the typename in data_in.sas{:} is used.
+%     A similar behavior is applied to other subfields of the stimulus
+%     metadata structure that relate to individual stimuli.  These fields are listed in aux_out.opts_align.fields_align, which defaults in psg_align_coordsets
+%     to {'specs'  'spec_labels'  'btc_augcoords'  'btc_specoords'  'type_coords'}
+%
+%     - No merging (if_type_coords_remake=1, or stimulus coordinates absent, or, stimulus coordinates do not meet above requirements):
+%       In the aligned `stimulus metadata structure` data_out.sas{k}, dummy coordinates are created in one of the fields
+%       type_coords, btc_specoords, or btc_augcoords (determined by the first of the list that is found in data_in.sas{:}), equal to an empty matrix, zeros, ones, or the identity,
+%       as determined by aux.opts_import.type_coords_def.  This defaults to 'none', can be 'zeros','ones', or 'eye', and the value used is
+%       reported in aux_out.opts_import.type_coords_def and aux_out.opts_align.tuype_coords_def.
+%
+%     - The behavior taken is reported in aux_out.opts_align.if_type_coords_remake.
 %
 % Note regarding rays:
 %     - The `ray structure` describes relationships among the simulus coordinates: 
-%       `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
-%       `rings`, stimuli that lie at an appxorimately equal distance from the origin, and nearest neighbors.
-%       It is only created if there is a valid set of stimulus coordinates.  
+%     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
+%     `rings`, stimuli that lie at an appxorimately equal distance from the origin, and nearest neighbors.
+%     It is only created if there is a valid set of stimulus coordinates.  
 %
-%  See if rays depend on which stimuli are present see What happens in knit
 % 
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
+% Note regarding labels for binary texture coordinates:
+%     - if_btcremz is only relevant for datasets with binary texture coordinate metadata, and controls whether there is an attempt to simplify fields sas{k}.spec_labels and sas{k}.typenames
+%     prior to matching and alignmnent.  If 1 (default), coordinates that are specified as zero are removed, provided
+%     that this does not change the stimulus.  For example, in data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'
+%     and  data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'.  An
+%     all-zero coordainate becomes 'rand'. Results for simplification of record k are returned in opts_btcremz{k}.
+% 
+%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, RS_IMPORT_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
 if (nargin<=1)
     aux=struct;
@@ -100,7 +114,7 @@ aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_rays',struct);
-aux=filldefault(aux,'opts_import',struct); %%alignment needs to know how to set up type_coords if none are supplied
+aux=filldefault(aux,'opts_import',struct); %alignment needs to know how to set up type_coords if none are supplied
 %
 aux=rs_aux_customize(aux,'rs_align_coordsets');
 %
@@ -180,6 +194,8 @@ if paradigm_match==0
         disp([types paradigm_types])
     end
 end
+aux_out.opts_check=aux.opts_check;
+aux_out.opts_import=aux.opts_import;
 if aux_out.warn_bad==0
     paradigm_type=paradigm_types{1};
     if aux.opts_align.if_log

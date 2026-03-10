@@ -14,7 +14,7 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %
 %     - opts_extract (struct): options for consistency checking, with field
 %
-%       - if_warn (int): 1 to show warnings, 0 to suppress. . Default is 1.)
+%       - if_warn (int): 1 to show warnings, 0 to suppress; default is 1
 % 
 % Returns:
 %   data_out (struct): extracted `dataset structure` with length(extract_list) records, same format as  as `data_in1`

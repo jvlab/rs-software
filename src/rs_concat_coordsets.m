@@ -14,7 +14,7 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress. Default is 1.
+%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
 % Returns:
 %   data_out (struct): concatenated `dataset structure` with $n_1 + n_2$ records, same format as  as `data_in1`
