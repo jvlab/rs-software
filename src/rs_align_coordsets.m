@@ -12,7 +12,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % The stimulus labels in data_out.sas{k}.typenames are in alphabetical order, and are identical for all of the records
 % Thus, even if there is complete overlap between the stimuli in data_in, the `dataset structure` data_out may differ.
 %
-% The stimulus coordinates in data_out.sas{k}, .
+% The stimulus coordinates in data_out.sas{k} are correspondingy aligned; see note below regarding stimulus coordinates.
 %
 % Args:
 %   data_in (struct): `dataset structure` to be aligned containing n records, with fields

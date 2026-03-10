@@ -1,20 +1,12 @@
 function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
-% Knits a `dataset structure` into a consensus, and provides and displays statistics
+% [data_out,aux_out]=rs_knit_coordsets(data_in,aux) finds consensus coordinates across one or more datasets
+% All datasets must list the same stimuli, and in the same order (as identified) by data_in.sas{k}.typenames
+% but data can be absent, as indicated by NaN entries in data_in.ds{k}{idim}
 %
-% Each of the records in the `dataset structure` data_in should contain the same stimuli, 
-% and in the same order, as determined by the strings in data_in.sas{k}.typenames for the record k.
-% Missing data (e.g., for the stimulus s labeled by data_in.sas{k}.typenames{s}) should be indicated by 
-% NaN's in the row data_in.sets{k}{idim}(s,:), a row of length idim.  This
-% form of data_in is provided by the `dataset structure` returned by `rs_align_coordsets` [how to hyperlink?].
-%
+% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
+%   These are typically created by rs_align_coordsets, but could also be directly from
+%   rs_get_coordsets or rs_read_coorddata if stimuli are identical across datasets, as listed in data_in.sas{k}.typenames
 % The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
-%
-% Args:
-%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
-%
-%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
-%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
-%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
 % aux.opts_knit:
 %  if_log: 1 to log progress (default=1)+-
@@ -87,6 +79,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         knit_stats_setup.nrows: number of rows in the figure
 %         knit_stats_setup.row: row to plot into
 %             Note: rows should be plotted in order, as plotting final row triggers an equalization of the color scale
+%
+%  06Nov25: modularize consistency checking into rs_check_coordsets
+%  06Feb26: add mode for just plotting
 %
 %  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
