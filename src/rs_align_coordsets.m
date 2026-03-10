@@ -28,7 +28,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %       - if_log (int): 1 to log progress, 0 to suppress; default is o.
 %       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
 %             default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
-%       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates.
+%       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates
 %       - if_btcremz (int): typically omitted, defaults to 1, see note below regarding labels for binary texture coordinates
 %
 %     - opts_check (struct): options for consistency checking, with field
@@ -55,9 +55,9 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     - opts_import (struct): aux.opts_import, with defaults filled in
 %     - opts_rays (cell array): opts_rays{k} is a structure which contains the options used for creating rays in record k in data_out
 %     - ovlp_array (integer array): overlap array: ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
-%     - sa_pooled (struct): the `stimulus metadata structure` for the pooled stimulus set.  See note below regarding stimulus coordinates.
-%     - rayss (cell array): rayss{k} is the `ray structure` for record k in data_out.  See note below regarding rays.
-%     - opts_btcremz (cell array): See note below regarding labels for binary texture coordinates.
+%     - sa_pooled (struct): the `stimulus metadata structure` for the pooled stimulus set; see note below regarding stimulus coordinates
+%     - rayss (cell array): rayss{k} is the `ray structure` for record k in data_out; see note below regarding rays
+%     - opts_btcremz (cell array): see note below regarding labels for binary texture coordinates
 %
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
