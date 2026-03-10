@@ -67,18 +67,23 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %   Need to add to documentation opts_import for default for type_coords, and opts_rays
 % 
 %
-% Notes:
+% General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
 %       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
 %
-% Special note regarding stimulus coordinates:
+% Note regarding stimulus coordinates:
 %     - Stimulus coordinates, optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords, are also aligned.
 %     - In the aligned 'stimulus metadata structure' data_out.sas{k}, if the stimulus typename is not present in data_in.sas{k}, stimulus coordinates are NaN.
 %     - In the pooled 'stimulus metadata structure' aux_out.sa_pooled, stimulus coordinates are taken from the first occurence of the typename in data_in.sas{:} is used.
 %
-% Cautions:
-%   - this is a caution
+% Note regarding rays:
+%     - The `ray structure` describes relationships among the simulus coordinates: 
+%       `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
+%       `rings`, stimuli that lie at an appxorimately equal distance from the origin, and nearest neighbors.
+%       It is only created if there is a valid set of stimulus coordinates.  
+%
+%  See if rays depend on which stimuli are present see What happens in knit
 % 
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
