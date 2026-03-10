@@ -79,10 +79,11 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %     - No merging (if_type_coords_remake=1, or stimulus coordinates absent, or, stimulus coordinates do not meet above requirements):
 %       In the aligned `stimulus metadata structure` data_out.sas{k}, dummy coordinates are created in one of the fields
-%       type_coords, btc_specoords, or btc_augcoords (determined by the first of the list that is found in data_in.sas{:}), equal to an empty matrix, zeros, ones, or the identity,
+%       type_coords, btc_specoords, or btc_augcoords (the field chosen is determined by the first of that list that is found in data_in.sas{:}).
+%       The dummy coordinates can be an empty matrix, zeros, ones, or the identity,
 %       as determined by aux.opts_import.type_coords_def.  This defaults to 'none', can be 'zeros','ones', or 'eye', and the value used is
-%       reported in aux_out.opts_import.type_coords_def and aux_out.opts_align.tuype_coords_def.
-%
+%       reported in aux_out.opts_import.type_coords_def and aux_out.opts_align.type_coords_def.
+% 
 %     - The behavior taken is reported in aux_out.opts_align.if_type_coords_remake.
 %
 % Note regarding rays:
@@ -91,13 +92,12 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     `rings`, stimuli that lie at an appxorimately equal distance from the origin, and nearest neighbors.
 %     It is only created if there is a valid set of stimulus coordinates.  
 %
-% 
 % Note regarding labels for binary texture coordinates:
-%     - if_btcremz is only relevant for datasets with binary texture coordinate metadata, and controls whether there is an attempt to simplify fields sas{k}.spec_labels and sas{k}.typenames
+%     - if_btcremz is only relevant for datasets with binary texture coordinate metadata, and controls whether an attempt should be made to simplify fields sas{k}.spec_labels and sas{k}.typenames
 %     prior to matching and alignmnent.  If 1 (default), coordinates that are specified as zero are removed, provided
-%     that this does not change the stimulus.  For example, in data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'
-%     and  data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'.  An
-%     all-zero coordainate becomes 'rand'. Results for simplification of record k are returned in opts_btcremz{k}.
+%     that this does not change the stimulus after maximum-entropy extension.  For example, in data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'
+%     the corresponding entry in data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'.  An
+%     all-zero coordinate becomes 'rand'. Results for simplification of record k are returned in opts_btcremz{k}.
 % 
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, RS_IMPORT_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
