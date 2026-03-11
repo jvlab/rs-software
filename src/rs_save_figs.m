@@ -39,6 +39,7 @@ if length(handles)>0
         opts.ndigits=floor(log10(length(handles)))+1;
     end
     for ifig=1:length(handles)
+        figname=get(handles(ifig),'Name');
         if (if_append)
             savename=cat(2,fullname,'_fig_',zpad(ifig,opts.ndigits));
         else
@@ -47,7 +48,7 @@ if length(handles)>0
         savename=cat(2,savename,'.fig');
         savefig(handles(ifig),savename);
         if opts.if_log
-            disp(sprintf('figure saved as %s',savename));
+            disp(sprintf('figure %s saved as %s',figname,savename));
         end
     end
 end

@@ -81,6 +81,9 @@ for itest=1:ntests
         %
         auxs{itest}.opts_knit.if_log=1;
         [data_outs{itest},aux_outs{itest}]=rs_knit_coordsets(data_aligns{itest},auxs{itest});
+        if aux_outs{itest}.opts_knit.if_plot
+            set(gcf,'Name',sprintf('scenario %1.0f',itest));
+        end
     %
     else
         %replot, two rows, different quantiles
