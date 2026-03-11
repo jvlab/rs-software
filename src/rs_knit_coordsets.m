@@ -7,8 +7,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % NaN's in the row data_in.sets{k}{idim}(s,:), a row of length idim.  This
 % form of data_in is provided by the `dataset structure` returned by `rs_align_coordsets` [how to hyperlink?].
 %
-% The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
-%
 % Args:
 %   data_in (struct): `dataset structure` to be aligned containing n records, with fields
 %
@@ -16,13 +14,24 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_knit (struct): options for knitting and consistency checking, with fields
+%
+%       - if_log (int): 1 to log progress, 0 to suppress; default is 1
+%       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
+%       - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
+%       - allow_scale (int): 1 to allow scaling, 0 does not allow; default is 0
+%       - if_normscale (int): 1 to normalize consensus to RMS size of data, 0 does not, has no effect if allow_scale=0; default is 0
+%       - if_pca (int): 1 to rotate the consensus data_out.ds{1}.{idim} so that the dimensions correspond to principal components, 0 does not; default is 0
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%
+%     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
+%
 % aux.opts_knit:
-%  if_log: 1 to log progress (default=1)+-
-%  allow_reflection: 1 to allow reflection (default=1)
-%  allow_offset: 1 to allow offset (default=1) 
-%  allow_scale: 1 to allow scale, (default=0)
-%  if_normscale: 1 to normalize consensus to size of data (default=0)
-%  if_pca:  1 to rotate consensus into PCA space (default=0)
 %  max_iters: max iterations for Procrustes consensus, default=1000
 %  if_stats: 1 to do statistics of variance explained (0 is default)
 %  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
@@ -73,6 +82,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %    details: details of the convergence towards knitting (present only if aux.opts_knit.keepd_details=1)
 %    ts_pca{ip}{iset}: transformation from components to consensus, taking into account final pca if if_pca=1 (present only if if_pca=1) 
 %
+%
 % This can also be used to replot a previous calculation, with greater customization. To do this:
 %   data_in should be equal to that used in the previous calculation.
 %   aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation.
@@ -87,6 +97,24 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         knit_stats_setup.nrows: number of rows in the figure
 %         knit_stats_setup.row: row to plot into
 %             Note: rows should be plotted in order, as plotting final row triggers an equalization of the color scale
+%
+%           warnings: 'dimension lists do not agree across datasets; intersection is available for processing'
+%        warn_bad: 0
+% coords_havedata: [25×3 double]
+%           rayss: {[1×1 struct]}
+%       opts_rays: {[1×1 struct]}
+%       opts_knit: [1×1 struct]
+%       opts_pcon: {7×1 cell}
+%        opts_pca: [1×1 struct]
+%      components: [1×1 struct]
+% 
+% 
+%
+% General notes, first two are to be edited:
+%     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
+%     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
+%       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
+%     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 %  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
@@ -368,6 +396,7 @@ if aux_out.warn_bad==0
     aux_out.opts_rays{1}=opts_rays_used;
     aux_out.opts_knit=aux.opts_knit;
     aux_out.opts_pcon=opts_pcon_used;
+    aux_out.opts_pca=aux.opts_pca;
     %
     aux_out.components.ds=ds_components;
     aux_out.components.sas=data_in.sas;

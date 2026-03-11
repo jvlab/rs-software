@@ -23,9 +23,9 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % 
 %   aux (struct): auxiliary options, may be omitted, with fields
 %
-%     - opts_align (struct): options for consistency checking, with fields
+%     - opts_align (struct): options for alignment and consistency checking, with fields
 %
-%       - if_log (int): 1 to log progress, 0 to suppress; default is 1.
+%       - if_log (int): 1 to log progress, 0 to suppress; default is 1
 %       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
 %             default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
 %       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates
