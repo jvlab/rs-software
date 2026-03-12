@@ -34,7 +34,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %       - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %       - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
-%       - knit_stats_setup (struct): include to replot a prevoius anlaysis, oterwise omit; see note below regarding replotting
+%       - knit_stats_setup (struct): include to replot a previous anlaysis, oterwise omit; see note below regarding replotting
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -42,9 +42,11 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
 %
-% aux.opts_knit:
+%     - opts_pcon (struct): options used in Procrustes alignment; see note below regarding Procrustes consensus algorithm
 %
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%     - opts_pca( struct): options used for principal components analysis of consensus
+%
+%     - opts_align (struct): options for alignment of data
 %
 %  aux.sa_pooled, aux_out.sa_pooled, from rs_align_coordsets
 %  aux.data_align: data_out, from rs_align_coordsets
@@ -268,6 +270,7 @@ if (isfield(aux,'sa_pooled') & isfield(aux,'data_align'))
     end
     sa_pooled=aux.sa_pooled;
     data_align=aux.data_align;
+    opts_align_used=aux.opts_align;
 else
     if (aux.opts_knit.if_log)
         disp('sa_pooled and data_align will be created.');
@@ -282,6 +285,7 @@ else
     aux2.opts_align.if_log=aux.opts_knit.if_log;
     [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux2);
     sa_pooled=aux_align.sa_pooled;
+    opts_align_used=aux_align.opts_align;
 end
 if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
     wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
@@ -441,6 +445,7 @@ if aux_out.warn_bad==0
     aux_out.opts_knit=aux.opts_knit;
     aux_out.opts_pcon=opts_pcon_used;
     aux_out.opts_pca=aux.opts_pca;
+    aux_out.opts_align=opts_align_used;
     %
     aux_out.components.ds=ds_components;
     aux_out.components.sas=data_in.sas;
