@@ -30,7 +30,8 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %   - `data_in1` and `data_in2` are typically created by `rs_get_coordsets`, `rs_align_coordsets`, or `rs_import_coordsets`.
 %   -  data_out.sets{k}.pipeline is copied from data_in1 or data_in2 and is not updated.
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
+% See also:
+%   RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %
 if (nargin<=2)
     aux=struct;

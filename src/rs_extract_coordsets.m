@@ -29,7 +29,8 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %   -  aux may be omitted; defaults are filled in.
 %   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
 %
-%  See also: RS_CONCAT_COORDSETS.
+% See also:
+%   RS_CONCAT_COORDSETS.
 %
 if (nargin<=2)
     aux=struct;

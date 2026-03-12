@@ -46,7 +46,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_pca( struct): options used for principal components analysis of consensus
 %
-%     - opts_align (struct): options for alignment of data
+%     - opts_align (struct): options for alignment of data, RS_ALIGN_COORDSETS
 %
 %  aux.sa_pooled, aux_out.sa_pooled, from rs_align_coordsets
 %  aux.data_align: data_out, from rs_align_coordsets
@@ -162,9 +162,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
-%  See also: RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
-%  RS_ALIGN_COORDSETS, PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%  PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
+% See also:
+%   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
+%   PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
+%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %
 if (nargin<=1)
     aux=struct;

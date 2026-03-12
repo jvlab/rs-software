@@ -99,7 +99,8 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     the corresponding entry in data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'.  An
 %     all-zero coordinate becomes 'rand'. Results for simplification of record k are returned in opts_btcremz{k}.
 % 
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, RS_IMPORT_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
+% See also:
+%   RS_AUX_CUSTOMIZE, RS_FINDRAYS, PSG_ALIGN_COORDSETS, RS_IMPORT_COORDSETS, PSG_COORD_PIPE_UTIL, PSG_BTCREMZ, RS_CHECK_COORDSETS.
 %
 if (nargin<=1)
     aux=struct;
