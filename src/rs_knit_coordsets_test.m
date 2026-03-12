@@ -65,7 +65,6 @@ filenames_examples{5}=filenames_examples{3};
 auxs{5}=auxs{3};
 auxs{5}.opts_knit.if_pca=1;
 auxs{5}.opts_knit.allow_scale=1;
-auxs{5}.opts_knit.if_normscale=1;
 aux_ins{5}=aux_ins{3};
 %
 fns=cell(1,ntests);

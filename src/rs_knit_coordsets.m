@@ -21,9 +21,20 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - if_log (int): 1 to log progress, 0 to suppress; default is 1
 %       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %       - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
-%       - allow_scale (int): 1 to allow scaling, 0 does not allow; default is 0
-%       - if_normscale (int): 1 to normalize consensus to RMS size of data, 0 does not, has no effect if allow_scale=0; default is 0
-%       - if_pca (int): 1 to rotate the consensus data_out.ds{1}.{idim} so that the dimensions correspond to principal components, 0 does not; default is 0
+%       - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
+%       - if_normscale (int): 1 to normalize consensus to size of data (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%       - if_pca (int): 1 to rotate the consensus coordinates in data_out.ds{1}.{idim} into its principal components, 0 does not; default is 0
+%       - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
+%       - if_plot: 1 to plot statistics, 0 does not; default is if_stats
+%       - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
+%       - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
+%       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
+%       - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
+%       - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
+%       - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
+%       - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%       - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
+%       - knit_stats_setup (struct): include to replot a prevoius anlaysis, oterwise omit; see note below regarding replotting
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -32,17 +43,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
 %
 % aux.opts_knit:
-%  max_iters: max iterations for Procrustes consensus, default=1000
-%  if_stats: 1 to do statistics of variance explained (0 is default)
-%  nshuffs: number of shuffles, defaults to 500 if if_stats=1, 0 if if_stats=0
-%     Note that to just compute statistics of variance explained, without shuffles, set if_stats=1, nshuffs=0.
-%  if_plot: 1 to plot statistics, defaults to if_stats
-%  shuff_quantiles: quantiles to plot, defaults to [0.01 0.05 0.5 0.95 0.99];
-%  dim_max_in: maximum dimension of the component set to use, defaults to max available across all datasets
-%  dim_list_in: list of dimensions of component set to use, defaults to [1:max_dim_in]
-%  dim_aug: number of dimensions to augment by, defaults to 0
-%  dim_list_out: list of dimensions of sets to create, defaults to dim_aug+[dim_list_in]
-%  knit_stats, knit_stats setup:  only include to replot.  
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -82,6 +82,18 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %    details: details of the convergence towards knitting (present only if aux.opts_knit.keepd_details=1)
 %    ts_pca{ip}{iset}: transformation from components to consensus, taking into account final pca if if_pca=1 (present only if if_pca=1) 
 %
+% 
+% aux_outs{5}.knit_stats
+% ans = 
+%   struct with fields:
+% 
+%                opts_pcon: [1×1 struct]
+%        opts_pcon_eachdim: {[1×1 struct]  [1×1 struct]  [1×1 struct]  [1×1 struct]  [1×1 struct]  [1×1 struct]  [1×1 struct]}
+%               ds_knitted: {[37×1 double]  [37×2 double]  [37×3 double]  [37×4 double]  [37×5 double]  [37×6 double]  [37×7 double]}
+%            ds_components: {{1×7 cell}  {1×7 cell}}
+%                       ts: {{1×2 cell}  {1×2 cell}  {1×2 cell}  {1×2 cell}  {1×2 cell}  {1×2 cell}  {1×2 cell}}
+%           counts_overall: 50
+% 
 %
 % This can also be used to replot a previous calculation, with greater customization. To do this:
 %   data_in should be equal to that used in the previous calculation.
@@ -108,7 +120,39 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %        opts_pca: [1×1 struct]
 %      components: [1×1 struct]
 % 
-% 
+% Note regarding statistics and plots:
+%     - If aux.opts_knit.if_stats=1, variance explained by the consensus
+%     coordinates are calculated and returned in aux_outs.knit_stats, in the following fields:
+%
+%       - rmsdev_overall(idim): root-mean-squared deviation across all records and stimuli
+%       - rmsdev_setwise(idim,irec): root-mean-squared deviation within each record, across stimuli
+%       - rmsdev_stmwise(idim,istim): rood-mean-squared deviation within each stimulis, across records
+%
+%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
+%     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel
+%     computation is done after random shuffles of the stimulus labels within each record,
+%     and the results are returned in rmsdev_[overall|setwise|stimwise]_shuff.
+%     For these, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
+%     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: mode 1 is that all coordinates
+%     are shuffled, mode 2 is that only the last coordinate is shuffled
+%     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure
+%     is created with four panels:
+%
+%       - a heatmap of rmsdev_setwise
+%       - a heatmap of rmsdev_stmwise
+%       - a comparison of rmsdev_overall (black) to quantiles of
+%       rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
+%       nshuffs=0, then the shuffled values will not be plotted
+%       - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
+%     
+% Note regarding Procrustes consensus algorithm:
+%     - Brief description: TBD
+%     - Discuss augmented dimention and relation to initialization optoins
+%     - Discussion of initialization options
+%
+% Note regarding replotting a previous analysis:
+%     - Brief description: TBD
+%     - This is demonstrated in rs_knit_coordsets_demo.
 %
 % General notes, first two are to be edited:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -128,7 +172,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'if_log',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_offset',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
-aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',aux.opts_knit.allow_scale);
 aux.opts_knit=filldefault(aux.opts_knit,'if_pca',0);
 aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
