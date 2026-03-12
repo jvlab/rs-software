@@ -37,9 +37,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - max_niters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %       - pcon_init_method (int): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
 %       - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
-%       - keep_details (int): typically omitted, default is 0; see note below regarding Procrustes consensus algorithm 
 %       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
-%
+%       - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
+%       - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm 
 %     - opts_check (struct): options for consistency checking, with field
 %
 %       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -131,10 +131,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     computation is done after random shuffles of the stimulus labels within each record,
 %     and the results are returned in rmsdev_[overall|setwise|stimwise]_shuff.
 %     For these, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
-%     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: mode 1 is that all coordinates
-%     are shuffled, mode 2 is that only the last coordinate is shuffled
-%     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure
-%     is created with four panels:
+%     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: in mode 1, all coordinates
+%     are shuffled, in mode 2 only the last coordinate is shuffled
+%     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
 %       - a heatmap of rmsdev_setwise
 %       - a heatmap of rmsdev_stmwise
@@ -153,20 +152,19 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - To find a consensus set of coordinates, the coordinates in each record of data_in are rotated, and optionally translated (based on allow_offset),
 %     scaled (based on allow_scale), and reflected (based on allow_reflection). It is carried out for separately for each dimension idim
 %     that is present in  all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
-%     - The algorithm, in procrustes_consensus, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
+%     - The algorithm, in procrustes_consensus.m, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
 %     transformation is found that minimizes the rms deviation between that dataset and the current guess. The guess is then
 %     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stmiulus across the records.
-%     The iteration ends when either the maximum number of iterations
-%     (max_niters, default=1000) is exceeded, or the rms change of the guess is less than max_rmstol (default=10^-5)
-%     - Discuss augmented dimention and relation to initialization optoins
-%     - Discussion of initialization options
-%     - May fail to converge if not enough overlapping stimuli
-%     initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
-%     if_initpca_rot: (if pcon_init_method<=0) whether to rotate
-%     initialization to match data (1), or not (0), defaults to 1 unless any of dim_list_out> dim_list_in
-%     keep_details: 1 to keep details field (defaults to 0)
-%     Other optoins also settable, initialize_set, or only one dimension at
-%     a time
+%     The iteration ends when either the number of iterations exceeds max_niters (default=1000),
+%     or the rms change of the guess is less than max_rmstol (default=10^-5)
+%     - There are several choices for initialization
+%
+%       - For most purposes, the default can be used. The default initialization (aux.opts_knit.pcon_initialization_method=0) is to use principal components of all the stimulus coordinates in all of the records.
+%       These can be optoinally forced to be centered (pcon_initialization_method=-1) or not (pcon_initialization_method=-2); if unspecified, centering is done when allow_offset=1. For these choices,
+%       if_initpca_rot=1 rotates the initial guess to match the data, or not. This defaults to 1 unless any of dim_list_out> dim_list_in
+%       -  Alternatively, pcon_intialization_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
+%       -  Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
+%       the initialization choice.
 %
 % Note regarding replotting a previous analysis:
 %     - Brief description: TBD
@@ -194,6 +192,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',aux.opts_knit.allow_scale);
 aux.opts_knit=filldefault(aux.opts_knit,'if_pca',0);
 aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
+aux.opts_knit=filldefault(aux.opts_knit,'max_rmstol',10^-5);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
 aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_stats',0);
