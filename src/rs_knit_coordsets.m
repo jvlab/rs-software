@@ -19,42 +19,38 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_knit (struct): options for knitting and consistency checking, with fields
 %
 %       - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %       - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %       - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
+%       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %       - if_normscale (int): 1 to normalize consensus to size of data_in (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %       - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %       - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
-%       - if_plot: 1 to plot statistics, 0 does not; default is if_stats
+%       - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %       - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
 %       - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
-%       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %       - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
 %       - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
 %       - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %       - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %       - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
-%       - knit_stats_setup (struct): include to replot a previous anlaysis, oterwise omit; see note below regarding replotting
+%       - knit_stats_setup (struct): include to replot a previous analysis, oterwise omit; see note below regarding replotting
+%       - max_niters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
+%       - pcon_init_method (int): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
+%       - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
+%       - keep_details (int): typically omitted, default is 0; see note below regarding Procrustes consensus algorithm 
+%       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
 %       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-%     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
-%
 %     - opts_pcon (struct): options used in Procrustes alignment; see note below regarding Procrustes consensus algorithm
+%     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
+%     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
+%     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
 %
-%     - opts_pca( struct): options used for principal components analysis of consensus
-%
-%     - opts_align (struct): options for alignment of data, RS_ALIGN_COORDSETS
-%
-%  aux.sa_pooled, aux_out.sa_pooled, from rs_align_coordsets
-%  aux.data_align: data_out, from rs_align_coordsets
-%
-%  pcon_init_method: initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
-%  if_initpca_rot: (if pcon_init_method<=0) whether to rotate
-%     initialization to match data (1), or not (0), defaults to 1 unless any of dim_list_out> dim_list_in
-%  keep_details: 1 to keep details field (defaults to 0)
+%     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
+%     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % data_out.ds{1},sas{1},sets{1}:  consensus coordinates and dataset descriptors after alignment
 % aux_out: auxiliary outputs and parameter values used
@@ -147,10 +143,30 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       nshuffs=0, then the shuffled values will not be plotted
 %       - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
 %     
+% Note regarding recalculation of alignment:
+%     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of data_in, and to 
+%     place them in the same order. By default, this is carried out in rs_knit_coordsets by a call to rs_align_coordsets, using options aux.align_opts.
+%     This recalculation can be avoided by supplying aux_out from a
+%     previous call to rs_align_coordsets, as follows: aux.sa_pooled=aux_out.sa_pooled, aux.data_align=aux_out.data_out
+%
 % Note regarding Procrustes consensus algorithm:
-%     - Brief description: TBD
+%     - To find a consensus set of coordinates, the coordinates in each record of data_in are rotated, and optionally translated (based on allow_offset),
+%     scaled (based on allow_scale), and reflected (based on allow_reflection). It is carried out for separately for each dimension idim
+%     that is present in  all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
+%     - The algorithm, in procrustes_consensus, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
+%     transformation is found that minimizes the rms deviation between that dataset and the current guess. The guess is then
+%     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stmiulus across the records.
+%     The iteration ends when either the maximum number of iterations
+%     (max_niters, default=1000) is exceeded, or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - Discuss augmented dimention and relation to initialization optoins
 %     - Discussion of initialization options
+%     - May fail to converge if not enough overlapping stimuli
+%     initialization method: >0: a specific set, 0 for PCA, -1 for PCA with forced centering, -2 for PCA with forced non-centering', defaults to 0
+%     if_initpca_rot: (if pcon_init_method<=0) whether to rotate
+%     initialization to match data (1), or not (0), defaults to 1 unless any of dim_list_out> dim_list_in
+%     keep_details: 1 to keep details field (defaults to 0)
+%     Other optoins also settable, initialize_set, or only one dimension at
+%     a time
 %
 % Note regarding replotting a previous analysis:
 %     - Brief description: TBD

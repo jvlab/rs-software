@@ -5,8 +5,8 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % with stimulus identity in record k determined by the strings in data_in.sas{k}.typenames. The stimuli
 % in each of the records may differ, and may overlap.
 %
-% Each of the corresponding records in the `dataset structure` data_out contains an entry a stimulus set
-% equal to the union of all of the stimuli in any of the records of data_in.  For a stimulus in the kth record of
+% Each of the corresponding records in the `dataset structure` data_out has a stimulus set 
+% equal to the union of all of the stimulus sets in the records of data_in.  For a stimulus in the kth record of
 % data_out for which there is no entry in data_in, the coordinates are NaN. See note below regarding stimulus coordinates.
 %
 % The stimulus labels in data_out.sas{k}.typenames are in alphabetical order, and are identical for all of the records
@@ -27,7 +27,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %       - if_log (int): 1 to log progress, 0 to suppress; default is 1
 %       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
-%             default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
+%       default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
 %       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates
 %       - if_btcremz (int): typically omitted, defaults to 1, see note below regarding labels for binary texture coordinates
 %
@@ -36,7 +36,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_import (struct): options for stimulus coordinates, typically omitted, see note below regarding stimulus coordinates
-%     - opts_rays (struct): options for rays, typically omitted, see note below regarding rays
+%     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 % Returns:
 %   data_out (struct): aligned `dataset structure` with n records, same format as  as `data_in`
@@ -89,7 +89,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % Note regarding rays:
 %     - The `ray structure` describes relationships among the simulus coordinates: 
 %     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
-%     `rings`, stimuli that lie at an appxorimately equal distance from the origin, and nearest neighbors.
+%     `rings`, stimuli that lie at an approximately equal distance from the origin, and nearest neighbors.
 %     It is only created if there is a valid set of stimulus coordinates.  
 %
 % Note regarding labels for binary texture coordinates:
