@@ -22,8 +22,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %       - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %       - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
-%       - if_normscale (int): 1 to normalize consensus to size of data (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
-%       - if_pca (int): 1 to rotate the consensus coordinates in data_out.ds{1}.{idim} into its principal components, 0 does not; default is 0
+%       - if_normscale (int): 1 to normalize consensus to size of data_in (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%       - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %       - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %       - if_plot: 1 to plot statistics, 0 does not; default is if_stats
 %       - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
