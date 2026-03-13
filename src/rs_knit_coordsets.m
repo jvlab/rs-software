@@ -42,7 +42,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %       - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %       - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%       - if_frozen (int): `random number control`, used for shuffles and initialization, 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, typically omitted; 
+%       - if_frozen (int): `random number control`, used for shuffles and initialization, 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
 %        default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
@@ -134,10 +134,11 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
 %     and the results are returned in
-%     rmsdev_[overall|setwise|stimwise]_shuff. aux.opts_knit.if_frozen controls whether the same random numbers are used on each run
-%     For these, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
+%     rmsdev_[overall|setwise|stimwise]_shuff.
+%     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
 %     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: in mode 1, all coordinates
-%     are shuffled, in mode 2 only the last coordinate is shuffled
+%     are shuffled, in mode 2 only the last coordinate is shuffled.
+%     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
 %       - a heatmap of rmsdev_setwise
@@ -175,12 +176,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
 %       initial guess, and pcon_alignment{idim}, which defaults to
 %       pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
-%       aux.opts_knit.if_frozen controls whether the same random numbers are used on each run.
+%       To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
 %     matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
 %     - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
 %     the initialization choice.  A simple strategy to check for this is to compare the results with the default pcon_init_method=0 to the results with
-%     pcon_init_method='specify' and if_frozen=0. There are two ways that this can happen.
+%     pcon_init_method='specify' and if_frozen=0. There are two ways that this dependency can happen.
 %
 %       - One is that the number of overlapping stimuli is too small. For example,
 %       at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
