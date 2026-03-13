@@ -54,7 +54,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_import (struct): aux.opts_import, with defaults filled in
 %     - opts_rays (cell array): opts_rays{k} is a structure which contains the options used for creating rays in record k in data_out
-%     - ovlp_array (integer array): overlap array: ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
+%     - ovlp_array (int array): ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
 %     - sa_pooled (struct): the `stimulus metadata structure` for the pooled stimulus set; see note below regarding stimulus coordinates
 %     - rayss (cell array): rayss{k} is the `ray structure` for record k in data_out; see note below regarding rays
 %     - opts_btcremz (cell array): see note below regarding labels for binary texture coordinates
@@ -62,7 +62,8 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
-%       data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in.
+%     data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in;
+%     data_out.sets{1}.pipeline.type='align'.
 %
 % Note regarding stimulus coordinates:
 %     - Stimulus coordinates are optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords.
@@ -78,11 +79,11 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     to {'specs'  'spec_labels'  'btc_augcoords'  'btc_specoords'  'type_coords'}
 %
 %     - No merging (if_type_coords_remake=1, or stimulus coordinates absent, or, stimulus coordinates do not meet above requirements):
-%       In the aligned `stimulus metadata structure` data_out.sas{k}, dummy coordinates are created in one of the fields
-%       type_coords, btc_specoords, or btc_augcoords (the field chosen is determined by the first of that list that is found in data_in.sas{:}).
-%       The dummy coordinates can be an empty matrix, zeros, ones, or the identity,
-%       as determined by aux.opts_import.type_coords_def.  This defaults to 'none', can be 'zeros','ones', or 'eye', and the value used is
-%       reported in aux_out.opts_import.type_coords_def and aux_out.opts_align.type_coords_def.
+%     In the aligned `stimulus metadata structure` data_out.sas{k}, dummy coordinates are created in one of the fields
+%     type_coords, btc_specoords, or btc_augcoords (the field chosen is determined by the first of that list that is found in data_in.sas{:}).
+%     The dummy coordinates can be an empty matrix, zeros, ones, or the identity,
+%     as determined by aux.opts_import.type_coords_def.  This defaults to 'none', can be 'zeros','ones', or 'eye', and the value used is
+%     reported in aux_out.opts_import.type_coords_def and aux_out.opts_align.type_coords_def.
 % 
 %     - The behavior taken is reported in aux_out.opts_align.if_type_coords_remake.
 %
