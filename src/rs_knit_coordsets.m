@@ -179,8 +179,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
 %     matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
 %     - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
-%     the initialization choice.  A simple strategy to check for this is to compare the results with the default pcon_init_method=0 with
-%     pcon_init_method='specify'.There are two ways that this can happen.
+%     the initialization choice.  A simple strategy to check for this is to compare the results with the default pcon_init_method=0 to the results with
+%     pcon_init_method='specify' and if_frozen=0. There are two ways that this can happen.
 %
 %       - One is that the number of overlapping stimuli is too small. For example,
 %       at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
