@@ -35,11 +35,14 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %       - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %       - knit_stats_setup (struct): include to replot a previous analysis, oterwise omit; see note below regarding replotting
 %       - max_niters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
-%       - pcon_init_method (int): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
+%       - pcon_init_method (int or char): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
 %       - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %       - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%       - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm 
+%       - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
+%       - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
+%       - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm 
+%
 %     - opts_check (struct): options for consistency checking, with field
 %
 %       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -150,22 +153,30 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 % Note regarding Procrustes consensus algorithm:
 %     - To find a consensus set of coordinates, the coordinates in each record of data_in are rotated, and optionally translated (based on allow_offset),
-%     scaled (based on allow_scale), and reflected (based on allow_reflection). It is carried out for separately for each dimension idim
-%     that is present in  all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
+%     scaled (based on allow_scale), and reflected (based on allow_reflection). These transformatoins are carried out for separately for each set dimension
+%     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
 %     - The algorithm, in procrustes_consensus.m, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
 %     transformation is found that minimizes the rms deviation between that dataset and the current guess. The guess is then
-%     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stmiulus across the records.
-%     The iteration ends when either the number of iterations exceeds max_niters (default=1000),
+%     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stimulus across the records, and then Procrustes-transformed for closest match
+%     to an alignment coordinate set (so that the guess does not drift), which, unless otherwise specified, is equal to the initial guess.
+%     - The iteration ends when either the number of iterations exceeds max_niters (default=1000),
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
-%     - There are several choices for initialization
+%     - There are several choices for initialization and alignment.
 %
-%       - For most purposes, the default can be used. The default initialization (aux.opts_knit.pcon_initialization_method=0) is to use principal components of all the stimulus coordinates in all of the records.
-%       These can be optoinally forced to be centered (pcon_initialization_method=-1) or not (pcon_initialization_method=-2); if unspecified, centering is done when allow_offset=1. For these choices,
-%       if_initpca_rot=1 rotates the initial guess to match the data, or not. This defaults to 1 unless any of dim_list_out> dim_list_in
+%       - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
+%       These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
+%       For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
+%       not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
+%       The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
+%       is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
 %       -  Alternatively, pcon_intialization_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
+%       -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
+%       initial guess, and pcon_alignment{idim}, which defaults to
+%       pcon_initial_guess, is used for the alignment at the end of each iteration.  These may be omitted, in which case random values are used.
 %       -  Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
-%       the initialization choice.
-%
+%       the initialization choice.  This possibility only occurs when there are at least three records in data_in, as the procedure reduces to
+%       the standard Procrustes algorithm, which is deterministic other than does rotational ambiguity, when there are two records.
+% 
 % Note regarding replotting a previous analysis:
 %     - Brief description: TBD
 %     - This is demonstrated in rs_knit_coordsets_demo.
@@ -190,13 +201,15 @@ aux.opts_knit=filldefault(aux.opts_knit,'allow_reflection',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_offset',1);
 aux.opts_knit=filldefault(aux.opts_knit,'allow_scale',0);
 aux.opts_knit=filldefault(aux.opts_knit,'if_normscale',aux.opts_knit.allow_scale);
+aux.opts_knit=filldefault(aux.opts_knit,'if_stats',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_plot',aux.opts_knit.if_stats);
 aux.opts_knit=filldefault(aux.opts_knit,'if_pca',0);
 aux.opts_knit=filldefault(aux.opts_knit,'max_niters',1000);
 aux.opts_knit=filldefault(aux.opts_knit,'max_rmstol',10^-5);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_init_method',0);
 aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
-aux.opts_knit=filldefault(aux.opts_knit,'if_stats',0);
-aux.opts_knit=filldefault(aux.opts_knit,'if_plot',aux.opts_knit.if_stats);
+aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
+aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -340,14 +353,27 @@ if aux_out.warn_bad==0
     else
         c2p_string='';
     end
-    if aux.opts_knit.pcon_init_method>0
-        aux.opts_knit.initialize_set=aux.opts_knit.pcon_init_method;
-    elseif aux.opts_knit.pcon_init_method==0
-        aux.opts_knit.initialize_set='pca';
-    elseif aux.opts_knit.pcon_init_method==-1
-        aux.opts_knit.initialize_set='pca_center';
+    if_specify=0;
+    if ischar(aux.opts_knit.pcon_init_method)
+        if strcmp(aux.opts_knit.pcon_init_method,'specify')
+            if_specify=1;
+            aux.opts_knit.initialize_set=0;
+        else
+            wmsg='initialization method not recognized; default used';
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+            aux.opts_knit.pcon_init_method=0;
+            aux.opts_knit.initialize_set='pca';
+        end
     else
-        aux.opts_knit.initialize_set='pca_nocenter';
+        if aux.opts_knit.pcon_init_method>0
+            aux.opts_knit.initialize_set=aux.opts_knit.pcon_init_method;
+        elseif aux.opts_knit.pcon_init_method==0
+            aux.opts_knit.initialize_set='pca';
+        elseif aux.opts_knit.pcon_init_method==-1
+            aux.opts_knit.initialize_set='pca_center';
+        else
+            aux.opts_knit.initialize_set='pca_nocenter';
+        end
     end
     %
     %do a consensus on each model-dimension separately
