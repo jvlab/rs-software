@@ -353,11 +353,9 @@ if aux_out.warn_bad==0
     else
         c2p_string='';
     end
-    if_specify=0;
     if ischar(aux.opts_knit.pcon_init_method)
         if strcmp(aux.opts_knit.pcon_init_method,'specify')
-            if_specify=1;
-            aux.opts_knit.initialize_set=0;
+            aux.opts_knit.initialize_set=0; %opts_knit.pcon_initial_guess and opts_knit.pcon_alignment will be used
         else
             wmsg='initialization method not recognized; default used';
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
