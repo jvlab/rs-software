@@ -8,7 +8,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % [how to hyperlink?] meets these requirements.
 %
 % Args:
-%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
+%   data_in (struct): `dataset structure` to be processed, containing n records, with fields
 %
 %     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
@@ -61,7 +61,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
-%   data_out (struct): aligned `dataset structure` with a single record, same format as  as `data_in`
+%   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from data_in, same format as  as `data_in`
 %
 %   aux_out: auxiliary outputs and parameter values used
 %
