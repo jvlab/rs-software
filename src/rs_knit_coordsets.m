@@ -109,9 +109,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus
 %     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
 %
-%         - rmsdev_overall(idim): root-mean-squared deviation across all records and stimuli
-%         - rmsdev_setwise(idim,irec): root-mean-squared deviation within each record, across stimuli
-%         - rmsdev_stmwise(idim,istim): rood-mean-squared deviation within each stimulis, across records
+%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the root-mean-squared deviation across all records and stimuli
+%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): root-mean-squared deviation within record k, across stimuli
+%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rood-mean-squared deviation within stimulus istim, across records
 %
 %     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
