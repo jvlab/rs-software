@@ -18,39 +18,39 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_knit (struct): options for knitting and consistency checking, with fields
 %
-%       - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%       - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
-%       - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
-%       - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
-%       - if_normscale (int): 1 to normalize consensus to size of data_in (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
-%       - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
+%         - if_log (int): 1 to log progress, 0 to suppress; default is 1
+%         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
+%         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
+%         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
+%         - if_normscale (int): 1 to normalize consensus to size of data_in (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
-%       - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
-%       - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
-%       - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
-%       - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
+%         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
+%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
+%         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %
-%       - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
-%       - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
-%       - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
-%       - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
+%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
+%         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
+%         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
-%       - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
-%       - knit_stats_setup (struct): include to replot a previous analysis, oterwise omit; see note below regarding replotting
+%         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
+%         - knit_stats_setup (struct): include to replot a previous analysis, oterwise omit; see note below regarding replotting
 %
-%       - pcon_init_method (int or char): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
-%       - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
-%       - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
-%       - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%       - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
-%       - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%       - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%       - if_frozen (int): `random number control`, used for shuffles and initialization, 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%       default is 1; see notes below regarding statistics and Procrustes consensus algorithm
+%         - pcon_init_method (int or char): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
+%         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
+%         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
+%         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
+%         - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
+%         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
+%         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
+%         - if_frozen (int): `random number control`, used for shuffles and initialization, 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_pcon (struct): options used in Procrustes alignment; see note below regarding Procrustes consensus algorithm
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
@@ -75,42 +75,29 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_align (struct): aux.opts_align, with defaults filled in
 %     - opts_rays (cell array with one element): opts_rays{1} is a structure which contains the options used for creating rays in data_out
 %     - rayss (cell array with one element): rayss{1} is the `ray structure` for data_out; see note below regarding rays
-%     - coords_havedata (int array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of data_in, 0 otherwise
+%     - coords_havedata (int 2-D array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of data_in, 0 otherwise
 %     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of data_in after transformation to the consensus; all stimuli in
-%     data_out will be included but coordinates for stimuli not in data_in{k} will be NaN
-%     - knit_stats (struct): statistics of knitting; see comment below regardig statistics and plots
-%     - knit_stats_setup: statistics parameters, extracted from input, to be used for plotting if if_plot=1
-% > aux_outs{5}.knit_stats_setup
-%               nsets: 2
-%     dim_list_in_max: 4
-%         dim_list_in: [1 2 3 4]
-%        dim_list_out: [1 2 3 4]
-%      dataset_labels: {'samples/bwtextures/bgca3pt_MC-br_sess01_10'  'samples/bwtextures/bdce3pt_MC_sess01_10'}
-%     stimulus_labels: {37×1 cell}
-%             nshuffs: 10
-%     shuff_quantiles: [0.2500 0.5000 0.7500]
-%              nstims: 37
-% 
-%    fig_handle: handle to figure (present only if stats are plotted)
-%    details: details of the convergence towards knitting (present only if aux.opts_knit.keep_details=1)
-%    ts_pca{ip}{iset}: transformation from components to consensus, taking into account final pca if if_pca=1 (present only if if_pca=1) 
+%     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
+%     - knit_stats (struct): statistics of knitting; see notes below regarding statistics and replotting a previous analysis
+%     - knit_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
 %
-% aux_outs{5}.details{3}
-%         ts_cum: {1×189 cell}
-%      consensus: [37×3×189 double]
-%              z: [37×3×2×189 double]
-%     rms_change: [0.5593 0.0971 0.0585 0.0380 0.0258 0.0180 0.0130 0.0097 0.0077 0.0064 0.0057 0.0052 0.0049 0.0046 0.0045 0.0043 … ] (1×189 double)
-%        rms_dev: [2×189 double]
-%  overlap_pairs: [2×2 double]
-% overlap_totals: [37×1 double]
-%       warnings: []
-%            pca: [1×1 struct]
-%        if_mean: 1
-%  initial_guess: [37×3 double]
-% initialize_use: [37×1 double]
-%      alignment: [37×3 double]
-%  zz_check_diff: [190×2 double]
-% 
+%         - nsets (int): number of records in data_in
+%         - nstims (int): number of stimuli
+%         - dataset_labels (cell array of char): dataset labels, from data_in.sets{:}.label
+%         - stimulus_labels (cell array of char): stimulus labels, from data_out.sas{1}.typenames
+%
+%     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
+%     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
+%     The transformation is
+%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%     - details (cell array of struct): details{idim} contains details of
+%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
+%
+%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus
+%         - rms_change (float 1-D array): rms_change(m) is the rms change of the consensus coordinates from the previous iteration
+%         - consensus (float 3-D array): consensus(istim,:,m) are the current consensus coordinates 
+%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
+%         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -122,9 +109,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus
 %     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
 %
-%       - rmsdev_overall(idim): root-mean-squared deviation across all records and stimuli
-%       - rmsdev_setwise(idim,irec): root-mean-squared deviation within each record, across stimuli
-%       - rmsdev_stmwise(idim,istim): rood-mean-squared deviation within each stimulis, across records
+%         - rmsdev_overall(idim): root-mean-squared deviation across all records and stimuli
+%         - rmsdev_setwise(idim,irec): root-mean-squared deviation within each record, across stimuli
+%         - rmsdev_stmwise(idim,istim): rood-mean-squared deviation within each stimulis, across records
 %
 %     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
@@ -136,22 +123,23 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
-%       - a heatmap of rmsdev_setwise
-%       - a heatmap of rmsdev_stmwise
-%       - a comparison of rmsdev_overall (black) to quantiles of
-%       rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
-%       nshuffs=0, then the shuffled values will not be plotted
-%       - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
+%         - a heatmap of rmsdev_setwise
+%         - a heatmap of rmsdev_stmwise
+%         - a comparison of rmsdev_overall (black) to quantiles of
+%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
+%         nshuffs=0, then the shuffled values will not be plotted
+%         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
 %
-%     - Other fields in aux_out.knit_stats are the following.  Note that
-%     for ds_knitted, ds_components, and ts, the rotation to principal components (if requested by aux.opt_knit.if_pca=1) is not included.
-%       - opts_pcon (struct): supplied options for Procrustes consensus algorithm
-%       - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
-%       - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
-%       - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%       - ts (cell array): ts{idim}{iset} is the Procrustes transformation for record k.
-%       The transformation is  [consensus]=ts.scaling*[component]*ts.orthog+ts.translation
-%       If dim_list_out>dim_list_in, then component needs to be right-padded by columns of zeros for missing dimensions
+%     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
+%     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.
+%
+%         - opts_pcon (struct): supplied options for Procrustes consensus algorithm
+%         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
+%         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
+%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
+%         - ts (cell array): ts{idim}{iset} is the Procrustes transformation for record k.
+%         The transformation is [consensus]=ts.scaling*[component]*ts.orthog+ts.translation.
+%         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
 % Note regarding recalculation of alignment:
 %     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of data_in, and to 
@@ -171,44 +159,46 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - There are several choices for initialization and alignment.
 %
-%       - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
-%       These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
-%       For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
-%       not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
-%       The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
-%       is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
-%       -  Alternatively, pcon_init_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
-%       -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
-%       initial guess, and pcon_alignment{idim}, which defaults to
-%       pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
-%       To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
-%     - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
-%     matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
-%     - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
-%     the initialization choice.  A simple strategy to check for this is to compare the results with the default pcon_init_method=0 to the results with
-%     pcon_init_method='specify' and if_frozen=0. There are two ways that this dependency can happen.
+%         - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
+%         These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
+%         For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
+%         not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
+%         The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
+%         is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
+%         -  Alternatively, pcon_init_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
+%         -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
+%         initial guess, and pcon_alignment{idim}, which defaults to
+%         pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
+%         To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%         - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
+%         matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
+%         - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
+%         the initialization choice.  A simple strategy to check for this is to compare the results with the default pcon_init_method=0 to the results with
+%         pcon_init_method='specify' and if_frozen=0. There are two ways that this dependency can happen.
 %
-%       - One is that the number of overlapping stimuli is too small. For example,
-%       at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
-%       still be found but there are many other consensus datasets that fit equally well.
-%       - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
-%       Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in data_in, as the procedure reduces to
-%       the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
+%             - One is that the number of overlapping stimuli is too small. For example,
+%             at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
+%             still be found but there are many other consensus datasets that fit equally well.
+%             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
+%             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in data_in, as the procedure reduces to
+%             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
 % Note regarding replotting a previous analysis:
 %     - To replot a a previous calculation with additional customizatior to make a composite figure, data_in should be equal to that used in the previous calculation.
 %     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
-%     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from the previous calculation with the following modifications allowed
+%     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
+%     the previous calculation with the following modifications allowed in fields of knit_stats_setup:
 %
-%       - knit_stats_setup.dataset_labels, as a cell array (defaults to data_in.sets{:}.label)
-%       - knit_stats_setup.stimulus_labels, as a cell array (defaults to the typenames of the aligned datasets)
-%       - knit_stats_setup.shuff_quantiles, as a vector (defaults to[0.01 0.05 0.5 0.95 0.99]);
-%       - knit_stats_setup.fig_handle: figure handle to plot into
-%       - knit_stats_setup.nrows: number of rows in the figure
-%       - knit_stats_setup.row: row to plot into
+%         - dataset_labels (cell array of char): dataset labels; default is data_in.sets{:}.label
+%         - stimulus_labels (cell array of char): stimulus labbels; default is data_out.sas{1}.typenames
+%         - shuff_quantiles (float 1-d array): quantiles to show; default is 0.01 0.05 0.5 0.95 0.99
+%         - fig_handle (handle): figure handle to plot into; figure will be created if not supplied
+%         - row (int): row to plot into; default is 1
+%         - nrows (int): number of rows in the figure; default is row
+%
 %     -  No further calculations are done
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
-%     -  In creating a composite figure, rows should be plotted in order, as plotting final row triggers an equalization of the color scale. See rs_knit_coordsets_demo [hyperlink?] for an example.
+%     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See rs_knit_coordsets_demo [hyperlink?] for an example.
 %
 % See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
