@@ -25,15 +25,15 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %     - opts_align (struct): options for alignment and consistency checking, with fields
 %
-%       - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%       - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
-%       default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
-%       - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates
-%       - if_btcremz (int): typically omitted, defaults to 1, see note below regarding labels for binary texture coordinates
+%         - if_log (int): 1 to log progress, 0 to suppress; default is 1
+%         - min (int or char): minimum number of datasets that must contain a stimulus, in order for the stimulus to be included in data_out;
+%         default is 1, equivalent to 'any';  can also be 'all', meaning that stimuli must be present in all datasets to be included in data_out
+%         - if_type_coords_remake:  controls alignment of stimulus coordinates, typically omitted or set to [], see note below regarding stimulus coordinates
+%         - if_btcremz (int): typically omitted, defaults to 1, see note below regarding labels for binary texture coordinates
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%       - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_import (struct): options for stimulus coordinates, typically omitted, see note below regarding stimulus coordinates
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
