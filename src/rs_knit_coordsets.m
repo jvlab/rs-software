@@ -14,7 +14,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   aux (struct): auxiliary options, may be omitted, with fields
+%   aux (struct): auxiliary inputs, may be omitted, with fields
 %
 %     - opts_knit (struct): options for knitting and consistency checking, with fields
 %
