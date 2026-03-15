@@ -3,10 +3,6 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %
 % These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a translation.
 %
-% Remember to link or reuse comment on transformations in rs_xform_specify
-% Remember to warn that 'mean' and 'procrustes' do not check that this
-% transformation is correct; link to the output of rs_geofit.
-%
 % data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
 %   *  data_in.da{k}{idim} should have size [nstims,idim]
 %   *  The output dimension is always equal to the input dimension.

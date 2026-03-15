@@ -54,19 +54,34 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
-% The transformation is [output]=ts.b*[input]*ts.T+ts.c,
-%  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-%  (data_in.da{k} should be nstims x idim)
-% Note that the output dimension is always equal to the input dimension.
-% The transformation is the same as Matlab's procrustes.m, but for Matlab, the translation c must be replicated for each data point
+% Returns:
+%   xforms (struct):  the transformations, with fields
 %
-% xforms:
-%   xforms.ts are the transformations
-%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
-% aux_out: auxiliary outputs and parameter values used
-%   aux.opts_xforms: values of aux.opts_xforms as used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied
+%      to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - pipeline (structure): a structure that indicates how the transformation is specified, and can serve as the 'pipeline' field of a `set metadata structure` when the transformations are applied
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_xform (struct): aux.opts_xform, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
+% Note regarding transformations:
+%     - The transformations specified by rs_xform_specify are combinations of translations
+%     and linear transformations.  With ts=xforms.ts{k}{idim}, and each
+%     input a row vector the transformation is
+%     [output]=ts.b*[input]*ts.T+ts.c, where ts.b is a scalar, ts.T is an
+%     array of size [idim,idim], [input] is an array of size [nstims,idim], and c is a row vector of length idim.
+%     - This structure is identical to the output of Matlab's procrustes.m,
+%     [??how to hyperlink], except that the translation ts.c in procrustes.m
+%     is an array of identical rows; here it is just one row.
+%     - This structure is also identical to that of
+%     aux_out.knit_stats.ts{idim}{k}, where the roles of ts.b, ts.T, and ts.c are
+%     replaced by ts.scaling, ts.orthog, and ts.translation.
+%     ts_specify{k}{idim}=procrustes_compat(ts_knit{idim}{k}) can be used to convert the transformations produced by ts_knit_coordsets
+%     to the transformations produced by rs_xform_specify.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST, RS_XFORM_APPLY.
 %

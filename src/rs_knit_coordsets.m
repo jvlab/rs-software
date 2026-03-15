@@ -137,7 +137,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
 %         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
 %         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%         - ts (cell array): ts{idim}{iset} is the Procrustes transformation for record k.
+%         - ts (cell array): ts{idim}{k} is the Procrustes transformation for record k.
 %         The transformation is [consensus]=ts.scaling*[component]*ts.orthog+ts.translation.
 %         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
