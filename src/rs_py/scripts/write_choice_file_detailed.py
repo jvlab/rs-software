@@ -29,7 +29,7 @@ if __name__ == '__main__':
         num_sessions = 10
 
     pairwise_comparisons, stimulus_set = rs_dcf.process_subject_data(input_dir)
-    comparisons_with_stim_ids = rs_dcf.replace_stimuli_with_ids(pairwise_comparisons, stimulus_set)
+    comparisons_with_stim_ids = rs_dcf.replace_stimuli_with_ids(pairwise_comparisons, stimulus_set, type_of_judgments)
     standardized_comparisons = rs_dcf.standardize_comparison_keys(comparisons_with_stim_ids, type_of_judgments)
 
     total_comparisons = len(standardized_comparisons)

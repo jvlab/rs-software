@@ -10,7 +10,7 @@ Enter 0 to use default values.
 
 import os
 from src.rs_py.utils.config import CONFIG
-from src.rs_py.choices.choice_file_combined import build_combine_choice_mat
+from src.rs_py.choices.choice_file_combined import build_combine_choice_mat, build_combine_choice_mat_triadic_format
 
 
 def demo_inputs():
@@ -34,6 +34,7 @@ if __name__ == "__main__":
     output_dir = input("Output directory: ")
     exp_name = input("Experiment/paradigm name (for output filename): ")
     subject = input("Subject ID (for output filename): ")
+    fileformat = input("Are the detailed judgments in tetradic form or triadic form? (opts: tetradic, triadic)")
 
     if input_mat_path == "0" or input_mat_path.strip() == "":
         input_mat_path = defaults['input_path']
@@ -50,17 +51,25 @@ if __name__ == "__main__":
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print("\nCombining trial wise judgments...")
+    print("\nCombining trial wise judgments in {} format...".format(fileformat))
     print(f"  Input detailed .mat: {input_mat_path}")
     print(f"  Output dir:         {output_dir}")
     print(f"  Exp name:           {exp_name}")
     print(f"  Subject:            {subject}\n")
 
-    build_combine_choice_mat(
-        input_mat_path=input_mat_path,
-        output_dir=output_dir,
-        exp_name=exp_name,
-        subject=subject,
-    )
+    if fileformat == 'triadic':
+        build_combine_choice_mat_triadic_format(
+            input_mat_path=input_mat_path,
+            output_dir=output_dir,
+            exp_name=exp_name,
+            subject=subject,
+        )
+    else:
+        build_combine_choice_mat(
+            input_mat_path=input_mat_path,
+            output_dir=output_dir,
+            exp_name=exp_name,
+            subject=subject,
+        )
 
     print("\nDone.")

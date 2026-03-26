@@ -58,8 +58,6 @@ if __name__ == '__main__':
     print("The following arguments are optional. ")
     MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list: ")
     SIGMA_COMPARE = input("\tEnter a noise level to model error in comparing distances: ")
-    SIGMA_DIST = input("\tEnter a noise level if you would like to also model error in computing"
-                       " distances between stimuli: ")
     FILTER_TRIALS = input("\tEnter the maximum number of triadic judgments to use. Enter 0 to use all data.")
     MAX_ITER = input("\tEnter the maximum number of iterations before returning the final model: ")
     LEARN_RATE = input("\tEnter learning rate to use for minimization: ")
@@ -80,7 +78,6 @@ if __name__ == '__main__':
             'minimization': CONFIG['minimization'] if _use_default(MINIM) else MINIM}
 
     SIGMA_COMPARE = CONFIG['sigma']['compare'] if _use_default(SIGMA_COMPARE) else float(SIGMA_COMPARE)
-    SIGMA_DIST = CONFIG['sigma']['dist'] if _use_default(SIGMA_DIST) else float(SIGMA_DIST)
     ARGS['sigma'] = {'compare': SIGMA_COMPARE, 'dist': SIGMA_DIST}
     if _use_default(MODEL_DIMENSIONS):
         ARGS['model_dimensions'] = CONFIG['model_dimensions']
@@ -112,9 +109,6 @@ if __name__ == '__main__':
     print("\nNOISE PARAMETERS")
     print("-" * 70)
     print(f"Sigma (compare):     {ARGS['sigma']['compare']:.6f}")
-    print(f"Sigma (distance):    {ARGS['sigma']['dist']:.6f}")
-    print(f"Effective variance:  {effective_var:.6f}")
-    print(f"Effective sigma:     {effective_sigma:.6f}")
 
     print("=" * 70)
 

@@ -84,8 +84,7 @@ if __name__ == '__main__':
     metadata = {
         'exp_name': exp_name,
         'subject': subject,
-        'stim_labels': None,
-        'stim_ids': None,
+        'stim_list': [],
         'num_sessions': int(num_sessions),
         'num_trials': int(num_trials),
         'total_judgments': None,
