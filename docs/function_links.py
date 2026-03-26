@@ -29,6 +29,8 @@ OWN_DATATYPES = {
     "stimulus metadata structure": "data_structures/#stimulus-metadata-structure",
     "set metadata structure":     "data_structures/#set-metadata-structure",
     "ray structure":              "data_structures/#ray-structure",
+    "transformation structure":              "data_structures/#transformation-structure",
+    "transformation structures":              "data_structures/#transformation-structure",
     # add more as needed...
 }
 
