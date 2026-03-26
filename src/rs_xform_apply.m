@@ -40,7 +40,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % Note regarding transformations:
 %   - xforms.ts{k}{idim} are the transformations to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
 %
-%       - If length(xforms.ts)<length(data_in), transformations are used in cyclic order.
+%       - If length(xforms.ts{k})<length(data_in), transformations are used in cyclic order.
 %       - If any of xforms.ts{k}{idim} are missing, then the coordinates in data_in.ds{k}{idim} are passed to `data_out` unchanged.
 %
 %    - Several classes of transformations, specified by aux.opts_xforms.class, are supported.  The parameters in
