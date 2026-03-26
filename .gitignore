@@ -12,3 +12,6 @@ junk*.*
 *.asv
 site/
 *__pycache__*
+docs/mfiles
+docs/demos.md
+

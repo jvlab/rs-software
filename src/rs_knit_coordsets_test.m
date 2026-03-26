@@ -44,13 +44,14 @@ auxs{2}=struct;
 aux_ins{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{2}.nsets=4;
 %
-test_descs{3}='non-interactive reading of two binary texture coordinate files, stimuli disagree, logging, keep only if stimuli present in either, do stats and plot';
+test_descs{3}='non-interactive reading of two binary texture coordinate files, stimuli disagree, max dim 4, logging, keep only if stimuli present in either, do stats and plot';
 filenames_examples{3}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
 auxs{3}=struct;
 auxs{3}.opts_align.min=1;
 auxs{3}.opts_knit.if_stats=1;
 auxs{3}.opts_knit.nshuffs=10;
 auxs{3}.opts_knit.shuff_quantiles=[0.25 0.5 0.75];
+auxs{3}.opts_knit.dim_max_in=4;
 aux_ins{3}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{3}.nsets=2;
 %
@@ -59,10 +60,11 @@ auxs{4}=auxs{3};
 aux_ins{4}=aux_ins{3};
 %
 %
-test_descs{5}='non-interactive reading of two binary texture coordinate files, stimuli disagree, logging, keep only if stimuli present in either, do stats and plot, pca after consensus';
+test_descs{5}='non-interactive reading of two binary texture coordinate files, stimuli disagree, logging, keep only if stimuli present in either, do stats and plot, pca after consensus, allow scale and normscale';
 filenames_examples{5}=filenames_examples{3};
 auxs{5}=auxs{3};
 auxs{5}.opts_knit.if_pca=1;
+auxs{5}.opts_knit.allow_scale=1;
 aux_ins{5}=aux_ins{3};
 %
 fns=cell(1,ntests);
@@ -78,6 +80,9 @@ for itest=1:ntests
         %
         auxs{itest}.opts_knit.if_log=1;
         [data_outs{itest},aux_outs{itest}]=rs_knit_coordsets(data_aligns{itest},auxs{itest});
+        if aux_outs{itest}.opts_knit.if_plot
+            set(gcf,'Name',sprintf('scenario %1.0f',itest));
+        end
     %
     else
         %replot, two rows, different quantiles

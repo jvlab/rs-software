@@ -1,52 +1,86 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% [xforms,aux_out]=rs_xform_specify(data_in,aux) specifies transformation(s) of datasets
+% Creates a `transformation structure` based on a 'dataset structure`
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   Stimuli should be identical across datasets
-%
-% aux: auxiliary inputs
-%  aux.opts_xform: a structure to specify the transformation, consisting of a rotation (possibly with reflection) and a translation
-%      The translation is specified the point that should be translated to the origin.
-%      The rotation is specified by principal components, either separately for each dataset, or, the average across datasets,
-%      and can be carried out with respect to zero or the centroid, after the above (optinal) centering.
-%   aux.opts_xform.mode: 'none', 'translate','offset_pca','translate_then_pca'
-%      none (default): no transformation is carried out
-%      translate: the specified point (see 'centering specifier') is translated to the origin, no rotation is done
-%      offset_pca: a pca rotation is performed around the point specified by the centering specifier, so that
-%          the first coordinate explains the most variance around that point, the second coordinate explains the next-most-variance, etc.
-%          the point specified by the centerind specifier is not moved
-%      translate_then_pca: the specified point (see 'centering specifier') is translated to the origin, and then standard pca is done
-%   aux.opts_xform.source: 'global','local', or an integer in [1:length(data_in.ds)]
-%      global (default): the centering specifier is determined from the mean all datasets; pca is computed after mean across datasets;
-%          the transformations specified for all datasets are identical
-%      local: the centering specifieer and pca is computed separately for each dataset; tranformations for each dataset typically differ
-%      an integer: the specified datast is used for the centering specifieer and pca;  transformations specfied for all datasets are identical
-%   aux.opts_xform.centering_specifier: 'none','centroid','index','typename','value'
-%      none (default): no centering id done
-%      centroid: the centroid of the dataset is used
-%      index: the value in aux.opts_xform.centering_index, is the index number of the stimulus whose coordinates are to be used for centering
-%        Caution: the index refers to the position of the stimulus in data_in.sas{k}, and stimulus order may differ across datasets. 
-%        To avoid this, use typename.
-%      typename: the string in aux.opts_xform.centering_typename is the label of the stimulus whose coordinates are to be used for centering
-%      value: the coordinates in aux.opts_xform.centering_value are to be used for centering; for coordinate sets of dimension k, only the first k are used
-%   aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specifier
-%   aux.opts_xform.if_warn: 1 (default) to show warnings
-%   If inconsistent or unrecognized options are used, opts_xform.mode is set to 'none' and warnings are generated.
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+% A `transformation structure` is a cell array of geometric transformations.
+% The `transformation structures` created by this module are all combinations of linear transformations and translations.
+% These transformations center the coordinates in data_in (i.e., move the centroid to the origin), 
+% and/or or rotate them into their principal components.
 % 
-% The transformation is [output]=ts.b*[input]*ts.T+ts.c,
-%  where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-%  (data_in.da{k} should be nstims x idim)
-% Note that the output dimension is always equal to the input dimension.
-% The transformation is the same as Matlab's procrustes.m, but for Matlab, the translation c must be replicated for each data point
+% Args:
+%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
 %
-% xforms:
-%   xforms.ts are the transformations
-%   xforms.pipeline is a structure that can serve as a subfield for sets, when the transformations are applied
-% aux_out: auxiliary outputs and parameter values used
-%   aux.opts_xforms: values of aux.opts_xforms as used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+%
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_xform (struct): specification of the transformation, with fields
+%
+%         - mode (char): One of 'none', 'translate','offset_pca','translate_then_pca'; default is 'none'
+%
+%             - 'none': the identity transformation
+%             - 'translate': a point specified by 'centering_specifier' (see below) is translated to the origin
+%             - 'offset_pca': the data are rotated into the principal components around the point specified by 'centering_specifier' (see below). 
+%             The first coordinate explains the most variance around that point, the second coordinate explains the next-most-variance, etc.
+%             The point specified by the 'centering_specifier' is not moved.
+%             - 'translate_then_pca': the point specified by 'centering_specifier') is translated to the origin, and then standard pca is done.
+%
+%         - source (char): 'global','local', or an integer in [1:n], where n is the number of records, equal to length(data_in.ds); default is 'global'
+%
+%             - 'global' (default): the centering specifier is determined from the mean across records; pca is computed across all records;
+%             the transformations specified for all records are identical
+%             - 'local': the centering specifier and pca is computed separately for each record; tranformations for each record typically differ
+%             - an integer: the specified record is used for the centering specifier and pca; transformations foe all records are identical
+%
+%         - centering_specifier (char): 'none','centroid','index','typename','value'; default is 'none'
+%
+%             - 'none': no centering is done
+%             - 'centroid': centroid is the centering point
+%             - 'typename': use the stimulus corresponding to aux.opts_xform.centering_typename in data_in.sas{k}.typenames for centering
+%             - 'index': use the value in aux.opts_xform.centering_index, as the
+%             index number of the stimulus whose coordinates are to be used for centering.
+%             Caution: the index refers to the position of the stimulus in data_in.ds{k}, and stimulus order may differ across datasets. 
+%             To avoid mis-refrencing stimuli, specify by typename.
+%             - 'value': use the coordinates in aux.opts_xform.,centering_value for centering
+%
+%         - centering_typename (char): the label of the stimulus in data_in.sas{k} to be used for centering
+%         - centering_index (int): the index in data_in.ds{k} to be used for centering
+%         - centering_value (float 1-D array): the coordinates to be used for centering; for coordinate sets of dimension k, only the first k are used
+%         aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specifier
+%         - if_warn (int): 1 (default) to show warnings
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+% 
+% Returns:
+%   xforms (struct):  the transformations, with fields
+%
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - pipeline (structure): a structure that indicates how the transformation is specified, and can serve as the 'pipeline' field of a `set metadata structure` when the transformations are applied
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_xform (struct): aux.opts_xform, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
+% Note regarding transformations:
+%     - The transformations specified by rs_xform_specify are combinations of translations
+%     and linear transformations.  With ts=xforms.ts{k}{idim}, and each
+%     input a row vector the transformation is
+%     [output]=ts.b*[input]*ts.T+ts.c, where ts.b is a scalar, ts.T is an
+%     array of size [idim,idim], [input] is an array of size [nstims,idim], and c is a row vector of length idim.
+%     - This structure is identical to the output of Matlab's procrustes.m,
+%     [??how to hyperlink], except that the translation ts.c in procrustes.m
+%     is an array of identical rows; here it is just one row.
+%     - This structure is also identical to that of
+%     aux_out.knit_stats.ts{idim}{k}, where the roles of ts.b, ts.T, and ts.c are
+%     replaced by ts.scaling, ts.orthog, and ts.translation.
+%     ts_specify{k}{idim}=procrustes_compat(ts_knit{idim}{k}) can be used to convert the transformations produced by ts_knit_coordsets
+%     to the transformations produced by rs_xform_specify.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST, RS_XFORM_APPLY.
 %
@@ -74,6 +108,7 @@ xforms.ts=cell(0);
 xforms.pipeline=struct;
 %
 aux_out=struct;
+aux_out.opts_check=aux.opts_check;
 %
 %check consistency and get available stimuli, dimensions, typenames
 %

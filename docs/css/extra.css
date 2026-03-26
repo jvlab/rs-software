@@ -9,3 +9,6 @@
   display: block;
 }
 
+.md-typeset  ul ul {
+	list-style-type: circle;
+}

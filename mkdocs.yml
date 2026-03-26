@@ -6,8 +6,10 @@ theme:
     - toc.integrate 
 
 hooks:
+  - docs/hook_site_config.py
   - docs/hooks.py
   - docs/hook_ignore.py
+  - docs/hook_format_nested_args.py
 
 watch:
   - src
@@ -38,7 +40,13 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
 
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+     
 extra_css:
   - css/extra.css
      

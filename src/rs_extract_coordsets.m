@@ -1,18 +1,36 @@
 function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
-% data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
-% extracts or permutes a subset of dataset structures
+% Extracts or permutes the records in a `dataset structure`
 %
-% data_in.ds{k},sas{k},sets{k}: a dataset structurein cluding coordinates (ds) and metadata (sas,sets)
+% Args:
+%   data_in (struct): `dataset structure` containing n records, with fields
 %
-% extract_list: a subset of [1:length(data_in.ds)] to extract
-%  aux.opts_extract.if_warn: set to 1 (default) to show warnings
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+%
+%   extract_list (int 1-D array): a subset of [1:n] to extract, the records to extract
+%
+%   aux (struct): auxiliary options, with field
+%
+%     - opts_extract (struct): options for consistency checking, with field
+%
+%       - if_warn (int): 1 to show warnings, 0 to suppress; default is 1
 % 
-% data_out.ds{k},sas{k},sets{k}:  extracted dataset structures, in order of listing in extract_list
-% aux_out: auxiliary outputs and parameter values used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+% Returns:
+%   data_out (struct): extracted `dataset structure` with length(extract_list) records, same format as  as `data_in1`
 %
-%  See also: RS_CONCAT_COORDSETS.
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_extract (struct): aux.opts_extract, with defaults filled in
+%
+% Notes:
+%   -  aux may be omitted; defaults are filled in.
+%   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
+%
+% See also:
+%   RS_CONCAT_COORDSETS.
 %
 if (nargin<=2)
     aux=struct;

@@ -34,7 +34,8 @@ import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
-from links_to_matlab_docs import MATLAB_BUILTINS
+import hook_site_config as site_config
+from function_links import FUNCTION_LINKS
 from matlab_to_markdown import parse_matlab_to_markdown
 
 scripts = ["docs/create_function_md_files.py",
@@ -43,7 +44,6 @@ scripts = ["docs/create_function_md_files.py",
 log = logging.getLogger("mkdocs.hooks.seealso")
 
 FUNCTION_REGISTRY: dict[str, str] = {}
-SITE_PREFIX: str = ""
 
 # Matches: <details class="see-also" ...>...</details>
 _DETAILS_SEEALSO_RE = re.compile(
@@ -64,13 +64,9 @@ _IDENTIFIER_RE = re.compile(
 
 
 def on_config(config):
-    global SITE_PREFIX
+    site_config.update_site_prefix(config)
+
     FUNCTION_REGISTRY.clear()
-
-    site_url = config.get("site_url", "")
-    SITE_PREFIX = urlparse(site_url).path.rstrip("/")
-    log.info(f"[seealso] Site prefix: '{SITE_PREFIX}'")
-
     for source_root in _get_matlab_paths(config):
         root = Path(source_root)
         if root.exists():
@@ -116,7 +112,7 @@ def _register_matlab_file(filepath: Path, root: Path):
 
 
 def on_page_content(html, page, config, files):
-    if not FUNCTION_REGISTRY and not MATLAB_BUILTINS:
+    if not FUNCTION_REGISTRY and not FUNCTION_LINKS:
         return html
 
     html = _DETAILS_SEEALSO_RE.sub(
@@ -158,12 +154,12 @@ def _make_link(name: str) -> str:
     # Your own functions take priority
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{SITE_PREFIX}/function-index/#{full_id}"
+        url = f"{site_config.SITE_PREFIX}/function-index/#{full_id}"
         return f'<a href="{url}">{full_id}</a>'
 
     # Fall back to MATLAB builtin
-    if lower in MATLAB_BUILTINS:
-        url = MATLAB_BUILTINS[lower]
+    if lower in FUNCTION_LINKS:
+        url = FUNCTION_LINKS[lower]
         return f'<a href="{url}" target="_blank">{lower}</a>'
 
     return name
