@@ -1,10 +1,10 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % Creates a `transformation structure` based on a 'dataset structure`
 %
-% A `transformation structure` is a cell array of geometric
-% transformations consisting of a translation and a linear transformation.
-% The `transformation structures` created by this routine are transformations that
-% center the coordinates in data_in, or rotate them into their principal components.
+% A `transformation structure` is a cell array of geometric transformations.
+% The `transformation structures` created by this module are all combinations of linear transformations and translations.
+% These transformations center the coordinates in data_in (i.e., move the centroid to the origin), 
+% and/or or rotate them into their principal components.
 % 
 % Args:
 %   data_in (struct): `dataset structure` to be aligned containing n records, with fields
@@ -41,14 +41,14 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %             - 'index': use the value in aux.opts_xform.centering_index, as the
 %             index number of the stimulus whose coordinates are to be used for centering.
 %             Caution: the index refers to the position of the stimulus in data_in.ds{k}, and stimulus order may differ across datasets. 
-%             To avoid this, specify by typename.
+%             To avoid mis-refrencing stimuli, specify by typename.
 %             - 'value': use the coordinates in aux.opts_xform.,centering_value for centering
 %
 %         - centering_typename (char): the label of the stimulus in data_in.sas{k} to be used for centering
 %         - centering_index (int): the index in data_in.ds{k} to be used for centering
 %         - centering_value (float 1-D array): the coordinates to be used for centering; for coordinate sets of dimension k, only the first k are used
 %         aux.opts_xform.centering_[index|typename|value]: see above in aux.opts_xform.centering_specifier
-%        - if_warn (int): 1 (default) to show warnings
+%         - if_warn (int): 1 (default) to show warnings
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -57,8 +57,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % Returns:
 %   xforms (struct):  the transformations, with fields
 %
-%      - ts (cell array): ts{k}{idim} is the transformation to be applied
-%      to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
 %      - pipeline (structure): a structure that indicates how the transformation is specified, and can serve as the 'pipeline' field of a `set metadata structure` when the transformations are applied
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields

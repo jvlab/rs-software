@@ -1,36 +1,55 @@
 function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
-% [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux) applies transformation(s) to datasets
+% Applies a `transformation structure` to a `dataset structure`
 %
-% These transformations all preserve the number of dimensions, and consist of a linear transformaton followed by a translation.
+% A `transformation structure` is a cell array of geometric transformations.
+% This module can apply several types of transformations: linear, linear with offset (affine), projective, piecewise affine, and piecewise projective.
 %
-% Remember to link or reuse comment on transformations in rs_xform_specify
-% Remember to warn that 'mean' and 'procrustes' do not check that this
-% transformation is correct; link to the output of rs_geofit.
+% Args:
+%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   *  data_in.da{k}{idim} should have size [nstims,idim]
-%   *  The output dimension is always equal to the input dimension.
-%   *  Stimuli (in sas{k}.typenames) should be identical across datasets
-% xforms: specification of the transformations, typically an output structure from rs_xform_specify
-%   xforms.ts{k}{idim} are the transformations to be applied to dataset k, dimension idim
-%     if length(xforms.ts)<length(data_in), transformations are used in cyclic order
-%     if any of xforms.ts{k}{:} are missing, then the original data from coords is passed through unchanged
-%   xforms.pipeline is a structure that can serve as a starting point for the pipeline subfield for sets in data_out
-%     (Note that data_out.sets{k}.pipeline.opts.opts_xform will always be present)
-% aux: auxiliary inputs
-%  aux.opts_xform.if_warn: 1 (default) to show warnings
-%  aux.opts_xform.class: 'affine' (default), can also be 'mean','procrustes','projective','pwaffine','pwprojective'
-%     
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets) after the transformation
-% aux_out: auxiliary outputs and parameter values used
-%   aux_out.opts_xforms: values of aux.opts_xforms as used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+%   xforms (struct): specification of the transformations, typically an output structure from rs_xform_specify [??how to hyperlink] or rs_geofit [??how to hyperlink], with fields
+%
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - pipeline (structure): a structure that becomes the 'pipeline' field of a `set metadata structure` when the transformations are applied
+%
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_xform (struct): specification of the transformation, with fields
+%
+%         - class (char): 'affine','mean','procrustes','projective','pwaffine','pwprojective'; default is affine; ; see note below regarding transformations
+%         - if_warn (int): 1 (default) to show warnings
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%
+% Returns:
+%   data_out (struct): a `dataset structure` with the transformations applied, s, same format as  as `data_in`
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_xform (struct): aux.opts_xform, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
+% Note regarding transformations:
+%   - xforms.ts{k}{idim} are the transformations to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
+%
+%       - If length(xforms.ts)<length(data_in), transformations are used in cyclic order.
+%       - If any of xforms.ts{k}{idim} are missing, then the coordinates in data_in.ds{k}{idim} are passed to `data_out` unchanged.
+%
+%    - Several classes of transformations, specified by aux.opts_xforms.class, are supported.  The parameters in
+%    xforms.ts{k}{idim} have the following meaning, where output and input both have size [nstims idim], and ts=ts{k}{idim}:
+%
+%       - affine: [output(istim,:)]=ts.b * [input(istim,:)] * ts.T + ts.c; where size(b)=1, size(T)=[idim,idim], and size(c)=[1 idim]
+%
 %
 % For class='affine' or 'procrustes', the transformation is specified as follows, where ts=xforms.ts{k}{idim}, for dataset k and dimension idim
-%   [output]=ts{:}.b*[input]*ts{:}.T +ts{:}.c
 % The parameters b, T, and c correspond to the parameters produced by Matlab's procrustes.m
 %   except that in Matlab's procrustes. c, the translation parameter c replicated for each data point
 % If these fields are not present and xform.class='affine', then
