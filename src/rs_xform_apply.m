@@ -28,7 +28,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 % Returns:
-%   data_out (struct): a `dataset structure` with the transformations applied, s, same format as  as `data_in`
+%   data_out (struct): a `dataset structure` with the transformations applied, same format as  as `data_in`
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %

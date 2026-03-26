@@ -24,13 +24,18 @@ MATLAB_BUILTINS = {
 
 OWN_DATATYPES = {
     # Custom data types (link to your own docs pages)
-    "dataset structure":          "data_structures/#dataset-structure",
-    "coordinate structure":       "data_structures/#coordinate-structure",
-    "stimulus metadata structure": "data_structures/#stimulus-metadata-structure",
-    "set metadata structure":     "data_structures/#set-metadata-structure",
-    "ray structure":              "data_structures/#ray-structure",
-    "transformation structure":              "data_structures/#transformation-structure",
-    "transformation structures":              "data_structures/#transformation-structure",
+    "dataset structure":            "data_structures/#dataset-structure",
+    "dataset structures":           "data_structures/#dataset-structure",
+    "coordinate structure":         "data_structures/#coordinate-structure",
+    "coordinate structures":        "data_structures/#coordinate-structure",
+    "stimulus metadata structure":  "data_structures/#stimulus-metadata-structure",
+    "stimulus metadata structures": "data_structures/#stimulus-metadata-structure",
+    "set metadata structure":       "data_structures/#set-metadata-structure",
+    "set metadata structures":      "data_structures/#set-metadata-structure",
+    "ray structure":                "data_structures/#ray-structure",
+    "ray structures":               "data_structures/#ray-structure",
+    "transformation structure":     "data_structures/#transformation-structure",
+    "transformation structures":    "data_structures/#transformation-structure",
     # add more as needed...
 }
 

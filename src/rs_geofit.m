@@ -1,10 +1,16 @@
 function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
-% [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux) fits one or more geometrical transformations
-% to coordinate sets
+% Fits geometrical models to  the transformation between two `dataset structures`
 %
-% data_in.ds{k},sas{k},sets{k}: dataset structures that are the starting points for the transformation
-% data_out.ds{k},sas{k},sets{k}: dataset structures that are the targets of the transformation
-%  They must have same number of stimuli, and a warning is given if the number matches but the names do not.
+% Args:
+%   data_in (struct): `dataset structure` that is the starting point of the transformations, with fields
+%
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+%
+%   data_out (struct): `dataset structure` that is the target of the transformations, same format as  as `data_in`; number of stimuli must match
+%       that of data_in; stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
+%
 % aux:
 %  aux.opts_check
 %    if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
