@@ -8,12 +8,28 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   data_out (struct): `dataset structure` that is the target of the transformations, same format as  as `data_in`; number of stimuli must match
-%       that of data_in; stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
+%   data_out (struct): `dataset structure` that is the target of the transformations, same format as  as `data_in`;
+%   number of stimuli must be the same as data_in;
+%   stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
 %
-% aux:
-%  aux.opts_check
-%    if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_geof (struct): specification of transformations to find, with fields
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%
+% Returns:
+%   gfs (struct): transformations and statistics, with fields
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_geof (struct): aux.opts_geof, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
 %  aux.opts_geof
 %   model_list: a string, or a cell array of strings, consisting of one or more of the model types to be fitted.
 %     These the strings in getfield(psg_geomodels_define,'model_types'), and currently are the following
@@ -115,7 +131,7 @@ if nargin==0shuff
     aux_out=struct;
     return
 end
-if (nargin<=1)
+if (nargin<=2)
     aux=struct;
 end
 %
