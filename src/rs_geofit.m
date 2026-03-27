@@ -123,10 +123,8 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 psg_geomodels_def=psg_geomodels_define();
 %special case: display available models
-if nargin==0shuff
-    [nr,order_ptrs,model_types_nested]=psg_geomodels_nestorder(psg_geomodels_def);
-    gfs=model_types_nested';
-    disp(model_types_nested');
+if nargin==0
+    gfs=psg_geomodels_def;
     xs=struct;
     aux_out=struct;
     return
