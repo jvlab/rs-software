@@ -20,7 +20,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %
 %     - opts_xform (struct): specification of the transformation, with fields
 %
-%         - class (char): 'affine','mean','procrustes','projective','pwaffine','pwprojective'; default is affine; ; see note below regarding transformations
+%         - class (char): 'affine','mean','procrustes','projective','pwaffine','pwprojective'; default is affine; see note below regarding transformations
 %         - if_warn (int): 1 (default) to show warnings
 %
 %     - opts_check (struct): options for consistency checking, with field

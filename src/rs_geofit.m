@@ -16,6 +16,26 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 %     - opts_geof (struct): specification of transformations to find, with fields
 %
+%          - model_list (char or cell array of char): model types to be fitted; default is values given in `model_list_default`; if [], then requested interactively; see note below regarding geometric models
+%          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
+%            can modify by editing `rs_aux_defaults_define` [??how to hyperlink]
+%          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
+%          - dim_max_out (int): maximum dimension of output dataset to use, defaults to `dim_max_in`
+%          - dimpairs_method (char): specifies pairing of dimensions between `data_in` and `data_out`, default is 'equal'
+%
+%              - 'equal': input dimension = output dimension
+%              - 'all': all pairings of dimensions available in `data_in` up to `dim_max_in`, with all and dimensions available i `data_out`, up to `dim_max_out`
+%              - 'din_lteq_dout': as in 'all', but input dimension must be less than or equal to output dimension
+%              - 'din_gteq_dout': as in 'all', but input dimension must be greater than or equal to output dimension
+%              - 'list': the pairings specified by aux.opts_geof.dimpairs_list
+%
+%          - dimpairs_list (int 2-D array): two-column array of pairs of dimensions for input and output, default is repmat([1:dim_max_in]',[1 2])
+%          - if_stats (int): 1 to enable statistics, 0 to omit; default is 1; a value of 0 will override a nonzero `if_nestbymodel` and `if_nestbydim`
+%          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
+%          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
+%          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
+%
+%           - add if_nestbydim_in and _out
 %     - opts_check (struct): options for consistency checking, with field
 %
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -30,34 +50,26 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - opts_geof (struct): aux.opts_geof, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-%  aux.opts_geof
-%   model_list: a string, or a cell array of strings, consisting of one or more of the model types to be fitted.
-%     These the strings in getfield(psg_geomodels_define,'model_types'), and currently are the following
-%     If empty, the list is requested interactively; if omitted is given by model_list_default
-%    'mean'                       : all input values mapped to mean of output
-%    'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling     , no translation
-%    'procrustes_scale_nooffset   : rotation (and possibly reflection), rescaling allowed, no translation
-%    'procrustes_noscale_offset'  : rotation (and possibly reflection), no rescaling     , translation allowed
-%    'procrustes_scale_offset     : rotation (and possibly reflection), rescaling allowed, translation allowed
-%    'affine_nooffset'            : linear transformation, no translation
-%    'affine_offset'              : linear transformation, translation allowed
-%    'projective'                 : projective transformation
-%    'pwaffine'                   : piecwise affine with one cutplane; two linear transformations with agreement on the cut
-%    'pwaffine_2'                 : piecwise affine with two cutplanes: four linear transformations, with agreement on the cuts
-%     Note: if empty, this is requested interactively.
-%  model_list_default: models when model_list is not specified.  {'procrustes_scale_offset','affine_offset','projective'} but can modify in rs_aux_defaults_define
-%  dimpairs_method: pairs of dimensions considered between input and ouptut datasets
-%    'all': all pairings up to min(available dimensions, dim_max_[in|out]
-%    'equal': input dimension= output dimension (default)
-%    'din_lteq_dout': input dimension less than or equal to output dimension
-%    'din_gteq_dout': input dimension greater than or equal to output dimension
-%    'list': a two-column list of pairs (in, out)
-%  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
-%  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
-%  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
-%  if_stats: 1 to enable statistics (default; if set to 0, this will will override if_nestbymodel and if_nestbydim)
-%  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
-%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
+% Note regarding geometric models:
+%    - Model types to be fit are specified by the entries in opts_geof.model_list. The following model types are available:
+%
+%        - 'mean': all input values mapped to a single output value 
+%        - 'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling     , no translation
+%        - 'procrustes_scale_nooffset': rotation (and possibly reflection), rescaling allowed, no translation
+%        - 'procrustes_noscale_offset': rotation (and possibly reflection), no rescaling     , translation allowed
+%        - 'procrustes_scale_offset': rotation (and possibly reflection), rescaling allowed, translation allowed
+%        - 'affine_nooffset' : linear transformation, no translation
+%        - 'affine_offset': linear transformation, translation allowed
+%        - 'projective': projective transformation
+%        - 'pwaffine': piecewise affine with one cutplane; two linear transformations with agreement on the cut
+%        - 'pwaffine_2': piecewise affine with two cutplanes; four linear transformations, with agreement on the cuts
+%
+%    - The list of available model types can be obtaine by getfield(psg_geomodels_define,'model_types')
+%    - To determine the model class (see `transformation structure`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
+%    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
+%    - See `transformation structure` for details on how these models are parameterized
+%
+% within each k-dimensional model of the adjusted dataset, or 0 (default) to omit
 %  if_nestbydim: +/-1 to also do statistics for nesting by dimension within each k-dimensional model of the adjusted dataset, or 0 (default) to omit
 %       i.e., whether the k dimensions of the k-dimensional model have greater explanatory power than the first m dimensions of that model.   
 %     Use +1 if, for each k-dimensional model, the lower m dimensions (m<k) should be considered as nested.
@@ -258,6 +270,12 @@ opts_psgfit_base.if_summary=z.if_fit_summary;
 %fields copied with no change
 opts_psgfit_base.nshuffs=z.nshuffs;
 opts_psgfit_base.if_nestbydim=z.if_nestbydim;
+if isfield(z,'if_nestbydim_in')
+    opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
+end
+if isfield(z,'if_nestbydim_out')
+    opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
+end
 opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
 opts_psgfit_base.if_center=z.if_center;
 opts_psgfit_base.if_frozen=z.if_frozen;
@@ -300,7 +318,6 @@ for iset=1:nsets
 %   xs.(model_name).class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name).xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
 %     (this will be empty if there is no transformation in gfs{k}.gf{idim,idim}
-
 end
 % 
 % return options as used
