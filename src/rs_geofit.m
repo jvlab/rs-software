@@ -34,8 +34,18 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
 %          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
 %          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
+%          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
+%          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
+%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
+%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%          - if_frozen (int): 1 to use frozen random numbers, 0 for random each time, <0 to specify a seed; default is 1
+%          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
+%          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
+%          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
+%          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
+%          - persp_method (char): controls method used for finding projective transformations, options are 'fmin','oneshot', or 'best' (default)
+%     'fmin', 'oneshot' uses a method of Zhang (1993) [persp_xform_find.m for details]; 'best' uses both and takes the best-fit.
 %
-%           - add if_nestbydim_in and _out
 %     - opts_check (struct): options for consistency checking, with field
 %
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -84,15 +94,6 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     Note that to compare the explanatory power of the k-dimensional coords in data_in{:}{k} against the coordinates in a lower dimensional model, e.g., data_in{:}{m},
 %       then one should ensure that data_in{:}{k}(:,1:m)=data_in{:}{m} and use if_nestbydim=+1
 %    This option is only recommended if, whenever a model is fit for (din,dout), it is also fit for (din-1,dout). This is guaranteed for  dimpairs_method='all' or 'din_lteq_dout;
-%  if_center: 1 (default) to center the data, i.e., subtract the mean across stimuli from data_in and data_out
-%     Note that with this option, the transformations returned in gfs and xs apply to the centered data.
-%  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
-%  if_fit_summary: 1 (default) to log summary of fitting
-%  if_fit_log: 1 (0: default) for detailed log
-%  if_log: 1 (default) to log progress
-%  if_warn: 1 (default) to show warnings
-%  persp_method: controls method used for finding projective transformations, options are 'fmin','oneshot', or 'best' (default)
-%     'fmin', 'oneshot' uses a method of Zhang (1993) [persp_xform_find.m for details]; 'best' uses both and takes the best-fit.
 %    
 % gfs{k}.gf{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
 %    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout.
