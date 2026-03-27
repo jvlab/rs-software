@@ -155,6 +155,8 @@ aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.
 aux.opts_geof=filldefault(aux.opts_geof,'if_stats',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
+aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim_in',aux.opts_geof.if_nestbydim);
+aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim_out',aux.opts_geof.if_nestbydim);
 aux.opts_geof=filldefault(aux.opts_geof,'if_center',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_frozen',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
@@ -270,12 +272,8 @@ opts_psgfit_base.if_summary=z.if_fit_summary;
 %fields copied with no change
 opts_psgfit_base.nshuffs=z.nshuffs;
 opts_psgfit_base.if_nestbydim=z.if_nestbydim;
-if isfield(z,'if_nestbydim_in')
-    opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
-end
-if isfield(z,'if_nestbydim_out')
-    opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
-end
+opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
+opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
 opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
 opts_psgfit_base.if_center=z.if_center;
 opts_psgfit_base.if_frozen=z.if_frozen;
