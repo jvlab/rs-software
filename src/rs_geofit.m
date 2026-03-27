@@ -9,8 +9,8 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
 %   data_out (struct): `dataset structure` that is the target of the transformations, same format as  as `data_in`;
-%   number of stimuli must be the same as data_in;
-%   stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
+%     number of stimuli must be the same as data_in;
+%     stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
 %
