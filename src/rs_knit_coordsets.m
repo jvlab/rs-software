@@ -1,7 +1,8 @@
 function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
-% Knits a `dataset structure` into a consensus, and provides and displays statistics
+% [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
+% knits a `dataset structure` into a consensus, and provides and displays statistics
 %
-% Each of the records in the `dataset structure` data_in should contain the same stimuli, 
+% Each of the records in the `dataset structure` `data_in` should contain the same stimuli, 
 % and in the same order, as determined by the strings in data_in.sas{k}.typenames for the record k.
 % Missing data (e.g., for the stimulus s labeled by data_in.sas{k}.typenames{s}) should be indicated by 
 % NaN's in the row data_in.sets{k}{idim}(s,:), a row of length idim.  The `dataset structure` returned by `rs_align_coordsets` 
@@ -22,7 +23,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
-%         - if_normscale (int): 1 to normalize consensus to size of data_in (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
@@ -61,7 +62,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
-%   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from data_in, same format as  as `data_in`
+%   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
 %
 %   aux_out: auxiliary outputs and parameter values used
 %
@@ -75,13 +76,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_align (struct): aux.opts_align, with defaults filled in
 %     - opts_rays (cell array with one element): opts_rays{1} is a structure which contains the options used for creating rays in data_out
 %     - rayss (cell array with one element): rayss{1} is the `ray structure` for data_out; see note below regarding rays
-%     - coords_havedata (int 2-D array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of data_in, 0 otherwise
-%     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of data_in after transformation to the consensus; all stimuli in
+%     - coords_havedata (int 2-D array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of `data_in`, 0 otherwise
+%     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of `data_in` after transformation to the consensus; all stimuli in
 %     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
 %     - knit_stats (struct): statistics of knitting; see notes below regarding statistics and replotting a previous analysis
 %     - knit_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
 %
-%         - nsets (int): number of records in data_in
+%         - nsets (int): number of records in `data_in`
 %         - nstims (int): number of stimuli
 %         - dataset_labels (cell array of char): dataset labels, from data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labels, from data_out.sas{1}.typenames
@@ -101,7 +102,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
-%     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of data_in;
+%     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
 %     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
@@ -142,13 +143,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
 % Note regarding recalculation of alignment:
-%     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of data_in, and to 
+%     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of `data_in`, and to 
 %     place them in the same order. By default, this is carried out in rs_knit_coordsets by a call to rs_align_coordsets, using options aux.align_opts.
 %     This recalculation can be avoided by supplying aux_out from a
 %     previous call to rs_align_coordsets, as follows: aux.sa_pooled=aux_out.sa_pooled, aux.data_align=aux_out.data_out
 %
 % Note regarding Procrustes consensus algorithm:
-%     - To find a consensus set of coordinates, the coordinates in each record of data_in are rotated, and optionally translated (if allow_offset=1),
+%     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
 %     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
 %     - The algorithm, in procrustes_consensus.m, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
@@ -180,11 +181,11 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
 %             still be found but there are many other consensus datasets that fit equally well.
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
-%             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in data_in, as the procedure reduces to
+%             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
 % Note regarding replotting a previous analysis:
-%     - To replot a a previous calculation with additional customizatior to make a composite figure, data_in should be equal to that used in the previous calculation.
+%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
 %     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
 %     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
 %     the previous calculation with the following modifications allowed in fields of knit_stats_setup:

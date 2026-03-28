@@ -1,5 +1,6 @@
 function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
-% Extracts or permutes the records in a `dataset structure`
+% [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
+% extracts or permutes the records in a `dataset structure`
 %
 % Args:
 %   data_in (struct): `dataset structure` containing n records, with fields

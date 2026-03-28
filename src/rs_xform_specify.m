@@ -1,5 +1,6 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% Creates a `transformation structure` based on a 'dataset structure`
+% [xforms,aux_out]=rs_xform_specify(data_in,aux)
+% creates a `transformation structure` based on a 'dataset structure`
 %
 % A `transformation structure` is a cell array of geometric transformations.
 % The `transformation structures` created by this module are all combinations of linear transformations and translations.

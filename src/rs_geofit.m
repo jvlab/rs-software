@@ -1,5 +1,6 @@
 function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
-% Fits geometrical models to  the transformation between two `dataset structures`
+% [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
+% fits geometrical models to  the transformation between two `dataset structures`
 %
 % Args:
 %   data_in (struct): `dataset structure` that is the starting point of the transformations, with fields
