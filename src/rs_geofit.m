@@ -46,14 +46,14 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
 %          - persp_method (char): controls method used for finding projective transformations, options are 'fmin','oneshot', or 'best' (default)
 %     'fmin', 'oneshot' uses a method of Zhang (1993) [persp_xform_find.m for details]; 'best' uses both and takes the best-fit.
-%   %
+%
 % Method: Estimating Projective Transformation Matrix (Collineation, Homography)
 % Zhengyou Zhang
 % November 1993; Updated May 29, 2010
 % Microsoft Research Techical Report MSR-TR-2010-63
 % This uses Method 2 of the above reference, but the data are in rows
 %    Note that this is appropriate for an over-determined set
-
+%
 %     - opts_check (struct): options for consistency checking, with field
 %
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -125,7 +125,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %      surrogate_count_nestdim: number of times that surrogate (nesting by dim) yields a smaller d than data (dims as in surrogate_count_dims)
 %
 %
-% output opts_geof
+% opts_geof
 % ans = 
 %   struct with fields:
 % 
