@@ -61,6 +61,14 @@ r.(rs_module).xforms=xforms;
 r.(rs_module).aux_outs=aux_outs;
 r.(rs_module).data_outs=data_outs;
 %
+%fitting transformations
+clear ifdif
+rs_geofit_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).gfs=gfs;
+r.(rs_module).xs=xs;
+r.(rs_module).aux_outs=aux_geofits;
+%
 %graphics modules
 clear ifdif
 rs_plot_style_test;

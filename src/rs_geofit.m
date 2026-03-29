@@ -124,6 +124,66 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %      d_shuff_nestdim: goodness of fit, for each model, shuffle, nested dim, and normalization type (dims as in d_shuff_dims)
 %      surrogate_count_nestdim: number of times that surrogate (nesting by dim) yields a smaller d than data (dims as in surrogate_count_dims)
 %
+%
+% output opts_geof
+% ans = 
+%   struct with fields:
+% 
+%             model_list: {'mean'  'procrustes_noscale_nooffset'  'procrustes_scale_nooffset'  'affine_offset'}
+%               if_stats: 1
+%         if_nestbymodel: 0
+%           if_nestbydim: 1
+%        dimpairs_method: 'list'
+%          dimpairs_list: [15×2 double]
+%                nshuffs: 5
+%        if_nestbydim_in: 0
+%       if_nestbydim_out: -1
+%             dim_max_in: 10
+%            dim_max_out: 10
+%              if_center: 1
+%              if_frozen: 1
+%         if_fit_summary: 1
+%             if_fit_log: 0
+%                if_warn: 1
+%                 if_log: 1
+%           persp_method: 'best'
+%     model_list_default: {'procrustes_scale_offset'  'affine_offset'  'projective'}
+%      model_definitions: [1×1 struct]
+%           warnings_fit: {[]}
+%     gf: {6×7 cell}
+% gfs{7}{1}.gf{3,3}
+% ans =
+%      []
+% gfs{7}{1}.gf
+% ans =
+%   6×7 cell array
+%     {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}
+%     {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}
+%     {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}
+%     {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}
+%     {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}    {0×0 double}
+%     {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {1×1 struct}    {0×0 double}    {0×0 double}
+% gfs{7}{1}.gf{2,3}
+% ans = 
+%   struct with fields: (showing nest by model and nest by dim in and nest by dim out
+% 
+%                 model_types_def: [1×1 struct]
+%                         ref_dim: 2
+%                         adj_dim: 3
+%                    d_shuff_dims: 'd1: model, d2: shuffle, d3: nested model, d4: normalization type'
+%            surrogate_count_dims: 'd1: model, d2: nested model, d3: normalization type'
+%                     opts_geofit: [1×1 struct]
+%                               d: [4×1 double]
+%                      transforms: {4×1 cell}
+%                         d_shuff: [4×5×3×2 double]
+%                 surrogate_count: [4×3×2 double]
+%                 nestdim_in_list: 1
+%              d_shuff_nestdim_in: [4×5×1×2 double]
+%      surrogate_count_nestdim_in: [4×1×2 double]
+%                nestdim_out_list: [0 1]
+%             d_shuff_nestdim_out: [4×5×2×2 double]
+%     surrogate_count_nestdim_out: [4×2×2 double]
+%
 % xs: the transformations, in a format compatible with rs_xform_apply
 %   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
