@@ -57,7 +57,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 % Returns:
-%   gfs (cell array of struct): gfs{k}{dim_out,dim_in} contains results for the transformations from record k of `data_in` to record k of `data_out`,
+%   gfs (cell array of struct): gfs{k}.gf{dim_out,dim_in} contains results for the transformations from record k of `data_in` to record k of `data_out`,
 %   for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
 %   It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
 %   and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
