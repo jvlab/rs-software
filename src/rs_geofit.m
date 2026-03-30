@@ -44,15 +44,11 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
 %          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
 %          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
-%          - persp_method (char): controls method used for finding projective transformations, options are 'fmin','oneshot', or 'best' (default)
-%     'fmin', 'oneshot' uses a method of Zhang (1993) [persp_xform_find.m for details]; 'best' uses both and takes the best-fit.
+%          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
 %
-% Method: Estimating Projective Transformation Matrix (Collineation, Homography)
-% Zhengyou Zhang
-% November 1993; Updated May 29, 2010
-% Microsoft Research Techical Report MSR-TR-2010-63
-% This uses Method 2 of the above reference, but the data are in rows
-%    Note that this is appropriate for an over-determined set
+%              - 'fmin': uses an iterative method to search for the denominator; for each trial denominator, numerator parameters are determined by standard least-squares
+%              - 'oneshot': uses method 2 of Zhengyhou Zhang, Microsoft Research Techical Report MSR-TR-2010-63 (1993, revised 2010); well-suited if the projective transformation is a close fit
+%              - 'best' uses both methods and chooses the best-fit
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
