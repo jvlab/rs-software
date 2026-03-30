@@ -3,11 +3,11 @@ function aux_out=rs_disp_geofit(gf,aux)
 % displays the goodness of fit and model comparison statistics for geometric models fit by `rs_geofit` [how to hyperlink?]
 %
 % This will create a wirerame plot of goodness of fit (d, see output gfs of `rs_geofit` [??how to hyperlink] for each model,
-% and, optionally, selected models and comparisons of goodness of fit for models that are nested by model type and/or dimension.
+% and, optionally, for selected models and comparisons across models that are nested by model type and/or dimension.
 %
 % Args:
 %   gf (2-D cell array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
-%   of a pair of `dataset structures`; gf{d_out,d_in} contains the statsitics for transforming a dataset of d_in dimensions to one with d_out dimensions
+%      of a pair of `dataset structures`; gf{d_out,d_in} contains the statistics for transforming a dataset of d_in dimensions to one with d_out dimensions
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
 %
