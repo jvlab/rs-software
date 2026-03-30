@@ -1,11 +1,13 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% creates a `transformation structure` based on a 'dataset structure`
+% creates a `transformation structure` based the coordinates in a 'dataset structure`
 %
 % A `transformation structure` is a cell array of geometric transformations.
-% The `transformation structures` created by this module are all combinations of linear transformations and translations.
-% These transformations center the coordinates in data_in (i.e., move the centroid to the origin), 
-% and/or or rotate them into their principal components.
+% The `transformation structures` created by this module are combinations of linear transformations and translations.
+% These transformations can be chosen to center the coordinates in data_in
+% (i.e., move the centroid to the origin), to move the coordinates of a
+% specific stimulus to the origin, and/or or rotate the coordinates into their principal components.
+% To fit a geometric model to a transformation between coordinate sets, see ` rs_geofit` [??how to hyperlink]
 % 
 % Args:
 %   data_in (struct): `dataset structure` to be aligned containing n records, with fields

@@ -1,6 +1,6 @@
 function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 % [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
-% applies a `transformation structure` to a `dataset structure`
+% applies a `transformation structure` to the coordinates in a `dataset structure`
 %
 % A `transformation structure` is a cell array of geometric transformations.
 % This module can apply several types of transformations: linear, linear with offset (affine), projective, piecewise affine, and piecewise projective.
