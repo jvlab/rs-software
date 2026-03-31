@@ -11,7 +11,7 @@ function opts_used=rs_save_mat(fullname,s,opts)
 % Returns:
 %   opts_used (struct): opts, with defaults filled in
 % 
-%  See also:  PSG_SAVE_MAT.
+%  See also: PSG_SAVE_MAT.
 %
 if (nargin<=2)
     opts=struct;

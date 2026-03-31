@@ -4,8 +4,8 @@ function rs_save_figs(fullname,whichfigs,opts)
 %
 % Args:
 %   fullname (char): file name, with path; if no figure handle is given, then all figures are saved, and '_fig_n' is appended, where n is sequentially incremented
-%   whichfigs (handle or array of handles or char): a figure handle, a list of handles, or 'all'; if empty, current figure; default is []
-%   opts (struct): options, with fields
+%   whichfigs (handle or array of handles or char): a figure handle, a list of handles, or 'all', or empty, or omitted; if empty, current figure; default is [] (empty)
+%   opts (struct): options, can be omitted, with fields
 %
 %      - if_log (int): 1 to log, 0 to omit; default is 0
 %      - ndigits (int): number of digits to use in file name; default is 0, which uses minimum number for available figures
