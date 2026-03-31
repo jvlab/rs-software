@@ -58,8 +58,6 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  06Nov25: check internal consistency of data files with rs_check_coordsets.
-%
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
 %
 if (nargin<=1)
@@ -133,6 +131,7 @@ if aux_out.warn_bad==0
     data_out.ds=ds;
     data_out.sas=sas;
     %
+    aux_out.opts_check=aux.opts_check;
     aux_out.opts_read=opts_read_used;
     aux_out.opts_rays=opts_rays_used;
     aux_out.opts_qpred=opts_qpred_used;

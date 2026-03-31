@@ -10,17 +10,17 @@ function [check,opts_used]=rs_check_coordsets(data_in,opts)
 % opts: options
 %    opts.if_warn: defaults to 0, 1 to display warnings
 %    opts.if_checkorder: defaults to 1, if set, the order of the entries in typenames must match
-%    opts.set_num_offset: number to add to set number in warnings
+%    opts.record_num_offset: number to add to set number in warnings
 %
 % check: a structure with  fields:
 %  warnings: strvcat of warning strings
 %  warn_bad: count of serious warnings that will prevent processing
-%  nsets: number of datasets
-%  nstims_each: (1,nsets): number of stimuli in each dataset
-%  dim_list_each: cell(1,nsets): list of dimensions available in each dataset
+%  nsets: number of records
+%  nstims_each: (1,nsets): number of stimuli in each record
+%  dim_list_each: cell(1,nsets): list of dimensions available in each record
 %  dim_list_union: union of dim_list_each
 %  dim_list_inter: intersection of dim_list_each
-%  typenames_each: cell(1,nsets); typenames in each dataset, in original order
+%  typenames_each: cell(1,nsets); typenames in each record, in original order
 %  typenames_union: union of typenames_each, alphabetized
 %  typenames_inter: cell(1,nsets); intersection of typenames_each, alphabetized
 %
@@ -33,7 +33,7 @@ if (nargin<=1)
 end
 opts=filldefault(opts,'if_warn',0);
 opts=filldefault(opts,'if_checkorder',1);
-opts=filldefault(opts,'set_num_offset',0);
+opts=filldefault(opts,'record_num_offset',0);
 opts_used=opts;
 check=struct;
 check.warn_bad=0;
@@ -51,11 +51,11 @@ typenames_each=cell(1,nsets);
 typenames_union=[];
 %check that ds, sas, sets is consistent
 if nsets_sas~=nsets_ds
-    wmsg=sprintf('number of entries in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sas,nsets_ds);
+    wmsg=sprintf('number of records in metadata structure sas (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sas,nsets_ds);
     check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
 if nsets_sets~=nsets
-    wmsg=sprintf('number of entries in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sets,nsets_ds);
+    wmsg=sprintf('number of records in metadata structure sets (%3.0f) and data structure ds (%3.0f) are inconsistent',nsets_sets,nsets_ds);
     check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
 end
 for iset=1:nsets
@@ -63,22 +63,22 @@ for iset=1:nsets
     nstims_each(iset)=data_in.sets{iset}.nstims;
     typenames_each{iset}=data_in.sas{iset}.typenames;
     if nstims_each(iset)~=data_in.sas{iset}.nstims
-        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and sas (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),data_in.sas{iset}.nstims);
+        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and sas (%3.0f) are inconsistent',iset+opts.record_num_offset,nstims_each(iset),data_in.sas{iset}.nstims);
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     if nstims_each(iset)~=length(typenames_each{iset})
-        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) are inconsistent',iset+opts.set_num_offset,nstims_each(iset),length(typenames_each{iset}));
+        wmsg=sprintf('number of stimuli in set %1.0f in sets (%3.0f) and typenames (%3.0f) are inconsistent',iset+opts.record_num_offset,nstims_each(iset),length(typenames_each{iset}));
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     %dimension list must be unique and ascending and integer
     dim_list_each{iset}=data_in.sets{iset}.dim_list;
     if (any(dim_list_each{iset}~=round(dim_list_each{iset})) | (any(dim_list_each{iset}<=0)))
-        wmsg=sprintf('dimension list for set %3.0f must be postive integers',iset);
+        wmsg=sprintf('dimension list record %3.0f must be positive integers',iset);
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     dim_list_each{iset}=max(1,round(dim_list_each{iset}));
     if any(diff(dim_list_each{iset})<=0)
-        wmsg=sprintf('dimension list for set %3.0f has non-unique values',iset);
+        wmsg=sprintf('dimension list for record %3.0f has non-unique values',iset);
         check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
     end
     dim_list_each{iset}=unique(dim_list_each{iset});
@@ -96,15 +96,15 @@ for iset=1:nsets
         if length(data_in.ds{iset})>=idim
             coords=data_in.ds{iset}{idim};
             if size(coords,1)~=nstims_each(iset)
-                wmsg=sprintf('number of stimuli in coordinate array for set %3.0f and dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.set_num_offset,idim,size(coords,1),nstims_each(iset));
+                wmsg=sprintf('number of stimuli in coordinate array for record %3.0f and dimension %3.0f (%3.0f) is inconsistent with number of stimuli (%3.0f)',iset+opts.record_num_offset,idim,size(coords,1),nstims_each(iset));
                 check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             end
             if size(coords,2)~=idim
-                wmsg=sprintf('number of dimensions in coordinate array for set %3.0f and dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.set_num_offset,idim,size(coords,2),idim);
+                wmsg=sprintf('number of dimensions in coordinate array for record %3.0f and dimension %3.0f (%3.0f) is inconsistent with expected dimension (%3.0f)',iset+opts.record_num_offset,idim,size(coords,2),idim);
                 check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             end
         else
-            wmsg=sprintf('coordinate array for set %3.0f, dimension %3.0f is missing',iset+opts.set_num_offset,idim);
+            wmsg=sprintf('coordinate array for record %3.0f, dimension %3.0f is missing',iset+opts.record_num_offset,idim);
             check=rs_warning(wmsg,1,setfield(check,'if_warn',opts.if_warn));
             dim_remove=[dim_remove,idim];
         end
@@ -117,7 +117,7 @@ for iset=1:nsets
         coords=data_in.ds{iset}{idim};
         if (size(coords,1)==nstims_each(iset) & size(coords,2)==idim)
             if ~ismember(idim,data_in.sets{iset}.dim_list)
-                wmsg=sprintf('coordinate array for set %3.0f and dimension %3.0f is not listed in sets metadata; others may be processed',iset+opts.set_num_offset,idim);
+                wmsg=sprintf('coordinate array for set %3.0f and dimension %3.0f is not listed in sets metadata; others may be processed',iset+opts.record_num_offset,idim);
                 check=rs_warning(wmsg,0,setfield(check,'if_warn',opts.if_warn));
             end
         end

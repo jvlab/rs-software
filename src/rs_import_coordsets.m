@@ -131,6 +131,7 @@ aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
 %
 aux_out.opts_import=aux.opts_import;
+aux_out.opts_check=aux.opts_check;
 %
 if aux_out.warn_bad>0
     disp('cannot proceed');
