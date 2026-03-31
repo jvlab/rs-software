@@ -21,7 +21,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          fitted; default is values given in `model_list_default`; if [],
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
-%            this can be modified by editing `rs_aux_defaults_define` [??how to hyperlink]
+%            can be modified by editing `rs_aux_defaults_define` [??how to hyperlink]
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
 %          - dim_max_out (int): maximum dimension of output dataset to use, defaults to `dim_max_in`
 %          - dimpairs_method (char): specifies pairing of dimensions between `data_in` and `data_out`, default is 'equal'

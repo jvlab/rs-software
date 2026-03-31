@@ -1,20 +1,25 @@
 function opts_used=rs_warning(msg,if_bad,opts_warn)
-% opts_used=rs_warning(msg,if_bad,opts_warn) produces a warning message and updates a strructure of warning tallies and messages
+%opts_used=rs_warning(msg,if_bad,opts_warn) displays a warning message and updates a structure of warning tallies and messages
 % 
-% msg: a string or a strvcat of strings
-% if_bad: 1 (default) if the warning is severe, and should hald further processing; may be omitted
-% opts_warn: a structure, may be omitted
-%   opts_warn.if_warn: whether to echo warnings (defaults to 1)
-%   opts_warn.warnings: warnings so far, as a strvcat (defaults to []) 
-%   opts_warn.warn_bad: a tally of serious warnings (defaults to 0)
-%   opts_warn.warn_leadin: a prefix for warnings echoed at console
-%   opts_warn.if_warn_traceback: 1 to show a traceback with each warning, defaults to 0, if 1, forces if_warn to 1
+% Args:
+%   msg (char or vertical concatenation of char): one or more warning messages
+%   if_bad (int): severity, can =be omitted; 1 indicates that furhter processing cannot proceed, 0 is less serious; default is 1
+%   opts_warn (struct): options, can be omitted, with fields
 %
-% opts_used: updated opts_warn structure
+%      - if_warn (int): 1 to display warning, 0 to omit; default is 1
+%      - warnings (char or vertical concatenaton of char): previous warnings; default is []
+%      - warn_bad (int): current tally of serious warnings; default is 0
+%      - warn_leadin (char) a prefix for warnings echoed at console;
+%      default is '##### rs_warning: '; can be modified by editing `rs_aux_defaults_define` [??how to hyperlink]
+%      - if_warn_traceback (int): 1 to show a traceback with each warning, 0 to omit; default is 0 defaults to 0; if 1, forces if_warn to 1
 %
-% typical usage is
-% aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux_out.if_warn)),
-% which appends a warning message to aux_out.warnings, and increments tally of aux_out.warn_bad
+%  Returns:
+%    opts_used (struct): updated opts_warn structure
+%
+% Note: 
+%    Typical usage is
+%    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux_out.if_warn)) [?how to show code?]
+%    which appends the warning message 'wmsg' to aux_out.warnings, and increments tally of aux_out.warn_bad
 %
 if (nargin<=1)
     if_bad=1;
