@@ -21,7 +21,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          fitted; default is values given in `model_list_default`; if [],
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
-%            can be modified by editing `rs_aux_defaults_define` [??how to hyperlink]
+%            see note below regarding customization
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
 %          - dim_max_out (int): maximum dimension of output dataset to use, defaults to `dim_max_in`
 %          - dimpairs_method (char): specifies pairing of dimensions between `data_in` and `data_out`, default is 'equal'
@@ -106,11 +106,15 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %        - 'pwaffine': piecewise affine with one cutplane; two linear transformations with agreement on the cut
 %        - 'pwaffine_2': piecewise affine with two cutplanes; four linear transformations, with agreement on the cuts
 %
-%    - The list of available model types can be obtaine by getfield(psg_geomodels_define,'model_types')
+%    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
 %    - To determine the model class (see `transformation structure`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
 %    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
 %    - See `transformation structure` for details on how the models are parameterized
 %
+% Note regarding customization:
+%    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in 'rs_aux_defaults_define' [??how to hyperlink], running it 
+%    once, and saving the workspace as rs_aux_defaults.mat.
+%   
 % Note regarding model definition structure: 
 %    - mdef=rs_geofit() returns a model definition structure, which defines the available models and their characteristics.
 %    - mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models

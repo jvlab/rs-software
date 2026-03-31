@@ -1,32 +1,37 @@
 function [check,opts_used]=rs_check_coordsets(data_in,opts)
-% [check,opts_used]=rs_check_coordsets(data_in,opts) checks consistency of
-% datasets and gets available stimuli, dimensions, typenames:
-%  number and names of stimuli must agree
-%  dimensions listed must agree with dimensions of coordinate arrays
+% [check,opts_used]=rs_check_coordsets(data_in,opts) checks the consistency of `dataset structures` between and within records,
+% and tallies the available dimensions and stimuli
 %
-% This can also be used if ds, sas, sets are singleton cells, in this case,
-%    it checks internal consistency
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-% opts: options
-%    opts.if_warn: defaults to 0, 1 to display warnings
-%    opts.if_checkorder: defaults to 1, if set, the order of the entries in typenames must match
-%    opts.record_num_offset: number to add to set number in warnings
+% Args:
+%   data_in (struct): `dataset structure`, with fields
 %
-% check: a structure with  fields:
-%  warnings: strvcat of warning strings
-%  warn_bad: count of serious warnings that will prevent processing
-%  nsets: number of records
-%  nstims_each: (1,nsets): number of stimuli in each record
-%  dim_list_each: cell(1,nsets): list of dimensions available in each record
-%  dim_list_union: union of dim_list_each
-%  dim_list_inter: intersection of dim_list_each
-%  typenames_each: cell(1,nsets); typenames in each record, in original order
-%  typenames_union: union of typenames_each, alphabetized
-%  typenames_inter: cell(1,nsets); intersection of typenames_each, alphabetized
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-% opts_used: options used
+%   opts (struct): auxiliary options, may be omitted, with fields
 %
-%   See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
+%     - if_warn (int): 1 to display warnings, 0 to omit; default is 0
+%     - if_checkorder (int): 1 to check that the order of the stimuli, as listed in ds.sas{k}.typenames, is the same, 0 to compare independent of odrer; default is 0
+%     - record_num_offset (int): value to add to the record number in displaying aarnings; default is 0
+%
+% Returns:
+%   check (struct): summary of the consistency check, with fields
+% 
+%     - warnings (char): warning messages
+%     - warn_bad (int): count of severe warnings that likely prevent processing
+%     - nsets (int): number of records
+%     - nstims_each (int 1-D array): nstims_each(k) is the number of stimuli in record k
+%     - dim_list_each (cell array): dim_list_each{k} is the list of dimensions available in record k
+%     - dim_list_union (int 1-D array): union of dim_list_each{:}
+%     - dim_list_inter (int 1-D array): intersection of dim_list_each{:}
+%     - typenames_each (cell array): typenames_each{k} is data_in.sas{k}.typenames, in original order
+%     - typenames_union (cell array): union of typenames_each{:}, alphabetized
+%     - typenames_inter (cell array): intersection of typenames_each{:}, alphabetized
+%
+%   opts_used (struct): opts, with defaults filled in
+%
+%  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
 %
 if (nargin<=1)
     opts=struct;

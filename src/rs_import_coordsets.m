@@ -1,45 +1,66 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
-% [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports a set of coordinates
-% into a data structure for use by the rs package
+% [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% coords: an array of size [nstims dmax] of coordinates or, a cell array coords{1,dmax}
-%   If an array, then each subarray coords(:,1:id) is taken as the coordinate set for a model of dimension id
-%   If a cell array, then coords{1,id} should be either empty, or an array of size [nstims id],for each dimension for which there is a model
+% `rs_concat_coordsets` [how to hyperlink?] can be used to combine several one-record `dataset structures` into a single `dataset structure`.
 %
-% aux:
-%  aux.opts_import: a structure with fields
-%     nstims: number of stimuli, if 0 or omitted, will be determined from first non-empty entry in coords
+% Args:
+%   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
 %
-%        fields relevant to data_out.sas
-%     typenames: cell array, size [nstims,1], unique labels for the stimuls types, as strings
-%             if omitted will be set to opts_import.typename_prefix followed by opts.typename_ndigits         
-%    *typename_prefix: string, defaults to 'type_'; prefix for auto-generated typenames
-%    *typename_ndigits: (integer) number of digits in auto-generated typenames
-%     type_coords: array of size [nstims *], conceptual coordinates, if omitted, will be set depending on opts.type_coords_def
-%        to [], eye(nstims), zeros(nstims,1), or ones(nstims,1), 
-%    *type_coords_def: 'none' (default),'eye,' or 'zeros', or 'ones', determines how type_coords are filled if not provided
-%        fields relevant to data_out.sets
-%    *type: text string, overall source, suggest 'data' (default) for originating in experimental data or 'model' for originating in a computational model
-%    *paradigm_type: string, overall category of experiment, defaults to 'unknown'
-%    *paradigm_name: string, subcategory of paradigm_type, defaults to 'unknown'
-%    *subj_id: string, full subject identifier, defaults to 'unknown'
-%    *subj_id_short: short version of subj_id, used for plot labels, defaults to subj_id
-%    *extra: string, free-form identifier, defaults to []
-%    *label_long: string, data source, typically a file path and name, defaults to 'unknown'
-%    *label: string, short version of label_long, defaults to label_long
+%   aux (struct): a structure, can be omitted, with fields 
 %
-%      * Note: The default values for these parameters changed by adding a line such as
-%         generic.opts_import.paradigm_type='colors';
-%      to rs_aux_defaults_define, running it once, and saving the workspace as rs_aux_defaults.mat
+%     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typename..., and type_coords... are used
+%     to create the `stimulus metadata structure`; fields type, paradigm_..., extra, subj_id..., and label... are used to create the `set metadata structure`.  Any or all can be omitted.
 %
-%  aux.opts_check: a structure with fields
-%     if_warn: defaults to 1, set to 0 to turn off warnings
-%     if_warn_traceback: set to 1 to give full traceback of warnings, defaults to value in overall section of rs_aux_defaults, set by rs_aux_customize.
+%          - nstims (int): number of stimuli; default determined from first non-empty entry in coords
+%          - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
+%          - typename_prefix (char): prefix auto-generated stimulus names; default is 'type_'; see note below regarding customization
+%          - typename_ndigits (int): number of digits in suffix for auto-generated stimulus names; default is 2; see note below regarding customization
+%          - type_coords (float 2-d array): array with nstims rows specifing the `stimulus coordinates`; default is determined by opts_import.type_coords_def
+%          - type_coords_def (char): method for auto-generation of `stimulus coordinates`; default is 'none'; see note below regarding customization
+%
+%              - 'none': type_coords=[]
+%              - 'zeros': type_coords=zeros(nstims,1)
+%              - 'ones': type_coords=ones(nstims,1)
+%              - 'eye': type_coords=eye(nstims)
+%
+%          - type (char): ovrall category of coordinates; default is 'data'; can use 'model' for coordinates originating in a computational model
+%          - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
+%          - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
+%          - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
+%          - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
+%          - extra (char): free-form identifier; default is []; see note below regarding customization
+%          - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
+%          - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
+%
+%     - opts_check: options for consistency checking, with field
+%
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
-% data_out.ds{1},sas{1},sets{1}:  coordinates after processing
-% aux_out: auxiliary outputs and parameter values used, and also
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
+% Returns:
+%   data_out (struct): `dataset structure` with one record, and fields
+%
+%     - ds (singleton cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates
+%     - sas (singleton cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the record
+%     - sets (singleton cell array): `set metadata structure`, sets{1} is the response metadata for the record
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_import (struct): aux.opts_import, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
+% Note regarding coordinates:
+%    - if 'coords' is a 2-dimensional array of size [nstims dmax], then coords(:,1:k) is taken to be the coordinate set data_out.ds{1}{:,idim},
+%    for each idim=1,...,dmax
+%    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
+%
+% Note regarding customization:
+%    The default values of these parameters can be changed by editing 'rs_aux_defaults_define' [??how to hyperlink], running it 
+%    once, and saving the workspace as rs_aux_defaults.mat.
+%    For example, to change the default paradigm
+%    type to 'cars', add the line generic.opts_import.paradigm_type='cars' [??how to indicate code] 
+%    to the section in which generic.opts_import fields are defined.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
 %

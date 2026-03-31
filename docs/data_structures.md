@@ -89,6 +89,27 @@ They are linear transformations and several generalizations.
 %Remember to indicate taht continuity at cutponts is not checked.
 
 
+...
+
+## Stimulus coordinates
+Very rough:
+
+Here describe the idea of conceptual coordinates
+
+...
+
+## Ray structure
+Very rough:
+
+Here describe rays, rings, nearest neighhbors, and how they are found and used
+
+...
+
+## Binary texture domain
+Very rough:
+
+Briefly introduce the textuers and the coordinates
+Provide pointers to literature
 
 ...
 
