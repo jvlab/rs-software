@@ -41,7 +41,7 @@ if (nargin<=2)
     opts=struct;
 end
 if exist('rs_graphic_hints','file')
-    rs_graphic_hints;
+    rs_graphic_hint_def=rs_graphic_hints();
 end
 if ~exist('rs_graphic_hints_def')
     rs_graphic_hints_def=struct;
