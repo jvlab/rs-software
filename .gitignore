@@ -3,7 +3,8 @@ __pycache__
 .DS_Store
 src/rs_py/.idea
 .idea
-src/tests
+src/tests/*.fig
+src/tests/*.mat
 svd_issue
 src/benchmarks/*.zip
 junk*.*
