@@ -36,9 +36,9 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %
 % Note re `setup metadata`:
 %
-%    - The `setup metadata` is required for `binary texture domain` datasets, or, if configured on installation.
-%    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` [how to hyperlink?]or
-%    `rs_get_coordsets` [how to hyperlink?], and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets`[how to hyperlink?] and `rs_knit_coordsets`[how to hyperlink?]
+%    - The `setup metadata` is required for `binary texture domain` datasets; not otherwise required unless configured on installation.
+%    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` [how to hyperlink?] or
+%    `rs_get_coordsets` [how to hyperlink?], and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets`[?how to hyperlink] and `rs_knit_coordsets`[how to hyperlink?]
 %    - if_embed=1 embeds the metadata in the written file, so that the setup file no longer needs to be read. 
 % 
 % See also:  RS_AUX_CUSTOMIZE, RS_WRITE_COORDDATA.
