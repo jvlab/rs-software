@@ -113,3 +113,7 @@ Provide pointers to literature
 
 ...
 
+## Setup metadata
+for Binary texture domain
+or if configured
+

@@ -40,6 +40,7 @@ OWN_DATATYPES = {
     "ray structures":               "data_structures/#ray-structure",
     "stimulus coordinates":         "data_structures/#stimulus-coordinates",
     "binary texture domain":        "data_structures/#binary-texture-domain",
+    "setup metadata":	            "data structures/#setup-metadata",
 
     # add more as needed...
 }

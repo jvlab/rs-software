@@ -17,8 +17,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 %     - opts_geof (struct): specification of transformations to find, with fields
 %
-%          - model_list (char or cell array of char): model types to be
-%          fitted; default is values given in `model_list_default`; if [],
+%          - model_list (char or cell array of char): model types to be fitted; default is values given in `model_list_default`; if [],
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
