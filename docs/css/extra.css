@@ -9,6 +9,18 @@
   display: block;
 }
 
+/* First-level argument items */
+.md-typeset  ul {
+	list-style-type: "▸  ";
+}
+
+
+/* Second-level nested argument items */
 .md-typeset  ul ul {
+	list-style-type: disc;
+}
+
+/* Third-level nested argument items */
+.md-typeset  ul ul ul {
 	list-style-type: circle;
 }
