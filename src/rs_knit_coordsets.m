@@ -201,6 +201,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See rs_knit_coordsets_demo [hyperlink?] for an example.
 %
+% Note regarding rays:
+%     - The `ray structure` describes relationships among the simulus coordinates: 
+%     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
+%     `rings`, stimuli that lie at an approximately equal distance from the origin, and nearest neighbors.
+%     It is only created if there is a valid set of stimulus coordinates.  
+%
 % See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %   PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
