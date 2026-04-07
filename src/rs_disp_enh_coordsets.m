@@ -76,7 +76,7 @@ if isempty(aux.opts_disp.fig_handle)
     aux.opts_disp.fig_handle=figure;
 end
 if aux.opts_disp.fig_handle~=gcf
-    aux.opts_dis.fig_handle=gcf;
+    aux.opts_disp.fig_handle=gcf;
 end
 %
 if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors

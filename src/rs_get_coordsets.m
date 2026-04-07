@@ -110,8 +110,8 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
         aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
     end
     for iset=1:nsets_named
-        if ~contains(fullnames{iset},aux.opts_read.coord_string)
-            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames{iset},aux.opts_read.coord_string);
+        if ~contains(fullnames_list{iset},aux.opts_read.coord_string)
+            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames_list{iset},aux.opts_read.coord_string);
             aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
         end
     end
@@ -120,7 +120,7 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
     %create setup files
     aux.opts_read.setup_fullnames=cell(1,nsets_named);
     for iset=1:nsets_named
-        parsed=psg_coorddata_parsename(fullnames{iset},aux.opts_read);
+        parsed=psg_coorddata_parsename(fullnames_list{iset},aux.opts_read);
         aux.opts_read.setup_fullnames{iset}=parsed.setup_fullname_def;
     end
 end
