@@ -5,12 +5,9 @@
 Here description of what a dataset structure is. It can include visualizations 
 or code blocks.
 
+This contains three components:  a `coordinate structure`, a `stimulus metadata structure`, and a `set metadata structure`, each of which is a cell array with the same number of records.
 
 ## Coordinate structure 
-
-Same here...
-
-## Ray structure
 
 ...
 ## Stimulus metadata structure 
@@ -21,11 +18,14 @@ Same here...
 
 ...
 
+## Ray structure
+
+...
 ## Transformation structure 
 
 Very rough:
 
-These are the structures created by `rs_geofit.m` [how to hyperlink?] and `rs_xform_specify` [how to hyperlink?] , and applied by `rs_xform_apply` [how to hyperlink?] .
+These are the structures created by `rs_geofit.m` and `rs_xform_specify`, and applied by `rs_xform_apply`.
 They are linear transformations and several generalizations.
 
 
