@@ -22,9 +22,9 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %          - if_log (int): 1 to log progress, 0 to omit; default is 1
 %          - data_fullname_def (char): default file name to write, used as a prompt if if_gui=0 if fullname is not provided; default is
 %          './samples/bgca3pt_coords_QFM_sess01_01.mat'; default can be changed by  editing the line containing
-%          generic.opts_write.coord_data_fullname_write_def in 'rs_aux_defaults_define' [??how to hyperlink], running it 
+%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it 
 %          once, and saving the workspace as rs_aux_defaults.mat.
-%          - if_uselocal (int): should be set to 0 (default); 1 (intended for maintenance only) overrides options set by `rs_aux_defaults_define` [?how to hyperlink?] by defaults in `psg_localopts.m` [?how to hyperlink?[
+%          - if_uselocal (int): should be set to 0 (default); 1 (intended for maintenance only) overrides options set by `rs_aux_defaults_define` by defaults in `psg_localopts.m` 
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -37,8 +37,8 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 % Note re `setup metadata`:
 %
 %    - The `setup metadata` is required for `binary texture domain` datasets; not otherwise required unless configured on installation.
-%    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` [how to hyperlink?] or
-%    `rs_get_coordsets` [how to hyperlink?], and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets`[?how to hyperlink] and `rs_knit_coordsets`[how to hyperlink?]
+%    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` or
+%    `rs_get_coordsets`, and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets` and `rs_knit_coordsets`
 %    - if_embed=1 embeds the metadata in the written file, so that the setup file no longer needs to be read. 
 % 
 % See also:  RS_AUX_CUSTOMIZE, RS_WRITE_COORDDATA.

@@ -1,8 +1,8 @@
 function aux_out=rs_disp_geofit(gf,aux)
 % aux_out=rs_disp_geofit(gf,aux) 
-% displays the goodness of fit and model comparison statistics for geometric models fit by `rs_geofit` [how to hyperlink?]
+% displays the goodness of fit and model comparison statistics for geometric models fit by `rs_geofit`
 %
-% This will create a wirerame plot of goodness of fit (d, see output gfs of `rs_geofit` [??how to hyperlink] for each model,
+% This will create a wirerame plot of goodness of fit (d, see output gfs of `rs_geofit` for each model,
 % and, optionally, for selected models and comparisons across models that are nested by model type and/or dimension.
 %
 % Args:

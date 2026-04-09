@@ -44,9 +44,9 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 %    - Axis hold state will be 'on' after plotting.
 %
 % Note regarding graphic hints:
-%    - Capabilities for alpha-blending may be version-dependent, and should be indicated during installation by customizing `rs_graphic_hints` [how to hyperlink?]
-%    - An entry of -1 (default) in 'opts' uses `rs_graphic_hints` [how to hyperlink?] to determine the capability.
-%    - If `rs_graphic_hints` [how to hyperlink?] is absent, the present, and if not, by attempting to set an alpha property
+%    - Capabilities for alpha-blending may be version-dependent, and should be indicated during installation by customizing `rs_graphic_hints`
+%    - An entry of -1 (default) in 'opts' uses `rs_graphic_hints` to determine the capability.
+%    - If `rs_graphic_hints` is absent, the present, and if not, by attempting to set an alpha property
 %    - At run-time, these hints may be overrridden by a 1 (capability present) or a 0 (capability absent) in a field of 'opts'.
 %    - If an attempt to use transparency fails, then the corresponding field of 'opts_used' is set to 0, and a essage is generated in opts_used.msgs
 % 

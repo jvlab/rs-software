@@ -6,7 +6,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % and in the same order, as determined by the strings in data_in.sas{k}.typenames for the record k.
 % Missing data (e.g., for the stimulus s labeled by data_in.sas{k}.typenames{s}) should be indicated by 
 % NaN's in the row data_in.sets{k}{idim}(s,:), a row of length idim.  The `dataset structure` returned by `rs_align_coordsets` 
-% [how to hyperlink?] meets these requirements.
+% meets these requirements.
 %
 % Args:
 %   data_in (struct): `dataset structure` to be processed, containing n records, with fields
@@ -199,7 +199,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     -  No further calculations are done
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
-%     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See rs_knit_coordsets_demo [hyperlink?] for an example.
+%     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
 %
 % Note regarding rays:
 %     - The `ray structure` describes relationships among the simulus coordinates: 

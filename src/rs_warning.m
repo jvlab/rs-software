@@ -10,7 +10,7 @@ function opts_used=rs_warning(msg,if_bad,opts_warn)
 %      - warnings (char or vertical concatenaton of char): previous warnings; default is []
 %      - warn_bad (int): current tally of serious warnings; default is 0
 %      - warn_leadin (char) a prefix for warnings echoed at console;
-%      default is '##### rs_warning: '; can be modified by editing `rs_aux_defaults_define` [??how to hyperlink]
+%      default is '##### rs_warning: '; can be modified by editing `rs_aux_defaults_define`
 %      - if_warn_traceback (int): 1 to show a traceback with each warning, 0 to omit; default is 0 defaults to 0; if 1, forces if_warn to 1
 %
 %  Returns:

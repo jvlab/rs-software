@@ -77,7 +77,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
 %     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
 %
-%   xs (struct): the transformations, in a format compatible with `rs_xform_apply` [how to hyperlink?]  xs.(model_name), where model_name is one of the models specified by model_list, has fields
+%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, has fields
 %
 %     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
 %     - xforms (struct): xforms.ts{k}{dim_in}: the transformation to be
@@ -95,9 +95,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - Model types to be fit are specified by the entries in opts_geof.model_list. The following model types are available:
 %
 %        - 'mean': all input values mapped to a single output value 
-%        - 'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling     , no translation
+%        - 'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling, no translation
 %        - 'procrustes_scale_nooffset': rotation (and possibly reflection), rescaling allowed, no translation
-%        - 'procrustes_noscale_offset': rotation (and possibly reflection), no rescaling     , translation allowed
+%        - 'procrustes_noscale_offset': rotation (and possibly reflection), no rescaling, translation allowed
 %        - 'procrustes_scale_offset': rotation (and possibly reflection), rescaling allowed, translation allowed
 %        - 'affine_nooffset' : linear transformation, no translation
 %        - 'affine_offset': linear transformation, translation allowed
@@ -111,7 +111,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - See `transformation structure` for details on how the models are parameterized
 %
 % Note regarding customization:
-%    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in 'rs_aux_defaults_define' [??how to hyperlink], running it 
+%    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %   
 % Note regarding model definition structure: 

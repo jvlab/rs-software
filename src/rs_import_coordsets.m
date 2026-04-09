@@ -1,7 +1,7 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% `rs_concat_coordsets` [how to hyperlink?] can be used to combine several one-record `dataset structures` into a single `dataset structure`.
+% `rs_concat_coordsets` can be used to combine several one-record `dataset structures` into a single `dataset structure`.
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
@@ -56,7 +56,7 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
 % Note regarding customization:
-%    The default values of these parameters can be changed by editing 'rs_aux_defaults_define' [??how to hyperlink], running it 
+%    The default values of these parameters can be changed by editing 'rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm
 %    type to 'cars', add the line generic.opts_import.paradigm_type='cars' [??how to indicate code] 
