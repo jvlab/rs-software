@@ -9,9 +9,13 @@ style of top-level arguments.
 It also links the data types to the either official MATLAB documentation
 or to custom data structures. URLs need to be edited in function_links.py
 
-
 It also formats any appereance of data structures (in the form `xxx`)
-and links it with the definitions in function_links.py. 
+and links it with the definitions in function_links.py.
+
+Category headers can be added inside nested argument lists using the
+**Category name** syntax (bold text, no type/description pattern).
+These are rendered as collapsible <details> sections grouping the
+parameters that follow them.
 
 """
 
@@ -120,7 +124,7 @@ def serialize(node: Node | str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Argument pattern matcher
+# Argument pattern matchers
 # ---------------------------------------------------------------------------
 
 # Matches: "name (type): description"  or  "name (type or type): description"
@@ -131,12 +135,80 @@ _ARG_RE = re.compile(
     re.DOTALL,
 )
 
+# Matches a category header rendered from **Category name** markdown,
+# i.e. a <li> whose text content is purely a <strong> or <b> element.
+_CATEGORY_RE = re.compile(
+    r'^\s*<(?:strong|b)>(.+?)</(?:strong|b)>:?\s*$',
+    re.DOTALL,
+)
+
+
+# ---------------------------------------------------------------------------
+# Category grouping into collapsible <details> blocks
+# ---------------------------------------------------------------------------
+
+def _group_into_details(ul_node: Node) -> None:
+    """
+    If a <ul> contains category-header <li> items (class="doc-param-category"),
+    restructure the list into <details><summary> collapsible groups.
+    Items appearing before the first category header are left as-is.
+    """
+    has_categories = any(
+        isinstance(c, Node) and c.tag == "li"
+        and "doc-param-category" in c.attrs.get("class", "")
+        for c in ul_node.children
+    )
+    if not has_categories:
+        return
+
+    new_children: list[Node | str] = []
+    current_inner_ul: Node | None = None
+
+    for child in ul_node.children:
+        if not (isinstance(child, Node) and child.tag == "li"):
+            # Whitespace or text nodes — attach to current context
+            if current_inner_ul is not None:
+                current_inner_ul.children.append(child)
+            else:
+                new_children.append(child)
+            continue
+
+        is_category = "doc-param-category" in child.attrs.get("class", "")
+
+        if is_category:
+            # Build: <details open class="doc-param-group">
+            #            <summary>…label…</summary>
+            #            <ul class="doc-param-group-items">…</ul>
+            #        </details>
+            summary_html = "".join(serialize(c) for c in child.children)
+            details_node = Node("details", [("class", "doc-param-group"), ("open", None)])
+            summary_node = Node("summary", [])
+            b = HTMLTreeBuilder()
+            b.feed(summary_html)
+            summary_node.children = list(b.root.children)
+            current_inner_ul = Node("ul", [("class", "doc-param-group-items")])
+            details_node.children = [summary_node, current_inner_ul]
+            new_children.append(details_node)
+        else:
+            if current_inner_ul is not None:
+                current_inner_ul.children.append(child)
+            else:
+                # Item before any category header — keep at top level
+                new_children.append(child)
+
+    ul_node.children = new_children
+
+
+# ---------------------------------------------------------------------------
+# <li> reformatter
+# ---------------------------------------------------------------------------
 
 def _reformat_li(li_node: Node) -> None:
     """
     If a <li> node's text content matches "name (type): description",
     replace its children with formatted bold/monospace markup.
-    Recurses into any nested <ul> children.
+    Recurses into any nested <ul> children, then groups them into
+    collapsible <details> sections if category headers are present.
     """
     # First recurse into any nested <ul> children
     for child in li_node.children:
@@ -144,6 +216,8 @@ def _reformat_li(li_node: Node) -> None:
             for nested_li in child.children:
                 if isinstance(nested_li, Node) and nested_li.tag == "li":
                     _reformat_li(nested_li)
+            # After all <li> in this <ul> have been classified, group them
+            _group_into_details(child)
 
     # Collect the text content of this <li>, excluding nested <ul> blocks
     text_parts = []
@@ -170,6 +244,14 @@ def _reformat_li(li_node: Node) -> None:
                 text_parts.append(serialize(child))
 
     text = "".join(text_parts).strip()
+
+    # Check for category header BEFORE trying _ARG_RE.
+    # Category headers come from **Bold text** in the docstring, which
+    # renders as <strong>…</strong> with no (type): description pattern.
+    match_cat = _CATEGORY_RE.match(text)
+    if match_cat:
+        li_node.attrs["class"] = "doc-param-category"
+        return  # leave content unchanged; _group_into_details will wrap it
 
     # Try to match "name (type): description"
     match = _ARG_RE.match(text)
@@ -200,6 +282,10 @@ def _reformat_li(li_node: Node) -> None:
     li_node.children = new_children
 
 
+# ---------------------------------------------------------------------------
+# Tree walkers
+# ---------------------------------------------------------------------------
+
 def _process_doc_md_description(node: Node) -> None:
     """
     Walk the tree and reformat nested <ul> lists inside
@@ -214,6 +300,7 @@ def _process_doc_md_description(node: Node) -> None:
                 for li in child.children:
                     if isinstance(li, Node) and li.tag == "li":
                         _reformat_li(li)
+                _group_into_details(child)
         return  # don't recurse further into this div
 
     # Recurse into all children
@@ -222,14 +309,15 @@ def _process_doc_md_description(node: Node) -> None:
             if isinstance(child, Node):
                 _process_doc_md_description(child)
 
+
 def _linkify_type(typ: str) -> str:
     url = FUNCTION_LINKS.get(typ.lower().strip())
     if url:
         full_url, target = _build_url(url)
         return f'<a href="{full_url}"{target}>{typ}</a>'
     return typ
-    
-    
+
+
 def _linkify_toplevel_types(node: Node) -> None:
     if (isinstance(node, Node)
             and node.tag == "li"
@@ -269,11 +357,14 @@ def _linkify_toplevel_types(node: Node) -> None:
             if isinstance(child, Node):
                 _linkify_toplevel_types(child)
 
+
 def _linkify_code_tags(node: Node) -> None:
     if isinstance(node, Node):
         if node.tag == "a":
             return
         if node.tag == "details" and "quote" in node.get_class():
+            return
+        if node.tag == "details" and "doc-param-group" in node.get_class():
             return
         if node.tag == "div" and "highlight" in node.get_class():
             return
@@ -298,6 +389,7 @@ def _linkify_code_tags(node: Node) -> None:
             elif isinstance(child, Node):
                 _linkify_code_tags(child)
 
+
 def _build_url(url: str) -> tuple[str, str]:
     """
     Returns (full_url, target_attr).
@@ -308,29 +400,35 @@ def _build_url(url: str) -> tuple[str, str]:
         return url, ' target="_blank"'
     else:
         return f"{site_config.SITE_PREFIX}/{url}", ""
-               
+
+
+# ---------------------------------------------------------------------------
+# MkDocs hook entry point
+# ---------------------------------------------------------------------------
 
 def on_page_content(html: str, page, config, files) -> str:
-    """  
+    """
     Called when page content is translated to HTML.
-    
-    It formats the tags for data structures first, anything that 
+
+    It formats the tags for data structures first, anything that
     is rendered as `xxx` gets checked if there is a link to it in function_links.py
     (function _linkify_code_tags).
-    
-    Then it parses specifically the arguments, changing the format of 
+
+    Then it parses specifically the arguments, changing the format of
     second and third level description to match the automatic first-level description
     (function _process_doc_md_description). This function also
     includes links to the data types inside the parenthesis.
-    
+    Category headers (**Bold**) are detected and their sibling items
+    are wrapped in collapsible <details> sections.
+
     Finally it does the same thing but for the first level arguments,
-    putting a link in the data type. This is done in function 
+    putting a link in the data type. This is done in function
     _linkify_toplevel_types.
     """
     try:
         builder = HTMLTreeBuilder()
         builder.feed(html)
-        _linkify_code_tags(builder.root)  # ← pass page.url
+        _linkify_code_tags(builder.root)
         html = serialize(builder.root)
     except Exception as e:
         log.warning(f"[format_nested_args] pass1 FAILED: {e}")
@@ -347,4 +445,3 @@ def on_page_content(html: str, page, config, files) -> str:
     except Exception as e:
         log.warning(f"[format_nested_args] pass2 FAILED: {e}")
         return html
-        
