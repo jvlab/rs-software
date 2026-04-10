@@ -1,24 +1,29 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out==rs_disp_coordsets(data_in,aux) displays one or more views of a set of coordinates
+% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinaates in a `dataset structure`
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These are typically read by rs_get_coordsests, or created:
-%    as data_out from rs_align_coordsets,
-%    as aux_out.components from rs_knit_coordsets
-%    as data_out from rs_knit_coordsets
-%    as data_out from rs_xform_apply
+% Multiple views can be plotted in subplots of the same figure. This is particularly helpful if the dimensionality
+% of the coordinates is high:  each subplot could show a different combination of two or three dimensions.
+% Subplots are left in the 'hold on' state.
 %
-%  Multiple views can be plotted in subplots of the same figure.
-%  Subplots are in 'hold on' state, so that one can add to the plots
-%  
-% aux:
-%  aux.opts_disp
+% Args:
+%   data_in (struct): `dataset structure` to be processed, with fields
 %
-%   fig_handle: handle to figure, will be created if empty or not provided
-%   fig_position: position params for new figure to be created (modifiable in rs_aux_defaults_define)
-%   fig_name: title for figure 
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   axis_handles: handle to axes, one for each subplot, will be created if not supplied
+%   aux (struct): auxiliary inputs, may be omitted, with fields
+%
+%     - opts_disp (struct): options for display, with fields
+%
+%         - **Figure and axis control**
+%         - fig_handle (handle): handle to figure; will be created if empty or not provided
+%         - fig_position (int 1-D array): position parameters [left bottom
+%         width height] for figure to be created; see note below re customization
+%         - fig_name (char): title for figure; default is list of dimensions shown
+%         -axis_handles (cell array of handles: handle to axes, one for each subplot, will be created empty or not provided
+%
+%         - **Axis formatting**
 %   axis_font_size: font size, defaults to 8 (modifiable in rs_aux_defaults_define)
 %   axis_label_prefix: prefix for axis label, defaults to 'dim' (modifiable in rs_aux_defaults_define)
 %   axis_label_font_size: font size, defaults to axis_font_size
@@ -28,6 +33,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
 %   axis_range_list: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
+%         - **Data selection**
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
 %   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %
@@ -114,8 +120,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   warn_bad: count of warnings that prevent further processing
 %   aux_out.opts_disp: the input structure opts_disp, with defaults and overrides, including aux_out.opts_disp.fig_handle, handle to the figure that was created
 %
-%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_XFORM_APPLY,
-%     PSG_VISUALIZE, PSG_PLOTCOORDS, RS_PLOT_STYLE.
+% Note regarding customization:
+%     - The default figure position can be changed by editing the line containing generic.opts_disp.fig_position in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%     - The default font size for axis labels can be changed by editing the line containing generic.opts_disp.axis_font_size in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
+%     - The default prefix for the axis label can be changed by editing the line containing generic.opts_disp.axis_label_prefix in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
+%
+%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
 %
 if (nargin<=1)
     aux=struct;
