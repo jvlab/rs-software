@@ -64,8 +64,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - set_offsets (float 2-D array or char): this allows the data in each record to be offset by different amounts, so they don't overlap; default is no offset; specified by 0
 %
 %              - if an array, each row, of length dim_select (which wll be truncated or padded as needed) specifies the offset for the corresponding record in `data_in`
-%              - if 'margin_amount', leaves a margin of set_of set_offsets_margin_amount between each dataset and the next
-%              - if 'margin_fraction', leaves a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
+%              - 'margin_amount' puts a margin of set_offsets_margin_amount between each dataset and the next
+%              - 'margin_fraction' puts a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
 %
 %         - set_offsets_margin_amount (float): absolute margin between datasets if set_offsets='margin_amount; defaults to ones(1,dim_select); can be 0 or negative, truncated or padded to dim_select
 %         - set_offsets_margin_fraction (float): fractional margin between datasets if set_offsets='margin_fraction; defaults to zeros(1,dim_select); can be 0 or negative, truncated or padded to dim_select
