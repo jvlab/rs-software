@@ -18,20 +18,19 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %         - **Figure and axis control**
 %         - fig_handle (handle): handle to figure; will be created if empty or not provided
-%         - fig_position (int 1-D array): position parameters [left bottom
-%         width height] for figure to be created; see note below re customization
+%         - fig_position (int 1-D array): position parameters [left bottom width height] for figure to be created; see note below regarding customization
 %         - fig_name (char): title for figure; default is list of dimensions shown
 %         -axis_handles (cell array of handles: handle to axes, one for each subplot, will be created empty or not provided
 %
 %         - **Axis formatting**
-%   axis_font_size: font size, defaults to 8 (modifiable in rs_aux_defaults_define)
-%   axis_label_prefix: prefix for axis label, defaults to 'dim' (modifiable in rs_aux_defaults_define)
-%   axis_label_font_size: font size, defaults to axis_font_size
-%   axis_labels: cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
-%   axis_view: 3-d view of axis, as cell array for each subplot, 2, 3 (default), or azimuth-elevation pair, where [AZ,EL=[-37.5,30] is the default 3-D view.
-%   axis_equal: 1 (default) to set axes to have equal scales
-%   axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
-%   axis_range_list: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
+%         - axis_font_size (int): font size for axis; default is 8; see note below re customization
+%         - axis_label_font_size (char): font size for axis labels; default is axis_font_size
+%         - axis_label_prefix (char): prefix for axis label, default is 'dim'; see note below regarding customization
+%         - axis_labels: cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
+%         - axis_view: 3-d view of axis, as cell array for each subplot, 2, 3 (default), or azimuth-elevation pair, where [AZ,EL=[-37.5,30] is the default 3-D view.
+%         - axis_equal: 1 (default) to set axes to have equal scales
+%         - axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
+%         - axis_range_list: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
 %         - **Data selection**
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
