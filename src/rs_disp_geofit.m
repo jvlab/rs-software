@@ -37,13 +37,14 @@ function aux_out=rs_disp_geofit(gf,aux)
 %          - out_label (char): label for first  coordinate of gf{}, default is 'output dim'
 %          - in_label (char): label for second coordinate of gf{}, defaulti is 'input dim'
 %          - dia_label (char): label for both coordinates of gf{}, when diagonal is plotted, default is 'dim'
-%          - colors_models (cell array): seuqnce of colors to use for model wireframes, used in cyclic order, default is {'k','b','c','m','r',[1 0.5 0],[0.7 0.7 0],'g',[.5 .5 .5],[.5 0 0]}
+%          - colors_models (cell array of color specifiers): sequence of colors to use for model wireframes, used in cyclic order;
+%           default is {'k','b','c','m','r',[1 0.5 0],[0.7 0.7 0],'g',[.5 .5 .5],[.5 0 0]}; elements can be any valid color specifier
 %          - sig_symbols (cell array of char): symbols to mark significant values, sig_symbols{1} for original denominator, sig_symbols{2} for shuffle denominator, default is {'+','x'}
 %          - sig_symsize (int): symbol size for significance markers, default is 14
 %          - lw_model (int): line width for model, default is 2
 %          - lw_nest (int): line width for nested model, default is 2
 %          - lw_quant (int): line width for quantiles of shuffles of nested models, default is 1
-%          - view (int or 1-D array): 3-D view descriptor, default is 3 (standard 3-d view); can also be azimuth-elevation pair, standard 3-d view is [-37.5 30]
+%          - view (int or float 1-D array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair, standard 3-d view is [-37.5 30]
 % 
 %     - opts_check (struct): options for consistency checking, with field
 %
