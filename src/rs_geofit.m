@@ -17,10 +17,15 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 %     - opts_geof (struct): specification of transformations to find, with fields
 %
+%          - **Model selection**
 %          - model_list (char or cell array of char): model types to be fitted; default is values given in `model_list_default`; if [],
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
+%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
+%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%
+%          - **Dimension selection**
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
 %          - dim_max_out (int): maximum dimension of output dataset to use, defaults to `dim_max_in`
 %          - dimpairs_method (char): specifies pairing of dimensions between `data_in` and `data_out`, default is 'equal'
@@ -32,15 +37,18 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %              - 'list': the pairings specified by aux.opts_geof.dimpairs_list
 %
 %          - dimpairs_list (int 2-D array): two-column array of pairs of dimensions for input and output, default is repmat([1:dim_max_in]',[1 2])
+%
+%          - **Statistics**
 %          - if_stats (int): 1 to enable statistics, 0 to omit; default is 1; a value of 0 will override a nonzero `if_nestbymodel` and `if_nestbydim`
 %          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
 %          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
 %          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
 %          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
 %          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
-%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
-%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
-%          - if_frozen (int): 1 to use frozen random numbers, 0 for random each time, <0 to specify a seed; default is 1
+%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%          default is 1
+%
+%          - **Logging and optimization**
 %          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
 %          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
 %          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
@@ -48,7 +56,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
 %
 %              - 'fmin': uses an iterative method to search for the denominator; for each trial denominator, numerator parameters are determined by standard least-squares
-%              - 'oneshot': uses method 2 of Zhengyhou Zhang, Microsoft Research Techical Report MSR-TR-2010-63 (1993, revised 2010); well-suited if the projective transformation is a close fit
+%              - 'oneshot': uses method 2 of Zhengyou Zhang, Microsoft Research Technical Report MSR-TR-2010-63 (1993, revised 2010); well-suited if the projective transformation is a close fit
 %              - 'best' uses both methods and chooses the best-fit
 %
 %     - opts_check (struct): options for consistency checking, with field

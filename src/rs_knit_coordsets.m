@@ -9,7 +9,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % meets these requirements.
 %
 % Args:
-%   data_in (struct): `dataset structure` to be processed, containing n records, with fields
+%   data_in (struct): `dataset structure` to be processed, with fields
 %
 %     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
@@ -19,26 +19,31 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_knit (struct): options for knitting and consistency checking, with fields
 %
-%         - if_log (int): 1 to log progress, 0 to suppress; default is 1
+%         - **Transformations**
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
+%         - **Statistics**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
 %         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %
+%         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
 %         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
 %         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
+%         - **Replotting**
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
-%         - knit_stats_setup (struct): include to replot a previous analysis, oterwise omit; see note below regarding replotting
+%         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
+%         - **Logging and optimization**
+%         - if_log (int): 1 to log progress, 0 to suppress; default is 1
 %         - pcon_init_method (int or char): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
@@ -46,7 +51,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%         - if_frozen (int): `random number control`, used for shuffles and initialization, 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
 %         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
@@ -178,7 +183,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         pcon_init_method='specify' and if_frozen=0. There are two ways that this dependency can happen.
 %
 %             - One is that the number of overlapping stimuli is too small. For example,
-%             at least n points are required to determine a rotation and translation in an n-dimensional space; if there are fewer overlaps, then a consensus will
+%             at least m points are required to determine a rotation and translation in an m-dimensional space; if there are fewer overlaps, then a consensus will
 %             still be found but there are many other consensus datasets that fit equally well.
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to

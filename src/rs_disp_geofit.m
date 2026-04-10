@@ -13,6 +13,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 %
 %     - opts_dgeo (struct): options for display, with fields
 %
+%          - **Plot selection**
 %          - if_nestbymodel_show (int): 1 to show all nested models, -1 to show only maximally nested models, 0 to omit; default is 1 if shuffles are present and 0 if not
 %          - if_nestbydim_show (int): 1 to show nesting by dimension;, 0 to omit; default is 1 if shuffles are present and 0 if not
 %          - if_nestbydim_in_show (int): 1 to show nesting by dimension for input, 0 if not; default is if_nestbydim_show
@@ -21,14 +22,18 @@ function aux_out=rs_disp_geofit(gf,aux)
 %          a model will be shown if at least one of the strings in models_show_select{:} is present in the model type;
 %          e.g., {'_offset','affine'} will select any model whose name contains _offset or affine;
 %          default is [], which displays all models. Caution: {} is empty, [] is empty, '' is empty, but {''} and {[]} are not.
-%          - if_diag (int): 0 to plot goodness of fit for all pairs of input and output dimensions, 1 to only plot diagonal values for input dimension equal to ouptut dimension;
-%          default is 1 if only on-diagonal values are present, otherwise 0
-%          - sig_level (float): significance level for significance flags; default is 0.05
-%          - if_showsig (int): 1 to show significance flags based on original denominator, 2 for shuffled denomiator, 3 for both, 0 to omit; default is 3
 %          - if_nestbydim_showd (int): 1 to show d-values for models nested by dimension, 0 to omit; default is 1
 %          - if_nestbydim_showd_in (int): 1 to show d-values for models nested by input dimension, 0 to omit; default is if_nestbydim_showd
 %          - if_nestbydim_showd_out (int): 1 to show d-values for models nested by output dimension, 0 to omit; default is if_nestbydim_showd
+%          - if_diag (int): 0 to plot goodness of fit for all pairs of input and output dimensions, 1 to only plot diagonal values for input dimension equal to ouptut dimension;
+%          default is 1 if only on-diagonal values are present, otherwise 0
+%
+%          - **Plot components**
+%          - sig_level (float): significance level for significance flags; default is 0.05
+%          - if_showsig (int): 1 to show significance flags based on original denominator, 2 for shuffled denomiator, 3 for both, 0 to omit; default is 3
 %          - if_showquant (int): 1 to show quantile of shuffles for nesting at significance level sig_level, 0 to omit; default is 0
+%
+%          - **Labels and formatting**
 %          - out_label (char): label for first  coordinate of gf{}, default is 'output dim'
 %          - in_label (char): label for second coordinate of gf{}, defaulti is 'input dim'
 %          - dia_label (char): label for both coordinates of gf{}, when diagonal is plotted, default is 'dim'
