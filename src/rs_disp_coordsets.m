@@ -36,6 +36,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
 %   set_select: datasets to show, defaults to [1:length(data_in.da)]
 %
+%
 %   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,max(number of dimensions available in all sets))
 %   coord_group_method: method of selecting coordinates (corresponds to opts_vis.which_dimcombs in psg_visualize)
 %      'all': (default) plot all combinations
