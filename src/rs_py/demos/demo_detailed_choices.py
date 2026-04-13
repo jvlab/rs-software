@@ -12,7 +12,6 @@ Enter 0 to use default values.
 """
 
 import os
-import numpy as np
 
 from src.rs_py.choices import choice_file_detailed as dcf
 from src.rs_py.utils.config import CONFIG

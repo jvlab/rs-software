@@ -4,7 +4,7 @@ CONFIG = {
         'name': 'animals',                # required
         'subject': 'S4',                       # required
         'num_sessions': 10,
-        'stimfile': '../samples/stimuli.txt'    # required
+        'stimfile': 'samples/stimuli.txt'    # required
     },
     'inputs': {
         'detailed_choice': {

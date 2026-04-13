@@ -2,6 +2,7 @@ import os
 import glob
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from scipy.io import savemat
 from scipy.spatial.distance import pdist
 
@@ -39,9 +40,11 @@ def read_out_median_bias(bias_df, dim, rms_ratio, tolerance=0.5, samples=40):
 
 
 def stimulus_names(stimfile):
+    base_dir = Path(__file__).resolve().parent.parent
+    stim_path = (base_dir / stimfile).resolve()
     # each stim on a separate line
     # Read in parameters from config file
-    with open(stimfile, "r") as f:
+    with open(stim_path, "r") as f:
         stimuli = [line.strip() for line in f.readlines()]
         stimuli = [s for s in stimuli if s != ""]  # drop empty lines
         stimuli = sorted(stimuli)  # sort stim
