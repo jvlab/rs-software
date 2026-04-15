@@ -12,6 +12,7 @@ from src.rs_py.choices import choice_file_combined as cfc
 REQUIRED_KEYS = ["input_path", "output_dir"]
 
 
+
 def options_default():
     opt_defaults = deepcopy(CONFIG["inputs"]["detailed_choice"])
 
