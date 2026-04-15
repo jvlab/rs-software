@@ -7,27 +7,21 @@
 %
 % Plot options illustrated:
 %
-%  - choice of dimension and coordinates to plot
-%  - several plots into same figure
-%  - selective datapoint labelling with custom callouts
-%  - custom arrangement of subplots
-%  - rotation of raw data coordinates into a consensus
-%  - combining consensus and individual datasets on same plot
-%  - custom data point symbols
-%  - custom axis labels
 %  - custom labeling of datasets based on subject ID
-%  - connecting corresponding points between plots
-%  - selection of data points to label based on length of stimulus name
+%  - custom interpreter for stimuus labels and legend
+%  - basic plots of rays
 %
 %  See also:  RS_GET_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS.
 %
-%
-nex=4;
 filenames={...
     './samples/animals/image_coords_S3',... %example 1: animal experiment image domain, Warich and Victor, J. Neurosci. 2024
     './samples/bwtextures/bgca3pt_coords_BL_sess01_10',...; %example 2: binary texture experiment, Victor and Conte, VSS 2025
     './samples/bwtextures/bgca3pt_coords_BL_sess01_10',...; %example 3: binary texture experiment, Victor and Conte, VSS 2025, quadratic form model
-    './samples/faces/faces_mpi_en2_fc_coords_MC_sess01_10'}'; %example 4: MPI faces dataset, Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351
+    './samples/faces/faces_mpi_en2_fc_coords_MC_sess01_10',...; %example 4: MPI faces dataset, Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351
+    './samples/material/mater-orig-bw_coords_MC_sess01_10',...; %example 5: materials preliminary data
+    './samples/color/irgb_test25distrib_coords_XX_sess01_10'}; %example 6: color textures, simulated data
+nex=length(filenames);
+%
 aux_in=cell(1,nex);
 data_read=cell(1,nex);
 aux_read=cell(1,nex);
@@ -43,7 +37,8 @@ for iex=1:nex
     aux_in{iex}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1}); %input type 1=data, if_auto=1: non-interactive, if_log=1 to log
     aux_in{iex}.nsets=1;
     if_enh=0;
-    paradigm_type_forced=[];
+    paradigm_type_assert=[];
+    typename_prefix=[];
     opts_disp{iex}=struct;
     opts_disp_enh{iex}=struct;
     switch iex %handle exceptions
@@ -53,7 +48,7 @@ for iex=1:nex
         case 3 % binary textures, quadratic model
             aux_in{iex}.opts_read.input_type=2; %model
             if_enh=1; %also do enhanced plot
-            paradigm_type_forced='btc';
+            paradigm_type_assert='btc';
             opts_disp_enh{iex}.if_points=0;
         case 4 %faces
             if_enh=1;
@@ -61,11 +56,18 @@ for iex=1:nex
             opts_disp{iex}.data_label_interpreter='none';
             opts_disp{iex}.legend_interpreter='none';
             opts_disp_enh{iex}.if_points=0;
+        case 5 %materials
+            typename_prefix='mater-orig-bw-orig-';
+        case 6 %color
+            typename_prefix='random_';
     end
     %read the coordinates and metadata
     [data_read{iex},aux_read{iex}]=rs_get_coordsets(filenames{iex},aux_in{iex});
-    if ~isempty(paradigm_type_forced)
-        data_read{iex}.sets{1}.paradigm_type=paradigm_type_forced;
+    if ~isempty(paradigm_type_assert) %optionally assert paradigm type
+        data_read{iex}.sets{1}.paradigm_type=paradigm_type_assert;
+    end
+    if ~isempty(typename_prefix) %optionally shorten typenames
+        data_read{iex}.sas{1}.typenames=strrep(data_read{iex}.sas{1}.typenames,typename_prefix,'');
     end
     disp(data_read{iex}.sets{1});
     subj_id=data_read{iex}.sets{1}.subj_id;

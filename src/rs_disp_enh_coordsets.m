@@ -194,7 +194,7 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
         opts_disp_nbrs.set_tags='nbrs'; %so that this will not be in legend
         pairs=rays.pairs;
         if aux.opts_disp_enh.if_nbrs_notsameray
-            pair_rayid=rays.whichray(pairs);
+            pair_rayid=reshape(rays.whichray(pairs),size(pairs));
             pair_keep=double(pair_rayid(:,1)~=pair_rayid(:,2)); %note, this will keep if both are NaN
             pair_keep=and(pair_keep,all(pair_rayid~=0,2)); %exclude rays that include the origin
             pairs=pairs(find(pair_keep),:);
