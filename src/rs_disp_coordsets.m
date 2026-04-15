@@ -42,7 +42,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - axis_handles (cell array of handles): handle to axes, one for each subplot, will be created empty or not provided
 %
 %         - **Labels**
-%         - set_labels (char or cell array of char): labels for each record that will appear in legend; defaults is 'set 1', etc.; see note regarding plot formatting
+%         - set_labels (char or cell array of char): labels for each record that will appear in legend; defaults is 'set 1', etc.; cannot be empty; see note regarding plot formatting
 %         - data_label_setsel_method (char): selects which records to label individual points, options are 'all','none', 'first' , 'last', or 'list'; default is 'first'; note that 'all','first', and 'last' apply to the records shown
 %         - data_label_setsel_list (int 1-D array): list of datasets to label, if data_label_setsel_method='list'
 %         - data_label_method (char): selects which data points to label, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'; labels are taken from data_in.sas{k}.typenames; note that 'all','first',and 'last' refer to data points shown
@@ -57,7 +57,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - **Formatting: axis and views**
 %         - axis_font_size (int): font size for axis; default is 8; see note below re customization
 %         - axis_label_font_size (char): font size for axis labels; default is axis_font_size
-%         - axis_label_prefix (char): prefix for axis label, default is 'dim'; see note below regarding customization
+%         - axis_label_prefix (char): prefix for axis label, default is 'coord'; see note below regarding customization
 %         - axis_labels (cell array of char): cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
 %         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard
 %         3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
@@ -502,6 +502,17 @@ for imc=1:length(make_cell)
     mc=make_cell{imc};
     if ~iscell(x.(mc))
         x.(mc)={x.(mc)};
+    end
+end
+%set_labels and set_tags cannot be empty
+for k=1:length(x.set_labels)
+    if isempty(x.set_labels{k})
+        x.set_labels{k}=sprintf('set %1.0f',k);
+    end
+end
+for k=1:length(x.set_tags)
+    if isempty(x.set_tags{k})
+        x.set_tags{k}=sprintf('set %1.0f',k);
     end
 end
 %use set colors for callout colors if requested
