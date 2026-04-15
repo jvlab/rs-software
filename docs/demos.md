@@ -4,6 +4,8 @@ The library contains several demos that show its functionality. They are located
 
 
 - [`Contents`](mfiles/demos/Contents.md) - Representational space software demos
+- [`rs_align_disp_coordsets_demo`](mfiles/demos/rs_align_disp_coordsets_demo.md) - demonstration workflow for display of several datasets and their consensus
+- [`rs_align_disp_enh_coordsets_demo`](mfiles/demos/rs_align_disp_enh_coordsets_demo.md) - demonstrate display of datasets with offsets, rays, and other enhanced plotting options
 - [`rs_disp_coordsets_demo`](mfiles/demos/rs_disp_coordsets_demo.md) - demonstration workflow for display of several datasets and their consensus
 - [`rs_disp_enh_coordsets_demo`](mfiles/demos/rs_disp_enh_coordsets_demo.md) - demonstrate display of datasets with offsets, rays, and other enhanced plotting options
 - [`rs_knit_coordsets_demo`](mfiles/demos/rs_knit_coordsets_demo.md) - demonstrate knitting across datasets with partially overlapping stimuli
