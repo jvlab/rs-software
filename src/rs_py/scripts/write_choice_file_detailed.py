@@ -1,73 +1,117 @@
 """
 To demo the script choice_file_detailed.py
 """
+from __future__ import annotations
 
 import os
-import numpy as np
-from scipy.io import savemat
+import json
+from copy import deepcopy
 
-from src.python_scripts import rs_detailed_choice_file as rs_dcf
 
-if __name__ == '__main__':
-    print('Demo in creating a detailed mat file with triadic comparisons from raw ranking data.\n '
-          'Enter 0 to use default values.\n')
-    input_dir = input("Path to subject-data dir of experiment: ")
-    output_dir = input("Output directory: ")
-    subject = input('Subject ID: ')
-    paradigm = input('Name of the experimental paradigm: ')
-    num_trials = input('Total number of trials in experiment: ')
-    num_sessions = input('Total number of sessions in experiment: ')
-    stimulus_list = input('Stimulus list (optional): ')
-    type_of_judgments = input('triadic or tetradic: ')
+from src.rs_py.utils.config import CONFIG
+from src.rs_py.choices import choice_file_detailed as cfd
 
-    if input_dir == '0':
-        input_dir = '../samples/unprocessed_ranking_judgments/S4'
-        subject = 'S4'
-    if num_trials == '0':
-        num_trials = 222
-    if num_sessions == '0':
-        num_sessions = 10
+REQUIRED_KEYS = ["input_path", "output_dir"]
 
-    pairwise_comparisons, stimulus_set = rs_dcf.process_subject_data(input_dir)
-    comparisons_with_stim_ids = rs_dcf.replace_stimuli_with_ids(pairwise_comparisons, stimulus_set, type_of_judgments)
-    standardized_comparisons = rs_dcf.standardize_comparison_keys(comparisons_with_stim_ids, type_of_judgments)
 
-    total_comparisons = len(standardized_comparisons)
-    responses_col_names = ['trial', 's1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))']
-    # Column mapping for clarity
-    COL_TRIAL = 0
-    COL_S1 = 1
-    COL_S2 = 2
-    COL_S3 = 3
-    COL_S4 = 4
-    COL_JUDGMENT = 5
+def options_default():
+    opt_defaults = deepcopy(CONFIG["inputs"]["detailed_choice"])
 
-    responses = np.zeros((total_comparisons, len(responses_col_names)), dtype=int)
-    stimulus_list_sorted = sorted(list(stimulus_set))
-    stim_ids = list(range(1, len(stimulus_list_sorted) + 1))
+    opt_defaults["metadata"] = {
+        "exp_name": "unknown",
+        "subject": "unknown",
+        "stim_list": [],
+        "num_sessions": None,
+        "num_trials": None,
+        "total_judgments": None,
+        "judgment_type": "triadic"
+    }
+    return opt_defaults
 
-    for i, comp in enumerate(standardized_comparisons):
-        responses[i, COL_TRIAL] = comp['trial']
-        responses[i, COL_S1] = comp['s1']
-        responses[i, COL_S2] = comp['s2']
-        responses[i, COL_S3] = comp['s3']
-        responses[i, COL_S4] = comp['s4']
-        responses[i, COL_JUDGMENT] = comp['judgment']
 
-    results = {
-        'metadata': {
-            'stimulus_list': np.array(stimulus_list_sorted, dtype=object),
-            'stim_ids': np.array(stim_ids, dtype=int),
-            'paradigm': paradigm,
-            'sessions': int(num_sessions),
-            'subject': subject,
-            'total_trials': int(num_trials),
-            'total_comparisons': int(total_comparisons),
-            'comparison_type': type_of_judgments
-        },
-        'response_colnames': responses_col_names,
-        'responses': responses}
+def merge_with_defaults(user_params: dict | None) -> dict:
+    defaults = options_default()
+    params = deepcopy(defaults)
 
-    output_path = os.path.join(output_dir, f"{paradigm}_detailed_choices_{subject}.mat")
-    savemat(output_path, results)
-    print(f"Saved results to {output_path}")
+    if not user_params:
+        return params
+
+    # Merge top-level keys first
+    for key, value in user_params.items():
+        if key != "metadata":
+            params[key] = value
+
+    # Merge metadata separately, if provided
+    user_metadata = user_params.get("metadata")
+    if isinstance(user_metadata, dict):
+        params["metadata"].update(user_metadata)
+    elif user_metadata is not None:
+        raise TypeError("metadata must be a dict if provided")
+
+    return params
+
+
+def validate_required(params: dict):
+    missing = [k for k in REQUIRED_KEYS if k not in params or params[k] in (None, "", [])]
+    if missing:
+        raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
+
+
+def normalize_params(user_params) -> dict:
+    """
+    Accept:
+      - None
+      - dict
+      - JSON string
+    """
+    if user_params is None:
+        return {}
+
+    if isinstance(user_params, dict):
+        return user_params
+
+    if isinstance(user_params, str):
+        user_params = user_params.strip()
+        if not user_params:
+            return {}
+        return json.loads(user_params)
+
+    raise TypeError("user_params must be a dict, JSON string, or None")
+
+
+def run(user_params: dict | None = None):
+    user_params = normalize_params(user_params)
+    params = merge_with_defaults(user_params)
+    validate_required(params)
+
+    input_path = params["input_path"]
+    output_dir = params["output_dir"]
+
+    metadata = params["metadata"]
+    exp_name = metadata["exp_name"]
+    subject = metadata["subject"]
+
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"Input directory not found: {input_path}")
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    print("\nProcessing raw data...")
+    print(f"  Input directory: {input_path}")
+    print(f"  Output directory: {output_dir}")
+    print(f"  Subject: {subject}")
+    print(f"  Experiment: {exp_name}")
+    print(f"  Types of judgments: {metadata['judgment_type']}\n")
+
+    cfd.build_detailed_choice_mat(
+        input_dir=input_path,
+        output_dir=output_dir,
+        exp_name=exp_name,
+        subject=subject,
+        metadata=metadata,
+    )
+
+    print("\nDone.")
+
+
+
