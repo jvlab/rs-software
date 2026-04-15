@@ -49,8 +49,7 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
         return -1 * ll
 
     # calculate noise before continuing
-    total_st_dev = sqrt((args['sigma']['dist'] ** 2) + args['sigma']['compare'] ** 2)
-    args['noise_st_dev'] = total_st_dev
+    args['noise_st_dev'] = args['sigma']
     if start_points is None:
         # if not specified start minimization at coordiates returned by MDS after calculation of win-loss distances
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
@@ -132,8 +131,7 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
         return -1 * ll
 
     # calculate noise before continuing
-    total_st_dev = sqrt((args['sigmas']['dist'] ** 2) + args['sigmas']['compare'] ** 2)
-    args['noise_st_dev'] = total_st_dev
+    args['noise_st_dev'] = args['sigma']
     if start_points is None:
         # if not specified start minimization at coordiates returned by MDS after calculation of win-loss distances
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
@@ -194,8 +192,7 @@ def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=N
         return -1 * ll
 
     # calculate noise before continuing
-    total_st_dev = sqrt((args['sigmas']['dist'] ** 2) + args['sigmas']['compare'] ** 2)
-    args['noise_st_dev'] = total_st_dev
+    args['noise_st_dev'] = args['sigma']
     if start_points is None:
         # if not specified start minimization at coordiates returned by MDS after calculation of win-loss distances
         start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]

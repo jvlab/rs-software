@@ -71,16 +71,30 @@ def read_combined_choices(filepath):
     responses = matfile["responses"]
     metadata = matfile["metadata"]
 
+    colnames = [str(x).strip() for x in matfile["response_colnames"].ravel()]
+    col_idx = {name: i for i, name in enumerate(colnames)}
+
     pairwise_responses = {}
     pairwise_num_repeats = {}
 
     for row in responses:
-        s1, s2, s3, s4 = int(row[0]), int(row[1]), int(row[2]), int(row[3])
-        count = int(row[4])
-        repeats = int(row[5])
+        if "ref" in col_idx:
+            ref = int(row[col_idx["ref"]])
+            s1 = int(row[col_idx["s1"]])
+            s2 = int(row[col_idx["s2"]])
+            key = ((ref - 1, s1 - 1), (ref - 1, s2 - 1))
+            count = int(row[col_idx["N(D(ref, s1) > D(ref, s2))"]])
+            repeats = int(row[col_idx["N_Repeats(D(ref, s1) > D(ref, s2))"]])
 
-        # subtract 1 as MATLAB 1-based indices
-        key = ((s1-1, s2-1), (s3-1, s4-1))
+        else:
+            s1 = int(row[col_idx["s1"]])
+            s2 = int(row[col_idx["s2"]])
+            s3 = int(row[col_idx["s3"]])
+            s4 = int(row[col_idx["s4"]])
+            key = ((s1 - 1, s2 - 1), (s3 - 1, s4 - 1))
+            count = int(row[col_idx["N(D(s1, s2) > D(s3, s4))"]])
+            repeats = int(row[col_idx["N_Repeats(D(s1, s2) > D(s3, s4))"]])
+
         if key not in pairwise_responses:
             pairwise_responses[key] = count
             pairwise_num_repeats[key] = repeats

@@ -8,14 +8,15 @@ from scipy.spatial.distance import pdist
 
 
 def bias_dict(use_all=False):
-    path_to_bias_files = '../bias-estimation/simulation_simple_ranking*.csv'
+    base_dir = Path(__file__).resolve().parent.parent
+    path_to_bias_files = base_dir / 'bias-estimation' / 'simulation_simple_ranking*.csv'
     if use_all:
-        path_to_bias_files2 = '../bias-estimation/*/simulation_simple_ranking*.csv'
+        path_to_bias_files2 = base_dir / 'bias-estimation' / '*' / 'simulation_simple_ranking*.csv'
     else:
         path_to_bias_files2 = ''
     # access simulation results and from these read out bias from RMS dist: sigma.
-    sim_files = glob.glob(path_to_bias_files)
-    sim_files2 = glob.glob(path_to_bias_files2)
+    sim_files = glob.glob(str(path_to_bias_files))
+    sim_files2 = glob.glob(str(path_to_bias_files2))
     sim_files = sim_files + sim_files2
     df = pd.concat([pd.read_csv(f) for f in sim_files])
     return df
@@ -40,11 +41,9 @@ def read_out_median_bias(bias_df, dim, rms_ratio, tolerance=0.5, samples=40):
 
 
 def stimulus_names(stimfile):
-    base_dir = Path(__file__).resolve().parent.parent
-    stim_path = (base_dir / stimfile).resolve()
     # each stim on a separate line
     # Read in parameters from config file
-    with open(stim_path, "r") as f:
+    with open(stimfile, "r") as f:
         stimuli = [line.strip() for line in f.readlines()]
         stimuli = [s for s in stimuli if s != ""]  # drop empty lines
         stimuli = sorted(stimuli)  # sort stim
@@ -75,7 +74,7 @@ def read_in_params():
             stimulus_id_to_name_for_mat(USER_PARAMS['stim_list']))
 
 
-def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim_labels, stim_ids, tolerance=0.5, samples=70):
+def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim_labels, tolerance=0.5, samples=70):
     """
     Edited on Aug 3, 2023
     Add LL and biases too
@@ -118,8 +117,7 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
                         "  based on the RMS distance: sigma\n\n"
                         "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
                         "--------------------------------------------------------------------------")
-    data['stim_labels'] = np.array(stim_labels)
-    data['stim_ids'] = np.array(stim_ids)
+    data['stim_list'] = np.array(stim_labels)
     # ---- save ----
     outpath = os.path.join(outdir, f"{exp}_coords_{subject}.mat")
     savemat(outpath, data)

@@ -12,16 +12,17 @@ Enter 0 to use default values.
 """
 
 import os
-
+from pathlib import Path
 from src.rs_py.choices import choice_file_detailed as dcf
 from src.rs_py.utils.config import CONFIG
 from src.rs_py.utils.helpers import stimulus_names
 
 
 def demo_inputs():
+    base_dir = Path(__file__).resolve().parent.parent
     demo_defaults = CONFIG['inputs']['detailed_choice']
-    demo_defaults['input_path'] = '../samples/unprocessed_ranking_judgments/S4'  # looks for csv files here
-    demo_defaults['output_dir'] = '../samples/choice_files'  # returns detailed mat file here
+    demo_defaults['input_path'] = (base_dir / 'samples/unprocessed_ranking_judgments/S4').resolve() # looks for csv files here
+    demo_defaults['output_dir'] = (base_dir / 'samples/choice_files').resolve()  # returns detailed mat file here
     demo_defaults['comparison_type'] = 'triadic'  # can only handle triadic judgments
     demo_defaults['metadata'] = {
         'stimuli': stimulus_names(CONFIG['dataset']['stimfile']),

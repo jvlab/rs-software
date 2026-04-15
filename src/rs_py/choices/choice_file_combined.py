@@ -93,10 +93,7 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
     print(f"Saved results to {output_path}")
 
 
-def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject, from_triadic=False):
-    """
-        Combine judgments across repeated traidic or tetradic comparisons across all trials
-    """
+def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject):
     data = loadmat(input_mat_path, squeeze_me=True)
 
     responses = data['responses']
@@ -126,7 +123,8 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject, from
             aggregated_responses[key] += row[COL_JUDGMENT]
             comparison_repeats[key] += 1
 
-    comb_response_colnames = ['s1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))', 'N_Repeats(D(s1, s2) > D(s3, s4))']
+    comb_response_colnames = ['s1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))',
+                              'N_Repeats(D(s1, s2) > D(s3, s4))']
     COL_S1 = 0
     COL_S2 = 1
     COL_S3 = 2
@@ -153,6 +151,23 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject, from
     output_path = os.path.join(output_dir, f"{exp_name}_combined_choices_{subject}.mat")
     savemat(output_path, combined_choices)
     print(f"Saved results to {output_path}")
+    return
+
+
+def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
+    """
+        Combine judgments across repeated traidic or tetradic comparisons across all trials
+    """
+    data = loadmat(input_mat_path, squeeze_me=True)
+    colnames = [name.strip() for name in data['response_colnames']]
+    from_triadic = "ref" in colnames
+    if from_triadic:
+        print("Writing combined file in three-column format (ref, s1, s2).")
+        build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name, subject)
+    else:
+        print("Writing combined file in four-column format (s1, s2, s3, s4).")
+        build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject)
+    return
 
 # use
 # if __name__ == '__main__':

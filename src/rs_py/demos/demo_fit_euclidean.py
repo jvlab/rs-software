@@ -6,6 +6,7 @@ import logging
 import random
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from scipy.spatial.distance import pdist
 
 import src.rs_py.model.fit_geometric_models as rs
@@ -20,12 +21,13 @@ def demo_inputs():
     Adjust the default filepath/outdir to wherever your sample materials live.
     """
     user_params, names_to_id, id_to_name = read_in_params()
+    base_dir = Path(__file__).resolve().parent.parent
 
     defaults = {
-        "filepath": "../samples/choice_files/animals_combined_choices_S4.mat",
+        "filepath": (base_dir / "samples/choice_files/animals_combined_choices_S4.mat").resolve(),
         "exp_name": "animals",
         "subject": "S4",
-        "outdir": "../samples/models",
+        "outdir": (base_dir / "samples/models").resolve(),
         'sigma': user_params['inputs']['model_fit']['sigma'],
         'model_dimensions': user_params['inputs']['model_fit']['model_dimensions'],
         'num_stimuli': user_params['inputs']['model_fit']['num_stimuli'],
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     NUM_STIMULI = input("Enter the number of stimuli in experiment: ")
     print("The following arguments are optional. ")
     MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list: ")
-    SIGMA_COMPARE = input("\tEnter a noise level to model error in comparing distances: ")
+    SIGMA = input("\tEnter a noise level to model error in comparing distances: ")
     FILTER_TRIALS = input("\tEnter the maximum number of triadic judgments to use. Enter 0 to use all data.")
     MAX_ITER = input("\tEnter the maximum number of iterations before returning the final model: ")
     LEARN_RATE = input("\tEnter learning rate to use for minimization: ")
@@ -77,15 +79,13 @@ if __name__ == '__main__':
             'tolerance': CONFIG['tolerance'] if _use_default(TOLERANCE) else float(TOLERANCE),
             'minimization': CONFIG['minimization'] if _use_default(MINIM) else MINIM}
 
-    SIGMA_COMPARE = CONFIG['sigma']['compare'] if _use_default(SIGMA_COMPARE) else float(SIGMA_COMPARE)
-    ARGS['sigma'] = {'compare': SIGMA_COMPARE, 'dist': SIGMA_DIST}
+    SIGMA = CONFIG['sigma'] if _use_default(SIGMA) else float(SIGMA)
+    ARGS['sigma'] = SIGMA
     if _use_default(MODEL_DIMENSIONS):
         ARGS['model_dimensions'] = CONFIG['model_dimensions']
     else:
         ARGS['model_dimensions'] = [int(x) for x in MODEL_DIMENSIONS.split(',')]
-    effective_var = 2 * ARGS['sigma']['dist'] ** 2 + ARGS['sigma']['compare'] ** 2
-    effective_sigma = np.sqrt(effective_var)
-    ARGS['noise_st_dev'] = effective_sigma
+    ARGS['noise_st_dev'] = SIGMA
     FILTER_TRIALS = CONFIG['max_trials'] if _use_default(FILTER_TRIALS) else int(FILTER_TRIALS)
 
     print("\n" + "=" * 70)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     print("\nNOISE PARAMETERS")
     print("-" * 70)
-    print(f"Sigma (compare):     {ARGS['sigma']['compare']:.6f}")
+    print(f"Sigma (compare):     {ARGS['sigma']:.6f}")
 
     print("=" * 70)
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
         print("-" * 60)
 
         outfilename = '{}/{}_{}_anchored_points_sigma_{}_dim_{}'.format(
-            ARGS['outdir'], ARGS['subject'], ARGS['exp_name'], effective_sigma, dim
+            ARGS['outdir'], ARGS['subject'], ARGS['exp_name'], ARGS['sigma'], dim
         )
         np.save(outfilename, model_coords)
 
@@ -229,14 +229,12 @@ if __name__ == '__main__':
                               ARGS['subject'],
                               ARGS['exp_name'],
                               'all' if not FILTER_TRIALS else FILTER_TRIALS,
-                              effective_sigma,
+                              ARGS['sigma'],
                               ARGS['num_stimuli']
                               ), index=False)
 
     # write combined file with coords and lls
-    stimuli = metadata['stim_labels']
-    stim_ids = metadata['stim_ids']
-    stim_labels = [stim for _, stim in sorted(zip(stim_ids, stimuli))]
+    stimuli = metadata['stim_list'].squeeze().item()
     lls_by_dim['best'] = ll_best
     lls_by_dim['random'] = ll_random
 
@@ -247,7 +245,6 @@ if __name__ == '__main__':
         model_dimensions=ARGS['model_dimensions'],
         points=coords_by_dim,
         lls=lls_by_dim,
-        stim_labels=stim_labels,
-        stim_ids=stim_ids
+        stim_labels=stimuli
     )
     print("Saved:", mat_path)
