@@ -26,8 +26,8 @@ def demo_inputs():
     demo_defaults['metadata'] = {
         'num_trials': 1110,  # sample had 222 unique trials x 5
         'num_sessions': 10,
-        'subject': CONFIG['dataset']['subject'],    # used to name out file
-        'exp_name': CONFIG['dataset']['name']       # used to name out file
+        'subject': 'S4',    # used to name out file
+        'exp_name': 'animals'       # used to name out file
     }
     return demo_defaults
 

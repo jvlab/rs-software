@@ -4,10 +4,9 @@ base_dir = Path(__file__).resolve().parent.parent
 CONFIG = {
     'verbose': False,
     'dataset': {
-        'name': 'animals',                # required
-        'subject': 'S4',                       # required
-        'num_sessions': 10,
-        'stimfile': (base_dir / 'samples/stimuli.txt').resolve()    # required
+        'name': None,                           # required
+        'subject': None,                        # required
+        'num_sessions': None
     },
     'inputs': {
         'detailed_choice': {
@@ -16,8 +15,16 @@ CONFIG = {
         },
         'combined_choice': {
             'input_path': None,                  # required
-            'output_dir': None,                 # required
-            'comparison_type': 'triadic'
+            'output_dir': None,                  # required
+            'metadata': {
+                'exp_name': 'unknown',
+                'subject': 'unknown',
+                'stim_list': [],
+                'num_sessions': 'unknown',
+                'num_trials': None,
+                'total_judgments': None,
+                'judgment_type': 'triadic'
+            }
         },
         'model_fit': {
             'num_stimuli': 37,
