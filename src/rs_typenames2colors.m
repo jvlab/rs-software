@@ -1,47 +1,85 @@
 function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
-% [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a plotting color and
-% plotting symbol to a list of stimuli. The coordinates are extracted from the strings in typenames yielding
-% cvecs (see below). rgb indicates the axis, and symb indicates the sign
+% [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a display color and
+% symbol to a set of stimulus labels. % Stimulus coordinates are extracted typenames, and mapped  a color as
+% detailed below. Color is determined by the direction from the origin and the symbol is determined by the sign.
 %
-% typenames: a string, or cell array of strings, typically from data.sas{:}.typenames
-% aux.opts_tn2c: 
-%   paradigm_type: paradigm type, typically from data.sets{:}.paradigm_type, if omited, defaults to 'unknown'
-%   paradigms_reserved: paradigm types that are passed through to psg_typenames2colors:
-%     defaults to 'btc','mpi_faces','mater','irgb'
-%   coord_lets: coordinate letters.  Defaults to 'abcdefghij'. Avoid including m, p, z.
-%     Overriding this will remove the default colors, which are assigned to [a-j].
-%   color: a structure, fields labeled by coord_lets, each containing an r,g,b triple
-%     Default values are given below in colors_def.
-%   colors_nomatch: rgb triplet if no color has been assigned to a coordinate, defaults to [0 0 0];
-%   if_color_arith: 1 (default) to enable averaging of colors
-%   symbs_nomatch: plotting symbol to be assigned if no coords can be found, defaults to .
-%   symbs.[z,p,m,pm,mp]: plotting symbol to be assigned, defaults in symbs_def below, if coords are:
-%      z: all zeros
-%      p: at least one positive value, no negatives
-%      m: at least one negative value, no positives
-%      pm: mixed values, positive occurs before negatives (by rows in cvecs)
-%      mp: mixed values, negative occurs before poistives (by rows in cvecs)
 %
-%  rgb: an rgb color triplet
-%  symb: a plotting symbol
-%  cvecs: array of size [length(typenames) length(coord_lets)]
-%    indicating the coordinates as decoded from the typename (NaN if coordinate not found)
+% Args:
+%   typenames (char or cell array of char): one or more stimulus labels; see note below regarding parsing of typenames into coordinates
 %
-%  Typenames should be a cell array of strings, each of which contains one or more segments of a letter that designates
-%  a coordinate axis, typically [a-j] nless modified by opts_tn2c.coord_lets, followed by a numeric quantity.
-%  The numeric quantity consists either of string of digits (assumed to represent a positive quantity),
-%  or a string of digits preceded by p or m (to represent a positive or negative quantity), or z (followed by any numbers), indicating zero.
-%     Decimal points, +, and -  can be used, and the sign is multiplied by the sign designated by a preceding 'p' or 'm'
-%       e.g.:
-%     'bp4 hm36' indicates +4 on the b axis, -36 on the h axis
-%     'z' indicates the origin, i.e., 0 on all coordinate axes
-%     'cm52' indicates -52 on the c axis
-%     'j17dm3' indicates 17 on the j axis, -3 on the c axis
-%     'hm1.4' and 'hm-1.4' indicate -1.4 on the h-axis but 'hm-1.4' indicates +1.4 on the h axis
+%   aux (struct): auxiliary input, may be omited, with field
 %
-% Color assignment details: If ony one axis is present among typenames, then its color is used.  If more than one axis is present
-%   anong the typenames, and color values are given as rgb triples, and if_color_arith=1, then colors are weighted by the magnitudes.
-%   Otherwise the largest color's rgb value will be used, ties broken by order of axes
+%     - opts_tn2c (struct): options controlling mapping of coordinates to colors and symbols, with fields
+%
+%         - **Overall behavior**
+%         - paradigm_type (char): paradigm type, typically from data.sets{:}.paradigm_type; default is 'unknown'
+%         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors';
+%         defaults to {'btc','faces','mater','irgb'}; see note below regarding customization
+%
+%         - **Colors**
+%         - coord_lets (char): letter tokens to be regarded as coordinates; default is 'abcdefghij'; avoid including m, p, z. This is ignored if the paradigm type is one of the reserved paradigms.
+%         Specifying this parameter will remove the default color assignments and thus require specification of color assignments in opts_tn2c.colors
+%         - colors (struct): custom color assignments for the coordinates
+%         in coords_lets, consisting of a structure with fields labeled by
+%         coord_lets, each containing an r,g,b triple; defaults are:
+%
+%             - a: red [1 0 0]
+%             - b: blue [0 0 1]
+%             - c: green [0 1 0]
+%             - d: yellow [1 1 0] * 0.75
+%             - e: purple (red+blue)/2
+%             - f: cyan (blue+green)/2
+%             - g: lime (green+yellow)/2
+%             - h: orange (yellow+red)/2
+%             - i: light gray [1 1 1] * 0.75
+%             - j: dark gray [1 1 1] * 0.3
+%
+%         - colors_nomatch (color specifier): color to be used if coordinates cannot be found; default is [0 0 0];
+%         - if_color_arith (int): 1 to enable averaging of colors if typenames contains several strings, 0 to use color of point that is maximal distance from origin; default is 1
+%
+%         - **Symbols**
+%         - symbs (struct): plotting symbol to be assigned based on signs of coordinates; defaults are:
+%
+%             - z: 'o', if all coordinate are zero
+%             - m: '*', if at least one coordinate is negative and none are positive
+%             - p: '+', if at least one coordinate is positive and none are negative
+%             - pm: 'v' (downward triangle), if coordinates have mixed signs, with a positive occurring first
+%             - mp: '^' (upward triangle), if coordinates have mixed signs, with a negative occurring first
+%
+%         - symbs_nomatch (char): symbol to be assigned if no coords can be found, default is '.'
+%
+% Returns:
+%   rgb (float 1-D array): the assigned rgb color triplet
+%
+%   symb (char): the plotting symbol
+%
+%   cvecs (float 2-D array): decoded coordinates, with each row corresponding to an element of typnames, and consisting of length(coord_lets) coordinate values, with NaN if coordinate is not found
+%
+% Note regarding parsing of typenames into coordinates:
+%     - The typenames argument is a string, or a a cell array of strings; each of which is parsed into coordinates.
+%     - These strings consist of a coordinate axis designator, typically [a-j] ynless modified by opts_tn2c.coord_lets, followed by a numeric quantity.
+%     - The numeric quantity consists either of string of digits (assumed to represent a positive quantity),
+%     or a string of digits preceded by p or m (to represent a positive or negative quantity), or z (followed by any numbers), indicating zero.
+%     - The string can also contain a  decimal point,'+', or '-', intrepreted in the standard fashion.  The sign is multiplied by the sign designated by a preceding 'p' or 'm' if present.
+%     - Examples:
+%
+%         - 'bp4 hm36' indicates +4 on the b axis, -36 on the h axis
+%         - 'z' indicates the origin, i.e., 0 on all coordinate axes
+%         - 'a3b5cm1' indicates (3,5,-1) on the first three axes
+%         - 'cm52' indicates -52 on the c axis
+%         - 'j17dm3' indicates 17 on the j axis, -3 on the d axis
+%         - 'hm1.4' and 'hm-1.4' indicate -1.4 on the h-axis but 'hm-1.4' indicates +1.4 on the h axis
+%
+%     - All of the strings in typenames are parsed in his fashion.  To assign color:
+%
+%         - If ony one axis is present among typenames, then its color is used.
+%         - If more than one axis is present anong the typenames, and color values are given as rgb triples, and if_color_arith=1, then colors are weighted by the magnitudes.
+%         - Otherwise the largest color's rgb value will be used, ties broken by order of axes
+%
+% Note regarding customization:
+%     - The default reserved paradigms can be changed by addig a line defining generic.opts_tn2c.paradigms_reserved in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%
+%  See also: RS_DISP_ENH_COORDSETS.
 %  
 if (nargin<=1)
     aux=struct;

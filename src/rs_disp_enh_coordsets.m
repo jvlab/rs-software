@@ -1,9 +1,8 @@
 function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 % aux_out=rs_disp_enh_coordsets(data_in,aux,rays) displayes one or more
 % views of the coordinates in a `dataset structure`, with graphical enhancements: connecting stimuli along rays, in rings, and nearest neighbors.
-% These enhancements depend on the availability of a `ray structure`, which is ordinarily created by `rs_findrays`.
-% The `ray structure` contains metadata specifying rays (stimuli that lie on an approximate straight line from the origin) and
-% rings (stimuli that lie in a plane at approximately equal distances from the origin).
+% These enhancements depend on the availability of a `ray structure`, which specifyues rays (stimuli that lie on an approximate straight line from the origin) and
+% rings (stimuli that lie in a plane at approximately equal distances from the origin), and nearest-neigbhbor pairs.
 % 
 %
 % Args:
@@ -17,33 +16,33 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %
 %     - opts_disp_enh (struct): options for enhanced display, with fields
 %
-%         - if_points (int): 1 to display each data point, 0 to suppress; default is 1
-%         - if_rays (int): 1 to connect data points along rays, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
+%         - if_points (int): 1 to display each data point, 0 to suppress; default is 1; see notes below regarding points and rays
+%         - if_rays (int): 1 to connect data points along rays, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0; see notes below regarding points and rays
 %         - if_rings (int): 1 to connect data points in rings, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
 %         - if_nbrs (int): 1 to connect nearest-neighbors, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
-%         - if_nbrs_nosameray (int): 1 to suppress nearest-neighbor connections  if both points are on the same ray, or next to origin; 0 to connect all nearest neighbors; default is 1
+%         - if_nbrs_notsameray (int): 1 to suppress nearest-neighbor connections  if both points are on the same ray, or next to origin; 0 to connect all nearest neighbors; default is 1
 %
-%      - opts_disp (struct): options for basic display; see `rs_disp_coordsets` for details. Most fields are passed directly to `rs_disp_coordsets`, with unspecified fields in opts_disp filled with the defaults of `rs_disp_coordsets`.
-%      The following field values are inserted based on the fields of opts_disp_enh and the graphical element:
+%      - opts_tn2c (struct): controls how stimulus labels (data_in.sas{:}.typenames) are mapped to colors and symbols; can be empty, see `rs_typenames2colors` for details
+% 
+%      - opts_disp (struct): controls basic display; see `rs_disp_coordsets` for details. Most fields are of opts_disp are passed directly to `rs_disp_coordsets`, with unspecified fields in opts_disp filled with the defaults of `rs_disp_coordsets`. The following field values are inserted into opts_disp based on the fields of opts_disp_enh and the graphical element:
 %
 % ***
-%                     element:           points        rays          rings      neighbors
-%        data_show_method:              'all' [1]     'list'        'list'       'list' 
-%        data_label_method:             'none'[1]     'last'        'none'[1]    'none'[1]
-%        connect_data_method:                         'list'        'list'[1]    'list'
-%        connect_data_linestyles        'none'[1]   '--' or '-'[2]   ':'   [1]    '-'   [1]
+%              element                    points          rays         rings      neighbors
+%        -------------------             --------    -------------   --------   ------------
+%        data_show_method               'all' [1]     'list'        'list'       'list' 
+%        data_label_method              'none'[1]     'last'        'none'[1]    'none'[1]
+%        connect_data_method                          'list'        'list'[1]    'list'
+%        connect_data_linestyles        'none'[1]   '--' or '-'[2]   ':'  [1]    '-'   [1]
 %        set_markers                                   [3]  '       'none'[1]    'none'[1]
 %        set_tags                                     'rays'        'rings'      'nbrs'
 %        callout_amount                               0.5[1]
 %        set_colors                                   per ray[3]
 %        callout_colors                               per ray[1]
-%       [1]:if a value is supplied value in aux.opts_disp, it is not overridden
-%       [2]:line style depends on whether the ray is negative or positive
-%       [3]:set marker determined by `rs_typenames2colors` 
+%       [1]: if a value is supplied value in aux.opts_disp, it is not overridden
+%       [2]: line style depends on whether the ray is negative or positive
+%       [3]: set marker determined by `rs_typenames2colors` 
 %
-%     - opts_tn2c (struct): options for customizing how stimulus names are mapped to colors and symbols, can be empty, see rs_typenames2colors for details
-% 
-%     - rays (struct): a standard ray structure, containing metadata for rays and rings
+%   rays (struct): a `ray structure`, ordinarily created by `rs_findrays`. If empty or omitted the enhanced graphical elements will not be displayed.
 %
 % Returns:
 %   aux_out: auxiliary outputs and parameter values used
@@ -56,9 +55,9 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %     - rings (cell array of struct): aux_out from `rs_disp_coordsets` for display of each ring; omitted if no rings are displayed or opts_disp_enh.if_rings=0
 %     - nbrs (struct): aux_out from `rs_disp_coordsets` for connections between neighbors; omitted if no connections are displayed or opts_disp_enh.if_nbrs=0
 %
-% Notes:
+% Note regarding points and rays:
 %     - Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
-%     - If opts_disp_enh.if_rays=1 and opts_disp_enh.if_points=0, legend is the ray label; otherwise legend is set label.
+%     - Legend behavior: If opts_disp_enh.if_rays=1 and opts_disp_enh.if_points=0, legend is the ray label; otherwise legend is set label.
 %
 %  See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS, RS_FINDRAYS, RS_PLOT_STYLE.
 %
@@ -69,9 +68,9 @@ if (nargin<=2)
     rays=struct;
 end
 %
-aux=filldefault(aux,'opts_disp',struct());
 aux=filldefault(aux,'opts_disp_enh',struct());
 aux=filldefault(aux,'opts_tn2c',struct());
+aux=filldefault(aux,'opts_disp',struct());
 %
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_points',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rays',1);
