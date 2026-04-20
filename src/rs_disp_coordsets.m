@@ -1,7 +1,7 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinates in a `dataset structure`
+% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of pairs or triplets of coordinates in a `dataset structure`
 %
-% Multiple views can be plotted in subplots of the same figure. This is particularly helpful if the dimensionality
+% Multiple views can be plotted, one eachin a subplot of the same figure. This is particularly helpful if the dimensionality
 % of the coordinates is high:  each subplot could show a different combination of two or three coordinates.
 % Plots of two coordinates will produce a planar view; plots of three coordinates will produce an isometric 3D view. Subplots are left in the 'hold on' state.
 %
@@ -18,7 +18,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %         - **Data selection**
 %         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
-%         - dim_select (int): dimension to show; i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
+%         - dim_select (int): dimension to show (>=2); i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
 %         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available)
 %         - coord_group_method (char): method of selecting coordinates
 %
@@ -31,7 +31,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the
 %             first, {1,4,5} in the second, {1,6,7} in the third
 %
-%         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows of an integer array; each row will generate one subplot
+%         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
 %         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);
 %
