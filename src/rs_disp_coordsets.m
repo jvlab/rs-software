@@ -1,5 +1,5 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinaates in a `dataset structure`
+% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinates in a `dataset structure`
 %
 % Multiple views can be plotted in subplots of the same figure. This is particularly helpful if the dimensionality
 % of the coordinates is high:  each subplot could show a different combination of two or three coordinates.
@@ -159,7 +159,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     - The data points of each record are, by default, not interconnected. This can be changed with the 'connect_data*' options.
 %     - The data points between records are, by default, not interconnected . This can be changed with the 'connect_sets*' options.
 %
-%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
+%  See also: RS_DISP_ENH_COORDSETS, RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
 %
 if (nargin<=1)
     aux=struct;

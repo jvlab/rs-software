@@ -1,54 +1,72 @@
 function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
-% function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
-%
-% data_in: a standard dataset structure, with fields ds, sas, sets
-%
-% aux.opts_disp_enh: controls which enhanced features are added to plots
-%   if_points: 1 (default) to display each data point
-%   if_rays:   1 (default) to display rays, set to zero if rays is not present or empty
-%   if_rings:  1 to display rings (default: 0), set to zero if rays is not present or empty
-%   if_nbrs:   1 (default) to connect nearest-neighbors
-%   if_nbrs_nosameray: 1 (default) to suppress nearest-neighbor connections 
-%      if both points are on the same ray, or next to origin, and rays are displayed
-%
-% aux.opts_disp: these fields are starting points for customization for enhanced plots
-%  fields not specified are passed through to rs_disp_coordsets
-%                                  points     rays        rings    neighbors
-%    data_show_method:             'all' *    'list'     'list'     'list' 
-%    data_label_method:            'none'*   'last'      'none'*    'none'*
-%    data_connect_method:                    'list'      'list'*    'list'
-%    connect_data_linestyles       'none'* '--' or '-'#    ': '*    '-'*
-%    set_markers                                @  '      none'*    'none'*
-%    set_tags                                 'rays'     'rings'    'nbrs'
-%    callout_amount                            0.5*
-%    set_colors                              per ray@
-%    callout_colors                          per ray*
-%   *: an explicitly supplied value in aux.opts_disp is NOT overridden
-%   #:line style depends on whether the ray is negative or positive
-%   @:set marker determined by rs_typenames2colors
+% aux_out=rs_disp_enh_coordsets(data_in,aux,rays) displayes one or more
+% views of the coordinates in a `dataset structure`, with graphical enhancements: connecting stimuli along rays, in rings, and nearest neighbors.
+% These enhancements depend on the availability of a `ray structure`, which is ordinarily created by `rs_findrays`.
+% The `ray structure` contains metadata specifying rays (stimuli that lie on an approximate straight line from the origin) and
+% rings (stimuli that lie in a plane at approximately equal distances from the origin).
 % 
-% aux.opts_tn2c: options for customizing how stimulus names are mapped to colors and symbols, can be empty,
-%    see rs_typenames2colors for details
-% 
-% rays: a standard ray structure, containing metadata for rays and rings
 %
-% aux_out:
-%     opts_disp: values of aux.opts_disp as used
-%     opts_disp_enh: values of aux.opts_disp_enh as used
-%     opts_t2nc: values of aux.opts_t2nc as used
-%     points: aux_out rs_disp_coordsets for plotting points, omitted if aux.opts_disp_enh.if_points=0
-%     rays{iray,isign}: aux_out returned by rs_disp_coordsets for ray iray, (isign=1: neg,isign=2, pos), omitted if no rays are plotted, or if aux.opts_disp_enh.if_rays=0
-%     rings{iring}: aux_out returned by rs_disp_coordsets for ring iring, omitted if no rings are plotted or aux.opts_disp_enh.if_rings=0
-%     nbrs: aux_out returned by rs_disp_coordsets for connectiong neighbors, omitted if no connections are plotted or aux.opts_disp_enh.if_nbrs=0
+% Args:
+%   data_in (struct): `dataset structure` to be processed, with fields
+%
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+%
+%   aux (struct): auxiliary inputs, may be empty, with fields
+%
+%     - opts_disp_enh (struct): options for enhanced display, with fields
+%
+%         - if_points (int): 1 to display each data point, 0 to suppress; default is 1
+%         - if_rays (int): 1 to connect data points along rays, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
+%         - if_rings (int): 1 to connect data points in rings, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
+%         - if_nbrs (int): 1 to connect nearest-neighbors, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
+%         - if_nbrs_nosameray (int): 1 to suppress nearest-neighbor connections  if both points are on the same ray, or next to origin; 0 to connect all nearest neighbors; default is 1
+%
+%      - opts_disp (struct): options for basic display; see `rs_disp_coordsets` for details. Most fields are passed directly to `rs_disp_coordsets`, with unspecified fields in opts_disp filled with the defaults of `rs_disp_coordsets`.
+%      The following field values are inserted based on the fields of opts_disp_enh and the graphical element:
+%
+% ***
+%                     element:           points        rays          rings      neighbors
+%        data_show_method:              'all' [1]     'list'        'list'       'list' 
+%        data_label_method:             'none'[1]     'last'        'none'[1]    'none'[1]
+%        connect_data_method:                         'list'        'list'[1]    'list'
+%        connect_data_linestyles        'none'[1]   '--' or '-'[2]   ':'   [1]    '-'   [1]
+%        set_markers                                   [3]  '       'none'[1]    'none'[1]
+%        set_tags                                     'rays'        'rings'      'nbrs'
+%        callout_amount                               0.5[1]
+%        set_colors                                   per ray[3]
+%        callout_colors                               per ray[1]
+%       [1]:if a value is supplied value in aux.opts_disp, it is not overridden
+%       [2]:line style depends on whether the ray is negative or positive
+%       [3]:set marker determined by `rs_typenames2colors` 
+%
+%     - opts_tn2c (struct): options for customizing how stimulus names are mapped to colors and symbols, can be empty, see rs_typenames2colors for details
+% 
+%     - rays (struct): a standard ray structure, containing metadata for rays and rings
+%
+% Returns:
+%   aux_out: auxiliary outputs and parameter values used
+%
+%     - opts_disp (struct): aux.opts_disp, with defaults and overrides filled in
+%     - opts_disp_enh (struct): aux.opts_disp_enh, with defaults filled in
+%     - opts_t2nc (struct): aux.opts_t2nc, with defaults filled in
+%     - points (struct): aux_out from `rs_disp_coordsets` for display of points; omitted if opts_disp_enh.if_points=0
+%     - rays (cell array of struct): aux_out from `rs_disp_coordsets` for display of each ray; rays{:,isign} corresponds to display of each ray in the negative direction (isign=1) and the positive direction, (isign=2); omitted if opts_disp_enh.if_rays=0;
+%     - rings (cell array of struct): aux_out from `rs_disp_coordsets` for display of each ring; omitted if no rings are displayed or opts_disp_enh.if_rings=0
+%     - nbrs (struct): aux_out from `rs_disp_coordsets` for connections between neighbors; omitted if no connections are displayed or opts_disp_enh.if_nbrs=0
 %
 % Notes:
-%   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
-%   If if_rays=1 and if_points=0, legend is the ray label.  Otherwise legend is set label.
+%     - Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
+%     - If opts_disp_enh.if_rays=1 and opts_disp_enh.if_points=0, legend is the ray label; otherwise legend is set label.
 %
-%   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS, RS_FINDRAYS.
+%  See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS, RS_FINDRAYS, RS_PLOT_STYLE.
 %
+if (nargin<=1)
+    aux=struct;
+end
 if (nargin<=2)
-    rays=[];
+    rays=struct;
 end
 %
 aux=filldefault(aux,'opts_disp',struct());

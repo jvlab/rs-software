@@ -20,6 +20,13 @@ This contains three components:  a `coordinate structure`, a `stimulus metadata 
 
 ## Ray structure
 
+This contains metadata specifying rays (stimuli that lie on an approximate straight line from the origin) and
+rings (stimuli that lie in a plane at approximate equal distances from the origin).
+
+Options
+
+created by rs_findrays
+
 ...
 ## Transformation structure 
 

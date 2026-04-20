@@ -1,7 +1,9 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% `rs_concat_coordsets` can be used to combine several one-record `dataset structures` into a single `dataset structure`.
+% This is the preferred method for bringing external datasets into the rs package, to create a `dataset structure` with one record.
+% If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
+% combine several one-record `dataset structures` created here into a single `dataset structure`.
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
@@ -23,7 +25,7 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %              - 'ones': type_coords=ones(nstims,1)
 %              - 'eye': type_coords=eye(nstims)
 %
-%          - type (char): ovrall category of coordinates; default is 'data'; can use 'model' for coordinates originating in a computational model
+%          - type (char): overall category of coordinates; default is 'data'; alternatively, 'model' for coordinates originating in a computational model
 %          - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
 %          - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
 %          - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
@@ -56,13 +58,13 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
 % Note regarding customization:
-%    The default values of these parameters can be changed by editing 'rs_aux_defaults_define`, running it 
+%    The default values of these parameters can be changed by editing `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm
-%    type to 'cars', add the line generic.opts_import.paradigm_type='cars' [??how to indicate code] 
+%    type to 'cars', add the line generic.opts_import.paradigm_type='cars'
 %    to the section in which generic.opts_import fields are defined.
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
+%  See also: RS_CONCAT_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
 %
 if (nargin<=1)
     aux=struct;
