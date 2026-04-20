@@ -11,17 +11,12 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %     - opts_tn2c (struct): options controlling mapping of coordinates to colors and symbols, with fields
 %
-%         - **Overall behavior**
-%         - paradigm_type (char): paradigm type, typically from data.sets{:}.paradigm_type; default is 'unknown'
-%         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors';
-%         defaults to {'btc','faces','mater','irgb'}; see note below regarding customization
-%
 %         - **Colors**
 %         - coord_lets (char): letter tokens to be regarded as coordinates; default is 'abcdefghij'; avoid including m, p, z. This is ignored if the paradigm type is one of the reserved paradigms.
 %         Specifying this parameter will remove the default color assignments and thus require specification of color assignments in opts_tn2c.colors
 %         - colors (struct): custom color assignments for the coordinates
 %         in coords_lets, consisting of a structure with fields labeled by
-%         coord_lets, each containing an r,g,b triple; defaults are:
+%         coord_lets, each containing an r,g,b triple or other valid color designator; defaults are:
 %
 %             - a: red [1 0 0]
 %             - b: blue [0 0 1]
@@ -48,6 +43,10 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %         - symbs_nomatch (char): symbol to be assigned if no coords can be found, default is '.'
 %
+%         - **Overall behavior**
+%         - paradigm_type (char): paradigm type, typically from data.sets{:}.paradigm_type; default is 'unknown', which will result in colors and symbols assigned as described here.
+%         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors' defaults to {'btc','faces','mater','irgb'}; see note below regarding reserved paradigm types.
+%
 % Returns:
 %   rgb (float 1-D array): the assigned rgb color triplet
 %
@@ -61,23 +60,26 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %     - The numeric quantity consists either of string of digits (assumed to represent a positive quantity),
 %     or a string of digits preceded by p or m (to represent a positive or negative quantity), or z (followed by any numbers), indicating zero.
 %     - The string can also contain a  decimal point,'+', or '-', intrepreted in the standard fashion.  The sign is multiplied by the sign designated by a preceding 'p' or 'm' if present.
-%     - Examples:
+%     - Examples, assuning that coords_lets has the default value of 'abcdefghij':
 %
-%         - 'bp4 hm36' indicates +4 on the b axis, -36 on the h axis
 %         - 'z' indicates the origin, i.e., 0 on all coordinate axes
 %         - 'a3b5cm1' indicates (3,5,-1) on the first three axes
-%         - 'cm52' indicates -52 on the c axis
-%         - 'j17dm3' indicates 17 on the j axis, -3 on the d axis
-%         - 'hm1.4' and 'hm-1.4' indicate -1.4 on the h-axis but 'hm-1.4' indicates +1.4 on the h axis
+%         - 'cm52' indicates -52 on the c (third) axis
+%         - 'bp4 hm36' indicates +4 on the b (second) axis, -36 on the h (eighth) axis
+%         - 'j17dm3' indicates  -3 on the d (fourth) axis, 17 on the j (tenth) axis,
+%         - 'am1.4' and 'am-1.4' indicate -1.4 on the a (first) axis but 'am-1.4' indicates +1.4 on the a axis
 %
 %     - All of the strings in typenames are parsed in his fashion.  To assign color:
 %
 %         - If ony one axis is present among typenames, then its color is used.
 %         - If more than one axis is present anong the typenames, and color values are given as rgb triples, and if_color_arith=1, then colors are weighted by the magnitudes.
-%         - Otherwise the largest color's rgb value will be used, ties broken by order of axes
+%         - Otherwise the color of the axis that has the largest magnitude coordinate will be used, with ties broken by order of axes.
 %
-% Note regarding customization:
-%     - The default reserved paradigms can be changed by addig a line defining generic.opts_tn2c.paradigms_reserved in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+% Note regarding reserved paradigm types:
+%     - For certain reserved paradigm types, color and symbol assignments deviate from the behavior described here and are controlled by psg_typenames2colors.
+%         - 'btc': this refers to `binary texture cooordinates`.
+%         - 'faces': this refers to face stimuli.
+%     - The default reserved paradigms can be changed by adding a line defining generic.opts_tn2c.paradigms_reserved in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
 %  See also: RS_DISP_ENH_COORDSETS.
 %  
@@ -88,7 +90,7 @@ end
 %set up sub-structure options
 aux=filldefault(aux,'opts_tn2c',struct); %options for this module (psg_template)
 %
-aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','faces','mater','irgb'});
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','faces'});
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigm_type','unknown');
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors',struct);
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors_nomatch',[0 0 0]);
