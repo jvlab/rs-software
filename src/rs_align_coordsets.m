@@ -95,7 +95,7 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     It is only created if there is a valid set of stimulus coordinates.  
 %
 % Note regarding labels for binary texture coordinates:
-%     - if_btcremz is only relevant for datasets with binary texture coordinate metadata, and controls whether an attempt should be made to simplify fields sas{k}.spec_labels and sas{k}.typenames
+%     - if_btcremz is only relevant for `binary texture domain` metadata, and controls whether an attempt should be made to simplify fields sas{k}.spec_labels and sas{k}.typenames
 %     prior to matching and alignmnent.  If 1 (default), coordinates that are specified as zero are removed, provided
 %     that this does not change the stimulus after maximum-entropy extension.  For example, in data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'
 %     the corresponding entry in data_in.sas{k}.typenames, 'bm0000cm0400' becomes 'cm0400'.  An

@@ -1,8 +1,7 @@
 function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 % [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux) is a utility that assigns a display color and
-% symbol to a set of stimulus labels. % Stimulus coordinates are extracted typenames, and mapped  a color as
-% detailed below. Color is determined by the direction from the origin and the symbol is determined by the sign.
-%
+% symbol to a set of stimulus labels. Stimulus coordinates are extracted from 'typenames', and mapped to a color and plotting symbol
+% detailed below. The color is determined by the direction from the origin and the symbol is determined by the sign(s) of the coordinates.
 %
 % Args:
 %   typenames (char or cell array of char): one or more stimulus labels; see note below regarding parsing of typenames into coordinates
@@ -45,7 +44,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %         - **Overall behavior**
 %         - paradigm_type (char): paradigm type, typically from data.sets{:}.paradigm_type; default is 'unknown', which will result in colors and symbols assigned as described here.
-%         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors' defaults to {'btc','faces','mater','irgb'}; see note below regarding reserved paradigm types.
+%         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors' defaults to {'btc','faces'}; see note below regarding reserved paradigm types.
 %
 % Returns:
 %   rgb (float 1-D array): the assigned rgb color triplet
