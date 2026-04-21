@@ -54,6 +54,10 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %   cvecs (float 2-D array): decoded coordinates, with each row corresponding to an element of typnames, and consisting of length(coord_lets) coordinate values, with NaN if coordinate is not found
 %
+%   aux_out: auxiliary outputs and parameter values used
+%
+%     - opts_tn2c (struct): aux.opts_tn2c, with defaults filled in
+%
 % Note regarding parsing of typenames into coordinates:
 %     - The typenames argument is a string, or a a cell array of strings; each of which is parsed into coordinates.
 %     - These strings consist of a coordinate axis designator, typically [a-j] ynless modified by opts_tn2c.coord_lets, followed by a numeric quantity.
@@ -77,9 +81,23 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 % Note regarding reserved paradigm types:
 %     - For certain reserved paradigm types, color and symbol assignments deviate from the behavior described here and are controlled by psg_typenames2colors.
-%         - 'btc': this refers to `binary texture cooordinates`.
-%         - 'faces': this refers to face stimuli.
-%     - The default reserved paradigms can be changed by adding a line defining generic.opts_tn2c.paradigms_reserved in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%     - paradigm_type='btc': this refers to stimuli from the `binary texture domain` . Symbols are assigned as described above. 'cvecs' are decoded based on
+%     coord_lets='gbcdetuvwa', and typename strings such as 'gm0461' are interpreted as a value of 0.461 on the g (first) axis. Colors are assigned to coordinates as follows:
+%
+%         - g (gamma)->gray
+%         - b,c (cardinal beta) -> dark and light blue
+%         - d,e (diagonal beta) -> dark and light green
+%         - t,u,v,w (theta): -> yellows and browns
+%         - a (alpha) -> red
+%
+%      - paradigm_type='faces': this refers to stimuli from the `MPI faces domain`. Strings in typenames should correspond to file names from
+%      the MPI archive, which are of the form '132_y_f_n_a' ('[individual]_[age]_[gender]_[exemplar]'). Colors and symbols are assigned as below; 'cvecs' is returned empty.
+%
+%          - gender: f->red [1 0 0], m->blue [0 0 1]
+%          - age: y,m,o -> dark, medium, light (blend gender color with [.75 1 .75], weighing gender color by 0.4 (y), 0.7 (m), or 1.0(o))
+%          - expression: neutral-> 'x' for set A, '+' for set b; angry->'*', sad -> 'v' (downward triangle), happy -> '^' (upward triangle), fright-> 'h' (hexagon), disgust -> 'p' (pentagon)
+%
+%     - The list of default reserved paradigms can be changed by adding a line defining generic.opts_tn2c.paradigms_reserved in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
 %  See also: RS_DISP_ENH_COORDSETS.
 %  
@@ -88,7 +106,7 @@ if (nargin<=1)
 end
 %
 %set up sub-structure options
-aux=filldefault(aux,'opts_tn2c',struct); %options for this module (psg_template)
+aux=filldefault(aux,'opts_tn2c',struct); %options for this module
 %
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','faces'});
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigm_type','unknown');

@@ -120,6 +120,25 @@ Provide pointers to literature
 
 ...
 
+## Animal domain
+Very rough:
+
+Briefly introduce the animal domain
+Provide pointers to J Neurosci
+
+...
+
+## MPI faces domain
+Very rough:
+
+Introduce the coordinates
+
+%Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men:
+ % Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.
+
+...
+
+
 ## Setup metadata
 for Binary texture domain
 or if configured

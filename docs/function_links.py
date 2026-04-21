@@ -39,8 +39,13 @@ OWN_DATATYPES = {
     "ray structure":   	            "data_structures/#ray-structure",
     "ray structures":               "data_structures/#ray-structure",
     "stimulus coordinates":         "data_structures/#stimulus-coordinates",
-    "binary texture domain":        "data_structures/#binary-texture-domain",
     "setup metadata":	            "data structures/#setup-metadata",
+    "binary texture domain":        "data_structures/#binary-texture-domain",
+    "binary texture":               "data_structures/#binary-texture-domain",
+    "binary textures":              "data_structures/#binary-texture-domain",
+    "animal domain":                "data_structures/#animal-domain",
+    "MPI faces domain":             "data_structures/#MPI-faces-domain",
+    "MPI faces":                    "data_structures/#MPI-faces-domain",
     # add more as needed...
 }
 
