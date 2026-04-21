@@ -35,7 +35,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %         - **Symbols**
 %         - symbs (struct): plotting symbol to be assigned based on signs of coordinates; defaults are:
 %
-%             - z: 'o', if all coordinate are zero
+%             - z: 'o', if all coordinates are zero
 %             - m: '*', if at least one coordinate is negative and none are positive
 %             - p: '+', if at least one coordinate is positive and none are negative
 %             - pm: 'v' (downward triangle), if coordinates have mixed signs, with a positive occurring first
