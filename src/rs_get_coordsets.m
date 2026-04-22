@@ -2,6 +2,12 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 % [data_out,aux_out]=rs_get_coordsets(fullnames,aux): get one or more sets of coordinates and metadata
 %    handles experimental data and (for binary texture experiments) quadratic form models
 % 
+% This is the preferred method for bringing multiple coordinate sets derived from similarity judgements via [??how to refer to Python output]
+% into `dataset structures` suitable for display and geometrical analysis.
+% This routine also creates `dataset structures` from quadratic form models and supports symmetry-based augmentation of datasets in the `binary texture domain`.
+% For single coordinate sets, if these capabilities are not needed, `rs_get_coordsets` may also be used.
+% To import coordinates generated externally, use `rs_import_coordsets`.
+%
 % Input:
 % fullnames: a single file name (with path), or a cell array of file names; if empty, it will be requested interactively
 %      File names must contain the string '_coords'.  Setup file names are automatically generated.
