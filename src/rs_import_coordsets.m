@@ -13,30 +13,30 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typename..., and type_coords... are used
 %     to create the `stimulus metadata structure`; fields type, paradigm_..., extra, subj_id..., and label... are used to create the `set metadata structure`.  Any or all can be omitted.
 %
-%          - nstims (int): number of stimuli; default determined from first non-empty entry in coords
-%          - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
-%          - typename_prefix (char): prefix auto-generated stimulus names; default is 'type_'; see note below regarding customization
-%          - typename_ndigits (int): number of digits in suffix for auto-generated stimulus names; default is 2; see note below regarding customization
-%          - type_coords (float 2-d array): array with nstims rows specifing the `stimulus coordinates`; default is determined by opts_import.type_coords_def
-%          - type_coords_def (char): method for auto-generation of `stimulus coordinates`; default is 'none'; see note below regarding customization
+%         - nstims (int): number of stimuli; default determined from first non-empty entry in coords
+%         - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
+%         - typename_prefix (char): prefix auto-generated stimulus names; default is 'type_'; see note below regarding customization
+%         - typename_ndigits (int): number of digits in suffix for auto-generated stimulus names; default is 2; see note below regarding customization
+%         - type_coords (float 2-d array): array with nstims rows specifing the `stimulus coordinates`; default is determined by opts_import.type_coords_def
+%         - type_coords_def (char): method for auto-generation of `stimulus coordinates`; default is 'none'; see note below regarding customization
 %
-%              - 'none': type_coords=[]
-%              - 'zeros': type_coords=zeros(nstims,1)
-%              - 'ones': type_coords=ones(nstims,1)
-%              - 'eye': type_coords=eye(nstims)
+%             - 'none': type_coords=[]
+%             - 'zeros': type_coords=zeros(nstims,1)
+%             - 'ones': type_coords=ones(nstims,1)
+%             - 'eye': type_coords=eye(nstims)
 %
-%          - type (char): overall category of coordinates; default is 'data'; alternatively, 'model' for coordinates originating in a computational model
-%          - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
-%          - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
-%          - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
-%          - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
-%          - extra (char): free-form identifier; default is []; see note below regarding customization
-%          - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
-%          - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
+%         - type (char): overall category of coordinates; default is 'data'; alternatively, 'model' for coordinates originating in a computational model
+%         - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
+%         - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
+%         - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
+%         - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
+%         - extra (char): free-form identifier; default is []; see note below regarding customization
+%         - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
+%         - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
 %
 %     - opts_check: options for consistency checking, with field
 %
-%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
 % Returns:
 %   data_out (struct): `dataset structure` with one record, and fields

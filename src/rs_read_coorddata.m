@@ -1,30 +1,29 @@
 function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
-% [data_out,aux_out]=rs_read_coorddata(fullname,aux) get a single set of coordinates and metadata
-% and, if stimulus coordinate data are available, creates a ray structure
+% [data_out,aux_out]=rs_read_coorddata(fullname,aux) reads a `coordinate file` into a `datawset structure` with one record
+% and, if stimulus coordinate data are available, creates a ray `structure`
 %
-% Input:
-% fullname: a single file name (with path); if empty, it will be requested interactively.  String or singleton cell array
-%      File names must contain the string '_coords'. The associated setup file, if needed, is automatically generated.
-% aux: structure of auxiliary inputs
-%   aux.opts_read:
-%     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
-%     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
-%     if_log: 1 (default) to log (0 still shows warnings)
-%     if_auto: 1 not to ask confirmations, defaults to 0
-%    The need for a setup file is determined as follows:
-%     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
-%     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
-%     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
-%     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
-%     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
-%     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
-%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup (these are in samples/animals)
-%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed (these are the in samples/bwtextures, type class is 'btc')
-%    For other fields, see see psg_read_coorddata.
-%    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
-%      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
-%    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
-%      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
+% This is the preferred method for bringing a single coordinate set derived from similarity judgements via [??how to refer to Python output]
+% into `dataset structures` suitable for display and geometrical analysis.
+% For multiple coordinate sets from the same experimental paradigm, use `rs_get_coordsets`, or combine multiple `dataset structures` 
+% into a single `dataset structure` with `rs_concat_coordsets`.
+% To import coordinates generated externally, use `rs_import_coordsets`.
+%
+% Args:
+%   fullname (char or singleton char array): full file name with path; if empty, it will be requested interactively. File names must contain the string '_coords'. See note below regarding setup files.
+%
+%   aux (struct): a structure, can be omitted, with fields 
+%
+%     - opts_read (struct): can be omitted, with fields listed below
+%     - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1
+%     - if_log (int): 1 to log progress, 0 to omit; default is 1
+%     - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0
+%     - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
+%     - setup_fullname_def (char): prompt for setup file name; see notes below regarding setup files and customization 
+%     - domain_list_def (cell array): paradigm names for generic domain experiments; default is {'texture','intermediate_texture','intermediate_object','image','word'}; see note below regarding customization
+%     - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is '9';see note below regarding customization
+%     - permutes (struct): typically omitted; each field is a suggested ray permutation for the corresponding paradigm name, e.g., permutes.bgca=[2 1 3 4] specifies a reordering of the rays for paradigm 'bgca'
+%     - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1;see note below regarding customization
+%     - if_uselocal (int): 0 to use options in rs_aux_defaults; default; 1 is reserved for maintenance
 %
 %  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
 %
@@ -61,9 +60,32 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %      aux_out.rayss{1}: ray structure
 %      
-%  06Nov25: check internal consistency of data files with rs_check_coordsets.
+% Note regarding setup files:
+%      - The name of the associated setup file, if needed, is automatically generated.
+%    The need for a setup file is determined as follows:
+%     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
+%     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
+%     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
+%     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
+%     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
+%     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
+%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup (these are in samples/animals)
+%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed (these are the in samples/bwtextures, type class is 'btc')
+%    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
+%      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
+%    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
+%      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_CHECK_COORDSETS,
+% Note regarding customization:
+%     The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%
+%         - data_fullname_def
+%         - setup_fullname_def
+%         - domain_list_def
+%         - setup_suffix
+%         - permutes_ok
+%
+%  See also: RS_IMPORT_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_CHECK_COORDSETS,
 %   PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETOPTS, PSG_FINDRAYS.
 %
 if (nargin<=1)
