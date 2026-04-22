@@ -1,6 +1,6 @@
 function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
-% [data_out,aux_out]=rs_read_coorddata(fullname,aux) reads a `coordinate file` into a `datawset structure` with one record
-% and, if stimulus coordinate data are available, creates a ray `structure`
+% [data_out,aux_out]=rs_read_coorddata(fullname,aux) reads a `coordinate file` into a `dataset structure` with one record
+% and, if stimulus coordinate data are available, creates a `ray structure`
 %
 % This is the preferred method for bringing coordinates derived from similarity judgements via [??how to refer to Python output]
 % into `dataset structures` suitable for display and geometrical analysis.
@@ -32,15 +32,26 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-% Comparison with rs_get_coordsets:
-%   * Only reads one file
-%      input is a full file name not a cell array of file names
-%      output is a singleton cell array of data structures
-%   * Does not support augmentation by symmetry (thisoption is only available for binary texture data]
-%   * Does not read quadratic form models [only applicable to binary texture data]
 %
-% Output:
-%  data_out: coordinates and metadata
+% Returns:
+%   data_out (struct): `dataset structure` with one record, and fields
+%
+%     - ds (singleton cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates
+%     - sas (singleton cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the record
+%     - sets (singleton cell array): `set metadata structure`, sets{1} is the response metadata for the record
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - rayss (cell array of struct): rayss{1} is the `ray structure` for the record
+%     - opts_read (cell array of struct): opts_read{1} is aux.opts_read, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%     - opts_rays (cell array of struct): opts_rays{1} are the options used for creating the `ray structure`
+%     - opts_qpred (cell array of struct): opts_qpred{1} is empty (included for compatibility with `rs_get_coordsets`)
+%     - syms_list (struct): empty (included for compatibility with `rs_get_coordsets`)
+%
+%  data_out: coordinates and metadata [to do]
 %    data_out.sets{1}: cell array {1,1} of the dataset descriptors, Subfields of data_out.sets{1}:
 %      type: 'data' (psychophysical data) or 'qform' (quadratic form model)
 %      dim_list: list of available dimensions in data_out.ds, e.g,. [1 2 3 4 5 6 7]
@@ -57,12 +68,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      *LL*(1,ndims): log likelihoods
 %      btc_specoords(istim,:): stimulus coordinates to be used for finding rays
 %      sigma_*: information about MDS settings for internal error (sigma)
-%  aux_out: auxiliary outputs and parameter values used
-%      opts*: values used for opts_read, opts_rays, opts_check
-%      warnings: warnings generated in creating arguments for psg_get_coordsets
-%      aux_out.rayss{1}: ray structure
 %      
-% Note regarding setup files:
+% Note regarding setup files: [to do]
 %      - exzplain how to not need a setup file
 %      - The name of the associated setup file, if needed, is automatically generated.
 %    The need for a setup file is determined as follows:
