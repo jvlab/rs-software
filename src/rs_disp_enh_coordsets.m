@@ -39,8 +39,8 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %        set_colors                                   per ray[3]
 %        callout_colors                               per ray[1]
 %       [1]: if a value is supplied value in aux.opts_disp, it is not overridden
-%       [2]: line style depends on whether the ray is negative or positive
-%       [3]: set marker determined by `rs_typenames2colors` 
+%       [2]: line style depends on whether the ray is negative (first option) or positive (second option)
+%       [3]: set markers and colors determined by `rs_typenames2colors` 
 %
 %   rays (struct): a `ray structure`, ordinarily created by `rs_findrays`. If empty or omitted the enhanced graphical elements will not be displayed.
 %
