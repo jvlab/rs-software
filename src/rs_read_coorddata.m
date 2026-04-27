@@ -22,10 +22,11 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0
 %         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
 %         - setup_fullname_def (char): prompt for setup file name; see notes below regarding setup files and customization 
-%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is {'texture','intermediate_texture','intermediate_object','image','word'}; see note below regarding customization
-%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is '9';see note below regarding customization
+%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is determined by customization during install; see note below regarding customization
+%         - paradigm_type_def (char): default paradigm type; default is determined by customization during install; see note below regarding customization
+%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is determined by customization during install; see note below regarding customization
 %         - permutes (struct): typically omitted; each field is a suggested ray permutation for the corresponding paradigm name, e.g., permutes.bgca=[2 1 3 4] specifies a reordering of the rays for paradigm 'bgca'
-%         - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1;see note below regarding customization
+%         - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1; see note below regarding customization
 %         - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
 %
 %     - opts_check (struct): options for consistency checking, with field
@@ -144,7 +145,10 @@ if aux.opts_read.if_justsetup==0
     opts_read_used.data_fullnames={opts_read_used.data_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.setup_fullnames={opts_read_used.setup_fullname}; %for compatibility with rs_get_coordsets
     opts_read_used.input_type_desc=aux.opts_read.input_types{1}; %rs_read_coorddata only reads experimental data, which is type 1
-    sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,pipeline,struct());
+    opts_makeset.paradigm_type_def=aux.opts_read.paradigm_type_def;
+    opts_makeset.domain_list_def=aux.opts_read.domain_list_def;
+    opts_makeset.if_uselocal=aux.opts_read.if_uselocal;
+    sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,pipeline,opts_makeset);
     %
     [rays,wmsg,opts_rays_used]=rs_findrays(sa,opts_read_used.setup_fullname,aux.opts_rays);
     if ~isempty(wmsg)

@@ -8,6 +8,7 @@ The library contains several demos that show its functionality. They are located
 - [`rs_align_disp_enh_coordsets_demo`](mfiles/demos/rs_align_disp_enh_coordsets_demo.md) - demonstrate display of datasets with offsets, rays, and other enhanced plotting options
 - [`rs_disp_coordsets_demo`](mfiles/demos/rs_disp_coordsets_demo.md) - simple display of coordinate sets
 - [`rs_knit_coordsets_demo`](mfiles/demos/rs_knit_coordsets_demo.md) - demonstrate knitting across datasets with partially overlapping stimuli
+- [`rs_read_coorddata_demo`](mfiles/demos/rs_read_coorddata_demo.md) - simple demonstration of reading a generic coordinate file, with no setup
 - [`rs_toygeom_demo`](mfiles/demos/rs_toygeom_demo.md) - demonstrate geometric modeling with toy simulated datasets
 - [`rs_toygeom_disp`](mfiles/demos/rs_toygeom_disp.md) - display the results of rs_toygeom_demo
 - [`rs_toygeom_scenarioA`](mfiles/demos/rs_toygeom_scenarioA.md) - rs_toygeom_scenarioA.m

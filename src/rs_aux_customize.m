@@ -1,7 +1,7 @@
 function aux_out=rs_aux_customize(aux,caller)
 % aux_out=rs_aux_customize(aux,caller) customizes the default auxiliary inputs
 %
-%This reads rs_aux_defaults.mat, which is creted by rs_aux_defaults_define.m
+%This reads rs_aux_defaults.mat, which is created by rs_aux_defaults_define.m
 %rs_aux_defaults_define.m should be edited to customize the default auxiliary inputs as needed
 %
 % aux: a structure, typically with many opts subfields, e.g., opts_read, opts_plot
