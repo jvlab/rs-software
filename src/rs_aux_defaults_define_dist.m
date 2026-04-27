@@ -65,7 +65,7 @@ generic.opts_read.faces_mpi_atten_emo=1; %factor to attenuate "emo" by in comput
 generic.opts_read.faces_mpi_atten_set=0.2; %factor to attenuate "set" by in computing faces_mpi coords
 %
 generic.opts_read.type_class_def='btc'; % default type class, if domain list not found
-generic.opts-read.paradigm_type_def='thing'; %default paradigm type
+generic.opts_read.paradigm_type_def='thing'; %default paradigm type
 %dlist of paradigm names 
 generic.opts_read.domain_list_def={'car','tool','dwelling'}; %paradigm names
 generic.opts_read.domain_sigma=struct; % [if individual subjects are modeled with noise params not equal to 1, then the structure should have fields for these subjects and the value of the noise parameter

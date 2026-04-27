@@ -64,7 +64,7 @@ generic.opts_read.faces_mpi_atten_emo=1; %factor to attenuate "emo" by in comput
 generic.opts_read.faces_mpi_atten_set=0.2; %factor to attenuate "set" by in computing faces_mpi coords
 %
 generic.opts_read.type_class_def='btc'; % default type class if domain list not found, for binary texture experiments
-generic.opts-read.paradigm_type_def='animals';
+generic.opts_read.paradigm_type_def='animals';
 %next entries only relevant for 5-domain animal experiments
 generic.opts_read.domain_list_def={'texture','intermediate_texture','intermediate_object','image','word'}; %domain names for animals experiment
 % sigma (std dev in the error model) for individual subjects in 5-domain animal experiments, anonymized
