@@ -164,7 +164,6 @@ end
 data_out.ds{1}=d;
 data_out.sas{1}=sa;
 data_out.sets{1}=sets;
-aux_out.overall=aux.overall;
 aux_out.opts_check=aux.opts_check;
 aux_out.opts_read{1}=opts_read_used;
 aux_out.opts_rays{1}=opts_rays_used;
