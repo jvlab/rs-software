@@ -1,9 +1,9 @@
-%rs_aux_defaults_define_demo
+%rs_aux_defaults_define_pvt
 %This script defines the defaults for auxiliary parameters.
 %It should be run once in a clean workspace, and the resulting workspace saved as rs_aux_defaults.mat.
 %It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
 %
-%This version of the file is intended for the demos and local use in the Victor lab
+%This version of the file is intended for local use in the Victor lab
 %See rs_aux_defaults_define_dist for distribution version
 %
 %Values below are appropriate for binary texture psychophysical data, and have an option to customize for hlid (calcium imaging) data.
@@ -11,6 +11,7 @@
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';
 overall.if_warn_traceback=0; %set to 1 to show a traceback with each warning
+overall.default_file_version='pvt_jvlab_v0';
 %
 generic=struct; %subfields will be applied to auxiliary parameters for all function calls
 %

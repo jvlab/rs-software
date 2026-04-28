@@ -1,16 +1,17 @@
-%rs_aux_defaults_define_demo
+%rs_aux_defaults_define_dist
 %This script defines the defaults for auxiliary parameters.
 %It should be run once in a clean workspace, and the resulting workspace saved as rs_aux_defaults.mat.
 %It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
 %
-%This version of the file is intended for the demos and local use in the Victor lab
-%See rs_aux_defaults_define_dist for distribution version
+%This version of the file is intended for distribution and customization.
+%Search for '[' to find typical fields to be customized
 %
 %Values below are appropriate for binary texture psychophysical data, and have an option to customize for hlid (calcium imaging) data.
 %
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';
 overall.if_warn_traceback=0; %set to 1 to show a traceback with each warning
+overall.default_file_version='dist_v0';
 %
 generic=struct; %subfields will be applied to auxiliary parameters for all function calls
 %
@@ -35,10 +36,10 @@ generic.opts_read.if_symaug=0;
 generic.opts_read.sym_apply='full';
 generic.opts_read.if_symaug_log=0;
 %
-%entries only relevant for quadratic modeling of binary texture experiments
+%entries only relevant for quadratic modeling
 %
-generic.opts_qpred.qform_datafile_def='./samples/bwtextures/btc_allraysfixedb_avg_100surrs_madj.mat'; %default model parameter file
-generic.opts_qpred.qform_modeltype=12; %index into substructure of above; full symmetry assumed, ignored if no quadratic modeling
+generic.opts_qpred.qform_datafile_def='./[path and file name for quadratic form model].mat'; %default model parameter file
+generic.opts_qpred.qform_modeltype=[1];%offset; %index into substructure of above; typically 1
 %
 %do not remove; to verify installation
 %
@@ -48,10 +49,10 @@ generic.opts_test.param3='maybe overridden';
 %
 %typically first used in rs_read_coorddata
 %
-generic.opts_read.data_fullname_def='./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'; %default full file name for a coordinate dataset
-generic.opts_read.setup_fullname_def='./samples/bwtextures/bgca3pt9.mat'; %default full file name for a setup file
-generic.opts_read.need_setup_file=1; %assume a setup file is needed (0: does not look for a setup file)
-generic.opts_read.setup_suffix='9'; %suffix to convert a data file into a setup file
+generic.opts_read.data_fullname_def='./[path and file name for the default coordinate data set].mat'; %default full file name for a coordinate dataset, typically [paradigm_name]_coords_[subjID].mat
+generic.opts_read.setup_fullname_def='./[path and file name for the default setup file].mat'; %default full file name for a setup file, can be ignored if no setup files are used
+generic.opts_read.need_setup_file=[0]; %1 if a setup file is to be used
+generic.opts_read.setup_suffix='[S]'; %suffix to convert a data file into a setup file
 generic.opts_read.if_justsetup=0; %do not modify (1 causes rs_read_coorddata to only read the setup file)
 generic.opts_read.permutes_ok=1; %do not modify (this enables a stable order of rays)
 generic.opts_read.coord_string='_coords'; %token in coord file name that follows the string to be used for setup file name
@@ -63,17 +64,12 @@ generic.opts_read.faces_mpi_atten_gender=1; %factor to attenuate "gender" by in 
 generic.opts_read.faces_mpi_atten_emo=1; %factor to attenuate "emo" by in computing faces_mpi coords
 generic.opts_read.faces_mpi_atten_set=0.2; %factor to attenuate "set" by in computing faces_mpi coords
 %
-generic.opts_read.type_class_def='btc'; % default type class if domain list not found, for binary texture experiments
-generic.opts_read.paradigm_type_def='animals';
-%next entries only relevant for 5-domain animal experiments
-generic.opts_read.domain_list_def={'texture','intermediate_texture','intermediate_object','image','word'}; %domain names for animals experiment
-% sigma (std dev in the error model) for individual subjects in 5-domain animal experiments, anonymized
-% Coordinates in data file are relative to sigma, which was 0.18 for first 9 subjects
-sigma_list=[repmat(0.18,1,9),repmat(1,1,4)];
-for k=1:length(sigma_list)
-    generic.opts_read.domain_sigma.(sprintf('S%1.0f',k))=sigma_list(k);
-end
-clear k sigma_list
+generic.opts_read.type_class_def='btc'; % default type class, if domain list not found
+generic.opts_read.paradigm_type_def='thing'; %default paradigm type
+%dlist of paradigm names 
+generic.opts_read.domain_list_def={'car','tool','dwelling'}; %paradigm names
+generic.opts_read.domain_sigma=struct; % [if individual subjects are modeled with noise params not equal to 1, then the structure should have fields for these subjects and the value of the noise parameter
+%e.g., domain_sigma.XZ=0.3 means that subject XZ was modeled with a noise parameter of 0.3
 %
 %typically first used in rs_import_coorddata
 %
@@ -109,29 +105,7 @@ generic.opts_geof.model_list_default={'procrustes_scale_offset','affine_offset',
 specific=struct;  %subfields will be applied to auxiliary parameters when called by a specific function
 specific.rs_get_coordsets=struct;
 %
-specific.rs_dummy=struct;
+specific.rs_dummy=struct; %for maintenance; do not remove
 specific.rs_dummy.opts_test.param3='overridden';
-%
-%override with setups for hlid (Hong Lab Imaging Data) if requested
-%
-if getinp('1 to use hlid defaults','d',[0 1],0)
-    h=hlid_setup_func;
-    fns=fieldnames(h.opts_read);
-    for ifn=1:length(fns)
-        generic.opts_read.(fns{ifn})=h.opts_read.(fns{ifn});
-    end
-    fns=fieldnames(h.opts_plot);
-    for ifn=1:length(fns)
-        generic.opts_plot.(fns{ifn})=h.opts_plot.(fns{ifn});
-    end
-    fns=fieldnames(h.opts_multm_def);
-    for ifn=1:length(fns)
-        generic.opts_multm_def.(fns{ifn})=h.opts_multm_def.(fns{ifn});
-    end
-    generic.opts_write.coord_data_fullname_def='./*_coords*.mat';
-    generic.hlid_opts=h.hlid_opts;
-    generic.display_orders=h.display_orders;
-    clear h fns ifn
-end
 %
 disp('Remember to save workspace as rs_aux_defaults.mat.')

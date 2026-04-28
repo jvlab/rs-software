@@ -4,7 +4,6 @@
 %It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
 %
 %This version of the file is intended for distribution and customization.
-%See rs_aux_defaults_define_demo for a pre-customized version that will run the demos.
 %Search for '[' to find typical fields to be customized
 %
 %Values below are appropriate for binary texture psychophysical data, and have an option to customize for hlid (calcium imaging) data.
@@ -12,6 +11,7 @@
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';
 overall.if_warn_traceback=0; %set to 1 to show a traceback with each warning
+overall.default_file_version='dist_v0';
 %
 generic=struct; %subfields will be applied to auxiliary parameters for all function calls
 %
@@ -39,7 +39,7 @@ generic.opts_read.if_symaug_log=0;
 %entries only relevant for quadratic modeling
 %
 generic.opts_qpred.qform_datafile_def='./[path and file name for quadratic form model].mat'; %default model parameter file
-generic.opts_qpred.qform_modeltype=[offset]; %index into substructure of above; typically 1
+generic.opts_qpred.qform_modeltype=[1];%offset; %index into substructure of above; typically 1
 %
 %do not remove; to verify installation
 %
