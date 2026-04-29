@@ -1,16 +1,31 @@
-function aux_out=rs_aux_customize(aux,caller)
-% aux_out=rs_aux_customize(aux,caller) customizes the default auxiliary inputs
+function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
+% aux_out=rs_aux_customize(aux,caller,aux_default_filename) customizes the default auxiliary inputs
 %
 %This reads rs_aux_defaults.mat, which is created by rs_aux_defaults_define.m
 %rs_aux_defaults_define.m should be edited to customize the default auxiliary inputs as needed
 %
-% aux: a structure, typically with many opts subfields, e.g., opts_read, opts_plot
-% caller: string, name of calling function
+% aux: a structure, typically with many opts subfields, e.g., opts_read, opts_disp
+% caller: string, name of calling function, may be empty
+% aux_default_filename: full path to the default auxiliary inputs, created with rs_aux_defaults_define, if empty or not specified, defaults to rs_aux_defaults.mat
 %
-%  See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE_TEST.
+%  See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE_TEST, RS_AUX_FORCE.
 %
-aux_defaults_filename='rs_aux_defaults.mat';
-s=load(aux_defaults_filename);
+if (nargin==0)
+    aux=struct();
+end
+if isempty(aux)
+    aux=struct();
+end
+if (nargin<=1)
+    caller=[];
+end
+if (nargin<=2)
+    aux_default_filename=[];
+end
+if isempty(aux_default_filename)
+    aux_default_filename='rs_aux_defaults.mat';
+end
+s=load(aux_default_filename);
 aux_fields=fieldnames(aux);
 for ifn=1:length(aux_fields)
     fn=aux_fields{ifn}; %fn='opts_read' or similar
@@ -19,12 +34,14 @@ for ifn=1:length(aux_fields)
     if isfield(s.generic,fn)
         defaults=s.generic.(fn);
     end
-    if isfield(s.specific,caller)
-        if isfield(s.specific.(caller),fn)
-            specific_fns=fieldnames(s.specific.(caller).(fn));
-            for ifn=1:length(specific_fns)
-                sfn=specific_fns{ifn};
-                defaults.(sfn)=s.specific.(caller).(fn).(sfn);
+    if ~isempty(caller)
+        if isfield(s.specific,caller)
+            if isfield(s.specific.(caller),fn)
+                specific_fns=fieldnames(s.specific.(caller).(fn));
+                for ifn=1:length(specific_fns)
+                    sfn=specific_fns{ifn};
+                    defaults.(sfn)=s.specific.(caller).(fn).(sfn);
+                end
             end
         end
     end %overrides
@@ -38,3 +55,5 @@ if isfield(s,'overall')
     aux_out.overall=s.overall;
 end
 return
+end
+

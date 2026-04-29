@@ -12,6 +12,15 @@
 %
 %testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
 rs_module='disp_coordsets';
+%
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check','opts_qpred','opts_align','opts_import','opts_knit','opts_disp'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 testset=1; 
 ntests=1;
 %
@@ -28,17 +37,17 @@ aux_outs=cell(1);
 %
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nfiles=length(filenames);
-aux_in=struct;
-aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_in=auxs_force;
+aux_in.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_in.nsets=length(filenames);
 %
 [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
 %
 %align and rotate data into a consensus, and use each component, aligned to consensus, for further plotting
 %
-aux_align_def=struct;
+aux_align_def=auxs_force;
 [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-aux_knit_def=struct;
+aux_knit_def=auxs_force;
 aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
 [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
 data_components=aux_knit.components;
@@ -50,7 +59,7 @@ dim_select=5;
 group_size_list=[2:3];
 coord_group_methods={'keeplow'};
 %
-opts_disp=struct;
+opts_disp=auxs_force;
 opts_disp.dim_select=dim_select;
 opts_disp.data_label_setsel_method='list';
 opts_disp.data_label_setsel_list=2;
@@ -96,9 +105,9 @@ aux_outs{1}.aux_out_disp2=rs_disp_coordsets(data_components,setfield(struct,'opt
 % 
 filename_rep={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
 nsets=length(filename_rep);
-aux_rep=struct;
+aux_rep=auxs_force;
 aux_rep.nsets=1;
-aux_rep.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_rep.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 [data_rep,aux_read_rep]=rs_get_coordsets(filename_rep,aux_rep);
 hfig=figure;
 set(gcf,'Position',[100 100 1200 700]);

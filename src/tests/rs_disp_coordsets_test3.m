@@ -7,6 +7,15 @@
 %
 %testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
 rs_module='disp_coordsets';
+%
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check','opts_qpred','opts_align','opts_import','opts_knit','opts_disp','opts_disp_enh','opts_tn2c'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 testset=3; 
 ntests=1;
 %
@@ -31,7 +40,7 @@ aux_outs=cell(1);
         './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat'};
     filename_gps{6}=filename_gps{5}; %this will be for multiple dims on the same plot
 igp_spec=6; %will be treated specially
-opts_tn2c=struct; %for psg_typenames2colors
+opts_tn2c=auxs_force.opts_tn2c; %for psg_typenames2colors
 nvars=5; %for variants such as with and without rings or axes
 ngps=length(filename_gps);
 %
@@ -45,8 +54,8 @@ for igp_ptr=1:length(gp_list)
     igp=gp_list(igp_ptr);
     filenames=filename_gps{igp};
     nfiles=length(filenames);
-    aux_in=struct;
-    aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+    aux_in=auxs_force;
+    aux_in.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
     aux_in.nsets=nfiles;
     disp(sprintf(' group %1.0f: %2.0f files',igp,nfiles))
     [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
@@ -62,15 +71,15 @@ for igp_ptr=1:length(gp_list)
     end
     if (if_ok)
         %
-        aux_align_def=struct;
+        aux_align_def=auxs_force.opts_align;
         aux_align_def.opts_align.if_log=0;
         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-        aux_knit_def=struct;
+        aux_knit_def=auxs_force.opts_knit;
         aux_knit_def.opts_knit.if_log=0;
         aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
         %
-        opts_disp=struct;
+        opts_disp=auxs_force;
         opts_disp.fig_name=sprintf('group %1.0f: %s',igp,data_read.sets{1}.paradigm_name);
         for ifile=1:nfiles
             opts_disp.set_labels{ifile}=data_read.sets{ifile}.subj_id;
@@ -128,7 +137,7 @@ for igp_ptr=1:length(gp_list)
                 if isbv==1 & ~ismember(igp,igp_spec)
                     opts_disp_var.connect_sets_method='all';
                 end
-                opts_disp_enh=struct();
+                opts_disp_enh=auxs_force.opts_disp_enh;
                 npanels=1;
                 switch ivar
                     case 1
@@ -195,9 +204,10 @@ for igp_ptr=1:length(gp_list)
                 else
                     opts_disp_var.axis_handles{1}=subplot(nsbvs_adj,nvars,if_pca*nvars+ivar);
                 end
-                aux_disp_enh=struct;
+                aux_disp_enh=auxs_force;
                 aux_disp_enh.opts_disp=opts_disp_var;
                 aux_disp_enh.opts_disp_enh=opts_disp_enh;
+                aux_disp_enh.opts_tn2c=opts_tn2c;
                 aux_outs{1}.aux_out_enh{ivar,1+if_pca,igp}=rs_disp_enh_coordsets(data_disp,aux_disp_enh,rays_use);
             end
         end % ivar

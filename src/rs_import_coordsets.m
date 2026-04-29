@@ -83,12 +83,9 @@ aux.opts_import=filldefault(aux.opts_import,'typenames',cell(0));
 aux.opts_import=filldefault(aux.opts_import,'type_coords',[]);
 %
 aux.opts_import=filldefault(aux.opts_import,'type','data');
-aux.opts_import=filldefault(aux.opts_import,'paradigm_type','unknown');
 aux.opts_import=filldefault(aux.opts_import,'paradigm_name',aux.opts_import.paradigm_type);
-aux.opts_import=filldefault(aux.opts_import,'subj_id','unknown');
 aux.opts_import=filldefault(aux.opts_import,'subj_id_short',aux.opts_import.subj_id);
 aux.opts_import=filldefault(aux.opts_import,'extra',[]);
-aux.opts_import=filldefault(aux.opts_import,'label_long','unknown');
 aux.opts_import=filldefault(aux.opts_import,'label',aux.opts_import.label_long);
 %
 data_out=struct;

@@ -81,6 +81,9 @@ clear k sigma_list
 generic.opts_import.typename_prefix='type_'; %default prefix for typenames
 generic.opts_import.typename_ndigits=2; %number of digits in an auto-generated typename
 generic.opts_import.type_coords_def='none';%default conceptual coordinates
+generic.opts_import.paradigm_type='unknown'; %default paradigm type
+generic.opts_import.subj_id='unknown'; %default subject ID
+generic.opts_import.label_long='unknown'; %default label
 %
 %typically first used in rs_write_coorddata
 %

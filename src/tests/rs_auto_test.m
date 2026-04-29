@@ -4,6 +4,7 @@ if ~exist('if_ignore_svdambig') if_ignore_svdambig=0; end
 if ~exist('diff_maxchars') diff_maxchars=70; end 
 if ~exist('diff_maxlines') diff_maxlines=3; end
 if ~exist('if_save_and_close') if_save_and_close=1; end %for graphics tests
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end %so that tests run with btc defaults
 %
 r=struct;
 %
