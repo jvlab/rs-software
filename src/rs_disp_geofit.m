@@ -92,8 +92,8 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_model',2); %line width for a model
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_nest',2); %line width for a nested model
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_quant',1); %line width for quantiles
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_omnicolors',1); %1 to use colors from omnibus plots in comparison plots
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'out_label','input dim');
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'in_label','output dim');
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'out_label','output dim');
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'in_label','input dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'dia_label','dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',3);
 %
