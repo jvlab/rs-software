@@ -23,16 +23,6 @@
 %
 %  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
 %
-
-
-%%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
-if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
-auxs_force=struct;
-opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_qpred','opts_knit','opts_disp','opts_disp_enh'};
-for k=1:length(opts_needed)
-    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
-end
-%
 filename_paradigms{1}={... 
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',... 
@@ -59,8 +49,8 @@ aux_outs=cell(nparas,1+nenh);
 for ipara=1:nparas
     filenames=filename_paradigms{ipara};
     nfiles=length(filenames);
-    aux_in=auxs_force;
-    aux_in.opts_read=setfields(aux_in.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
+    aux_in=struct;
+    aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
     aux_in.nsets=nfiles;
     disp(sprintf(' group %1.0f: %2.0f files',ipara,nfiles))
     [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
@@ -76,10 +66,10 @@ for ipara=1:nparas
     end
     if (if_ok)
         %align data, rotate to consensus, and rotate consensus into pca coords
-        aux_align_def=auxs_force.opts_align;
+        aux_align_def=struct;
         aux_align_def.opts_align.if_log=0;
         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-        aux_knit_def=auxs_force.opts_knit;
+        aux_knit_def=struct;
         aux_knit_def.opts_knit.if_log=0;
         aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
@@ -101,7 +91,7 @@ for ipara=1:nparas
                 haxes_all{icgp,icol}=subplot(ncgps+1,1+nenh,icol+(icgp-1)*(nenh+1));
             end
         end
-        opts_disp=auxs_force.opts_disp;
+        opts_disp=struct;
         opts_disp.fig_handle=hfig;
         for icgp=1:ncgps+1 %extra panel for legend
             opts_disp.axis_handles{icgp}=haxes_all{icgp,1};
@@ -128,7 +118,7 @@ for ipara=1:nparas
             for icgp=1:ncgps+1
                 opts_disp2.axis_handles{icgp}=haxes_all{icgp,1+ienh};
             end
-            opts_disp_enh=auxs_force.opts_disp_enh;
+            opts_disp_enh=struct;
             switch ienh %show rays, rings, and nearest-neighbors in separate plots
                 case 1
                     opts_disp_enh.if_points=1;

@@ -24,28 +24,19 @@
 %
 %  See also:  RS_XFORM_SPECIFY, RS_XFORM_APPLY, RS_DISP_COORDDSETS.
 %
-
-%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
-if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
-auxs_force=struct;
-opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_qpred','opts_knit','opts_xform','opts_disp'};
-for k=1:length(opts_needed)
-    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
-end
-%
 filenames={'./samples/animals/image_coords_S5','./samples/animals/word_coords_S5'};
 nsets=length(filenames);
-aux_in=auxs_force;
-aux_in.opts_read=setfields(aux_in.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
+aux_in=struct;
+aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
 aux_in.nsets=nsets;
 %raw dataset
 [data_read,aux_read]=rs_get_coordsets(filenames,aux_in);
 %align data
-aux_align_def=auxs_force.opts_align;
+aux_align_def=struct;
 aux_align_def.opts_align.if_log=0; %turn off logging
 [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
 %keep intermediate results from alignment so that alignment isn't redone
-aux_knit_def=auxs_force.opts_knit;
+aux_knit_def=struct;  
 aux_knit_def.data_align=data_align;
 aux_knit_def.sa_pooled=aux_align.sa_pooled;
 aux_knit_def.opts_knit.if_log=0; %turn off logging
@@ -93,7 +84,7 @@ for ixform=1:nxforms
             data_use=aux_knit_pc.components;
             axis_label_prefix='pc (consensus)';
     end
-    opts_xform=auxs_force.opts_xform;
+    opts_xform=struct;
     switch ixform
         case 1 %specify linear transformations by hand for dims 2 and 3
             opts_xform.mode=[];
@@ -141,21 +132,21 @@ for ixform=1:nxforms
     %specify the transformation
     xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
     if isempty(xform{ixform})
-        [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(auxs_force.opts_xform,'opts_xform',opts_xform));
+        [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(struct(),'opts_xform',opts_xform));
         desc=sprintf('mode: %s (%s), centering specified by %s',opts_xform.mode,opts_xform.source,opts_xform.centering_specifier);
         if isfield(opts_xform,'centering_typename')
             desc=cat(2,desc,sprintf(' (%s)',opts_xform.centering_typename));
         end
     end
     %do the transformations
-    [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},setfield(struct(),'opts_xform',auxs_force.opts_xform));
+    [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},struct());
     %plot: top row is untransformed data, dims 2 and 3; bottom row is transfornmed data
     hfig=figure;
     haxes=cell(1,nds);
     for id=1:nds
         haxes{1,id}=subplot(1,nds,id);
     end
-    opts_disp_init=auxs_force.opts_disp;
+    opts_disp_init=struct;
     opts_disp_init.fig_handle=hfig;
     opts_disp_init.fig_name=xform_name;
     opts_disp_init.axis_label_prefix=axis_label_prefix;
@@ -191,7 +182,7 @@ for ixform=1:nxforms
         opts_disp_init.axis_range='list';
         opts_disp_init.axis_range_list=[-10 10;-7 7;-5 5]; %fixed scales to make transforms easier to see
     end
-    data_disp=auxs_force.opts_disp;
+    data_disp=struct;
     data_disp.ds=[data_use.ds,data_xform{ixform}.ds];
     data_disp.sas=[data_use.sas,data_xform{ixform}.sas];
     data_disp.sets=[data_use.sets,data_xform{ixform}.sets];

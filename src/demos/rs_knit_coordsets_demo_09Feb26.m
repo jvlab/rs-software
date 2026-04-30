@@ -1,67 +1,35 @@
-# rs_knit_coordsets_demo
-Demonstrate knitting across datasets with partially overlapping stimuli
-calculates statistics, without and with scaling allowed between datasets
-plots both sets of stats on same figure , adjusting dataset and stimulus names
-
-See also:  [rs_knit_coordsets](rs_knit_coordsets.md), [rs_align_coordsets](rs_align_coordsets.md)
-
-```matlab
+% rs_knit_coordsets_demo: demonstrate knitting across datasets with partially overlapping stimuli
+% calculates statistics, without and with scaling allowed between datasets
+% plots both sets of stats on same figure , adjusting dataset and stimulus names
+%
+%  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
+%
 verbosity=getinp('pipeline display verbosity','d',[0 2],0);
 if_write=getinp('1 to write the knitted sets','d',[0 1]);
 nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);
-```
-
-section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
-
-```matlab
-if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
-auxs_force=struct;
-opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_import','opts_qpred','opts_knit','opts_write'};
-for k=1:length(opts_needed)
-    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
-end
-```
-
-```matlab
+%
 filenames={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
 nsets=length(filenames);
-aux=auxs_force;
+aux=struct;
 aux.nsets=nsets;
 aux.opts_align.min=1;
-aux.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
+aux.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
 aux.opts_knit.keep_details=1;
-```
-
-read the data
-
-```matlab
+%
+%read the data
 [data_read,aux_read]=rs_get_coordsets(filenames,aux);
-```
-
-align
-
-```matlab
+%align
 [data_align,aux_align]=rs_align_coordsets(data_read,aux);
-```
-
-knit
-
-```matlab
+%knit
 [data_knit,aux_knit]=rs_knit_coordsets(data_align,aux);
-```
-
-also knit with allowing a scaling between datasets
-
-```matlab
+%also knit with allowing a scaling between datasets
 aux_allowscale=aux;
 aux_allowscale.opts_knit.allow_scale=1;
 aux_allowscale.opts_knit.if_normscale=1;
 [data_knit_allowscale,aux_knit_allowscale]=rs_knit_coordsets(data_align,aux_allowscale);
-```
-
-show pipelines, also expanding the contents of sets and sets_combined
-
-```matlab
+%
+%show pipelines, also expanding the contents of sets and sets_combined
+%
 if verbosity<=1
     fields_expand={};
 else
@@ -71,25 +39,19 @@ disp('%%%%%%%%%%%%%%%%%%%');
 disp('pipeline for knitted dataset, no scaling');
 rs_showpipeline(data_knit.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
-```
-
-```matlab
+%
 disp('pipeline for knitted dataset, scaling');
 rs_showpipeline(data_knit_allowscale.sets{1}.pipeline,setfields(struct(),{'fields_expand','verbosity'},{fields_expand,verbosity}));
 disp('%%%%%%%%%%%%%%%%%%%');
-```
-
-```matlab
+%
 dim_list=data_knit.sets{1}.dim_list; %list of dimensions of coordinate sets
 paradigm_names=cell(1,nsets); %retrieve paradigm names
 for iset=1:nsets
     paradigm_names{iset}=data_read.sets{iset}.paradigm_name;
 end
-```
-
-show which paradigms contain which stimuli
-
-```matlab
+%
+%show which paradigms contain which stimuli
+%
 figure;
 spy(aux_knit.coords_havedata');
 nstims=data_knit.sas{1}.nstims;
@@ -101,11 +63,9 @@ ylabel('paradigms');
 set(gca,'YTick',[1:nsets]);
 set(gca,'YTickLabel',paradigm_names);
 drawnow;
-```
-
-retrieve and plot convergence and scaling
-
-```matlab
+%
+%retrieve and plot convergence and scaling
+%
 scalings=cell(1,max(dim_list));
 rmsdev=cell(2,max(dim_list)); %d1 is 1 for standard, 2 for allow scale
 niters=zeros(2,max(dim_list));
@@ -128,10 +88,8 @@ set(gcf,'Position',[100 100 1200 900]);
 ncols=3;
 ias_label={'no scaling','scaling'};
 for idim=dim_list
-```
-
-```matlab
-for ias=1:2
+    %
+    for ias=1:2
         subplot(max(dim_list),3,ncols*(idim-1)+ias)
         plot(rmsdev{ias,idim}');
         xlabel('iter');
@@ -152,42 +110,31 @@ for ias=1:2
     title(sprintf('scale factors, dim %1.0f',idim));
 end
 drawnow;
-```
-
-do statistics?
-
-```matlab
+%
+%do statistics?
+%
 if nshuffs>0
     aux_stats=aux;
     aux_stats.sa_pooled=aux_align.sa_pooled;
     aux_stats.data_align=data_align;
-```
-
-```matlab
-aux_stats.opts_knit.if_stats=1;
+    %
+    aux_stats.opts_knit.if_stats=1;
     aux_stats.opts_knit.nshuffs=nshuffs;
     aux_stats.opts_knit.if_plot=0; %plot locally
-```
-
-knit and compute stats without allowing scaling between sets
-
-```matlab
-[data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats);
-```
-
-knit and compute stats, allow scaling between sets;
-
-```matlab
-aux_allowscale_stats=aux_stats;
+    %
+    %knit and compute stats without allowing scaling between sets
+    %
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats);
+    %
+    %knit and compute stats, allow scaling between sets;
+    aux_allowscale_stats=aux_stats;
     aux_allowscale_stats.opts_knit.allow_scale=1;
     aux_allowscale_stats.opts_knit.if_normscale=1;
     [data_knit_allowscale_stats,aux_knit_allowscale_stats]=rs_knit_coordsets(data_align,aux_allowscale_stats);
-```
-
-make a combined plot
-
-```matlab
-fig_handle=figure;
+    %
+    %make a combined plot
+    %
+    fig_handle=figure;
     set(gcf,'Position',[100 100 1400 750]);
     set(gcf,'NumberTitle','off');
     knit_stats_setup=aux_knit_stats.knit_stats_setup;
@@ -196,59 +143,36 @@ fig_handle=figure;
             knit_stats_setup.stimulus_labels{k}='';
         end
     end
-```
-
-plot non-rescaled analysis
-
-```matlab
-aux_stats_replot=aux_stats;
-```
-
-```matlab
-aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
-```
-
-```matlab
-aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
+    %plot non-rescaled analysis
+    aux_stats_replot=aux_stats;
+    %
+    aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
+    %
+    aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
     aux_stats_replot.knit_stats_setup.fig_handle=fig_handle;
     aux_stats_replot.knit_stats_setup.dataset_labels=paradigm_names;
     aux_stats_replot.knit_stats_setup.stimulus_labels=knit_stats_setup.stimulus_labels;
     aux_stats_replot.knit_stats_setup.nrows=2;
     aux_stats_replot.knit_stats_setup.row=1;
     [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_replot);
-```
-
-plot rescaled analysis
-
-```matlab
-aux_stats_allowscale_replot=aux_stats_replot;
-```
-
-```matlab
-aux_stats_allowscale_replot.knit_stats=aux_knit_allowscale_stats.knit_stats;
-```
-
-```matlab
-aux_stats_allowscale_replot.knit_stats_setup.row=2;
-```
-
-```matlab
-[data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_allowscale_replot);
+    %plot rescaled analysis
+    aux_stats_allowscale_replot=aux_stats_replot;
+    %
+    aux_stats_allowscale_replot.knit_stats=aux_knit_allowscale_stats.knit_stats;
+    %
+    aux_stats_allowscale_replot.knit_stats_setup.row=2;
+    %
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_allowscale_replot);
 end %nshuffs
-```
-
-write datasets if requested
-
-```matlab
+%
+%write datasets if requested
+%
 if if_write
-    aux.opts_write=auxs_force.opts_write;
+    aux.opts_write=struct;
     aux.opts_write.if_gui=0;
     aux_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_noscale',data_knit,aux);
-```
-
-```matlab
-aux_allowscale.opts_write=struct;
+    %
+    aux_allowscale.opts_write=struct;
     aux_allowscale.opts_write.if_gui=0;
     aux_allowscale_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_scale',data_knit_allowscale,aux_allowscale);
 end
-```
