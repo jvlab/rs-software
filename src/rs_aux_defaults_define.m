@@ -49,8 +49,8 @@ generic.opts_test.param3='maybe overridden';
 %
 %typically first used in rs_read_coorddata
 %
-generic.opts_read.data_fullname_def='./[path and file name for the default coordinate data set].mat'; %default full file name for a coordinate dataset, typically [paradigm_name]_coords_[subjID].mat
-generic.opts_read.setup_fullname_def='./[path and file name for the default setup file].mat'; %default full file name for a setup file, can be ignored if no setup files are used
+generic.opts_read.data_fullname_def='[path and file name for the default coordinate dataset file to read].mat'; %default full file name for a coordinate dataset, typically [paradigm_name]_coords_[subjID].mat
+generic.opts_read.setup_fullname_def='[path and file name for the default setup file].mat'; %default full file name for a setup file, can be ignored if no setup files are used
 generic.opts_read.need_setup_file=[0]; %1 if a setup file is to be used
 generic.opts_read.setup_suffix='[S]'; %suffix to convert a data file into a setup file
 generic.opts_read.if_justsetup=0; %do not modify (1 causes rs_read_coorddata to only read the setup file)
@@ -83,7 +83,7 @@ generic.opts_import.label_long='unknown'; %default label
 %typically first used in rs_write_coorddata
 %
 generic.opts_write.if_uselocal=0; %1 to enable psg_localopts to define local options
-generic.opts_write.coord_data_fullname_write_def='./samples/bgca3pt_coords_QFM_sess01_01.mat'; %default full file name to write a coordinate dataset
+generic.opts_write.coord_data_fullname_write_def='[path and file name for the default coordinate dataset file to write].mat'; %default full file name to write a coordinate dataset
 generic.opts_write.if_log=1;
 generic.opts_write.ui_filter='*_coords*.mat'; %token in gui for file output
 generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
