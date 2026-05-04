@@ -20,4 +20,4 @@ disp(data_out.sas{1});
 disp(' ');
 disp('sets{1}: set metadata structure');
 disp(data_out.sets{1});
-disp('can now display with rs_disp_coordsets_demo_opposites')
+disp('can now display with rs_disp_coordsets_demo_cars')
