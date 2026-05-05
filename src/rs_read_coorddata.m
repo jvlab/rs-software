@@ -21,8 +21,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1
 %         - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0
 %         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
-%         - domain_type_coords (float 2D array): stimulus coordinates to use if no setup file, one row for each stimulus; default is empty
-%         - type_coords_def (char): stimulus coordinates to use if domain_type_coords is unspecified or empty; options are 'none', 'zeros', 'ones', or 'eye', see `rs_import_coordsets`; default is 'none'; see `rs_import_coordsets` for further details and how to customize
+%         - type_coords (float 2D array): stimulus coordinates to use if no setup file, one row for each stimulus; default is empty
+%         - type_coords_def (char): stimulus coordinates to use if type_coords is unspecified or empty; options are 'none', 'zeros', 'ones', or 'eye', see `rs_import_coordsets`; default is 'none'; see `rs_import_coordsets` for further details and how to customize
 %         - domain_list_def (cell array): paradigm names for generic domain experiments; default is determined by customization during install; see note below regarding customization
 %         - paradigm_type_def (char): default paradigm type; default is determined by customization during install; see note below regarding customization
 %         - setup_fullname_def (char): prompt for setup file name; see notes below regarding setup files and customization 
@@ -35,7 +35,6 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
-%
 %
 % Returns:
 %   data_out (struct): `dataset structure` with one record, and fields
@@ -106,7 +105,7 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
-aux.opts_read=filldefault(aux.opts_read,'domain_type_coords',[]);
+aux.opts_read=filldefault(aux.opts_read,'type_coords',[]);
 type_coords_def=getfield(getfield(rs_aux_customize(setfield(struct(),'opts_import',struct()),'rs_import_coordsets'),'opts_import'),'type_coords_def');
 aux.opts_read=filldefault(aux.opts_read,'type_coords_def',type_coords_def);
 %

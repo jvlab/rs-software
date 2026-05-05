@@ -1,17 +1,18 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% This is the preferred method for bringing external datasets into the rs package, to create a `dataset structure` with one record.
+% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record.
 % If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
-% combine several one-record `dataset structures` created here into a single `dataset structure`.
+%   combine several one-record `dataset structures` created here into a single `dataset structure`.
+% If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
 %
 %   aux (struct): a structure, can be omitted, with fields 
 %
-%     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typename..., and type_coords... are used
-%     to create the `stimulus metadata structure`; fields type, paradigm_..., extra, subj_id..., and label... are used to create the `set metadata structure`.  Any or all can be omitted.
+%     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typenames, and type_coords are used
+%     to create the `stimulus metadata structure`; fields type, paradigm_type, paradigm_name,extra, subj_id, subj_id_short, label, and label_long are used to create the `set metadata structure`.  Any or all can be omitted.
 %
 %         - nstims (int): number of stimuli; default determined from first non-empty entry in coords
 %         - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
