@@ -133,6 +133,14 @@ end
 if aux_out.warn_bad==0
     [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
         psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
+    %find rays via rs_findrays, so that coords are sought in type_coords or btc_augcoords
+    for iset=1:nsets
+        [rayss{iset},wmsg,opts_rays_used{iset}]=rs_findrays(sas{iset},opts_read_used{iset}.setup_fullname,aux.opts_rays);
+        if ~isempty(wmsg)
+            aux_out=rs_warning(wmsg,0,aux_out);
+        end
+    end
+    %
     data_out.sets=sets;
     data_out.ds=ds;
     data_out.sas=sas;

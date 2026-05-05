@@ -5,7 +5,6 @@
 % See also:  RS_READ_COORDDATA.
 %
 fullname='demos/cars_coords_JK'; %mat-file name
-aux.opts_read.domain_sigma=struct;
 aux.opts_read.paradigm_type_def='transport';
 aux.opts_read.domain_list_def={'cars','boats','opposites','sizes'};
 aux.opts_read.need_setup_file=0;
