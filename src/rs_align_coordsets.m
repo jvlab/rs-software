@@ -36,7 +36,6 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-%     - opts_import (struct): options for stimulus coordinates, typically omitted, see note below regarding stimulus coordinates
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 % Returns:

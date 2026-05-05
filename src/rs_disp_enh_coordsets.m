@@ -21,6 +21,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %         - if_rings (int): 1 to connect data points in rings, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
 %         - if_nbrs (int): 1 to connect nearest-neighbors, 0 to suppress; default is 1 if 'rays' is non-empty, otherwise 0
 %         - if_nbrs_notsameray (int): 1 to suppress nearest-neighbor connections  if both points are on the same ray, or next to origin; 0 to connect all nearest neighbors; default is 1
+%         - if_usetypenames (int): how colors and symbols are determined; 1 (use 'typenames') is default; 0-> determine from stimulus coordinates, a field of data_in.sas{1} (search order: 'type_coords','btc_specoords','btc_augcoords', see `rs_findrays` for further details)
 %
 %      - opts_tn2c (struct): controls how stimulus labels (data_in.sas{:}.typenames) are mapped to colors and symbols; can be empty, see `rs_typenames2colors` for details
 % 
@@ -33,7 +34,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %        data_label_method              'none'[1]     'last'        'none'[1]    'none'[1]
 %        connect_data_method                          'list'        'list'[1]    'list'
 %        connect_data_linestyles        'none'[1]   '--' or '-'[2]   ':'  [1]    '-'   [1]
-%        set_markers                                   [3]  '       'none'[1]    'none'[1]
+%        set_markers                                   [3]          'none'[1]    'none'[1]
 %        set_tags                                     'rays'        'rings'      'nbrs'
 %        callout_amount                               0.5[1]
 %        set_colors                                   per ray[3]
@@ -77,8 +78,16 @@ aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rays',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_rings',0);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs',1);
 aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_nbrs_notsameray',1);
+aux.opts_disp_enh=filldefault(aux.opts_disp_enh,'if_usetypenames',1);
+%
+if aux.opts_disp_enh.if_usetypenames==0 %get coordinates
+    opts_rays=getfield(rs_aux_customize(setfield(struct(),'opts_rays',struct()),'rs_findrays'),'opts_rays'); %get defaults for ray_reorder_ring and ray_plane_jit
+    opts_rays=filldefault(opts_rays,'coord_names',getfield(psg_defopts,'coord_fields')); % was {'type_coords','btc_specoords','btc_augcoords'});
+    [stim_coords,coord_names]=psg_type_coords_util(data_in.sas{1},opts_rays.coord_names);
+end
 %
 aux.opts_tn2c.paradigm_type=data_in.sets{1}.paradigm_type; %so that rs_typenames2colors knows the paradigm
+aux.opts_tn2c.if_usetypenames=aux.opts_disp_enh.if_usetypenames;
 %
 if isempty(rays) | isempty(fieldnames(rays))
     aux.opts_disp_enh.if_rays=0;
@@ -123,10 +132,14 @@ if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
                 opts_disp_rays.data_show_list=[orig_ptr bidir_sorted']; %add origin to the beginning
                 %
                 %[rgb,symb,vecs,opts_used]=psg_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),aux.opts_tn2c); %get standard colors and symbols
-                [rgb,symb]=rs_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),setfield(struct(),'opts_tn2c',aux.opts_tn2c));
-                opts_disp_rays.set_colors{1}=rgb;
+                if aux.opts_disp_enh.if_usetypenames
+                    [rgb,symb]=rs_typenames2colors(data_in.sas{1}.typenames(bidir_sorted),setfield(struct(),'opts_tn2c',aux.opts_tn2c));
+                else
+                    [rgb,symb]=rs_typenames2colors(stim_coords(bidir_sorted,:),setfield(struct(),'opts_tn2c',aux.opts_tn2c));
+                end
+                opts_disp_rays.set_colors=rgb;
                 if ~if_callout_colors_supplied
-                    opts_disp_rays.callout_colors{1}=rgb;
+                    opts_disp_rays.callout_colors=rgb;
                 end               
                 opts_disp_rays.set_markers=symb;
                 switch isign

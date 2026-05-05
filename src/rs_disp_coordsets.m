@@ -59,8 +59,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - axis_label_font_size (char): font size for axis labels; default is axis_font_size
 %         - axis_label_prefix (char): prefix for axis label, default is 'coord'; see note below regarding customization
 %         - axis_labels (cell array of char): cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
-%         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard
-%         3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
+%         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard 3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
 %         - axis_equal (int): 1 to set axes to have equal scales, 0 autoscales; default is 1
 %         - axis_range (char): 'tight' to set axis range to limits of data, 'auto' for autoscaling, or 'list' to specify by axis_range_list; default is 'tight'
 %         - axis_range_list (float 2-D array): axis range specification, as rows of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary

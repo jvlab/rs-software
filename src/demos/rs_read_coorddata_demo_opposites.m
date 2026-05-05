@@ -4,26 +4,27 @@
 % 
 % See also:  RS_READ_COORDDATA, RS_CONCAT_COORDSETS.
 %
-% ans =
-%          0         0         0
-%    -3.0000         0         0
-%    -2.5000         0         0
-%     1.0000         0         0
-%     2.0000         0         0
-%     3.0000         0         0
-%          0   -3.0000         0
-%          0   -2.2000         0
-%          0    0.5000         0
-%          0    1.0000         0
-%          0    2.0000         0
-%          0    4.0000         0
-%          0         0   -3.0000
-%          0         0   -2.0000
-%          0         0    1.5000
-%          0    2.0000    3.0000
+domain_type_coords=[...
+ 0.0,  0.0,  0.0;...
+-3.0,  0.0,  0.0;...
+-2.5,  0.0,  0.0;...
+ 1.0,  0.0,  0.0;...
+ 2.0,  0.0,  0.0;...
+ 3.0,  0.0,  0.0;...
+ 0.0, -3.0,  0.0;...
+ 0.0, -2.2,  0.0;...
+ 0.0,  0.5,  0.0;...
+ 0.0,  1.0,  0.0;...
+ 0.0,  2.0,  0.0;...
+ 0.0,  4.0,  0.0;...
+ 0.0,  0.0, -3.0;...
+ 0.0,  0.0, -2.0;...
+ 0.0,  0.0,  1.5;...
+ 0.0,  2.0,  3.0];
+%
 % stim_labels
 % ans =
-%   16×9 char array
+%  16×9 char array
 %     'neutral  '
 %     'never    '
 %     'rare     '
@@ -47,6 +48,7 @@ aux.opts_read.domain_sigma=struct;
 aux.opts_read.paradigm_type_def='opposites';
 aux.opts_read.domain_list_def={'cars','boats','opposites','sizes'};
 aux.opts_read.need_setup_file=0;
+aux.opts_read.domain_type_coords=domain_type_coords;
 aux.opts_read.if_auto=1;
 %
 data_set=cell(nfiles,1);

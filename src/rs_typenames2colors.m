@@ -43,6 +43,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %         - symbs_nomatch (char): symbol to be assigned if no coords can be found, default is '.'
 %
 %         - **Overall behavior**
+%         - if_usetypenames (char): 1 to decode typenames to determine coordinates; 0 to cosider typenames as a 2d float array of coordinates; default is 1
 %         - paradigm_type (char): paradigm type, typically from data.sets{:}.paradigm_type; default is 'unknown', which will result in colors and symbols assigned as described here.
 %         - paradigms_reserved (cell array of char): paradigm types whose colors and symbols are assigned by 'psg_typenames2colors' defaults to {'btc','faces'}; see note below regarding reserved paradigm types.
 %
@@ -115,10 +116,11 @@ aux.opts_tn2c=filldefault(aux.opts_tn2c,'coord_lets','abcdefghij');
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'if_color_arith',1);
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'symbs_nomatch','.');
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'symbs',struct);
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'if_usetypenames',1);
 %
 aux=rs_aux_customize(aux,'rs_typenames2colors');
 %
-if ~iscell(typenames)
+if ~iscell(typenames) & aux.opts_tn2c.if_usetypenames==1
     typenames=cellstr(typenames);
 end
 %
@@ -181,36 +183,40 @@ if isfield(aux.opts_tn2c.symbs,fn)
 %
 %go through each element in typenames, determine coordinates and signs
 %
-cvecs=NaN(length(typenames),length(aux.opts_tn2c.coord_lets));
-for it=1:length(typenames)
-    tn=typenames{it};
-    toks=regexp(tn,color_regexp);
-    if length(toks)>0
-        toks_aug=[toks length(tn)+1];
-        for itk=1:length(toks)
-            tok=tn(toks_aug(itk):toks_aug(itk+1)-1);
-            tok_coord=find(aux.opts_tn2c.coord_lets==tok(1));
-            tok_val=tok(2:end);
-            if length(tok_val)==0
-                val=NaN;
-            else
-                switch tok_val(1)
-                    case 'z'
+if aux.opts_tn2c.if_usetypenames==1
+    cvecs=NaN(length(typenames),length(aux.opts_tn2c.coord_lets));
+    for it=1:length(typenames)
+        tn=typenames{it};
+        toks=regexp(tn,color_regexp);
+        if length(toks)>0
+            toks_aug=[toks length(tn)+1];
+            for itk=1:length(toks)
+                tok=tn(toks_aug(itk):toks_aug(itk+1)-1);
+                tok_coord=find(aux.opts_tn2c.coord_lets==tok(1));
+                tok_val=tok(2:end);
+                if length(tok_val)==0
+                    val=NaN;
+                else
+                    switch tok_val(1)
+                        case 'z'
+                            val=0;
+                        case 'm'
+                            val=-str2num(tok_val(2:end));
+                        case 'p'
+                            val=str2num(tok_val(2:end));
+                        otherwise
+                            val=str2num(tok_val);
+                    end
+                    if isempty(val)
                         val=0;
-                    case 'm'
-                        val=-str2num(tok_val(2:end));
-                    case 'p'
-                        val=str2num(tok_val(2:end));
-                    otherwise
-                        val=str2num(tok_val);
+                    end
                 end
-                if isempty(val)
-                    val=0;
-                end
+                cvecs(it,tok_coord)=val;
             end
-            cvecs(it,tok_coord)=val;
         end
     end
+else
+    cvecs=typenames;
 end
 %compute the r,g,b value
 coords_found=find(any(~isnan(cvecs),1));
