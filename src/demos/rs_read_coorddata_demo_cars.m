@@ -1,6 +1,8 @@
-%rs_read_coorddata_demo_cars: 
-% demonstration of reading a generic coordinate file in an unstructured domain
+%rs_read_coorddata_demo_cars
+% demonstration of reading a generic coordinate dataset in an unstructured domain
 % data file: 37 stimuli, automobile names, with random coordinates for model dimensions 1,2,3, and 4
+%
+% See also:  RS_READ_COORDDATA.
 %
 fullname='demos/cars_coords_JK'; %mat-file name
 aux.opts_read.domain_sigma=struct;

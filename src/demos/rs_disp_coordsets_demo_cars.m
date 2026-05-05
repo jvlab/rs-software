@@ -1,6 +1,8 @@
 %rs_disp_coordsets_demo_cars: 
-% demonstration of display of a datast, for an unstructured domain (no stimulus coordinates)
+% demonstration of display of a coordinate dataset for an unstructured domain (no stimulus coordinates)
 % run after rs_disp_coordsets_demo
+%
+% See also:  RS_DISP_COORDSETS.
 %
 aux=struct;
 aux.opts_disp.set_labels=data_out.sets{1}.subj_id;
