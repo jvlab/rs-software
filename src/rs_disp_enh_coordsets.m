@@ -25,23 +25,25 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %
 %      - opts_tn2c (struct): controls how stimulus labels (data_in.sas{:}.typenames) are mapped to colors and symbols; can be empty, see `rs_typenames2colors` for details
 % 
-%      - opts_disp (struct): controls basic display; see `rs_disp_coordsets` for details. Most fields are of opts_disp are passed directly to `rs_disp_coordsets`, with unspecified fields in opts_disp filled with the defaults of `rs_disp_coordsets`. The following field values are inserted into opts_disp based on the fields of opts_disp_enh and the graphical element:
+%      - opts_disp (struct): controls basic display; see `rs_disp_coordsets` for details. Most fields are of opts_disp are passed directly to `rs_disp_coordsets`, with unspecified fields in opts_disp filled with the defaults of `rs_disp_coordsets`. The following field values are inserted into opts_disp based on the fields of opts_disp_enh and the graphical element being drawn:
 %
-% ***
-%              element                    points          rays         rings      neighbors
-%        -------------------             --------    -------------   --------   ------------
-%        data_show_method               'all' [1]     'list'        'list'       'list' 
-%        data_label_method              'none'[1]     'last'        'none'[1]    'none'[1]
-%        connect_data_method                          'list'        'list'[1]    'list'
-%        connect_data_linestyles        'none'[1]   '--' or '-'[2]   ':'  [1]    '-'   [1]
-%        set_markers                                   [3]          'none'[1]    'none'[1]
-%        set_tags                                     'rays'        'rings'      'nbrs'
-%        callout_amount                               0.5[1]
-%        set_colors                                   per ray[3]
-%        callout_colors                               per ray[1]
-%       [1]: if a value is supplied value in aux.opts_disp, it is not overridden
-%       [2]: line style depends on whether the ray is negative (first option) or positive (second option)
-%       [3]: set markers and colors determined by `rs_typenames2colors` 
+%
+%          |                      element: | points       | rays              | rings        | neighbors    |
+%          |-------------------------------|--------------|-------------------|--------------|--------------|
+%          | data_show_method              | 'all' [1]    | 'list'            | 'list'       | 'list'       |
+%          | data_label_method             | 'none'[1]    | 'last'            | 'none'[1]    | 'none'[1]    |
+%          | connect_data_method           |              | 'list'            | 'list'[1]    | 'list'       |
+%          | connect_data_linestyles       | 'none'[1]    | '--' or '-'[2]    | ':'  [1]     | '-'   [1]    |
+%          | set_markers                   |              | [3]               | 'none'[1]    | 'none'[1]    |
+%          | set_tags                      |              | 'rays'            | 'rings'      | 'nbrs'       |
+%          | callout_amount                |              | 0.5[1]            |              |              |
+%          | set_colors                    |              | per ray[3]        |              |              |
+%          | callout_colors                |              | per ray[1]        |              |              |
+%
+%         - [1]: if a value is supplied value in aux.opts_disp, it is not overridden
+%         - [2]: line style depends on whether the ray is negative (first option) or positive (second option)
+%         - [3]: set markers and colors determined by `rs_typenames2colors` 
+%
 %
 %   rays (struct): a `ray structure`, ordinarily created by `rs_findrays`. If empty or omitted the enhanced graphical elements will not be displayed.
 %
