@@ -70,6 +70,8 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
+type_coords_def=getfield(getfield(rs_aux_customize(setfield(struct(),'opts_import',struct()),'rs_import_coordsets'),'opts_import'),'type_coords_def');
+aux.opts_read=filldefault(aux.opts_read,'type_coords_def',type_coords_def);
 %
 aux=filldefault(aux,'opts_rays',struct);
 %
@@ -135,7 +137,7 @@ if aux_out.warn_bad==0
         psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
     %find rays via rs_findrays, so that coords are sought in type_coords or btc_augcoords
     for iset=1:nsets
-        if strcmp(sets{iset}.paradigm_type,'domain')
+        if strcmp(opts_read_used{iset}.type_class,'domain')
             [rayss{iset},wmsg,opts_rays_used{iset}]=rs_findrays(sas{iset},opts_read_used{iset}.setup_fullname,aux.opts_rays);
             if ~isempty(wmsg)
                 aux_out=rs_warning(wmsg,0,aux_out);

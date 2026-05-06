@@ -59,7 +59,7 @@ dim_select=5;
 group_size_list=[2:3];
 coord_group_methods={'keeplow'};
 %
-opts_disp=auxs_force;
+opts_disp=auxs_force.opts_disp;
 opts_disp.dim_select=dim_select;
 opts_disp.data_label_setsel_method='list';
 opts_disp.data_label_setsel_list=2;

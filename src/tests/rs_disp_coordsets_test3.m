@@ -79,7 +79,7 @@ for igp_ptr=1:length(gp_list)
         aux_knit_def.opts_knit.if_pca=1; %rotate to PCA
         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
         %
-        opts_disp=auxs_force;
+        opts_disp=auxs_force.opts_disp;
         opts_disp.fig_name=sprintf('group %1.0f: %s',igp,data_read.sets{1}.paradigm_name);
         for ifile=1:nfiles
             opts_disp.set_labels{ifile}=data_read.sets{ifile}.subj_id;

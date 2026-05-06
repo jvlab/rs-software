@@ -103,7 +103,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %             - 'first': use color of first record in connected pair
 %             - 'last': use color of last record in connected pair
-%             - 'split': first half of segment matches first record in cnnecting pair; second half of segmentmatches second record in connected pair
+%             - 'split': first half of segment matches first record in connected pair; second half of segmentmatches second record in connected pair
 %             - 'list': specify colors in connect_sets_colors
 %
 %         - connect_sets_colors (color specifier or cell array of color specifiers): iff connect_sets_color_mode='list;, these are the colors for for connecting segments; cycled through if necessary
@@ -462,8 +462,9 @@ if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
 %set up connection colors
-x.set_colors=x.set_colors(:);% ensure a column
-x.set_colors_filled=x.set_colors_filled(:);
+%force a column, or cell array column of triplets
+x.set_colors=rs_disp_colorfix(x.set_colors);
+x.set_colors_filled=rs_disp_colorfix(x.set_colors_filled);
 if size(x.connect_sets_list,1)>0
     connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
     switch x.connect_sets_color_mode
@@ -873,6 +874,23 @@ if ~isempty(list_vals)
 end
 if ~isempty(wmsg)
     list_vals=[];
+end
+return
+end
+
+function cfix=rs_disp_colorfix(c) %force a column, or cell array column of triplets
+if isnumeric(c)
+    cfix=cell(size(c,1),1);
+    %make sure c has 3 columns
+    if size(c,2)<3
+        c=[c,zeros(size(c,1),3-size(c,2))];
+    end
+    c=c(:,[1:3]);
+    for k=1:size(c,1)
+        cfix(k)={c(k,:)};
+    end
+else
+    cfix=c(:); %already a cell array or letter designations for columns
 end
 return
 end
