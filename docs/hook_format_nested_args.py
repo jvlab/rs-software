@@ -181,7 +181,7 @@ def _group_into_details(ul_node: Node) -> None:
             #            <ul class="doc-param-group-items">…</ul>
             #        </details>
             summary_html = "".join(serialize(c) for c in child.children)
-            details_node = Node("details", [("class", "doc-param-group"), ("open", None)])
+            details_node = Node("details", [("class", "doc-param-group")])
             summary_node = Node("summary", [])
             b = HTMLTreeBuilder()
             b.feed(summary_html)
