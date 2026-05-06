@@ -123,3 +123,8 @@ details.doc-param-group {
 details.doc-param-group code {
     font-size: 0.85em !important;
 }
+
+.doc .md-typeset__table, .doc .md-typeset__table table {
+    display: table !important;
+    width: 50%;
+}
