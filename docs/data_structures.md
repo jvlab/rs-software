@@ -126,7 +126,13 @@ Very rough:
 Briefly introduce the animal domain
 Provide pointers to J Neurosci
 
-...
+
+<figure markdown="span">
+  ![Animal domain](images/animal_domain_fig1_jneuro.jpg){ width="400" }
+  <figcaption>Stimuli from the animal domain. Taken from Waraich & Victor (2024).</figcaption>
+</figure>
+
+
 
 ## MPI faces domain
 Very rough:
