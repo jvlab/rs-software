@@ -44,10 +44,54 @@ OWN_DATATYPES = {
     "binary texture":               "data_structures/#binary-texture-domain",
     "binary textures":              "data_structures/#binary-texture-domain",
     "animal domain":                "data_structures/#animal-domain",
-    "MPI faces domain":             "data_structures/#MPI-faces-domain",
-    "MPI faces":                    "data_structures/#MPI-faces-domain",
+    "MPI faces domain":             "data_structures/#mpi-faces-domain",
+    "MPI faces":                    "data_structures/#mpi-faces-domain",
     # add more as needed...
 }
 
-# joints the two dictionaries
-FUNCTION_LINKS = {**MATLAB_BUILTINS, **OWN_DATATYPES}
+
+
+
+
+
+# ---------------------------------------------------------------------------
+# Build the merged FUNCTION_LINKS dictionary used by all hooks.
+#
+# Keys in the source dictionaries (MATLAB_BUILTINS, OWN_DATATYPES) may be
+# written in any case for readability (e.g. "MPI faces domain"). All hook
+# code looks them up using `key.lower().strip()`, so we normalize the keys
+# here, once, at module load time. The normalization:
+#   - lowercases the key,
+#   - strips surrounding whitespace,
+#   - collapses internal runs of whitespace to a single space.
+#
+# If two source keys collapse to the same normalized form (e.g. "Struct"
+# and "struct") with different URLs, that is a configuration error and
+# raises ValueError immediately so it is caught at build time rather than
+# silently overwriting one entry with the other.
+# ---------------------------------------------------------------------------
+
+def _normalize_key(key: str) -> str:
+    """Return the canonical lookup form of a dictionary key."""
+    return " ".join(key.lower().split())
+
+
+def _build_function_links(*sources: dict) -> dict:
+    """Merge source dicts into one, normalizing keys and rejecting conflicts."""
+    merged: dict = {}
+    seen_originals: dict = {}  # normalized key --> original key, for error msg
+    for source in sources:
+        for original_key, url in source.items():
+            norm = _normalize_key(original_key)
+            if norm in merged and merged[norm] != url:
+                raise ValueError(
+                    f"function_links: conflicting entries for normalized key "
+                    f"{norm!r}: {seen_originals[norm]!r} --> {merged[norm]!r}, "
+                    f"and {original_key!r} --> {url!r}"
+                )
+            merged[norm] = url
+            seen_originals[norm] = original_key
+    return merged
+
+
+FUNCTION_LINKS = _build_function_links(MATLAB_BUILTINS, OWN_DATATYPES)
