@@ -461,10 +461,15 @@ end
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
+%
+%ensure that certain options are cell in a column, or cell array of triplets
+for imc=1:length(make_cell)
+    mc=make_cell{imc};
+    if ~isempty(strfind(mc,'color'))
+        x.(mc)=rs_disp_colorfix(x.(mc));
+    end
+end
 %set up connection colors
-%force a column, or cell array column of triplets
-x.set_colors=rs_disp_colorfix(x.set_colors);
-x.set_colors_filled=rs_disp_colorfix(x.set_colors_filled);
 if size(x.connect_sets_list,1)>0
     connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
     switch x.connect_sets_color_mode
@@ -879,6 +884,10 @@ return
 end
 
 function cfix=rs_disp_colorfix(c) %force a column, or cell array column of triplets
+if isempty(c)
+    cfix=[];
+    return;
+end
 if isnumeric(c)
     cfix=cell(size(c,1),1);
     %make sure c has 3 columns
@@ -890,7 +899,11 @@ if isnumeric(c)
         cfix(k)={c(k,:)};
     end
 else
-    cfix=c(:); %already a cell array or letter designations for columns
+    if iscell(c)
+        cfix=c(:); %already a cell array or letter designations for columns
+    else
+        cfix{1}=c; %c may be '--'
+    end
 end
 return
 end
