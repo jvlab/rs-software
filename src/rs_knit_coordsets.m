@@ -29,7 +29,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - **Statistics**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
-%         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_states=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
 %         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %
 %         - **Dimension selection**

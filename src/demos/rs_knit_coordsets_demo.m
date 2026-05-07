@@ -8,12 +8,20 @@ verbosity=getinp('pipeline display verbosity','d',[0 2],0);
 if_write=getinp('1 to write the knitted sets','d',[0 1]);
 nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);
 %
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_import','opts_qpred','opts_knit','opts_write'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 filenames={'./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat','./samples/bwtextures/dgea3pt_coords_MC_sess01_10.mat'};
 nsets=length(filenames);
-aux=struct;
+aux=auxs_force;
 aux.nsets=nsets;
 aux.opts_align.min=1;
-aux.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux.opts_knit.keep_details=1;
 %
 %read the data
@@ -168,7 +176,7 @@ end %nshuffs
 %write datasets if requested
 %
 if if_write
-    aux.opts_write=struct;
+    aux.opts_write=auxs_force.opts_write;
     aux.opts_write.if_gui=0;
     aux_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_noscale',data_knit,aux);
     %

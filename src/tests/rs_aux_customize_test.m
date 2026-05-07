@@ -2,8 +2,8 @@
 %
 %  See also:  RS_AUX_CUSTOMIZE, RS_AUX_DEFAULTS_DEFINE, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
-%
 rs_module='aux_customize';
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
 %
 ntests=2;
 %
@@ -24,7 +24,7 @@ callers{2}='rs_get_coordsets';
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
-    aux_outs{itest}=rs_aux_customize(auxs{itest},callers{itest});
+    aux_outs{itest}=rs_aux_customize(auxs{itest},callers{itest},aux_force_filename);
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     s=struct;
     s.aux_out=aux_outs{itest};

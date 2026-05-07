@@ -11,6 +11,15 @@ nsubmodules=length(rs_submodules);
 if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
+%
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check','opts_xform','opts_qpred'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 if ~exist('if_ignore_svdambig')
     if_ignore_svdambig=0;
 end
@@ -31,18 +40,18 @@ data_outs=cell(1,ntests);
 %
 test_descs{1}='three binary texture coordinate files, second file is a model, no centering';
 filenames_examples{1}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
-aux_ins{1}=struct;
-aux_ins{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{[1 2],1,1});
+auxs{1}=auxs_force;
+aux_ins{1}=auxs_force;
+aux_ins{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{[1 2],1,1});
 aux_ins{1}.nsets=3;
-auxs{1}=struct;
 signflips{1}={{'data_read','ds'},{'data_out','ds'}};
 %
 test_descs{2}='four animal-domain files, centering by typename, global, translate';
 filenames_examples{2}={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
-aux_ins{2}=struct;
-aux_ins{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+auxs{2}=auxs_force;
+aux_ins{2}=auxs_force;
+aux_ins{2}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{2}.nsets=4;
-auxs{2}=struct;
 auxs{2}.opts_xform.mode='translate';
 auxs{2}.opts_xform.source='global';
 auxs{2}.opts_xform.centering_specifier='typename';
@@ -50,8 +59,8 @@ auxs{2}.opts_xform.centering_typename='ant';
 %
 test_descs{3}='four animal-domain files, centering by typename, local, translate';
 filenames_examples{3}=filenames_examples{2};
+auxs{3}=auxs_force;
 aux_ins{3}=aux_ins{2};
-auxs{3}=struct;
 auxs{3}.opts_xform.mode='translate';
 auxs{3}.opts_xform.source='local';
 auxs{3}.opts_xform.centering_specifier='typename';
@@ -59,16 +68,16 @@ auxs{3}.opts_xform.centering_typename='ant';
 %
 test_descs{4}='four animal-domain files, centering by centroid, source = set 2, translate';
 filenames_examples{4}=filenames_examples{2};
+auxs{4}=auxs_force;
 aux_ins{4}=aux_ins{2};
-auxs{4}=struct;
 auxs{4}.opts_xform.mode='translate';
 auxs{4}.opts_xform.source=2;
 auxs{4}.opts_xform.centering_specifier='centroid';
 %
 test_descs{5}='four animal-domain files, centering by fixed value, translate';
 filenames_examples{5}=filenames_examples{2};
+auxs{5}=auxs_force;
 aux_ins{5}=aux_ins{2};
-auxs{5}=struct;
 auxs{5}.opts_xform.mode='translate';
 auxs{5}.opts_xform.source='global';
 auxs{5}.opts_xform.centering_specifier='value';
@@ -76,8 +85,8 @@ auxs{5}.opts_xform.centering_value=0.1*[1:10];
 %
 test_descs{6}='four animal-domain files, centering by index, global, offset_pca';
 filenames_examples{6}=filenames_examples{2};
+auxs{6}=auxs_force;
 aux_ins{6}=aux_ins{2};
-auxs{6}=struct;
 auxs{6}.opts_xform.mode='offset_pca';
 auxs{6}.opts_xform.source='global';
 auxs{6}.opts_xform.centering_specifier='index';
@@ -89,8 +98,8 @@ end
 %
 test_descs{7}='four animal-domain files, centering by index, global, translate_then_pca';
 filenames_examples{7}=filenames_examples{2};
+auxs{7}=auxs_force;
 aux_ins{7}=aux_ins{2};
-auxs{7}=struct;
 auxs{7}.opts_xform.mode='translate_then_pca';
 auxs{7}.opts_xform.source='local';
 auxs{7}.opts_xform.centering_specifier='index';
@@ -102,10 +111,10 @@ end
 %
 test_descs{8}='three binary texture coordinate files, no models, centering by typename, local, translate_then_pca';
 filenames_examples{8}={'./samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat'};
+auxs{8}=auxs_force;
 aux_ins{8}=struct;
-aux_ins{8}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1});
+aux_ins{8}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{8}.nsets=3;
-auxs{8}=struct;
 auxs{8}.opts_xform.mode='translate_then_pca';
 auxs{8}.opts_xform.source='local';
 auxs{8}.opts_xform.centering_specifier='typename';
@@ -134,7 +143,7 @@ for itest=1:ntests
         rs_save_mat(cat(2,'tests',filesep,fns{1,itest}),s);
         %
         %xform_apply
-        [data_outs{itest},aux_outs{2,itest}]=rs_xform_apply(data_reads{itest},xforms{itest},struct());
+        [data_outs{itest},aux_outs{2,itest}]=rs_xform_apply(data_reads{itest},xforms{itest},auxs{itest});
         %
         fns{2,itest}=sprintf('rs_%s_test_%1.0f',rs_submodules{2},itest);
         s=struct;

@@ -7,6 +7,14 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_import','opts_check'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 ntests=7;
 %
 test_descs=cell(1,ntests);
@@ -19,13 +27,13 @@ aux_outs=cell(1,ntests);
 %
 test_descs{1}='basic import test with all defaults, dims 1,2,4';
 nstims=15;
-auxs{1}.opts_import=struct();
+auxs{1}=auxs_force;
 colvec=[1:nstims]';
 coords{1}={colvec,[colvec colvec.^2],[],colvec*[1:4]};
 %
 test_descs{2}='basic import test with non-default sas metadata, dims 3,4,5';
 nstims=11;
-auxs{2}.opts_import=struct();
+auxs{2}=auxs_force;
 auxs{2}.opts_import.nstims=nstims;
 auxs{2}.opts_import.type_coords=reshape(sqrt(1:2*nstims),nstims,2); %make a 2-column set of stimulus coordinates 
 auxs{2}.opts_import.typenames={'abc','bcd','ef0','004','ax','hij','b252','agag_g','uvwz','3abc','*va&'}';

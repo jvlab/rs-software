@@ -1,6 +1,6 @@
 function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 % [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
-% concatenates two `dataset structures` and checks concatenated `dataset structure` for consistency
+% concatenates two `dataset structures` and checks the concatenated `dataset structure` for consistency
 %
 % Args:
 %   data_in1 (struct): first `dataset structure`, containing $n_1$ records, with fields
@@ -32,7 +32,7 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %   -  data_out.sets{k}.pipeline is copied from data_in1 or data_in2 and is not updated.
 %
 % See also:
-%   RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
+%   RS_IMPORT_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_EXTRACT_COORDSETS.
 %
 if (nargin<=2)
     aux=struct;

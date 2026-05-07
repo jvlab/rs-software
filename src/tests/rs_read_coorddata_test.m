@@ -6,6 +6,14 @@
 %
 rs_module='read_coorddata';
 %
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 ntests=5;
 %
 test_descs=cell(1,ntests);
@@ -18,23 +26,28 @@ aux_outs=cell(1,ntests);
 %
 test_descs{1}='reading binary texture coordinate file, bcpm stimulus set';
 filenames_examples{1}={'./samples/bwtextures/bcpm3pt_coords_BL_sess01_10.mat'};
-auxs{1}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+auxs{1}=auxs_force;
+auxs{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
 %
 test_descs{2}='reading binary texture coordinate file, bcpp55q stimulus set';
 filenames_examples{2}={'./samples/bwtextures/bcpp55qpt_coords_BL_sess01_10.mat'};
-auxs{2}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+auxs{2}=auxs_force;
+auxs{2}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
 %
 test_descs{3}='reading binary texture coordinate file, bcpm24 stimulus set';
 filenames_examples{3}={'./samples/bwtextures/bcpm24pt_coords_BL_sess01_10.mat'};
-auxs{3}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+auxs{3}=auxs_force;
+auxs{3}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
 %
 test_descs{4}='reading binary texture coordinate file, bdce stimulus set';
 filenames_examples{4}={'./samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
-auxs{4}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+auxs{4}=auxs_force;
+auxs{4}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
 %
 test_descs{5}='reading animal-domain file';
 filenames_examples{5}={'./samples/animals/image_coords_S3'};
-auxs{5}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,0});
+auxs{5}=auxs_force;
+auxs{5}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

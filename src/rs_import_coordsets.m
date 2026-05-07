@@ -1,40 +1,43 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% `rs_concat_coordsets` can be used to combine several one-record `dataset structures` into a single `dataset structure`.
+% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record.
+% If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
+%   combine several one-record `dataset structures` created here into a single `dataset structure`.
+% If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
 %
 %   aux (struct): a structure, can be omitted, with fields 
 %
-%     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typename..., and type_coords... are used
-%     to create the `stimulus metadata structure`; fields type, paradigm_..., extra, subj_id..., and label... are used to create the `set metadata structure`.  Any or all can be omitted.
+%     - opts_import (struct): metadata, can be omitted, with fields listed below.  Fields nstims, typenames, and type_coords are used
+%     to create the `stimulus metadata structure`; fields type, paradigm_type, paradigm_name,extra, subj_id, subj_id_short, label, and label_long are used to create the `set metadata structure`.  Any or all can be omitted.
 %
-%          - nstims (int): number of stimuli; default determined from first non-empty entry in coords
-%          - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
-%          - typename_prefix (char): prefix auto-generated stimulus names; default is 'type_'; see note below regarding customization
-%          - typename_ndigits (int): number of digits in suffix for auto-generated stimulus names; default is 2; see note below regarding customization
-%          - type_coords (float 2-d array): array with nstims rows specifing the `stimulus coordinates`; default is determined by opts_import.type_coords_def
-%          - type_coords_def (char): method for auto-generation of `stimulus coordinates`; default is 'none'; see note below regarding customization
+%         - nstims (int): number of stimuli; default determined from first non-empty entry in coords
+%         - typenames (cell array): unique labels for stimuli; length should be equal to nstims; default is opts_import.typename_prefix followed by a sequential number, formatted with opts_import.typename_ndigits
+%         - typename_prefix (char): prefix auto-generated stimulus names; default is 'type_'; see note below regarding customization
+%         - typename_ndigits (int): number of digits in suffix for auto-generated stimulus names; default is 2; see note below regarding customization
+%         - type_coords (float 2-d array): array with nstims rows specifing the `stimulus coordinates`; default is determined by opts_import.type_coords_def
+%         - type_coords_def (char): method for auto-generation of `stimulus coordinates`; default is 'none'; see note below regarding customization
 %
-%              - 'none': type_coords=[]
-%              - 'zeros': type_coords=zeros(nstims,1)
-%              - 'ones': type_coords=ones(nstims,1)
-%              - 'eye': type_coords=eye(nstims)
+%             - 'none': type_coords=[]
+%             - 'zeros': type_coords=zeros(nstims,1)
+%             - 'ones': type_coords=ones(nstims,1)
+%             - 'eye': type_coords=eye(nstims)
 %
-%          - type (char): ovrall category of coordinates; default is 'data'; can use 'model' for coordinates originating in a computational model
-%          - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
-%          - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
-%          - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
-%          - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
-%          - extra (char): free-form identifier; default is []; see note below regarding customization
-%          - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
-%          - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
+%         - type (char): overall category of coordinates; default is 'data'; alternatively, 'model' for coordinates originating in a computational model
+%         - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
+%         - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
+%         - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
+%         - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
+%         - extra (char): free-form identifier; default is []; see note below regarding customization
+%         - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
+%         - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
 %
 %     - opts_check: options for consistency checking, with field
 %
-%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
 % Returns:
 %   data_out (struct): `dataset structure` with one record, and fields
@@ -56,13 +59,13 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
 % Note regarding customization:
-%    The default values of these parameters can be changed by editing 'rs_aux_defaults_define`, running it 
+%    The default values of these parameters can be changed by editing `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm
-%    type to 'cars', add the line generic.opts_import.paradigm_type='cars' [??how to indicate code] 
+%    type to 'cars', add the line generic.opts_import.paradigm_type='cars'
 %    to the section in which generic.opts_import fields are defined.
 %
-%  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
+%  See also: RS_CONCAT_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
 %
 if (nargin<=1)
     aux=struct;
@@ -81,12 +84,9 @@ aux.opts_import=filldefault(aux.opts_import,'typenames',cell(0));
 aux.opts_import=filldefault(aux.opts_import,'type_coords',[]);
 %
 aux.opts_import=filldefault(aux.opts_import,'type','data');
-aux.opts_import=filldefault(aux.opts_import,'paradigm_type','unknown');
 aux.opts_import=filldefault(aux.opts_import,'paradigm_name',aux.opts_import.paradigm_type);
-aux.opts_import=filldefault(aux.opts_import,'subj_id','unknown');
 aux.opts_import=filldefault(aux.opts_import,'subj_id_short',aux.opts_import.subj_id);
 aux.opts_import=filldefault(aux.opts_import,'extra',[]);
-aux.opts_import=filldefault(aux.opts_import,'label_long','unknown');
 aux.opts_import=filldefault(aux.opts_import,'label',aux.opts_import.label_long);
 %
 data_out=struct;

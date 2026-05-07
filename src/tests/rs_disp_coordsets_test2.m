@@ -11,6 +11,15 @@
 %
 %testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
 rs_module='disp_coordsets';
+%
+%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_check','opts_disp'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
+%
 testset=2; 
 ntests=1;
 %
@@ -81,7 +90,7 @@ for ip=1:length(dim_list)
         irow=ceil(iplot/ncols);
         hax=subplot(nrows,ncols,iplot);
         %
-        opts_disp=struct;
+        opts_disp=auxs_force.opts_disp;
         opts_disp.dim_select=k;
         opts_disp.fig_handle=hfig;
         opts_disp.axis_handles{1}=hax;

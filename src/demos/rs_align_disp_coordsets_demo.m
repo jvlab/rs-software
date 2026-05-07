@@ -23,14 +23,21 @@
 %  - selection of data points to label based on length of stimulus name
 %
 %  See also:  RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_CONCAT_COORDSETS, RS_DISP_COORDSETS.
-%
+
+%%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_qpred','opts_knit','opts_disp'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
 
 % ## Read four datasets
-% Datasets are from four subjects of Warich and Victor, J. Neurosci. 2024
+% Datasets are from four subjects of Waraich and Victor, J. Neurosci. 2024
 filenames={'./samples/animals/image_coords_S3','./samples/animals/image_coords_S4','./samples/animals/image_coords_S5','./samples/animals/image_coords_S6'};
 nsets=length(filenames);
-aux_in=struct;
-aux_in.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1}); %input type 1=data, if_auto=1: non-interactive, if_log=1 to log
+aux_in=auxs_force;
+aux_in.opts_read=setfields(aux_in.opts_read,{'input_type','if_auto','if_log'},{1,1,1}); %input type 1=data, if_auto=1: non-interactive, if_log=1 to log
 aux_in.nsets=nsets;
 %Read the coordinates of each dataset with `rs_get_coordsets`
 %
@@ -52,7 +59,7 @@ end
 coord_groups=[1 2 3;2 3 4]; %make two 3-d plots, one with dimensions 1,2,3, one with dimensions 2,3,4
 ngroups=size(coord_groups,1);%
 hfig=figure; %open a figure for the plots
-opts_disp_raw=struct;
+opts_disp_raw=auxs_force.opts_disp;
 opts_disp_raw.fig_handle=hfig;
 opts_disp_raw.fig_position=[100 100 1200 800];
 opts_disp_raw.fig_name='raw data';
@@ -82,9 +89,9 @@ end
 %
 %align data, rotate data into a consensus, and use each component, aligned to consensus, for further plotting
 %
-aux_align_def=struct;
+aux_align_def=auxs_force.opts_align;
 [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
-aux_knit_def=struct;
+aux_knit_def=auxs_force.opts_knit;
 [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
 data_label_list_consensus=[]; %stimulus order may have changed, so need to re-identify the stimuli
 for istim=1:nstims

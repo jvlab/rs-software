@@ -10,6 +10,7 @@ hooks:
   - docs/hooks.py
   - docs/hook_ignore.py
   - docs/hook_format_nested_args.py
+  - docs/hook_collapse_details.py
 
 watch:
   - src
@@ -42,6 +43,9 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
+  - attr_list
+  - md_in_html
+  - pymdownx.blocks.caption
 
 extra_javascript:
   - javascripts/mathjax.js

@@ -2,6 +2,12 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 % [data_out,aux_out]=rs_get_coordsets(fullnames,aux): get one or more sets of coordinates and metadata
 %    handles experimental data and (for binary texture experiments) quadratic form models
 % 
+% This is the preferred method for bringing multiple coordinate sets derived from similarity judgements via [??how to refer to Python output]
+% into `dataset structures` suitable for display and geometrical analysis.
+% This routine also creates `dataset structures` from quadratic form models and supports symmetry-based augmentation of datasets in the `binary texture domain`.
+% For single coordinate sets, if these capabilities are not needed, `rs_get_coordsets` may also be used.
+% To import coordinates generated externally, use `rs_import_coordsets`.
+%
 % Input:
 % fullnames: a single file name (with path), or a cell array of file names; if empty, it will be requested interactively
 %      File names must contain the string '_coords'.  Setup file names are automatically generated.
@@ -22,7 +28,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
 %     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup (these are in samples/animals)
 %     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed (these are the in samples/bwtextures, type class is 'btc')
-%    For other fields, see see psg_get_coordsets.
+%    For other fields, see see psg_get_coordsets. if_symaug, sym_apply
 %    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
 %      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
 %    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
@@ -64,6 +70,8 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
+type_coords_def=getfield(getfield(rs_aux_customize(setfield(struct(),'opts_import',struct()),'rs_import_coordsets'),'opts_import'),'type_coords_def');
+aux.opts_read=filldefault(aux.opts_read,'type_coords_def',type_coords_def);
 %
 aux=filldefault(aux,'opts_rays',struct);
 %
@@ -127,6 +135,16 @@ end
 if aux_out.warn_bad==0
     [sets,ds,sas,rayss,opts_read_used,opts_rays_used,opts_qpred_used,syms_list]=...
         psg_get_coordsets(aux.opts_read,aux.opts_rays,aux.opts_qpred,aux.nsets);
+    %find rays via rs_findrays, so that coords are sought in type_coords or btc_augcoords
+    for iset=1:nsets
+        if strcmp(opts_read_used{iset}.type_class,'domain')
+            [rayss{iset},wmsg,opts_rays_used{iset}]=rs_findrays(sas{iset},opts_read_used{iset}.setup_fullname,aux.opts_rays);
+            if ~isempty(wmsg)
+                aux_out=rs_warning(wmsg,0,aux_out);
+            end
+        end
+    end
+    %
     data_out.sets=sets;
     data_out.ds=ds;
     data_out.sas=sas;

@@ -1,7 +1,7 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinaates in a `dataset structure`
+% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of pairs or triplets of coordinates in a `dataset structure`
 %
-% Multiple views can be plotted in subplots of the same figure. This is particularly helpful if the dimensionality
+% Multiple views can be plotted, one eachin a subplot of the same figure. This is particularly helpful if the dimensionality
 % of the coordinates is high:  each subplot could show a different combination of two or three coordinates.
 % Plots of two coordinates will produce a planar view; plots of three coordinates will produce an isometric 3D view. Subplots are left in the 'hold on' state.
 %
@@ -18,7 +18,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %         - **Data selection**
 %         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
-%         - dim_select (int): dimension to show; i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
+%         - dim_select (int): dimension to show (>=2); i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
 %         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available)
 %         - coord_group_method (char): method of selecting coordinates
 %
@@ -31,14 +31,14 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the
 %             first, {1,4,5} in the second, {1,6,7} in the third
 %
-%         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows of an integer array; each row will generate one subplot
+%         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
 %         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);
 %
 %         - **Figure and subplot control**
 %         - fig_handle (handle): handle to figure; will be created if empty or not provided
 %         - fig_position (int 1-D array): position parameters [left bottom width height] for figure to be created; see note below regarding customization
-%         - fig_name (char): title for figure; default is list of dimensions shown
+%         - fig_name (char): title for figure; default is dimension shown
 %         - axis_handles (cell array of handles): handle to axes, one for each subplot, will be created empty or not provided
 %
 %         - **Labels**
@@ -59,8 +59,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - axis_label_font_size (char): font size for axis labels; default is axis_font_size
 %         - axis_label_prefix (char): prefix for axis label, default is 'coord'; see note below regarding customization
 %         - axis_labels (cell array of char): cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
-%         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard
-%         3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
+%         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard 3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
 %         - axis_equal (int): 1 to set axes to have equal scales, 0 autoscales; default is 1
 %         - axis_range (char): 'tight' to set axis range to limits of data, 'auto' for autoscaling, or 'list' to specify by axis_range_list; default is 'tight'
 %         - axis_range_list (float 2-D array): axis range specification, as rows of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
@@ -104,7 +103,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %             - 'first': use color of first record in connected pair
 %             - 'last': use color of last record in connected pair
-%             - 'split': first half of segment matches first record in cnnecting pair; second half of segmentmatches second record in connected pair
+%             - 'split': first half of segment matches first record in connected pair; second half of segmentmatches second record in connected pair
 %             - 'list': specify colors in connect_sets_colors
 %
 %         - connect_sets_colors (color specifier or cell array of color specifiers): iff connect_sets_color_mode='list;, these are the colors for for connecting segments; cycled through if necessary
@@ -159,7 +158,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %     - The data points of each record are, by default, not interconnected. This can be changed with the 'connect_data*' options.
 %     - The data points between records are, by default, not interconnected . This can be changed with the 'connect_sets*' options.
 %
-%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
+%  See also: RS_DISP_ENH_COORDSETS, RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
 %
 if (nargin<=1)
     aux=struct;
@@ -462,9 +461,15 @@ end
 if ~isempty(wmsg)
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
 end
+%
+%ensure that certain options are cell in a column, or cell array of triplets
+for imc=1:length(make_cell)
+    mc=make_cell{imc};
+    if ~isempty(strfind(mc,'color'))
+        x.(mc)=rs_disp_colorfix(x.(mc));
+    end
+end
 %set up connection colors
-x.set_colors=x.set_colors(:);% ensure a column
-x.set_colors_filled=x.set_colors_filled(:);
 if size(x.connect_sets_list,1)>0
     connect_sets_list_mod=mod(x.connect_sets_list-1,length(x.set_colors))+1;
     switch x.connect_sets_color_mode
@@ -874,6 +879,31 @@ if ~isempty(list_vals)
 end
 if ~isempty(wmsg)
     list_vals=[];
+end
+return
+end
+
+function cfix=rs_disp_colorfix(c) %force a column, or cell array column of triplets
+if isempty(c)
+    cfix=[];
+    return;
+end
+if isnumeric(c)
+    cfix=cell(size(c,1),1);
+    %make sure c has 3 columns
+    if size(c,2)<3
+        c=[c,zeros(size(c,1),3-size(c,2))];
+    end
+    c=c(:,[1:3]);
+    for k=1:size(c,1)
+        cfix(k)={c(k,:)};
+    end
+else
+    if iscell(c)
+        cfix=c(:); %already a cell array or letter designations for columns
+    else
+        cfix{1}=c; %c may be '--'
+    end
 end
 return
 end
