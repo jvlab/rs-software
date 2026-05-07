@@ -58,8 +58,6 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %  aux_out: auxiliary parameter values used
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %
-%  06Nov25: check internal consistency of data files with rs_check_coordsets.
-%
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
 %
 if (nargin<=1)
@@ -112,8 +110,8 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
         aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
     end
     for iset=1:nsets_named
-        if ~contains(fullnames{iset},aux.opts_read.coord_string)
-            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames{iset},aux.opts_read.coord_string);
+        if ~contains(fullnames_list{iset},aux.opts_read.coord_string)
+            wmsg=sprintf('file name %2.0f (%s) does not contain the required tag ''%s''',iset,fullnames_list{iset},aux.opts_read.coord_string);
             aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_read.if_warn));
         end
     end
@@ -122,7 +120,7 @@ else %If fullnames is not empty, check that its length agrees with nsets and tha
     %create setup files
     aux.opts_read.setup_fullnames=cell(1,nsets_named);
     for iset=1:nsets_named
-        parsed=psg_coorddata_parsename(fullnames{iset},aux.opts_read);
+        parsed=psg_coorddata_parsename(fullnames_list{iset},aux.opts_read);
         aux.opts_read.setup_fullnames{iset}=parsed.setup_fullname_def;
     end
 end
@@ -133,6 +131,7 @@ if aux_out.warn_bad==0
     data_out.ds=ds;
     data_out.sas=sas;
     %
+    aux_out.opts_check=aux.opts_check;
     aux_out.opts_read=opts_read_used;
     aux_out.opts_rays=opts_rays_used;
     aux_out.opts_qpred=opts_qpred_used;

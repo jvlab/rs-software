@@ -50,7 +50,7 @@ end
 %set up sub-structure options
 aux=filldefault(aux,'opts_tn2c',struct); %options for this module (psg_template)
 %
-aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','mpi_faces','mater','irgb'});
+aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigms_reserved',{'btc','faces','mater','irgb'});
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'paradigm_type','unknown');
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors',struct);
 aux.opts_tn2c=filldefault(aux.opts_tn2c,'colors_nomatch',[0 0 0]);

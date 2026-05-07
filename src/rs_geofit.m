@@ -1,115 +1,175 @@
 function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
-% [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux) fits one or more geometrical transformations
-% to coordinate sets
+% [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
+% fits geometrical models to the transformation between coordinates in two `dataset structures`
 %
-% data_in.ds{k},sas{k},sets{k}: dataset structures that are the starting points for the transformation
-% data_out.ds{k},sas{k},sets{k}: dataset structures that are the targets of the transformation
-%  They must have same number of stimuli, and a warning is given if the number matches but the names do not.
-% aux:
-%  aux.opts_check
-%    if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
-%  aux.opts_geof
-%   model_list: a string, or a cell array of strings, consisting of one or more of the model types to be fitted.
-%     These the strings in getfield(psg_geomodels_define,'model_types'), and currently are the following
-%     If empty, the list is requested interactively; if omitted is given by model_list_default
-%    'mean'                       : all input values mapped to mean of output
-%    'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling     , no translation
-%    'procrustes_scale_nooffset   : rotation (and possibly reflection), rescaling allowed, no translation
-%    'procrustes_noscale_offset'  : rotation (and possibly reflection), no rescaling     , translation allowed
-%    'procrustes_scale_offset     : rotation (and possibly reflection), rescaling allowed, translation allowed
-%    'affine_nooffset'            : linear transformation, no translation
-%    'affine_offset'              : linear transformation, translation allowed
-%    'projective'                 : projective transformation
-%    'pwaffine'                   : piecwise affine with one cutplane; two linear transformations with agreement on the cut
-%    'pwaffine_2'                 : piecwise affine with two cutplanes: four linear transformations, with agreement on the cuts
-%     Note: if empty, this is requested interactively.
-%  model_list_default: models when model_list is not specified.  {'procrustes_scale_offset','affine_offset','projective'} but can modify in rs_aux_defaults_define
-%  dimpairs_method: pairs of dimensions considered between input and ouptut datasets
-%    'all': all pairings up to min(available dimensions, dim_max_[in|out]
-%    'equal': input dimension= output dimension (default)
-%    'din_lteq_dout': input dimension less than or equal to output dimension
-%    'din_gteq_dout': input dimension greater than or equal to output dimension
-%    'list': a two-column list of pairs (in, out)
-%  dim_max_in:  maximum dimension of input dataset to use, defaults to 10
-%  dim_max_out: maximum dimension of output dataset to use, defaults to dim_max_in
-%  dimpairs_list:  two-column array of pairs of dimensions for input and output, defaults to repmat([1:dim_max_in]',[1 2])
-%  if_stats: 1 to enable statistics (default; if set to 0, this will will override if_nestbymodel and if_nestbydim)
-%  nshuffs:         number of shuffles, defaults to 100 if if_stats=1, 0 if if_stats=0
-%  if_nestbymodel:  1 (default) to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models
-%  if_nestbydim: +/-1 to also do statistics for nesting by dimension within each k-dimensional model of the adjusted dataset, or 0 (default) to omit
-%       i.e., whether the k dimensions of the k-dimensional model have greater explanatory power than the first m dimensions of that model.   
-%     Use +1 if, for each k-dimensional model, the lower m dimensions (m<k) should be considered as nested.
-%     Use -1 if PCA should be applied within each k-dimensional model, to ensure that the lower m dimensions (m<k)
-%        explain as much of the variance as possible.
-%     A choice of +1 is appropriate if each k-dimensional is created by MDS of a distance matrix, or by PCA of a response matrix,
-%       (though not necessarily the same distance matrix or response matrix for each k)
-%       It is also appropriate if for each k, data_in{:}{k} and data_in{:}{k-1} agree on the first k-1 dimensions
-%     A choice of -1 is appropriate if a k-dimensional model is an arbitrary rotation of a coordinate set.  By applying PCA
-%       to the k-dimensional model to obtain the coords for m<k, this ensures that it is tested against models that account for 
-%       as much as posible of the variance
-%     Note that to compare the explanatory power of the k-dimensional coords in data_in{:}{k} against the coordinates in a lower dimensional model, e.g., data_in{:}{m},
-%       then one should ensure that data_in{:}{k}(:,1:m)=data_in{:}{m} and use if_nestbydim=+1
-%    This option is only recommended if, whenever a model is fit for (din,dout), it is also fit for (din-1,dout). This is guaranteed for  dimpairs_method='all' or 'din_lteq_dout;
-%  if_center: 1 (default) to center the data, i.e., subtract the mean across stimuli from data_in and data_out
-%     Note that with this option, the transformations returned in gfs and xs apply to the centered data.
-%  if_frozen: 1 (default) to use frozen random numbers, 0 for random each time, <0 to specify a seed
-%  if_fit_summary: 1 (default) to log summary of fitting
-%  if_fit_log: 1 (0: default) for detailed log
-%  if_log: 1 (default) to log progress
-%  if_warn: 1 (default) to show warnings
-%  persp_method: controls method used for finding projective transformations, options are 'fmin','oneshot', or 'best' (default)
-%     'fmin', 'oneshot' uses a method of Zhang (1993) [persp_xform_find.m for details]; 'best' uses both and takes the best-fit.
+% Args:
+%   data_in (struct): `dataset structure` that is the starting point of the transformations, with fields
+%
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
+%
+%   data_out (struct): `dataset structure` that is the target of the transformations, same format as  as `data_in`;
+%     number of stimuli must be the same as data_in;
+%     stimulus names in data_in.sas{k}.typenames and data_out.sas{k}.typenames need not match but a warning is issued if they do not
+%
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_geof (struct): specification of transformations to find, with fields
+%
+%          - **Model selection**
+%          - model_list (char or cell array of char): model types to be fitted; default is values given in `model_list_default`; if [],
+%          then requested interactively; see notes below regarding geometric models and model definition structure
+%          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
+%            see note below regarding customization
+%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
+%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%
+%          - **Dimension selection**
+%          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
+%          - dim_max_out (int): maximum dimension of output dataset to use, defaults to `dim_max_in`
+%          - dimpairs_method (char): specifies pairing of dimensions between `data_in` and `data_out`, default is 'equal'
+%
+%              - 'equal': input dimension = output dimension
+%              - 'all': all pairings of dimensions available in `data_in` up to `dim_max_in`, with all and dimensions available i `data_out`, up to `dim_max_out`
+%              - 'din_lteq_dout': as in 'all', but input dimension must be less than or equal to output dimension
+%              - 'din_gteq_dout': as in 'all', but input dimension must be greater than or equal to output dimension
+%              - 'list': the pairings specified by aux.opts_geof.dimpairs_list
+%
+%          - dimpairs_list (int 2-D array): two-column array of pairs of dimensions for input and output, default is repmat([1:dim_max_in]',[1 2])
+%
+%          - **Statistics**
+%          - if_stats (int): 1 to enable statistics, 0 to omit; default is 1; a value of 0 will override a nonzero `if_nestbymodel` and `if_nestbydim`
+%          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
+%          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
+%          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
+%          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
+%          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
+%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%          default is 1
+%
+%          - **Logging and optimization**
+%          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
+%          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
+%          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
+%          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
+%          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
+%
+%              - 'fmin': uses an iterative method to search for the denominator; for each trial denominator, numerator parameters are determined by standard least-squares
+%              - 'oneshot': uses method 2 of Zhengyou Zhang, Microsoft Research Technical Report MSR-TR-2010-63 (1993, revised 2010); well-suited if the projective transformation is a close fit
+%              - 'best' uses both methods and chooses the best-fit
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%
+% Returns:
+%   gfs (cell array of struct): gfs{k}.gf{dim_out,dim_in} contains results for the transformations from record k of `data_in` to record k of `data_out`,
+%   for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
+%   It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
+%   and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
+%
+%     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted;model_types_def.(model).nested is a cell array of the names of the nested models tested
+%     - ref_dim (int): dimension of the input dataset (same as dim_out)
+%     - adj_dim (int): dimension of output dataset (same as dim_in)
+%     - opts_geofit (struct): options used for fitting
+%     - d (float 1-D array): d(m) is the normlizded error for model m, equal to the sum of the squares of the deviations of data_out.ds{k}{dim_out} from the modeled values, normalized by the sum of their distances from their centroid.
+%     Here and below, the index m denotes fits for the model type listed in model_types_def.model_types{m}; 
+%     - transforms (1-D cell array}: transforms{m} are the parameters for the transformation; see `transformation structure` for details on how these are parameterized
+%     - d_shuff (float 4-D array): d_shuff(m,shuff,nest,normtype) is the normalized error for each shuffle of the nested model; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
+%     - surrogate_count (int 3-D array): surrogate_count(m,nest,normtype) counts the number of shuffles for which d_shuff(m,shuff,nest,normtype) is less than d(m)
+%     - nestdim_in_list (int): list of the lower dimensions used for nesting by input dimension
+%     - d_shuff_nestdim_in (float 4-D array): d_shuff_nestbydim_in(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer input dimensions; normtype=1  normalizes by the centroid of  the shuffled data, normtype=2 normalizes by the centroid of the original data
+%     - surrogate_count_nestdim_in (int 3-D array): surrogate_count_nestdim_in(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_in(m,shuff,nest,normtype) is less than d(m)
+%     - nestdim_out_list (int): list of the lower dimensions used for nesting by output dimension
+%     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
+%     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
+%
+%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, has fields
+%
+%     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
+%     - xforms (struct): xforms.ts{k}{dim_in}: the transformation to be
+%     applied to coordinates in data_in.ds{k}{dim_in} to fit coordinates in
+%     data_out.ds{k}{dim_out}. If there no fitting is requested for this dimension pair, then this will be empty.
+%
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_geof (struct): aux.opts_geof, with defaults filled in
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%
+% Note regarding geometric models:
+%    - Model types to be fit are specified by the entries in opts_geof.model_list. The following model types are available:
+%
+%        - 'mean': all input values mapped to a single output value 
+%        - 'procrustes_noscale_nooffset': rotation (and possibly reflection), no rescaling, no translation
+%        - 'procrustes_scale_nooffset': rotation (and possibly reflection), rescaling allowed, no translation
+%        - 'procrustes_noscale_offset': rotation (and possibly reflection), no rescaling, translation allowed
+%        - 'procrustes_scale_offset': rotation (and possibly reflection), rescaling allowed, translation allowed
+%        - 'affine_nooffset' : linear transformation, no translation
+%        - 'affine_offset': linear transformation, translation allowed
+%        - 'projective': projective transformation
+%        - 'pwaffine': piecewise affine with one cutplane; two linear transformations with agreement on the cut
+%        - 'pwaffine_2': piecewise affine with two cutplanes; four linear transformations, with agreement on the cuts
+%
+%    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
+%    - To determine the model class (see `transformation structure`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
+%    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
+%    - See `transformation structure` for details on how the models are parameterized
+%
+% Note regarding customization:
+%    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
+%    once, and saving the workspace as rs_aux_defaults.mat.
+%   
+% Note regarding model definition structure: 
+%    - mdef=rs_geofit() returns a model definition structure, which defines the available models and their characteristics.
+%    - mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
+%    - mdef.(model_name) defines each model
+%    - mdef.(model_name).class is the model class: 'mean','procrusetes,'affine','projective','pwaffine' (see `rs_xform_apply` ??how to hyperlink)
+%    - mdef.(model_name).nested lists the names of the nested models
+%
+% Note regarding nesting:
+%    - Nesting by model type: Some models are extensions of others. For example, the affine_offset model extends the affine_noofset model, by allowing offsets.
+%    The more general model will always provide a fit that is at least as good as the less-general model, but will have more parameters.  The if_nestbymodel option provides a way to determine
+%    whether the improvement in fit is better than would be expected by chance.
+%
+%        - To do this, rs_geofit (i) fits with the less-general model, then (ii) shuffles the residuals (the difference between the predicted
+%        coordinates in ds_out and the actual coordinates) among the stimuli, and (iii) refits with the more general model. If the more general
+%        model provides a fit to the original data that is better than chance, this should rarely result in an improved fit.
+%        - Goodness of fit values and tallies are provided in
+%        gfs{k}{dim_out,dim_in}.d_shuff and gfs{k}{dim_out,dim_in}.surrogate_count
+%        - Fine-tuning: if_nestbymodel=+1 vs -1
+%
+%            - With if_nestbymodel=+1, all nested models specified by model_list are examined
+%            - with if_nestbymodel=-1, only the maximally nested models are examined. (Model B is considered to be maximally nested in model A if there is no intermediate nested model, i.e., no model X for which B is nested in X, and X is nested in A.)
 %    
-% gfs{k}.gf{din,dout} is a structure containing the results of the analysis, including fitted transformations, residuals, statistics
-%    from data_in.ds{k} to data_out.ds{k}, for dimensions din and dout.
-%    Subfields are:
-%      model_types_def: model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is the names of the nested models tested
-%      ref_dim: dimension of reference dataset used for fitting (=dout)
-%      adj_dim: dimension of adjusted dataseet used for fitting (=din)
-%      d_shuff_dims: metadata for d_shuff and d_shuff_nestdim (normalization type 1: denom for d from surrogate, type 2: denom for d from data)
-%               d_shuff_dims: 'd1: model, d2: shuffle, d3: nested model, d4: normalization type'  
-%      surrogate_count_dims: metadata for surrogate_count and surrogate_count_nestdim
-%               surrogate_count_dims: 'd1: model, d2: nested model, d3: normalization type'
-%      opts_geofit: supplied options for rs_geofit
-%      d: dimensionless goodness of fit, for each of the models (length=length(model_types_def.model_types));
-%      transforms: the transforms for each of the models
-%      opts_model_used: model options, e.g., if_offset, if_scale, and fitting options
-%      d_shuff: goodness of fit for nesting by model (dims as in d_shuff_dims, d3 is indexed by position in model_types_def.(model_name).nested)
-%      surrogate_count: number of times surrogate (nesting by model) yields a smaller d than data (dims as in surrogate_count_dims, d3 is indexed by position in model_types_def.model_names)
-%      nestdim_list: the lower dimensions used in nesting by dimension
-%      opts_model_shuff_used_nestdim: options used for each model, shuffle, and nested model
-%      d_shuff_nestdim: goodness of fit, for each model, shuffle, nested dim, and normalization type (dims as in d_shuff_dims)
-%      surrogate_count_nestdim: number of times that surrogate (nesting by dim) yields a smaller d than data (dims as in surrogate_count_dims)
+%    - Nesting by dimension: Models with more coordinates have a greater number of parameters than models with fewer coordinates, and thus may also be viewed as extensions.
+%    The if_nestbydim_in and if_nestbydim_out options provide a way to determine whether an improvement due to adding dimensions is better than would be expected by chance.
+%   
+%        - To do this, rs_geofit (i) fits a model with fewer coordinates, then (ii) shuffles the added coordinates among the stimuli, and (iii) refits with the more general model. If the more general
+%        model provides a fit to the original data that is better than chance, this should rarely result in an improved fit.
+%        - Goodness of fit values and tallies are provided in gfs{k}{dim_out,dim_in}.d_shuff_nestdim_[in|out] and gfs{k}{dim_out,dim_in}.surrogate_count_nestdim_[in|out].
+%        - Fine-tuning: if_nestbydim_[in|out]=+1 vs -1
 %
-% xs: the transformations, in a format compatible with rs_xform_apply
-%   xs.(model_name).class: the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
-%   xs.(model_name}.xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
-%     (this will be empty if there is no transformation in gfs{k}.gf{idim,idim}
-%
-% aux_out: auxiliary outputs and parameter values used
-%    opts_geofit: overall options used
-%    warnings: warnings generated in creating arguments for psg_get_coordsets
-%    warn_bad: count of warnings that prevent further processing
-%
-%   Note: mdef=rs_geofit() returns a model definition structure
-%     mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
-%     mdef.(model_name) defines each model 
-%     mdef.(model_name).nested lists the names of the nested models
+%            - With if_nestbydim_[in|out]=+1, input and output coordinates are
+%            used as is for the nesting calculations.  This is appropriate if the input and output coordinates themselves are nested, i.e., if data_in.ds{k}{dim_in}(:,1:r)=data_in.ds{k}{r}, for dim_in>r (and similarly for dim_out)
+%            - However, if this is not the case (for example, if each each set of
+%            coordinates data_in.ds{k}{dim_in} is arbitrarily rotated), this analysis could be misleading, since a coordinate in a low-dimensional coordinate set data_in.ds{k}{r} could be rotated into a higher coordinate in data_in.ds{k}(idim}, for idim>r.
+%            - To avoid this possible pitfall, use if_nestbydim_[in|out]=-1.  This applies  principal components analysis to the coordinates prior to the analysis of nesting.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE,
 %    PSG_GEOMODELS_NESTORDER, RS_DISP_GEOFIT.
 %
 psg_geomodels_def=psg_geomodels_define();
 %special case: display available models
-if nargin==0shuff
-    [nr,order_ptrs,model_types_nested]=psg_geomodels_nestorder(psg_geomodels_def);
-    gfs=model_types_nested';
-    disp(model_types_nested');
+if nargin==0
+    gfs=psg_geomodels_def;
     xs=struct;
     aux_out=struct;
     return
 end
-if (nargin<=1)
+if (nargin<=2)
     aux=struct;
 end
 %
@@ -123,6 +183,8 @@ aux.opts_geof=filldefault(aux.opts_geof,'dimpairs_list',repmat([1:aux.opts_geof.
 aux.opts_geof=filldefault(aux.opts_geof,'if_stats',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbymodel',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim',0);
+aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim_in',aux.opts_geof.if_nestbydim);
+aux.opts_geof=filldefault(aux.opts_geof,'if_nestbydim_out',aux.opts_geof.if_nestbydim);
 aux.opts_geof=filldefault(aux.opts_geof,'if_center',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_frozen',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
@@ -238,6 +300,8 @@ opts_psgfit_base.if_summary=z.if_fit_summary;
 %fields copied with no change
 opts_psgfit_base.nshuffs=z.nshuffs;
 opts_psgfit_base.if_nestbydim=z.if_nestbydim;
+opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
+opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
 opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
 opts_psgfit_base.if_center=z.if_center;
 opts_psgfit_base.if_frozen=z.if_frozen;
@@ -280,7 +344,6 @@ for iset=1:nsets
 %   xs.(model_name).class: the transformation class ('affine', 'projective','pwaffine','pwprojective')
 %   xs.(model_name).xforms.ts{k}{idim}: the transformation to be applied to dataset k, coordinate set of dimension idim
 %     (this will be empty if there is no transformation in gfs{k}.gf{idim,idim}
-
 end
 % 
 % return options as used

@@ -1,121 +1,165 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out==rs_disp_coordsets(data_in,aux) displays one or more views of a set of coordinates
+% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of the coordinaates in a `dataset structure`
 %
-% data_in.ds{k},sas{k},sets{k}: the structures of coordinates (ds) and metadata (sas,sets)
-%   These are typically read by rs_get_coordsests, or created:
-%    as data_out from rs_align_coordsets,
-%    as aux_out.components from rs_knit_coordsets
-%    as data_out from rs_knit_coordsets
-%    as data_out from rs_xform_apply
+% Multiple views can be plotted in subplots of the same figure. This is particularly helpful if the dimensionality
+% of the coordinates is high:  each subplot could show a different combination of two or three coordinates.
+% Plots of two coordinates will produce a planar view; plots of three coordinates will produce an isometric 3D view. Subplots are left in the 'hold on' state.
 %
-%  Multiple views can be plotted in subplots of the same figure.
-%  Subplots are in 'hold on' state, so that one can add to the plots
-%  
-% aux:
-%  aux.opts_disp
+% Args:
+%   data_in (struct): `dataset structure` to be processed, with fields
 %
-%   fig_handle: handle to figure, will be created if empty or not provided
-%   fig_position: position params for new figure to be created (modifiable in rs_aux_defaults_define)
-%   fig_name: title for figure 
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   axis_handles: handle to axes, one for each subplot, will be created if not supplied
-%   axis_font_size: font size, defaults to 8 (modifiable in rs_aux_defaults_define)
-%   axis_label_prefix: prefix for axis label, defaults to 'dim' (modifiable in rs_aux_defaults_define)
-%   axis_label_font_size: font size, defaults to axis_font_size
-%   axis_labels: cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
-%   axis_view: 3-d view of axis, as cell array for each subplot, 2, 3 (default), or azimuth-elevation pair, where [AZ,EL=[-37.5,30] is the default 3-D view.
-%   axis_equal: 1 (default) to set axes to have equal scales
-%   axis_range: 'tight' (default), 'auto' (Matlab's automatic scaling), or 'list' (given by axis_range_list)
-%   axis_range_list: a list of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
+%   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%   dim_select: dimension to display, i.e., data_in.ds{set_select}{dim_select}, defaults to 3 unless only two dims are available
-%   set_select: datasets to show, defaults to [1:length(data_in.da)]
+%     - opts_disp (struct): options for display, with fields
 %
-%   coord_group_size: number of coords to display together, in range [2 3], defaults to min(dim_select,max(number of dimensions available in all sets)
-%   coord_group_method: method of selecting coordinates (corresponds to opts_vis.which_dimcombs in psg_visualize)
-%      'all': (default) plot all combinations
-%      'keeplow': keep all but one dimensions low and only step the highest; [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5]
-%      'keepone': keep one dimension and step the rest;                      [dim_select,coord_group_size] yields [1 2 3],[1 2 4],[1 2 5],[1 3 4],[1 3 5],[1 4 5]
-%      'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
-%      'onlylowest': only the lowest dimensions                              [dim_select,coord_group_size] yields [1 2 3]
-%      'list': specify a list in opts_disp.coord_groups, as an array with coord_group_size columns
-%     By default, each dataset is plotted with its own style, with points disconnected.
-%      Styles are specified as follows, indexed by the position of the set data_in.  Values are cycled through.
-%      set_markers, set_markersizes should be singletons or vectors, set_[colors|markers|linestyles] should be 1-d cell arrays.
-%      If set_[colors|markers|linestyles] are not cells, they will be converted to cells.
-%   coord_groups: coordinates to show in groups: array of integers in range [1 dim_select]; each row will generate one panel
+%         - **Data selection**
+%         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
+%         - dim_select (int): dimension to show; i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
+%         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available)
+%         - coord_group_method (char): method of selecting coordinates
 %
-%   set_labels: labels for each dataset in legend, defaults to 'set 1', etc., text string or cell array of strings
-%   set_colors: color assigned to each set, defaults to {'k','b','c','m','r',[0.5 0.5 0],'g'};, can be rgb triplet
-%   set_markers: marker assigned to each set, defaults to {'.'};
-%   set_markersizes: marker assigned to each set, defaults to 8
-%   set_filled: 1 for sets for which markers are filled, 0 for unfilled (default); note that only some symbols, e.g., o,s,h,p can be unfilled
-%   set_colors_filled: color assigned to fill, ignore if set_filled=0, defaults to set_colors
-%   set_alphas: alpha blending for each set, defaults to 1 (implementation may be system-dependent and lead to messages in aux_out.warnings)
-%   set_offsets: additive offset for plotting data from each set, defaults to zeros(1,dim_select), for no offset
-%       may be specified by rows of length dim_select (truncated or padded as needed), one for each set, cycled through if necessary.
-%       may also be specified by 'margin_amount', which leaves a margin of set_of set_offsets_margin_amount between each dataset and the next
-%       may also be specified by 'margin_fraction', which leaves a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
-%   set_offsets_margin_amount: absolute margin between datasets, defaults to ones(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
-%   set_offsets_margin_fraction: fractional margin between datasets, defaults to zeros(1,dim_select), can be 0 or negative, truncated or padded to dim_select; see set_offsets
-%   set_offsets_coordchoices: if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset.
-%       Can be 'first','last','all', or a subset of [1:dim_select], or a cell array of subsets
-%   set_tags:  the 'tags' field applied to each plot, can be used for selecting items to appear in legend, defaults to 'set 1', etc., text string or cell array of strings
+%             - 'all': (default) plot all combinations
+%             - 'keeplow': keep all but one dimensions low and only step the highest; [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5]
+%             - 'keepone': keep one dimension and step the rest;                      [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5],[1 3 4],[1 3 5],[1 4 5]
+%             - 'rolling': rolling contiguous subsets;                                [dim_select,coord_group_size]=[5,3] yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
+%             - 'onlylowest': only the lowest dimensions;                             [dim_select,coord_group_size]=[5,3] yields [1 2 3]
+%             - 'list': specify a list in opts_disp.coord_groups, as an
+%             array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the
+%             first, {1,4,5} in the second, {1,6,7} in the third
 %
-%   data_show_method: which data points to show, 'all' (default),'none', 'first', 'last', 'list'
-%   data_show_list: list of data points to show (if data_show_method='list')
-%   data_label_method: which data points to label, 'all' (default),'none', 'first', 'last', 'list'  [all, first, last apply to the data points shown]
-%   data_label_list: list of data points to label (if data_label_method='list')
-%   data_label_setsel_method: which sets to label, 'all','none', 'first' (default), 'last', or 'list' [all, first, last apply to the data points shown]
-%   data_label_setsel_list: list of datasets to label( if data_label_setsel_method='list') 
-%   data_label_font_size: font size for data labels, defaults to axis_font_size
-%   data_label_interpreter: interpreter for labeling data, empty (default) is system default, alternatively 'none','tex','latex'
+%         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows of an integer array; each row will generate one subplot
+%         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
+%         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);
 %
-%   callout_amount: amount to expand the position of a label, from the data (in units of rms (data from centroid), defaults to 0
-%   callout_colors: color for callout lines, defaults to {'k'}; can also be 'set_colors' and will match set_colors
-%   callout_linestyles: line style for callouts, defaults to {'-.'}
-%   callout_linewidths: width for callouts, defaults to 1
+%         - **Figure and subplot control**
+%         - fig_handle (handle): handle to figure; will be created if empty or not provided
+%         - fig_position (int 1-D array): position parameters [left bottom width height] for figure to be created; see note below regarding customization
+%         - fig_name (char): title for figure; default is list of dimensions shown
+%         - axis_handles (cell array of handles): handle to axes, one for each subplot, will be created empty or not provided
 %
-%   connect_data_method: which pairs of data points to connect within a set, 'none' (default), or any of the following:
-%      'all'-> all pairs, 'star' or 'star_first': all connect to first; 'star_last': all connect to last set;
-%      'chain' connects [first next ],[next second-next],,...[next-to-last last]; 'circuit' closes 'chain' to include [last first]
-%      'list': pairs listed in connect_sets_list as a two-column array [first and last refer to the sets selected in set_select]
-%   connect_data_list: two-column array of data points to connect (if data_connect_method='list')
-%   connect_data_linestyles: line styles assigned to connections within each set, defaults to {'none'} (disconnected)
-%   connect_data_linewidths: line widths assigned to connections within each set, defaults to 1
+%         - **Labels**
+%         - set_labels (char or cell array of char): labels for each record that will appear in legend; defaults is 'set 1', etc.; cannot be empty; see note regarding plot formatting
+%         - data_label_setsel_method (char): selects which records to label individual points, options are 'all','none', 'first' , 'last', or 'list'; default is 'first'; note that 'all','first', and 'last' apply to the records shown
+%         - data_label_setsel_list (int 1-D array): list of datasets to label, if data_label_setsel_method='list'
+%         - data_label_method (char): selects which data points to label, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'; labels are taken from data_in.sas{k}.typenames; note that 'all','first',and 'last' refer to data points shown
+%         - data_label_list (int 1-D array): list of data points to label, if data_label_method='list'
+%         - data_label_font_size (int): font size for data labels, default is axis_font_size
+%         - data_label_interpreter (char): interpreter for labeling data, [] (default) uses system default, alternatively 'none','tex','latex'
+%         - callout_amount (float): moves the position of a label away from the data point, specified in units of rms deviation of data from centroid; default is 0
+%         - callout_colors (cell array of color specifiers): color for callout lines connecting labels and points; default is {'k'}; can also be 'set_colors' to match set_colors
+%         - callout_linestyles (cell array of char): line styles for above callout lines; default is {'-.'}
+%         - callout_linewidths (int 1-D array): line widths for above callout lines; default is 1
 %
-%   connect_sets_method: which sets to connect: 'none' (default), or any of the options in connect_data_method
-%   connect_sets_list: two-column array of sets to connect, if connect_sets_method='list'
-%   connect_sets_data_method: which data points to connect between sets, 'all' (default), or any of the options in data_label_method
-%        or 'labeled': connects all data points that designated by data_label_method and data_label_list
-%   connect_sets_data_list: list of data points to connect wbetween sets, if connect_sets_data_method='list'
-%   connect_sets_color_mode: 'first','last','split' (default),'list': how connection line is colored
-%      %first uses first set of connection pair, last uses last set of
-%      %pair, split uses half of each, list expects a list in connect_sets_colors (cycled through if necessary)
-%   connect_sets_linestyles: line styles assigned to each set, defaults to '-'
-%   connect_sets_linewidths: line widths assigned to each set, defaults to 1
+%         - **Formatting: axis and views**
+%         - axis_font_size (int): font size for axis; default is 8; see note below re customization
+%         - axis_label_font_size (char): font size for axis labels; default is axis_font_size
+%         - axis_label_prefix (char): prefix for axis label, default is 'coord'; see note below regarding customization
+%         - axis_labels (cell array of char): cell array of strings, cycled through if necessary, with text for axis labels.  If empty, then axis labels are genrated from axis_label_prefix
+%         - axis_view (int or float 1-D array or cell array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair; standard
+%         3-d view is [-37.5 30]; can be also be cell array of view specifiers, is cycled through for each subplot
+%         - axis_equal (int): 1 to set axes to have equal scales, 0 autoscales; default is 1
+%         - axis_range (char): 'tight' to set axis range to limits of data, 'auto' for autoscaling, or 'list' to specify by axis_range_list; default is 'tight'
+%         - axis_range_list (float 2-D array): axis range specification, as rows of [low, high] values, one for each coordinate plotted; cycled through by rows if necessary
 %
-%   if_box: 1 (default) to include a box in a 3d plot
-%   if_grid: 1 (default) to include the grid
-%   if_legend: 1 (default) to include legend, 0 to omit, -1 to omit from all subplots but to add an extra
-%     subplot mathcing the first, with a legend
-%   legend_font_size: defaults to axis_font_size
-%   legend_location: defaults to 'Best'
-%   legend_interpreter: interpreter for set label in legend, empty (default) is system default, alternatively 'none','tex','latex'
-%   legend_tags: cell array or single string that must be present for at start of a tag for inclusion in a legend, defaults to 'set',  text string or cell array of strings
+%         - **Formatting: points and lines for each record**
+%         - set_colors (color specifier or cell array of color specifiers): color assigned to each record; default is {'k','b','c','m','r',[0.5 0.5 0],'g'}; elements can be any valid color specifier; see note regarding plot formatting
+%         - set_markers (char or cell array of char): marker for each record; defaults is {'.'}; see note below regarding plot formatting
+%         - set_markersizes (int 1-D array): marker size for each record; default is 8; see below note regarding plot formatting
+%         - set_filled (int 1-D array): 1 for records in which markers are filled, 0 for unfilled if possible; default is 0; note that only some marker, e.g., o,s,h,p can be unfilled
+%         - set_colors_filled (color specifer or cell array of color specifiers): color for inside of filled symbols for each record, ignored if set_filled=0; default is set_colors
+%         - set_alphas (float 1-D array): alpha blending for each record, default is 1 (opaque); note that alpha-blending (transparency) may not be availble on all systems
+%         - connect_data_method (char): which pairs of data points to connect within a record; default is 'none'; options refer to the points selected for display by 'data_show_method'; see note below regarding plot formatting
 %
-%   if_warn: 1 to display warnings related to plot configurations
-%   if_finalize: 1 (default) to finalize axis, view, legend
-%
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
+%             - 'none': no connections between points
+%             - 'all': connect all pairs of points
+%             - 'star' or 'star_first': connect all points to first
+%             - 'star_last': connect all points to last
+%             - 'chain': connect first point =to second, second point to third, ..., and next-to-last point to last point
+%             - 'circuit': same as 'chain' but adds a connection from last point to first
+%             - 'list': specify the pairs of points in connect_data_list
 % 
-% aux_out: auxiliary outputs and parameter values used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets, or related to graphics capabilities and alpha blending
-%   warn_bad: count of warnings that prevent further processing
-%   aux_out.opts_disp: the input structure opts_disp, with defaults and overrides, including aux_out.opts_disp.fig_handle, handle to the figure that was created
+%         - connect_data_list (int 2-D array): two-column array of data points to connect (if connect_data_method='list')
+%         - connect_data_linestyles (char or cell array of char): line styles assigned to connections within each record, default is 'none' (disconnected)
+%         - connect_data_linewidths (int 1-D array): line widths for connections within each record; default is 1
 %
-%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_XFORM_APPLY,
-%     PSG_VISUALIZE, PSG_PLOTCOORDS, RS_PLOT_STYLE.
+%         - **Formatting: connections between records**
+%         - connect_sets_method (char): which records to connect; default is 'none'; options refer to the records selected for display by 'set_select'; see note below regarding plot formatting
+%
+%             - 'none': no connections between data from different records
+%             - 'all': connect all pairs of records
+%             - 'star' or 'star_first': connect all records to first
+%             - 'star_last': connect all records to last
+%             - 'chain': connect first record to second, second record to third, ..., and next-to-last record to last record
+%             - 'circuit': same as 'chain' but adds a connection from last record to first
+%             - 'list': specify the pairs of records in connect_sets_list
+% 
+%         - connect_sets_list(int 2-D array): two-column array of records to connect, used if connect_sets_method='list'
+%         - connect_sets_data_method (char): selects the data points to connect between records: any of the options for data_label_method or 'labeled', which connects all data points designated by 'data_label_method'; default is 'all'
+%         - connect_sets_data_list (int 1-D array): data points to connect between records, if connect_sets_data_method='list'
+%         - connect_sets_color_mode (char): specifies how the connecting semgent between records is colored; default is 'split'
+%
+%             - 'first': use color of first record in connected pair
+%             - 'last': use color of last record in connected pair
+%             - 'split': first half of segment matches first record in cnnecting pair; second half of segmentmatches second record in connected pair
+%             - 'list': specify colors in connect_sets_colors
+%
+%         - connect_sets_colors (color specifier or cell array of color specifiers): iff connect_sets_color_mode='list;, these are the colors for for connecting segments; cycled through if necessary
+%         - connect_sets_linestyles (char or cell array of char): line styles assigned to connections between records; default is  '-'; cycled through if necessary
+%         - connect_sets_linewidths (int 1-D array): line widths assigned to connections between records; default is 1; cycled through if necessary
+%
+%         - **Formatting: positioning** 
+%         - set_offsets (float 2-D array or char): this allows the data in each record to be offset to avoid overlap; default is no offset; specified by 0
+%
+%              - if an array, each row, of length dim_select (which wll be truncated or padded as needed) specifies the offset for the corresponding record in `data_in`
+%              - 'margin_amount' puts a margin of set_offsets_margin_amount between each dataset and the next
+%              - 'margin_fraction' puts a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
+%
+%         - set_offsets_margin_amount (float): absolute margin between datasets if set_offsets='margin_amount; defaults to ones(1,dim_select); can be 0 or negative, truncated or padded to dim_select
+%         - set_offsets_margin_fraction (float): fractional margin between datasets if set_offsets='margin_fraction; defaults to zeros(1,dim_select); can be 0 or negative, truncated or padded to dim_select
+%         - set_offsets_coordchoices (int or char or cell array of char): if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset; can be 'first','last','all', or a subset of [1:dim_select]; can also be a cell array of subsets
+%
+%         - **Formatting: legend, box, grid**
+%
+%         - if_legend (int): 1 to include legend, 0 to omit, -1 to omit from all subplots but to create an extra subplot that only has the legend; default is 1
+%         - legend_font_size (int): font size for legend; default is axis_font_size
+%         - legend_location (char): location of legend within plot; any Matlab designator accepted; default is 'Best'
+%         - legend_interpreter (char): interpreter for record labels in legend, [] (default) uses system default, alternatively 'none','tex','latex'
+%         - legend_tags (char): single string that must be present in a dataset's tag for inclusion in a legend, default is 'set';
+%         - set_tags (char or cell array of char): the 'tags' field applied to the plot of each record, for selecting which records appear in legend, default is  'set 1', etc.
+%         - if_box (int): 1 to include the bounding box in a 3d plot, 0 to omit; default is 1
+%         - if_grid (int): 1 to include the grid, 0 to omit; default is 1
+%         - if_finalize (int): 1 to apply view, legend, labels, 0 to omit; default is 1
+%
+%        - if_warn (int): 1 to display warnings related to plot configurations, 0 to suppress; default is 1
+%
+%     - opts_check (struct): options for consistency checking, with field
+%
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+% 
+% Returns:
+%   aux_out: auxiliary outputs and parameter values used
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_disp (struct): aux.opts_disp, with defaults and overrides filled in, including fig_handle (handle to the figure) and axis_handles (handles to the subplot axes)
+%
+% Note regarding customization:
+%     - The default figure position can be changed by editing the line containing generic.opts_disp.fig_position in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%     - The default font size for axis labels can be changed by editing the line containing generic.opts_disp.axis_font_size in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
+%     - The default prefix for the axis label can be changed by editing the line containing generic.opts_disp.axis_label_prefix in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
+%
+% Note regarding plot formatting:
+%     - By default, each record is plotted with a different color, a solid dot marker, and no connecting lines. 
+%     - These choices can be changed by 'set_colors', 'set_markers',  'set_markersizes', 'set_filled', 'set_colors_filled', 'set_alphas' (but alpha blending may not be availble on all systems).
+%     - The above specifiers can be singletons or cell arrays, and are indexed by the record position in data_in.  If there are more records than specifiers, the specifiers are cycled.
+%     - The data points of each record are, by default, not interconnected. This can be changed with the 'connect_data*' options.
+%     - The data points between records are, by default, not interconnected . This can be changed with the 'connect_sets*' options.
+%
+%  See also: RS_CHECK_COORDSETS, RS_GET_COORDSETS, RS_ALIGN_COORDSETS, RS_KNIT_COORDSETS, RS_PLOT_STYLE.
 %
 if (nargin<=1)
     aux=struct;
@@ -458,6 +502,17 @@ for imc=1:length(make_cell)
     mc=make_cell{imc};
     if ~iscell(x.(mc))
         x.(mc)={x.(mc)};
+    end
+end
+%set_labels and set_tags cannot be empty
+for k=1:length(x.set_labels)
+    if isempty(x.set_labels{k})
+        x.set_labels{k}=sprintf('set %1.0f',k);
+    end
+end
+for k=1:length(x.set_tags)
+    if isempty(x.set_tags{k})
+        x.set_tags{k}=sprintf('set %1.0f',k);
     end
 end
 %use set colors for callout colors if requested

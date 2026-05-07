@@ -89,7 +89,7 @@ generic.opts_write.if_gui=1; % 1 to use graphical interface to get files if file
 %
 generic.opts_disp.fig_position=[100 100 1200 800]; %default position for figures
 generic.opts_disp.axis_font_size=8; %font size for figure labels
-generic.opts_disp.axis_label_prefix='dim'; %prefix for axis label
+generic.opts_disp.axis_label_prefix='coord'; %prefix for axis label
 %
 %typically first used in rs_findrays
 %

@@ -1,47 +1,65 @@
 function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts)
-% [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts) is a utility plotting
-% routine that handles marker type, marker size, line style, line
-% thickness, alpha blending, and possible conflicts or unsupported properties
-%
-% coords: a set of values to plot, either 2 or 3 columns
-%    If coords is empty, no handles are created
-% plotstyle: structure with any of the following fields (empty fields have indicated defaults)
-%   plotstyle.marker: '.'
-%   plotstyle.markersize: 6
-%   plotstyle.linestyle: 'none'
-%   plotstyle.linewidth: 1, applies both to marker edge and to lines
-%   plotstyle.color: 'k' (can also be an [r,g,b] triple, or any other Matlab color specification)
-%   plotstyle.color_fill: color for inside of marker, if marker is filled in, defaults to plotstyle_color
-%   plotstyle.filled: 0 (1 to fill in)
-%   plotstyle.alpha: 1
-% opts: options, intended for hints for how to resolve conflicts
-%   opts.if_alpha_color_line: 1 if line color property allows for alpha as fourth component, 0 if not, 
-%    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
-%   opts.if_alpha_color_line_marker: 1 if marker edge color property allows for alpha as fourth component, 0 if not
-%    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
-%   opts.if_alpha_scatter_marker_[edge|face]:  1 if Marker[Edge|Face]Alpha is a property of Scatter, 0 if not,
-%    -1 (default) to determine from rs_graphic_hints.m if present, and if not, from exist('alpha')
-%  If any of these capabilities are attempted and fail, then they are set to zero in opts_used 
-%
-% handles: handles to the plot and components
-%    handles.legend: handle appropriate for the legend
-%  and one or more of the following, if the components exist
-%    handles.line
-%    handles.markers
-%    handles.scatter
-% plotstyles_used: plot styles with defaults filled in
-% opts_used: options used, has a msgs field
+% [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts)
+% plots a set of points into the current axis.
 % 
-% plot status is hold on at exit
-% if coords is empty, no handles are created
+% The data may be either 2D or 3D.  Plotting uses a specified marker type, marker size,
+% line style, line thickness, and alpha blending, and handles possible conflicts or unsupported properties.
 %
-%   See also:  RS_PLOT_STYLE_TEST, RS_GRAPHIC_HINTS
+% Args:
+%   coords (float 2-D array): data to plot, 2 columns for a 2D plot, 3 columns for a 3D plot
 %
+%   plotstyle (struct): specification of plotting style, may be omitted, with fields
+%
+%      - marker (char): marker type; one of {'.','o','x','+','*','s','d','v','^','<','>','p','h'}; default is '.'
+%      - markersize (int): marker size; default is 6
+%      - linestyle (char): line style; one of {'-',':','-.','--',','none'}; default is 'none'
+%      - linewidth (int): width of lines and marker edges; default is 1
+%      - color (char or float 1-D array): color of points, lines, and marker edges, can be any Matlab color specifier or an (r,g,b) triple; default is 'k' (black)
+%      - color_fill (char or fload 1-D array): color of marker interior if marker is filled; default is plotstyle.color;
+%      - filled (int): 1 to filled marker, 0 for unfilled; default is 0
+%      - alpha (float): alpha-blending (transparency); defaults to 1 (opaque)
+%
+%   opts (struct): how to resolve conflicts (see note below regarding graphic hints), may be omitted, with fields
+%
+%      - if_alpha_color_line (int): 1 if line color property allows for alpha as fourth component, 0 if not, -1 to determine from hints; default is -1 
+%      - if_alpha_color_line_marker (int): 1 if marker edge color property allows for alpha as fourth component, 0 if not, -1 to determine from hints; default is -1 
+%      - if_alpha_scatter_marker_edge (int): 1 if MarkerEdgeAlpha is a property of Scatter, 0 if not, -1 to determine from hints; default is -1
+%      - if_alpha_scatter_marker_face (int): 1 if MarkerFaceAlpha is a property of Scatter, 0 if not, -1 to determine from hints; default is -1
+%
+%
+% Returns:
+%   handles (struct): structure of handles to the plot and components, with fields
+%
+%     - line (struct): handle of the graphics line object used for the line connecting points; may be empty
+%     - markers (struct): handle of the graphics object for the plotted points, may be a line or scatter object
+%     - scatter (struct): handle of the graphics scatter object for the plotted points; may be empty
+%     - legend (struct): handle to graphics object (line or scatter) that can be used for a legend; will be either handles.line or handles.scatter and will not be empty
+% 
+%   plotstyles_used (struct): plot styles with defaults filled in
+% 
+%   opts_used (struct): opts, with defaults filled in; see note below regarding graphic hints
+% 
+% General notes:
+%    - Plotting will be into current axis if available; otherwise a new axis will be created.
+%    - Axis hold state will be 'on' after plotting.
+%
+% Note regarding graphic hints:
+%    - Capabilities for alpha-blending may be version-dependent, and should be indicated during installation by customizing `rs_graphic_hints`
+%    - An entry of -1 (default) in 'opts' uses `rs_graphic_hints` to determine the capability.
+%    - If `rs_graphic_hints` is absent, the present, and if not, by attempting to set an alpha property
+%    - At run-time, these hints may be overrridden by a 1 (capability present) or a 0 (capability absent) in a field of 'opts'.
+%    - If an attempt to use transparency fails, then the corresponding field of 'opts_used' is set to 0, and a essage is generated in opts_used.msgs
+% 
+%   See also:  RS_PLOT_STYLE_TEST, RS_GRAPHIC_HINTS.
+%
+if (nargin<=1)
+    plotstyle=struct;
+end
 if (nargin<=2)
     opts=struct;
 end
 if exist('rs_graphic_hints','file')
-    rs_graphic_hints;
+    rs_graphic_hint_def=rs_graphic_hints();
 end
 if ~exist('rs_graphic_hints_def')
     rs_graphic_hints_def=struct;

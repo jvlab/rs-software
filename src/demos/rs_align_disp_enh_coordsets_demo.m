@@ -1,29 +1,28 @@
-# rs_disp_enh_coordsets_demo
-Demonstrate display of datasets with offsets, rays, and other enhanced plotting options
-
-plot options illustrated:
- choice of dimension and coordinates to plot
- several plots into same figure
- custom arrangement of subplots
- rotation of raw data coordinates into a consensus
- custom axis labels
- custom labeling of datasets based on subject ID and paradigm name
- custom selection of which points to label
- rays, rings, and nearest neighbor connections
- selection of data points to label based on length of stimulus name, and how this interacts with plotting rays
- extra panel with just legend
- custom plot size
- custom data label font size
-
-Also illustrates:
- silencing logging for rs_[get|align|knit]_coordsets,
- rotation of consensus data into principal components via rs_knit_coordsets
-
- Note: when using data from components, rays also need to be taken from components (as is done here)
-
-See also:  [rs_disp_coordsets](rs_disp_coordsets.md), [rs_disp_enh_coordsets](rs_disp_enh_coordsets.md), psg_typenames2colors, [rs_save_figs](rs_save_figs.md)
-
-```matlab
+% rs_align_disp_enh_coordsets_demo: demonstrate display of datasets with offsets, rays, and other enhanced plotting options
+%
+% workflow_ read, align, and display coordinate sets
+% plot options illustrated:
+%  choice of dimension and coordinates to plot
+%  several plots into same figure
+%  custom arrangement of subplots
+%  rotation of raw data coordinates into a consensus
+%  custom axis labels
+%  custom labeling of datasets based on subject ID and paradigm name
+%  custom selection of which points to label
+%  rays, rings, and nearest neighbor connections
+%  selection of data points to label based on length of stimulus name, and how this interacts with plotting rays
+%  extra panel with just legend
+%  custom plot size
+%  custom data label font size
+%
+% Also illustrates:
+%  silencing logging for rs_[get|align|knit]_coordsets,
+%  rotation of consensus data into principal components via rs_knit_coordsets
+%
+%  Note: when using data from components, rays also need to be taken from components (as is done here)
+%
+%  See also:  RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS, PSG_TYPENAMES2COLORS, RS_SAVE_FIGS.
+%
 filename_paradigms{1}={... 
         './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',... 
         './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat',... 
@@ -66,12 +65,8 @@ for ipara=1:nparas
         end
     end
     if (if_ok)
-```
-
-align data, rotate to consensus, and rotate consensus into pca coords
-
-```matlab
-aux_align_def=struct;
+        %align data, rotate to consensus, and rotate consensus into pca coords
+        aux_align_def=struct;
         aux_align_def.opts_align.if_log=0;
         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
         aux_knit_def=struct;
@@ -80,22 +75,17 @@ aux_align_def=struct;
         [data_consensus,aux_knit]=rs_knit_coordsets(data_align,aux_knit_def);
         data_disp=aux_knit.components;
         rays_use=aux_knit.rayss{1};
-```
-
-choose datapoints to label:  only if stim name is <=6 chars
-
-```matlab
-data_label_list=[];
+        %choose datapoints to label:  only if stim name is <=6 chars
+        %
+        data_label_list=[];
         nstims=data_disp.sas{1}.nstims;
         for istim=1:nstims
             if length(data_disp.sas{1}.typenames{istim})<=label_maxlength
                 data_label_list(end+1)=istim;
             end
         end
-```
-
-```matlab
-hfig=figure;
+        %
+        hfig=figure;
         for icgp=1:ncgps+1
             for icol=1:nenh+1
                 haxes_all{icgp,icol}=subplot(ncgps+1,1+nenh,icol+(icgp-1)*(nenh+1));
@@ -118,10 +108,8 @@ hfig=figure;
         opts_disp.coord_group_method='keeplow';
         opts_disp.if_legend=-1; %extra panel just for legend
         aux_outs{ipara,1}=rs_disp_coordsets(data_disp,setfield(struct,'opts_disp',opts_disp));
-```
-
-```matlab
-opts_disp2=opts_disp;
+        %
+        opts_disp2=opts_disp;
         opts_disp2.fig_position=[50 80 1400 800];
         opts_disp2.set_offsets='margin_fraction';
         opts_disp2.set_offsets_margin_fraction=1;
@@ -163,4 +151,3 @@ opts_disp2=opts_disp;
         end %ienh
     end %if_ok
 end %ipara
-```

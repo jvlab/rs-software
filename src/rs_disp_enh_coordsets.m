@@ -45,7 +45,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %   Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
 %   If if_rays=1 and if_points=0, legend is the ray label.  Otherwise legend is set label.
 %
-%   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS.
+%   See also: RS_DISP_COORDSETS, RS_TYPENAMES2COLORS, RS_FINDRAYS.
 %
 if (nargin<=2)
     rays=[];
@@ -67,6 +67,16 @@ if isempty(rays) | isempty(fieldnames(rays))
     aux.opts_disp_enh.if_rays=0;
     aux.opts_disp_enh.if_rings=0;
     aux.opts_disp_enh.if_nbrs=0;
+end
+%ensure that a figure handle is open and that we plot into currenf figure
+if ~isfield(aux.opts_disp,'fig_handle')
+    aux.opts_disp.fig_handle=[];
+end
+if isempty(aux.opts_disp.fig_handle)
+    aux.opts_disp.fig_handle=figure;
+end
+if aux.opts_disp.fig_handle~=gcf
+    aux.opts_disp.fig_handle=gcf;
 end
 %
 if aux.opts_disp_enh.if_rays %plot points along each ray, in designated colors
@@ -184,7 +194,7 @@ if aux.opts_disp_enh.if_nbrs %connect neighbors
         opts_disp_nbrs.set_tags='nbrs'; %so that this will not be in legend
         pairs=rays.pairs;
         if aux.opts_disp_enh.if_nbrs_notsameray
-            pair_rayid=rays.whichray(pairs);
+            pair_rayid=reshape(rays.whichray(pairs),size(pairs));
             pair_keep=double(pair_rayid(:,1)~=pair_rayid(:,2)); %note, this will keep if both are NaN
             pair_keep=and(pair_keep,all(pair_rayid~=0,2)); %exclude rays that include the origin
             pairs=pairs(find(pair_keep),:);

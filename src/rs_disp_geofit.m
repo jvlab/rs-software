@@ -1,49 +1,68 @@
 function aux_out=rs_disp_geofit(gf,aux)
-% aux_out=rs_disp_geofit(gf,aux) displays the goodness of fit and model comparison statistics for a structure of geometric models
+% aux_out=rs_disp_geofit(gf,aux) 
+% displays the goodness of fit and model comparison statistics for geometric models fit by `rs_geofit`
 %
-% This is largely a wrapper for psg_geomodel_plot, but with some defaults are changed, and some consistency checks
+% This will create a wirerame plot of goodness of fit (d, see output gfs of `rs_geofit` for each model,
+% and, optionally, for selected models and comparisons across models that are nested by model type and/or dimension.
 %
-% gf: a cell array of geometrical fit data, typically gfs{k}.gf, where gfs is the output of rs_geofit
-%   and gf{d_out,d_in} contains goodness of fit data for transforming a dataset of d_in dimensions to one with d_out dimensions
-% aux:
-%  aux.opts_check.if_warn: set to 1 (default) to show warnings when datasets are checked for consistency
-%  aux.opts_dgeo: options for display
-%   if_nestbymodel_show: 1 to show all nested models, -1 to show only maximally nested models, 0 to show none; will default to 1 if shuffles are present and 0 if not
-%   if_nestbydim_show: 1 to show nesting by dimension; will default to 1 if shuffles are present and 0 if not
-%   if_nestbydim_in_show: 1 to show nesting by dimension for input, 0 if not, defaults to value of if_nestbydim_show
-%   if_nestbydim_out_show: 1 to show nesting by dimension for output, 0 if not, defaults to value of if_nestbydim_show
-%   models_show_select: string, or cell array of strings, that select which models are shown
-%      For a model to be shown, at least one of the strings in models_show_select{:} must be present in the model type
-%      e.g., {'_offset','affine'} will select any model whose name contains _offset or affine
-%      If empty or unspecified, no selection.  Caution: {} is empty, [] is empty, '' is empty, but {''} and {[]} are not.
-%      Even if a subset of models are selectd, all models are shown in the 'all_models' plot, along with selected models in 'select_models' plot
-%   if_diag: 0 to plot as function of {d_ref,d_adj}}, 1 to only plot diagonal values (gf{k,k}),
-%      if not provided, will be 1 if all values are on-diagonal, otherwise 0
-%   sig_level: significance level
-%   if_showsig: which significance flags to show for d (goodness of fit): 0: none, 1: based on original denom, 2 based on shuffle denom, 3: both (default)
-%   if_nestbydim_showd: 1 (default) to show d-values for nested model
-%     This sets the defaults for if_nestbydim_in_showd and if_nestbydim_out_showd, but these can also be separately supplied
-%   if_showquant: 1 to show quantile at significance level sig_level (defaults to 0)
-%   ref_label: label for first  coordinate of gf{}, defaults to 'output dim'
-%   adj_label: label for second coordinate of gf{}, defaults to 'input dim'
-%   dia_label: label for gf{}, when diagonal is plotted, defaults to 'dim'
-%   colors_models: colors to use for model, used in cyclic order, default- {'k','b','c','m','r',[1 0.5 0],[0.7 0.7 0],'g',[.5 .5 .5],[.5 0 0]}
-%   sig_symbols: symbols to mark significant values, sig_symbols{1} for original denom, sig_symbols{2} for shuffle denom, default-{'+','x'}
-%   sig_symsize: symbol size for significant values, default=14
-%   lw_model: line width for model, default=2
-%   lw_nest: line width for nested model, default=2
-%   lw_quant: line width for quantile, default=1
-%   view: 3-d view descriptor, defaults to 3 (standard 3-d view), can also be azimuth-elevation pair, standard 3-d view is [-37.5 30])
+% Args:
+%   gf (2-D cell array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
+%      of a pair of `dataset structures`; gf{d_out,d_in} contains the statistics for transforming a dataset of d_in dimensions to one with d_out dimensions
+%
+%   aux (struct): auxiliary options, may be omitted, with fields
+%
+%     - opts_dgeo (struct): options for display, with fields
+%
+%          - **Plot selection**
+%          - if_nestbymodel_show (int): 1 to show all nested models, -1 to show only maximally nested models, 0 to omit; default is 1 if shuffles are present and 0 if not
+%          - if_nestbydim_show (int): 1 to show nesting by dimension;, 0 to omit; default is 1 if shuffles are present and 0 if not
+%          - if_nestbydim_in_show (int): 1 to show nesting by dimension for input, 0 if not; default is if_nestbydim_show
+%          - if_nestbydim_out_show (int): 1 to show nesting by dimension for output, 0 if not; defaults is if_nestbydim_show
+%          - models_show_select (char or cell array of char): selects the models to be shown in the plot of selected models;
+%          a model will be shown if at least one of the strings in models_show_select{:} is present in the model type;
+%          e.g., {'_offset','affine'} will select any model whose name contains _offset or affine;
+%          default is [], which displays all models. Caution: {} is empty, [] is empty, '' is empty, but {''} and {[]} are not.
+%          - if_nestbydim_showd (int): 1 to show d-values for models nested by dimension, 0 to omit; default is 1
+%          - if_nestbydim_showd_in (int): 1 to show d-values for models nested by input dimension, 0 to omit; default is if_nestbydim_showd
+%          - if_nestbydim_showd_out (int): 1 to show d-values for models nested by output dimension, 0 to omit; default is if_nestbydim_showd
+%          - if_diag (int): 0 to plot goodness of fit for all pairs of input and output dimensions, 1 to only plot diagonal values for input dimension equal to ouptut dimension;
+%          default is 1 if only on-diagonal values are present, otherwise 0
+%
+%          - **Plot components**
+%          - sig_level (float): significance level for significance flags; default is 0.05
+%          - if_showsig (int): 1 to show significance flags based on original denominator, 2 for shuffled denomiator, 3 for both, 0 to omit; default is 3
+%          - if_showquant (int): 1 to show quantile of shuffles for nesting at significance level sig_level, 0 to omit; default is 0
+%
+%          - **Labels and formatting**
+%          - out_label (char): label for first  coordinate of gf{}, default is 'output dim'
+%          - in_label (char): label for second coordinate of gf{}, defaulti is 'input dim'
+%          - dia_label (char): label for both coordinates of gf{}, when diagonal is plotted, default is 'dim'
+%          - colors_models (cell array of color specifiers): sequence of colors to use for model wireframes, used in cyclic order;
+%           default is {'k','b','c','m','r',[1 0.5 0],[0.7 0.7 0],'g',[.5 .5 .5],[.5 0 0]}; elements can be any valid color specifier
+%          - sig_symbols (cell array of char): symbols to mark significant values, sig_symbols{1} for original denominator, sig_symbols{2} for shuffle denominator, default is {'+','x'}
+%          - sig_symsize (int): symbol size for significance markers, default is 14
+%          - lw_model (int): line width for model, default is 2
+%          - lw_nest (int): line width for nested model, default is 2
+%          - lw_quant (int): line width for quantiles of shuffles of nested models, default is 1
+%          - view (int or float 1-D array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair, standard 3-d view is [-37.5 30]
 % 
-% aux_out: auxiliary outputs and parameter values used
-%   warnings: warnings generated in creating arguments for psg_get_coordsets
-%   warn_bad: count of warnings that prevent further processing
-%   aux_out.opts_dgeo: aux.opts_dgeo, as used, and also:
-%     opts_dgeo.fig_handles is a cell array of handles to the figures created
-%     opts_dgeo.fig_names is a cell array of names of the figures created; no special chars, suitable for use in a file name
-%     opts_dgeo.models_shown: names of models shown
+%     - opts_check (struct): options for consistency checking, with field
 %
-%  See also: RS_GEOFIT, PSG_GEOMODELS_FIT, PSG_GEOMMODELS_PLOT.
+%          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%
+% Returns:
+%   aux_out (struct): auxiliary outputs and parameter values used
+%
+%     - warnings (char): warnings generated in checking for consistency of plotting options
+%     - warn_bad (int): count of warnings that prevent further processing
+%     - opts_check (struct): aux.opts_check, with defaults filled in
+%     - opts_dgeo (struct): aux.opts_dgeo with defaults filled in, and also fields
+%
+%         - fig_handles (cell array):  handles to the figures created
+%         - fig_names (cell array): names of the figures created; no special chars, suitable for use in a file name
+%         - models_shown (cell array of char): names of models shown
+%
+%  See also: RS_GEOFIT, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT.
 %
 if (nargin<=1)
     aux=struct;
@@ -73,8 +92,8 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_model',2); %line width for a model
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_nest',2); %line width for a nested model
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'lw_quant',1); %line width for quantiles
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_omnicolors',1); %1 to use colors from omnibus plots in comparison plots
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'adj_label','input dim');
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'ref_label','output dim');
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'out_label','input dim');
+aux.opts_dgeo=filldefault(aux.opts_dgeo,'in_label','output dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'dia_label','dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',3);
 %
@@ -172,7 +191,14 @@ if aux_out.warn_bad>0
     disp('cannot proceed');
     disp(aux_out.warnings);
 else
+    aux.opts_dgeo.ref_label=aux.opts_dgeo.out_label;
+    aux.opts_dgeo.adj_label=aux.opts_dgeo.in_label;
     aux.opts_dgeo=psg_geomodels_plot(gf,aux.opts_dgeo);
+    aux.opts_dgeo=rmfield(aux.opts_dgeo,'ref_label');
+    aux.opts_dgeo=rmfield(aux.opts_dgeo,'adj_label');
+    %
+    aux_out.opts_check=aux.opts_check;
+    %
     aux_out.opts_dgeo=aux.opts_dgeo;
 end
 %

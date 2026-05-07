@@ -57,7 +57,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %      btc_specoords(istim,:): stimulus coordinates to be used for finding rays
 %      sigma_*: information about MDS settings for internal error (sigma)
 %  aux_out: auxiliary outputs and parameter values used
-%      opts*: values used for opts_read, opts_rays
+%      opts*: values used for opts_read, opts_rays, opts_check
 %      warnings: warnings generated in creating arguments for psg_get_coordsets
 %      aux_out.rayss{1}: ray structure
 %      
@@ -128,6 +128,7 @@ end
 data_out.ds{1}=d;
 data_out.sas{1}=sa;
 data_out.sets{1}=sets;
+aux_out.opts_check=aux.opts_check;
 aux_out.opts_read{1}=opts_read_used;
 aux_out.opts_rays{1}=opts_rays_used;
 aux_out.rayss{1}=rays;

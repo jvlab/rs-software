@@ -1,12 +1,14 @@
 function rs_save_figs(fullname,whichfigs,opts)
-% rs_save_figs(whichfigs,whichfigs,opts) saves one or more open figures to a fig file
+% rs_save_figs(whichfigs,whichfigs,opts)
+% is a utility to save one or more open figures to a fig file
 %
-% fullname: file name, with path.  Used as is if figure handle is given,
-%   otherwise, appended with '_fig_n', where n is a sequential figure number
-% whichfigs: a figure handle, a list of handles, or 'all', or, if empty, current figure
-% opts:
-%   if_log to log (defaults to 0)
-%   ndigits: number of digits in fig name, or 0 (default), which uses minimum number for available figures
+% Args:
+%   fullname (char): file name, with path; if no figure handle is given, then all figures are saved, and '_fig_n' is appended, where n is sequentially incremented
+%   whichfigs (handle or array of handles or char): a figure handle, a list of handles, or 'all', or empty, or omitted; if empty, current figure; default is [] (empty)
+%   opts (struct): options, can be omitted, with fields
+%
+%      - if_log (int): 1 to log, 0 to omit; default is 0
+%      - ndigits (int): number of digits to use in file name; default is 0, which uses minimum number for available figures
 %
 % See also:  ZPAD, RS_SAVE_MAT.
 %

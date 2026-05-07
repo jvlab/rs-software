@@ -1,16 +1,17 @@
 function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
-% Aligns a `dataset structure` with partially overlapping stimuli
+% [data_out,aux_out]=rs_align_coordsets(data_in,aux)
+% aligns a `dataset structure` with partially overlapping stimuli
 %
-% Each of the records in the `dataset structure` data_in contains the responses to one or more stimuli,
+% Each of the records in the `dataset structure` `data_in` contains the responses to one or more stimuli,
 % with stimulus identity in record k determined by the strings in data_in.sas{k}.typenames. The stimuli
 % in each of the records may differ, and may overlap.
 %
 % Each of the corresponding records in the `dataset structure` data_out has a stimulus set 
-% equal to the union of all of the stimulus sets in the records of data_in.  For a stimulus in the kth record of
-% data_out for which there is no entry in data_in, the coordinates are NaN. See note below regarding stimulus coordinates.
+% equal to the union of all of the stimulus sets in the records of `data_in`.  For a stimulus in the kth record of
+% `data_out` for which there is no entry in `data_in`, the coordinates are NaN. See note below regarding stimulus coordinates.
 %
 % The stimulus labels in data_out.sas{k}.typenames are in alphabetical order, and are identical for all of the records
-% Thus, even if there is complete overlap between the stimuli in data_in, the `dataset structure` data_out may differ.
+% Thus, even if there is complete overlap between the stimuli in `data_in`, the `dataset structure` `data_out` may differ.
 %
 % The stimulus coordinates in data_out.sas{k} are correspondingy aligned; see note below regarding stimulus coordinates.
 %
@@ -49,20 +50,20 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %
 %         - ovlp_array_all (integer array): the overlap array for the pooled dataset.  Each row corresponds to one of the 
 %         typenames (see sa_pooled below) contained in any of the input records; ovlp_array_all(s,k)=1 if the stmulus is present in record
-%         k of data_in
+%         k of `data_in`
 %
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_import (struct): aux.opts_import, with defaults filled in
-%     - opts_rays (cell array): opts_rays{k} is a structure which contains the options used for creating rays in record k in data_out
-%     - ovlp_array (int 2-D array): ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of data_in, 0 otherwise
+%     - opts_rays (cell array): opts_rays{k} is a structure which contains the options used for creating rays in record k in `data_out`
+%     - ovlp_array (int 2-D array): ovlp_array(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present in record k of `data_in`, 0 otherwise
 %     - sa_pooled (struct): the `stimulus metadata structure` for the pooled stimulus set; see note below regarding stimulus coordinates
-%     - rayss (cell array of struct): rayss{k} is the `ray structure` for record k in data_out; see note below regarding rays
+%     - rayss (cell array of struct): rayss{k} is the `ray structure` for record k in `data_out`; see note below regarding rays
 %     - opts_btcremz (cell array of struct): see note below regarding labels for binary texture coordinates
 %
 % General notes:
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
-%     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of data_in;
-%     data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of data_in;
+%     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of `data_in`;
+%     data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
 %     data_out.sets{1}.pipeline.type='align'.
 %
 % Note regarding stimulus coordinates:

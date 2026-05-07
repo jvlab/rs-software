@@ -7,7 +7,7 @@ if ~exist('if_auto_skip') %set to 1 to skip non-interactive tests
     if_auto_skip=0;
 end
 %
-ntests=7;
+ntests=9;
 %
 test_descs=cell(1,ntests);
 filenames_in=cell(1,ntests);
@@ -105,6 +105,30 @@ auxs{7}.opts_geof.if_nestbydim=1; %nest by dimension, no pca
 auxs{7}.opts_geof.dimpairs_method='list';
 auxs{7}.opts_geof.dimpairs_list=[1 1;1 2;1 4; 1 6;3 1;3 2;3 4;3 6;5 1;5 2;5 4;5 6;7 1;7 2;7 4]; %input dims: 1,3,5,7; output dims 1 2,4,6, all pairs except (7,6)
 auxs{7}.opts_geof.nshuffs=5;
+%
+test_descs{8}='transforming one binary texture coordinate file to one other, mean, procrustes, affine, explicit dimensions, only nest by input dim, with pca';
+filenames_in{8}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
+aux_ins{8}=aux_ins{2};
+aux_ins{8}.nsets=1;
+filenames_out{8}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat'};
+aux_outs{8}=aux_ins{2};
+aux_outs{8}.nsets=1;
+auxs{8}=auxs{7};
+auxs{8}.opts_geof.if_nestbymodel=0;
+auxs{8}.opts_geof.if_nestbydim_in=-1; %nest by dimension, with pca
+auxs{8}.opts_geof.if_nestbydim_out=0;
+%
+test_descs{9}='transforming one binary texture coordinate file to one other, mean, procrustes, affine, explicit dimensions, only nest by output dim, with pca';
+filenames_in{9}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
+aux_ins{9}=aux_ins{2};
+aux_ins{9}.nsets=1;
+filenames_out{9}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat'};
+aux_outs{9}=aux_ins{2};
+aux_outs{9}.nsets=1;
+auxs{9}=auxs{7};
+auxs{9}.opts_geof.if_nestbymodel=0;
+auxs{9}.opts_geof.if_nestbydim_in=0;
+auxs{9}.opts_geof.if_nestbydim_out=-1; %nest by dim, with pca
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

@@ -62,6 +62,10 @@ _IDENTIFIER_RE = re.compile(
     r'\b([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*)\b'
 )
 
+# Matches <code>identifier</code> not already inside an <a> tag
+_CODE_TAG_RE = re.compile(r'<code>([A-Za-z][A-Za-z0-9_.]*)</code>')
+_ANCHOR_RE   = re.compile(r'<a\b[^>]*>.*?</a>', re.DOTALL)
+
 
 def on_config(config):
     site_config.update_site_prefix(config)
@@ -115,12 +119,17 @@ def on_page_content(html, page, config, files):
     if not FUNCTION_REGISTRY and not FUNCTION_LINKS:
         return html
 
+    # Linkify <code>funcname</code> anywhere on the page
+    html = _linkify_code_in_content(html)
+    
+    # Likify "See also"
     html = _DETAILS_SEEALSO_RE.sub(
         lambda m: _linkify_block(m.group(1)), html
     )
     html = _INLINE_SEEALSO_RE.sub(
         lambda m: _linkify_block(m.group(1)), html
     )
+    
     return html
 
 
@@ -165,6 +174,34 @@ def _make_link(name: str) -> str:
     return name
 
 
+def _linkify_code_in_content(html: str) -> str:
+    """
+    Wrap <code>funcname</code> with a link for any function name found
+    in FUNCTION_REGISTRY. Skips occurrences already inside an <a> tag.
+    """
+    result = []
+    last = 0
+    for anchor in _ANCHOR_RE.finditer(html):
+        # Process the segment *before* this <a>…</a> block
+        segment = html[last:anchor.start()]
+        result.append(_CODE_TAG_RE.sub(_replace_code_tag, segment))
+        # Keep the <a>…</a> block completely untouched
+        result.append(anchor.group(0))
+        last = anchor.end()
+    # Remaining tail after the last <a>
+    result.append(_CODE_TAG_RE.sub(_replace_code_tag, html[last:]))
+    return "".join(result)
+
+
+def _replace_code_tag(match: re.Match) -> str:
+    name  = match.group(1)
+    lower = name.lower()
+    if lower in FUNCTION_REGISTRY:
+        full_id = FUNCTION_REGISTRY[lower]
+        url = f"{site_config.SITE_PREFIX}/function-index/#{full_id}"
+        return f'<a href="{url}"><code>{name}</code></a>'
+    return match.group(0)   # leave unchanged
+    
 #######################################################################
 ### PRE-BUILD HOOKS
 def parse_all_demos_to_markdown():

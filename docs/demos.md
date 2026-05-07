@@ -4,10 +4,9 @@ The library contains several demos that show its functionality. They are located
 
 
 - [`Contents`](mfiles/demos/Contents.md) - Representational space software demos
-- [`rs_disp_coordsets_demo`](mfiles/demos/rs_disp_coordsets_demo.md) - demonstration workflow for display of several datasets and their consensus
-- [`rs_disp_coordsets_demo_GA`](mfiles/demos/rs_disp_coordsets_demo_GA.md) - demonstrate display of several datasets and their consensus.
-- [`rs_disp_coordsets_demo_nmd`](mfiles/demos/rs_disp_coordsets_demo_nmd.md) - demonstrate display of several datasets and their consensus
-- [`rs_disp_enh_coordsets_demo`](mfiles/demos/rs_disp_enh_coordsets_demo.md) - demonstrate display of datasets with offsets, rays, and other enhanced plotting options
+- [`rs_align_disp_coordsets_demo`](mfiles/demos/rs_align_disp_coordsets_demo.md) - demonstration workflow for display of several datasets and their consensus
+- [`rs_align_disp_enh_coordsets_demo`](mfiles/demos/rs_align_disp_enh_coordsets_demo.md) - demonstrate display of datasets with offsets, rays, and other enhanced plotting options
+- [`rs_disp_coordsets_demo`](mfiles/demos/rs_disp_coordsets_demo.md) - simple display of coordinate sets
 - [`rs_knit_coordsets_demo`](mfiles/demos/rs_knit_coordsets_demo.md) - demonstrate knitting across datasets with partially overlapping stimuli
 - [`rs_toygeom_demo`](mfiles/demos/rs_toygeom_demo.md) - demonstrate geometric modeling with toy simulated datasets
 - [`rs_toygeom_disp`](mfiles/demos/rs_toygeom_disp.md) - display the results of rs_toygeom_demo

@@ -1,5 +1,6 @@
 function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
-% Concatenates two `dataset structures` and checks concatenated `dataset structure` for consistency
+% [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
+% concatenates two `dataset structures` and checks concatenated `dataset structure` for consistency
 %
 % Args:
 %   data_in1 (struct): first `dataset structure`, containing $n_1$ records, with fields

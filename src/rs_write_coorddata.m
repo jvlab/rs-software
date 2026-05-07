@@ -1,31 +1,46 @@
 function aux_out=rs_write_coorddata(fullname,data_in,aux)
-% aux_out=rs_write_coorddata(fullname,data_in,aux) writes a coordinate structure
+% aux_out=rs_write_coorddata(fullname,data_in,aux) writes a single record in a `dataset structure` to a file
+% 
+% Args:
+%   fullname (char or singleton cell array): file name with path, if empty, it will be requested interactively.
+%     The file name should contain the string '_coords'
+%   
+%   data_in (struct): `dataset structure` containing the record to be written
+% 
+%     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
+%     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
+%     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-% fullname: a single file name (with path); if empty, it will be requested interactively.  String or singleton cell array
-%      File names should contain the string '_coords'.
-% data_in.ds{iset}: coordinates.   data_in.ds{iset} has size [nstims k]
-% data_in.sas{iset}: structure containing stimulus names in sa.typenames, as strvcat,
-%   data_in.sas{iset}.typenames must be present
-% data_in.sets{iset}: structure containing setup, typically set=sets{iset}; 
-%   used for sets{iset}.pipeline, which may be omitted
+%   aux (struct): auxiliary options,  with fields
 %
-% aux.opts_write:
-%     set_no: which dataset to write, defaults to 1
-%     if_embed: 1 (default) to embed the setup metadata in the output file (so that future reads will not require a separate setup)
-%         The metadata is taken to be data_in.sas{set_no}, which is created by rs_[get|align|knit]_coordsets, rs_read_coorddata
-%     ui_prompt: User interface prompt, defaults to ,'Select a coordinate file to write
-%     if_gui: 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console
-%     if_uselocal: 0 to use options in rs_aux_defaults (default), 1 to use psg_localopts
-%     if_log: 1 (default) to log (0 still shows warnings)
-%     data_fullname_def: default file name to write, used as a prompt if if_gui=0, if fullname is not provided
+%     - opts_write (struct): , with fields
 %
-% aux_out:
-%  fullname: file name written
-%  opts_write: options used
-%  warnings: warnings
-%  warn_bad: count of warnings that prevent further processing
-%  s_written: structure written
+%          - set_no (int): record number to write; default is 1
+%          - if_embed (int): 1 to embed the `setup metadata` in the output file, 0 to omit; see note below re setup metadata.
+%          - ui_prompt (char): User interface prompt, default ia ,'Select a coordinate file to write'
+%          - if_gui (int): 1 to use graphical interface to get files if file names are not supplied; 0 to use text prompt; default is 0
+%          - if_log (int): 1 to log progress, 0 to omit; default is 1
+%          - data_fullname_def (char): default file name to write, used as a prompt if if_gui=0 if fullname is not provided; default is
+%          './samples/bgca3pt_coords_QFM_sess01_01.mat'; default can be changed by  editing the line containing
+%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it 
+%          once, and saving the workspace as rs_aux_defaults.mat.
+%          - if_uselocal (int): should be set to 0 (default); 1 (intended for maintenance only) overrides options set by `rs_aux_defaults_define` by defaults in `psg_localopts.m` 
 %
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
+%
+%     - warnings (char): warnings
+%     - warn_bad (int): number of warnings that prevent further processing
+%     - opts_write (struct): aux, aux.opts_geof, with defaults filled in
+%     - fullname (char): file name written
+%     - s_written (struct): structure written
+%
+% Note re `setup metadata`:
+%
+%    - The `setup metadata` is required for `binary texture domain` datasets; not otherwise required unless configured on installation.
+%    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` or
+%    `rs_get_coordsets`, and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets` and `rs_knit_coordsets`
+%    - if_embed=1 embeds the metadata in the written file, so that the setup file no longer needs to be read. 
+% 
 % See also:  RS_AUX_CUSTOMIZE, RS_WRITE_COORDDATA.
 %
 if (nargin<=2)
