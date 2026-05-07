@@ -32,10 +32,15 @@ rays=aux_out{1}.rayss{1};
 %
 for idim=2:3
     aux_disp1.opts_disp.dim_select=idim;
+    aux_disp1.opts_disp.fig_name=sprintf('dim %1.0f: superimpose, connect all stims, all sets',idim);
     rs_disp_coordsets(data_out,aux_disp1); %standard plots, superimposed and connected
+    %
     aux_disp2.opts_disp.dim_select=idim;
+    aux_disp2.opts_disp.fig_name=sprintf('dim %1.0f: separate, connect one stim as a chain',idim);
     rs_disp_coordsets(data_out,aux_disp2); %standard plots, spaced along second dimension
+    %
     aux_disp3.opts_disp.dim_select=idim;
+    aux_disp3.opts_disp.fig_name=sprintf('dim %1.0f: separate, show rays',idim);
     rs_disp_enh_coordsets(data_out,aux_disp3,rays); %enhanced plots with rays and rings
 end
 %

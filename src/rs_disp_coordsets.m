@@ -38,7 +38,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - **Figure and subplot control**
 %         - fig_handle (handle): handle to figure; will be created if empty or not provided
 %         - fig_position (int 1-D array): position parameters [left bottom width height] for figure to be created; see note below regarding customization
-%         - fig_name (char): title for figure; default is list of dimensions shown
+%         - fig_name (char): title for figure; default is dimension shown
 %         - axis_handles (cell array of handles): handle to axes, one for each subplot, will be created empty or not provided
 %
 %         - **Labels**

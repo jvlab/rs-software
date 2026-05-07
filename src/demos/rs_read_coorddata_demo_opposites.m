@@ -23,6 +23,7 @@ opposite_coords=[...
  0.0,  2.0,  3.0];   %hot
 % 
 fullnames={'demos/opposites_coords_FG','demos/opposites_coords_PQ','demos/opposites_coords_UV'}; %mat-file name
+%
 nfiles=length(fullnames);
 %aux.opts_read.domain_sigma=struct;
 aux.opts_read.paradigm_type_def='opposites';
@@ -51,7 +52,9 @@ switch which_read
     case 3
         aux.opts_read.input_type=2; %several quadratic form models
         aux.nsets=nfiles;
-        [data_out,aux_out{1}]=rs_get_coordsets(fullnames,aux);
+        aux.opts_qpred.qform_datafile_def='demos/opposites_qform_example'; %example quadratic form model file with three models
+        aux.opts_qpred.qform_modeltype=[1 2 3]; %create coordinates from each of the three models
+        [data_out,aux_out{1}]=rs_get_coordsets(fullnames,aux); %quadratic form models do not require a datafile
 end
 %
 data_out

@@ -82,9 +82,9 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
 %     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
 %     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
-%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup (these are in samples/animals)
-%     Otherwise, type_class is set to opts_read.type_class_def, and a setup IS needed (these are the in samples/bwtextures, type class is 'btc')
-%    The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
+%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup is needed (example files are in demos). Note that domain_list_def can be customized or overridden, enabling use of example files in samples/animals.
+%     Otherwise, type_class is set to opts_read.type_class_def, ('btc' unless customized), and a setup IS needed (example files are in samples/bwtextures)
+%     The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
 %      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
 %    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
 %      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
