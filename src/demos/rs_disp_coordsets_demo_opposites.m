@@ -1,5 +1,5 @@
 %rs_disp_coordsets_demo_opposites 
-% demonstration of display of a dataset (three subjects) for a structured domain 
+% demonstration of display of a dataset for a structured domain 
 % run after rs_disp_coordsets_demo
 %
 % See also:  RS_DISP_COORDSETS.
@@ -29,6 +29,14 @@ aux_disp3.opts_disp_enh.if_nbrs=0;
 aux_disp3.opts_disp_enh.if_usetypenames=0; %use coordinate values rather than typenames to color
 %
 rays=aux_out{1}.rayss{1};
+%
+%align data, rotate data into a consensus, and use each component, aligned to consensus, for further plotting
+%%%NEED TO DO THIS WITH AND WITHIOUT IF_PCA=1
+%%%pLOT COMPONENTS, AND ALSO PLOT KNIT VERSION
+[data_knit,aux_knit_out]=rs_knit_coordsets(data_out,aux_knit); %align stimuli, will be reordered alphabetically
+rays_knit=aux_knit_out{1}.rayss{1}; %stimuli will be reordered by knitting, so rays need to be recalculated
+data_aligned=aux_knit_out.components; %
+
 %
 for idim=2:3
     aux_disp1.opts_disp.dim_select=idim;
