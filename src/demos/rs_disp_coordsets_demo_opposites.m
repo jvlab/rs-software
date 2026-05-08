@@ -2,7 +2,9 @@
 % demonstration of display of a dataset for a structured domain 
 % run after rs_disp_coordsets_demo
 %
-% See also:  RS_DISP_COORDSETS.
+% See also:  RS_DISP_COORDSETS
+%
+dim_list=getinp('dimension list','d',[2 3],3);
 aux_disp=struct;
 for ifile=1:nfiles %label each dataset by subject ID
     aux_disp.opts_disp.set_labels{ifile}=data_out.sets{ifile}.subj_id;
@@ -30,25 +32,48 @@ aux_disp3.opts_disp_enh.if_usetypenames=0; %use coordinate values rather than ty
 %
 rays=aux_out{1}.rayss{1};
 %
-%align data, rotate data into a consensus, and use each component, aligned to consensus, for further plotting
-%%%NEED TO DO THIS WITH AND WITHIOUT IF_PCA=1
-%%%pLOT COMPONENTS, AND ALSO PLOT KNIT VERSION
-[data_knit,aux_knit_out]=rs_knit_coordsets(data_out,aux_knit); %align stimuli, will be reordered alphabetically
-rays_knit=aux_knit_out{1}.rayss{1}; %stimuli will be reordered by knitting, so rays need to be recalculated
-data_aligned=aux_knit_out.components; %
-
+%knit by Procrustes
 %
-for idim=2:3
-    aux_disp1.opts_disp.dim_select=idim;
-    aux_disp1.opts_disp.fig_name=sprintf('dim %1.0f: superimpose, connect all stims, all sets',idim);
-    rs_disp_coordsets(data_out,aux_disp1); %standard plots, superimposed and connected
-    %
-    aux_disp2.opts_disp.dim_select=idim;
-    aux_disp2.opts_disp.fig_name=sprintf('dim %1.0f: separate, connect one stim as a chain',idim);
-    rs_disp_coordsets(data_out,aux_disp2); %standard plots, spaced along second dimension
-    %
-    aux_disp3.opts_disp.dim_select=idim;
-    aux_disp3.opts_disp.fig_name=sprintf('dim %1.0f: separate, show rays',idim);
-    rs_disp_enh_coordsets(data_out,aux_disp3,rays); %enhanced plots with rays and rings
-end
+opts_knit=struct;
+aux_knit=struct;
+aux_knit.opts_knit=opts_knit;
+[data_knit,aux_knit_out]=rs_knit_coordsets(data_out,aux_knit); %align stimuli via Procrustes; stimuli will be reordered alphabetically
+rays_knit=aux_knit_out.rayss{1}; %stimuli will be reordered by knitting, so rays need to be recalculated
+data_aligned=aux_knit_out.components; %
+%
+%knit by Procrustes and then pca
+%
+aux_knit_pca=aux_knit;
+aux_knit_pca.opts_knit=setfield(opts_knit,'if_pca',1);
+[data_knit_pca,aux_knit_out_pca]=rs_knit_coordsets(data_out,aux_knit_pca); %align stimuli via Procrustes and apply pca
+data_aligned_pca=aux_knit_out_pca.components;
+for plot_type=1:3
+    switch plot_type
+        case 1
+            prefix='raw';
+            data_disp=data_out;
+            rays_disp=rays;
+        case 2
+            prefix='knit: procrustes only';
+            data_disp=aux_knit_out.components;
+            rays_disp=rays_knit;
+        case 3
+            prefix='knit: procrustes and PCA';
+            data_disp=aux_knit_out_pca.components;
+            rays_disp=rays_knit;
+    end
+    for idim=dim_list
+        aux_disp1.opts_disp.dim_select=idim;
+        aux_disp1.opts_disp.fig_name=sprintf('%s, dim %1.0f: superimpose, connect all stims, all sets',prefix,idim);
+        rs_disp_coordsets(data_disp,aux_disp1); %standard plots, superimposed and connected
+        %
+        aux_disp2.opts_disp.dim_select=idim;
+        aux_disp2.opts_disp.fig_name=sprintf('%s dim %1.0f: separate, connect one stim as a chain',prefix,idim);
+        rs_disp_coordsets(data_disp,aux_disp2); %standard plots, spaced along second dimension
+        %
+        aux_disp3.opts_disp.dim_select=idim;
+        aux_disp3.opts_disp.fig_name=sprintf('%s dim %1.0f: separate, show rays',prefix,idim);
+        rs_disp_enh_coordsets(data_disp,aux_disp3,rays_disp); %enhanced plots with rays and rings
+    end
+end %plot_type
 %

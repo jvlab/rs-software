@@ -515,7 +515,7 @@ if aux_out.warn_bad==0
     aux_out.opts_align=opts_align_used;
     %
     aux_out.components.ds=ds_components;
-    aux_out.components.sas=data_in.sas;
+    aux_out.components.sas=data_align.sas;
     aux_out.components.sets=data_in.sets;
     %
     if aux.opts_knit.keep_details

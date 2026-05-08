@@ -1,10 +1,15 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record.
-% If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
-%   combine several one-record `dataset structures` created here into a single `dataset structure`.
-% If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
+% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record, suitable for display and geometrical analysis.
+%
+%  - If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
+%    combine several one-record `dataset structures` created here into a single `dataset structure`.
+%  - If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
+%  - For multiple coordinate sets collected with the same experimental paradigm, use `rs_get_coordsets`, or use this routine and combine multiple `dataset structures` 
+%    into a single `dataset structure` with `rs_concat_coordsets`.
+%  - No `ray structure` will be created; to do so, use rs_findrays
+%  - To createa a `coordinate structure` based on a `quadratic form model`, use `rs_findrays` and supply 'type_coords' to indicate the stimulus coordinates
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
