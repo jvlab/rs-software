@@ -11,7 +11,7 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %
 %   extract_list (int 1-D array): a subset of [1:n] to extract, the records to extract
 %
-%   aux (struct): auxiliary options, with field
+%   aux (struct): auxiliary options, may be omitted, with field
 %
 %     - opts_extract (struct): options for consistency checking, with field
 %
