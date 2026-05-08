@@ -15,16 +15,15 @@ aux_disp1=aux_disp;
 aux_disp1.opts_disp.connect_sets_method='all'; %connect datasets
 %
 aux_disp2=aux_disp;
-aux_disp2.opts_disp.set_marker_sizes=16; %larger markers
-aux_disp2.opts_disp.set_offsets='margin_amount';
+aux_disp2.opts_disp.set_markersizes=16; %larger markers
+aux_disp2.opts_disp.data_label_setsel_method='all'; %label all sets
+aux_disp2.opts_disp.set_offsets='margin_amount'; %how to space between datasets
 aux_disp2.opts_disp.set_offsets_coordchoices=1; %offset along coordinate 1
-aux_disp2.opts_disp.connect_sets_method='chain';
-aux_disp2.opts_disp.connect_sets_data_method='list';
-data_connect_ptrs=union(strmatch('hot',data_out.sas{1}.typenames,'exact'),strmatch('cold',data_out.sas{1}.typenames,'exact'));
-aux_disp2.opts_disp.connect_sets_data_list=data_connect_ptrs; %just connect the points labeled hot and cold
+aux_disp2.opts_disp.connect_sets_method='chain'; %connect set 1 to 2, and 2 to 3
+aux_disp2.opts_disp.connect_sets_data_method='list';  %label all sets
 %
 aux_disp3=aux_disp;
-aux_disp3.opts_disp.set_offsets='margin_amount';
+aux_disp3.opts_disp.set_offsets='margin_amount'; %how to space between datasets
 aux_disp3.opts_disp.set_offsets_coordchoices=1; %offset along coordinate 1
 aux_disp3.opts_disp_enh.if_rings=1;
 aux_disp3.opts_disp_enh.if_nbrs=0;
@@ -69,6 +68,8 @@ for plot_type=1:3
         %
         aux_disp2.opts_disp.dim_select=idim;
         aux_disp2.opts_disp.fig_name=sprintf('%s dim %1.0f: separate, connect one stim as a chain',prefix,idim);
+        data_connect_ptrs=union(strmatch('hot',data_disp.sas{1}.typenames,'exact'),strmatch('cold',data_disp.sas{1}.typenames,'exact'));
+        aux_disp2.opts_disp.connect_sets_data_list=data_connect_ptrs; %just connect the points labeled hot and cold
         rs_disp_coordsets(data_disp,aux_disp2); %standard plots, spaced along second dimension
         %
         aux_disp3.opts_disp.dim_select=idim;
