@@ -30,7 +30,6 @@
 %   rs_aux_defaults_define: set up a file with default values for auxiliary parameters
 %   rs_aux_force: force a nonstandard set of default auxiliary inputs
 %   rs_plot_style: plot a line and points, customizing marker, color, alpha, style
-%   rs_template: a template for modules with an input and an output
 %   rs_typenames2colors: convert a stimulus type to a clor and symbolfor plotting
 %   rs_warning: display and tally warnings
 %
