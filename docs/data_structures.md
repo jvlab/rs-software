@@ -12,10 +12,25 @@ This contains three components:  a `coordinate structure`, a `stimulus metadata 
 ...
 ## Stimulus metadata structure 
 
+%    data_out.sa: cell array {1,1} of metadata. Subfields of data_out.sa:
+%      nstims: number of stimuli
+%      typenames: stimulus labels
+%      coord names, and/or btc_specoords(istim,:): stimulus coordinates 
+%      sigma_*: information about MDS settings for internal error (sigma)
+%      *LL*(1,ndims): log likelihoods (if 
+
 ...
 
 ## Set metadata structure 
 
+%      type: 'data' (psychophysical data) or 'qform' (quadratic form model)
+%      dim_list: list of available dimensions in data_out.ds, e.g,. [1 2 3 4 5 6 7]
+%      nstims: number of stimuli
+%      label_long: long file name 
+%      label: shortened file name
+%      pipeline: structure describing geometric processing leading to this file
+%         (e.g., Procrustes, other geometric transformations).  Empty if no processing done
+%subject id fields 
 ...
 
 ## Ray structure

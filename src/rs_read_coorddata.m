@@ -21,12 +21,18 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1
 %         - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0
 %         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
-%         - type_coords (float 2D array): stimulus coordinates to use if no setup file, one row for each stimulus; default is empty
+%         - type_coords (float 2D array): stimulus coordinates to use for non-reserved domain names, one row for each stimulus; default is empty; see note below regarding domain names and setup files
 %         - type_coords_def (char): stimulus coordinates to use if type_coords is unspecified or empty; options are 'none', 'zeros', 'ones', or 'eye', see `rs_import_coordsets`; default is 'none'; see `rs_import_coordsets` for further details and how to customize
-%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is determined by customization during install; see note below regarding customization
+%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is determined by customization during install; see notes below regarding domain names and setup files, and customization
 %         - paradigm_type_def (char): default paradigm type; default is determined by customization during install; see note below regarding customization
-%         - setup_fullname_def (char): prompt for setup file name; see notes below regarding setup files and customization 
-%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is determined by customization during install; see note below regarding customization
+%         - coord_string (char): a string in a data file name that delineates the end of the domain name; defaults to '_coords'; see note below regarding customization
+%
+%         - **Options related to setup files**
+%         - setup_fullname_def (char): prompt for setup file name; see notes below regarding domain names and setup files, and customizations
+%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is 'S', see notes below regarding domain names and setup files, and customization
+%         - type_class_aux (char): a specified domain name and type_class
+%
+%         - **Options for internal use and maintenance**
 %         - permutes (struct): typically omitted; each field is a suggested ray permutation for the corresponding paradigm name, e.g., permutes.bgca=[2 1 3 4] specifies a reordering of the rays for paradigm 'bgca'
 %         - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1; see note below regarding customization
 %         - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
@@ -54,40 +60,30 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     - opts_qpred (cell array of struct): opts_qpred{1} is empty (included for compatibility with `rs_get_coordsets`)
 %     - syms_list (struct): empty (included for compatibility with `rs_get_coordsets`)
 %
-%  data_out: coordinates and metadata [to do]
-%    data_out.sets{1}: cell array {1,1} of the dataset descriptors, Subfields of data_out.sets{1}:
-%      type: 'data' (psychophysical data) or 'qform' (quadratic form model)
-%      dim_list: list of available dimensions in data_out.ds, e.g,. [1 2 3 4 5 6 7]
-%      nstims: number of stimuli
-%      label_long: long file name 
-%      label: shortened file name
-%      pipeline: structure describing geometric processing leading to this file
-%         (e.g., Procrustes, other geometric transformations).  Empty if no processing done
-%    data_out.ds: cell array {1,1} of coordinates.
-%      data_out.ds{iset}{nd} is a structure of coordinates (nstims x nd),
-%    data_out.sa: cell array {1,1} of metadata. Subfields of data_out.sa:
-%      nstims: number of stimuli
-%      typenames: stimulus labels
-%      *LL*(1,ndims): log likelihoods
-%      btc_specoords(istim,:): stimulus coordinates to be used for finding rays
-%      sigma_*: information about MDS settings for internal error (sigma)
+%   data_out (struct): `dataset structure`, containing one records, with fields
+%
+%     - ds (cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates for the record
+%     - sas (cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the record
+%     - sets (cell array): `set metadata structure`, sets{1} is the response metadata for the record
+%
 %      
-% Note regarding setup files: [to do]
-%      - exzplain how to not need a setup file
-%      - The name of the associated setup file, if needed, is automatically generated.
-%    The need for a setup file is determined as follows:
-%     A 'type class' is determined from the data file name in psg_read_coorddata, by psg_coorddata_parsename.
-%     If it contains 'faces', type class is faces_mpi (faces pilot data), setup IS needed
-%     If it contains 'faces_mpi', type class is faces_mpi (faces pilot data), setup IS needed
-%     If it contains 'irgb', type class is 'irgb' (color texture pilot data), setup IS needed
-%     If it contains 'mater', type class is 'mater' (material pilot data), setup IS needed
-%     If it contains opts_read.type_class_aux, type class is set to type_class_aux, NO setup
-%     If it contains one of the strings in opts_read.domain_list_def, type class is 'domain', NO setup is needed (example files are in demos). Note that domain_list_def can be customized or overridden, enabling use of example files in samples/animals.
-%     Otherwise, type_class is set to opts_read.type_class_def, ('btc' unless customized), and a setup IS needed (example files are in samples/bwtextures)
-%     The setup file, if needed, is constructed from fullnames{ifile} in psg_get_coordsets,
-%      by taking the segment up to the opts_read.coord_string, and appending opts_read.setup_suffix, which may be empty
-%    If the coords file is not a raw data file (i.e,. is the result of processing, and has been written out
-%      by this package), it may contain an embedded setup file, in which case, an external setup file is read.
+% Note regarding domain names and setup files:
+%     - The domain name is determined from the data file name, based on the string preceding '_coords' (or, opts_read.coord_string, if customized).  This in turn determines how stimulus coordinates are specified.
+%
+%         - For non-reserved domain names, stimulus coordinates are specified by '+type_coords'
+%         - For reserved domain names, stimulus coordinates are specified by a 'setup file', whose name is constructed from the data file name up to the string preceding opts_read.coord_string, and appending opts_read.setup_suffix
+%
+%     - The domain name is also used to determine a 'type_class', which is used internally.
+%     - This is carried out in psg_coorddata_parsename, as follows:
+%
+%         - The domains 'faces*' are reserved; type_class is faces_mpi; used with a setup file
+%         - The domain 'irgb' is reserved; type_class is 'irgb'; used with a setup file
+%         - The domain 'mater' is reserved; type_class is 'mater'; used with a setup file
+%         - The domain opts_read.type_class_aux is NOT reserved; type class is type_class_aux; no setup file used
+%         - Any domain that is listed in opts_read.domain_list_def is NOT reserved; type class is 'domain'; no setup file used
+%         - Otherwise, type)class is set to opts_read.type_class_def, ('btc' unless customized; used with a setup file
+%
+%     - When a `dataset structure` is writtenby `rs_write_coordsets`, the setup file information, if any, will be embedded. When that file is read in, no setup file is required.
 %
 % Note regarding customization:
 %     The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
@@ -97,6 +93,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - domain_list_def
 %         - setup_suffix
 %         - permutes_ok
+%         - coord_string
+%         - type_class_aux
 %
 %  See also: RS_IMPORT_COORDSETS, RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_CHECK_COORDSETS,
 %   PSG_READ_COORDDATA, PSG_MAKE_SETSTRUCT, PSG_FINDRAYS_SETOPTS, PSG_FINDRAYS.
