@@ -133,7 +133,7 @@ if isempty(fullname)
             ui_filter={cat(2,'*',aux.opts_read.setup_suffix,'.mat'),'setup file'};
         else
             ui_prompt='Select a coordinate file';
-            ui_filter={aux.opts_read.ui_filter,'coordinate file'};
+            ui_filter=aux.opts_read.ui_filter;
         end
         while (if_manual==0 & isempty(fullname))
             [filename_short,pathname]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
