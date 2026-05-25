@@ -124,8 +124,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     and the results are returned in
 %     rmsdev_[overall|setwise|stimwise]_shuff.
 %     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
-%     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: in mode 1, all coordinates
-%     are shuffled, in mode 2 only the last coordinate is shuffled.
+%     always 1; dimension 4 (length: nshuffs) is which shuffle; dimension 5 (length: 2) is the mode: 1 for last coordinate only shuffled, 2 for all coordinates shuffled.
 %     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
