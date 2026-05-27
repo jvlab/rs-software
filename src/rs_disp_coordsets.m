@@ -106,7 +106,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             - 'split': first half of segment matches first record in connected pair; second half of segmentmatches second record in connected pair
 %             - 'list': specify colors in connect_sets_colors
 %
-%         - connect_sets_colors (color specifier or cell array of color specifiers): iff connect_sets_color_mode='list;, these are the colors for for connecting segments; cycled through if necessary
+%         - connect_sets_colors (color specifier or cell array of color specifiers): if connect_sets_color_mode='list';, these are the colors for for connecting segments; cycled through if necessary
 %         - connect_sets_linestyles (char or cell array of char): line styles assigned to connections between records; default is  '-'; cycled through if necessary
 %         - connect_sets_linewidths (int 1-D array): line widths assigned to connections between records; default is 1; cycled through if necessary
 %
