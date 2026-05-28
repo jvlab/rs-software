@@ -22,8 +22,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
-%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
-%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1;  note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
 %
 %          - **Dimension selection**
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
@@ -45,12 +44,11 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
 %          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
 %          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
-%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%          default is 1
+%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
 %
 %          - **Logging and optimization**
 %          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
-%          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
+%          - if_fit_summary (int): 1 to log a summary of fits, 0 to omit; default is 1
 %          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
 %          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
 %          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
