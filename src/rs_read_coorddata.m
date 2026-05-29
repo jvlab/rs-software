@@ -8,6 +8,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %    into a single `dataset structure` with `rs_concat_coordsets`.
 %  - A `ray structure` will be created.
 %  - To create a `coordinate structure` based on a `quadratic form model`, also use `rs_get_coordsets`.
+%  - For `binary texture domain` data with symmetry augmentation, use `rs_get_coordsets`.
 %  - To import coordinates generated externally or that exist as arrays rather than in a file, use `rs_import_coordsets`.
 %
 % Args:
@@ -17,19 +18,19 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %
 %     - opts_read (struct): can be omitted, with fields listed below
 %
-%         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1
-%         - if_log (int): 1 to log progress, 0 to omit; default is 1
-%         - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0
-%         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
-%         - type_coords (float 2D array): stimulus coordinates to use for non-reserved domain names, one row for each stimulus; default is empty; see note below regarding domain names and setup files
-%         - type_coords_def (char): stimulus coordinates to use if type_coords is unspecified or empty; options are 'none', 'zeros', 'ones', or 'eye', see `rs_import_coordsets`; default is 'none'; see `rs_import_coordsets` for further details and how to customize
-%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is determined by customization during install; see notes below regarding domain names and setup files, and customization
-%         - paradigm_type_def (char): default paradigm type; default is determined by customization during install; see note below regarding customization
-%         - coord_string (char): a string in a data file name that delineates the end of the domain name; defaults to '_coords'; see note below regarding customization
+%         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1; see note below regarding customization
+%         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
+%         - data_fullname_def (char): prompt for data file if 'data_fullname' is empty; see note below regarding customization
+%         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_coords';see note below regarding customization
 %
-%         - **Options related to setup files**
-%         - setup_fullname_def (char): prompt for setup file name; see notes below regarding domain names and setup files, and customizations
-%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is 'S', see notes below regarding domain names and setup files, and customization
+%         - **Options related to stimulus coordinates, domains, and setup files (see notes below)** 
+%         - type_coords (float 2-D array): stimulus coordinates to use for non-reserved domain names, one row for each stimulus; default is empty
+%         - type_coords_def (char): stimulus coordinates to use if type_coords is unspecified or empty; options are 'none', 'zeros', 'ones', or 'eye', see `rs_import_coordsets`; default is 'none'; see `rs_import_coordsets` for further details and how to customize
+%         - domain_list_def (cell array): paradigm names for generic domain experiments; default is {'cars','tools','dwellings'}; determined by customization during install
+%         - paradigm_type_def (char): default paradigm type; default is determined by customization during install
+%         - coord_string (char): a string in a data file name that delineates the end of the domain name; defaults to '_coords'
+%         - setup_fullname_def (char): prompt for setup file name
+%         - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is 'S'
 %         - type_class_aux (char): a specified domain name and type_class
 %
 %         - **Options for internal use and maintenance**
@@ -37,7 +38,8 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1; see note below regarding customization
 %         - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
 %
-%     - opts_import (struct): options for stimulus coordinates, typically omitted, see note below regarding stimulus coordinates
+%     - opts_rays (struct): options for identifying rays, may be omitted; see `rs_findrays` for details
+%
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -45,33 +47,26 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 % Returns:
 %   data_out (struct): `dataset structure` with one record, and fields
 %
-%     - ds (singleton cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates
-%     - sas (singleton cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the record
-%     - sets (singleton cell array): `set metadata structure`, sets{1} is the response metadata for the record
+%     - ds (singleton cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates for the sole record
+%     - sas (singleton cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the sole record
+%     - sets (singleton cell array): `set metadata structure`, sets{1} is the response metadata for the sole record
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
-%     - rayss (cell array of struct): rayss{1} is the `ray structure` for the record
+%     - rayss (cell array of struct): rayss{1} is the `ray structure` for the sole record
 %     - opts_read (cell array of struct): opts_read{1} is aux.opts_read, with defaults filled in
-%     - opts_check (struct): aux.opts_check, with defaults filled in
-%     - opts_rays (cell array of struct): opts_rays{1} are the options used for creating the `ray structure`
-%     - opts_qpred (cell array of struct): opts_qpred{1} is empty (included for compatibility with `rs_get_coordsets`)
+%     - opts_rays (cell array of struct): opts_rays{1} are the options used for creating the `ray structure` for the sole record
+%     - opts_qpred (cell array of struct): empty (included for compatibility with `rs_get_coordsets`)
 %     - syms_list (struct): empty (included for compatibility with `rs_get_coordsets`)
+%     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-%   data_out (struct): `dataset structure`, containing one records, with fields
-%
-%     - ds (cell array): `coordinate structure`, ds{1}{idim} is an array of [nstims idim] of coordinates for the record
-%     - sas (cell array): `stimulus metadata structure`, sas{1} is the stimulus metadata for the record
-%     - sets (cell array): `set metadata structure`, sets{1} is the response metadata for the record
-%
-%      
-% Note regarding domain names and setup files:
+% Note regarding domain names, stimulus coordinates, and setup files:
 %     - The domain name is determined from the data file name, based on the string preceding '_coords' (or, opts_read.coord_string, if customized).  This in turn determines how stimulus coordinates are specified.
 %
-%         - For non-reserved domain names, stimulus coordinates are specified by '+type_coords'
-%         - For reserved domain names, stimulus coordinates are specified by a 'setup file', whose name is constructed from the data file name up to the string preceding opts_read.coord_string, and appending opts_read.setup_suffix
+%         - For non-reserved domain names (opts_read.type_class_aux, or any domain in opts_read.domain_list_def), stimulus coordinates are specified by 'type_coords' and no setup file is used.
+%         - Other domain names are reserved, and stimulus coordinates are specified by a 'setup file', whose suggested name is constructed from the data file name up to the string preceding opts_read.coord_string, and appending opts_read.setup_suffix
 %
 %     - The domain name is also used to determine a 'type_class', which is used internally.
 %     - This is carried out in psg_coorddata_parsename, as follows:
@@ -81,13 +76,17 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %         - The domain 'mater' is reserved; type_class is 'mater'; used with a setup file
 %         - The domain opts_read.type_class_aux is NOT reserved; type class is type_class_aux; no setup file used
 %         - Any domain that is listed in opts_read.domain_list_def is NOT reserved; type class is 'domain'; no setup file used
-%         - Otherwise, type)class is set to opts_read.type_class_def, ('btc' unless customized; used with a setup file
+%         - Otherwise, type_class is set to opts_read.type_class_def, ('btc' unless customized); used with a setup file
 %
-%     - When a `dataset structure` is writtenby `rs_write_coordsets`, the setup file information, if any, will be embedded. When that file is read in, no setup file is required.
+%     - When a `dataset structure` is written by `rs_write_coordsets`, the setup file information, if any, will be embedded. When that file is read in and an embedded setup file is detected, no setup file is requested.
+%     - Also see note below regarding customization
 %
 % Note regarding customization:
 %     The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
+%         - if_gui
+%         - ui_filter
+%         - if_log
 %         - data_fullname_def
 %         - setup_fullname_def
 %         - domain_list_def

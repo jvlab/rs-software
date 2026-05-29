@@ -6,7 +6,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 % and, optionally, for selected models and comparisons across models that are nested by model type and/or dimension.
 %
 % Args:
-%   gf (2-D cell array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
+%   gf (cell 2-D array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
 %      of a pair of `dataset structures`; gf{d_out,d_in} contains the statistics for transforming a dataset of d_in dimensions to one with d_out dimensions
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
