@@ -16,7 +16,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %
 %   aux (struct): a structure, can be omitted, with fields 
 %
-%     - opts_read (struct): can be omitted, with fields listed below
+%     - opts_read (struct): options for reading, can be omitted, with fields
 %
 %         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1; see note below regarding customization
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization

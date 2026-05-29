@@ -39,11 +39,10 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %        - setup_suffix (char): suffix added to paradigm name to create the setup file name; default is 'S'
 %        - type_class_aux (char): a specified domain name and type_class
 %
-%        - **Options for symmetry augmentation (`binary texture domain` only)**
-%   opts_read.if_symaug: defaults to 0.  1 to augment by symmetry, -1 to ask (only applies to data, not to models)
-%   opts_read.if_symaug_log: defaults to 0. 1 to log symmetry augmentation
-%   opts_read.sym_apply: type of symmetry to apply (defaults to 'full', see psg_btcsyms for alternatives)
-%    syms={'hflip','vflip','rot180','rot90','hvflip','diag','full','none'};
+%        - **Options for symmetry augmentation (`binary texture domain` data only)**
+%        - if_symaug (int): 1 to enable symmetry augmentation, 0 to omit, -1 to ask; default is 0
+%        - if_symaug_log (int): 1 to log symmetry augmentation, 0 to omit; default is 0
+%        - sym_apply (char): type of symmetry to apply; default is 'full', options are  'hflip','vflip','rot180','rot90','hvflip','diag','full','none'
 %
 %        - **Options for internal use and maintenance**
 %        - permutes (struct): typically omitted; each field is a suggested ray permutation for the corresponding paradigm name, e.g., permutes.bgca=[2 1 3 4] specifies a reordering of the rays for paradigm 'bgca'
@@ -52,19 +51,19 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %
 %     - opts_qpred (struct): a structure, can be omittedwith options for `quadratic form model`, with fields
 %
-%      qform_datafile_def is the default name of the file with quadratic form models, used for all sets read here
-%      This file has a field r, and each r{imodel} has at least setup.label and results.qfit
-%      qform_modeltype is a list of indexes into qform_datafile_def, to be used as imodel.  Used cyclically across isets if needed.  0 -> ask at console
+%        - qform_datafile_def is the default name of the file with quadratic form models, used for all sets read here
+%        This file has a field r, and each r{imodel} has at least setup.label and results.qfit
+%        qform_modeltype is a list of indexes into qform_datafile_def, to be used as imodel.  Used cyclically across isets if needed.  0 -> ask at console
 %
-%  Above two args can be customized in rs_aux_defaults_define
-%generic.opts_qpred.qform_datafile_def='./[path and file name for quadratic form model].mat'; %default model parameter file
-%generic.opts_qpred.qform_modeltype=[1];%offset; %index into substructure of above; typically 1
+%        Above two args can be customized in rs_aux_defaults_define
+%        generic.opts_qpred.qform_datafile_def='./[path and file name for quadratic form model].mat'; %default model parameter file
+%        generic.opts_qpred.qform_modeltype=[1];%offset; %index into substructure of above; typically 1
 %
-% opts_qform=filldefault(opts_qform,'if_log',0);
-% opts_qform=filldefault(opts_qform,'negeig_makezero',1);
-% opts_qform=filldefault(opts_qform,'negtol',10^-7); %eigenvalues between 0 and -negtol are set to zero before checking for negative eigenvalues
-% opts_qform=filldefault(opts_qform,'if_pca_centroid',1); %1 to do PCA around centroid
-% %
+%        if_log (0);
+%        opts_qform=filldefault(opts_qform,'negeig_makezero',1);
+%        opts_qform=filldefault(opts_qform,'negtol',10^-7); %eigenvalues between 0 and -negtol are set to zero before checking for negative eigenvalues
+%        opts_qform=filldefault(opts_qform,'if_pca_centroid',1); %1 to do PCA around centroid
+%
 % 
 %     - opts_rays (struct): options for identifying rays, may be omitted; see `rs_findrays` for details
 %
