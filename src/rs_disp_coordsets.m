@@ -140,7 +140,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
 % Returns:
-%   aux_out: auxiliary outputs and parameter values used
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing

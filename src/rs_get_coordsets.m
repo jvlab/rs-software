@@ -51,20 +51,13 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %
 %     - opts_qpred (struct): a structure, can be omittedwith options for `quadratic form model`, with fields
 %
-%        - qform_datafile_def is the default name of the file with quadratic form models, used for all sets read here
-%        This file has a field r, and each r{imodel} has at least setup.label and results.qfit
-%        qform_modeltype is a list of indexes into qform_datafile_def, to be used as imodel.  Used cyclically across isets if needed.  0 -> ask at console
+%        - qform_datafile_def (char): default name of the file with quadratic form models containing a structure r; see notes below quadratic form model and customization
+%        - qform_modeltype (int or int 1-D array): list of indexes into qform_datafile_def for choice of model, used cyclically across records as needed. 0 -> ask at console; detault is 1 see note below re customization
+%        - if_log (int): 1 to log calculation of quadratic form model, 0 to omit; default is 0
+%        - if_pca_centroid (int): 1 to force centroid of coordinates to 0 via PCA method, 0 to omit; default is 1
+%        - negeig_makezero (int): 1 to set negative eigenvalues to 0, 1 to omit; default is 1
+%        - negtol (float): eigenvalues between 0 and -negtol are set to zero before checking for negative eigenvalues; default is 10^-7
 %
-%        Above two args can be customized in rs_aux_defaults_define
-%        generic.opts_qpred.qform_datafile_def='./[path and file name for quadratic form model].mat'; %default model parameter file
-%        generic.opts_qpred.qform_modeltype=[1];%offset; %index into substructure of above; typically 1
-%
-%        if_log (0);
-%        opts_qform=filldefault(opts_qform,'negeig_makezero',1);
-%        opts_qform=filldefault(opts_qform,'negtol',10^-7); %eigenvalues between 0 and -negtol are set to zero before checking for negative eigenvalues
-%        opts_qform=filldefault(opts_qform,'if_pca_centroid',1); %1 to do PCA around centroid
-%
-% 
 %     - opts_rays (struct): options for identifying rays, may be omitted; see `rs_findrays` for details
 %
 %     - opts_check (struct): options for consistency checking, with field
@@ -85,42 +78,50 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %     - rayss (cell array of struct): rayss{k} is the `ray structure` for the kth record
 %     - opts_read (cell array of struct): opts_read{k} is aux.opts_read for reading the kth record, with defaults filled in
 %     - opts_rays (cell array of struct): opts_rays{k} are the options used for creating the `ray structure` for the kth record
-%     - opts_qpred (cell array of struct): opts_qpred{k} are the options used for creating the `quadratic form model` for the kth record
-%     and 
-%     var_ex: variance explained by each d_mds model
-%     var_tot: total variance
-%     predcoords: coordinates predicted by full quadratic model
+%     - opts_qpred (cell array of struct): opts_qpred{k} are the options used for creating the `quadratic form model` for the kth record along with
+%
+%         - var_tot (float): total variance of the coordinates
+%         - var_ex (float 1-D array): variance explained by each dimension of the model
+%         - predcoords (float 2-D array): predcoords(istim,idim) is the model coordinate for stimulus istim in dimension idim
 %
 %     - opts_check (struct): aux.opts_check, with defaults filled in
-%     - syms_list (struct): empty (included for compatibility with `rs_get_coordsets`)
-% syms_list: describes the symmetries applied, empty if no symmetry augmentation
-%   syms_list.sym_apply: the symmetry name (see psg_btcmeta_symapply)
-%   syms_list.primary(iset): the primary set that was augmented
-%   syms_list.aug(iset):   which symmetry augmentation
-%   syms_list.syms_applied{iset}: btc coords resulting from the symmetry
+%     - syms_list (struct): structure with results of symmetry augmentation
 %
+%         - sym_apply (char): the symmetry applied, see 'sym_apply' above
+%         - primary (int 1-D array): primary(k) is pointer to the data that was augmented by symmetry to yield the kth record
+%         - aug (int 1-D array): aug(k) indicates the symmetry that was used to yield the kth record, e.g., if there are n_sym total symmetries (e.g., n_sym=8 for 'full'), then aug is in [1:n_sym]. The pairs [primary(k) aug(k)] are unique; 
+%         a contiguous block of n_sym pairs share one value of primary(k) and have sequential values of aug(k)
+%         - syms_applied (cell array of char): syms_applied{k} are the `binary texture` coordinates after symmetry transformation for record k
 %
-% Note regarding domain names, stimulus coordinates, and setup files:
-%     - The domain name is determined from the data file name, based on the string preceding '_coords' (or, opts_read.coord_string, if customized).  This in turn determines how stimulus coordinates are specified.
+% Note regarding domain names and stimulus coordinates and setup files:
+%     - The domain name is determined from the data file name based on the string preceding '_coords' (or, opts_read.coord_string, if customized).  This in turn determines how stimulus coordinates are specified.
 %
 %         - For non-reserved domain names (opts_read.type_class_aux, or any domain in opts_read.domain_list_def), stimulus coordinates are specified by 'type_coords' and no setup file is used.
 %         - Other domain names are reserved, and stimulus coordinates are specified by a 'setup file', whose suggested name is constructed from the data file name up to the string preceding opts_read.coord_string, and appending opts_read.setup_suffix
+%         - The domain name is also used to determine a 'type_class', which is used internally. This is carried out in psg_coorddata_parsename, as follows:
 %
-%     - The domain name is also used to determine a 'type_class', which is used internally.
-%     - This is carried out in psg_coorddata_parsename, as follows:
+%             - The domains 'faces*' are reserved; type_class is faces_mpi; used with a setup file
+%             - The domain 'irgb' is reserved; type_class is 'irgb'; used with a setup file
+%             - The domain 'mater' is reserved; type_class is 'mater'; used with a setup file
+%             - The domain opts_read.type_class_aux is NOT reserved; type class is type_class_aux; no setup file used
+%             - Any domain that is listed in opts_read.domain_list_def is NOT reserved; type class is 'domain'; no setup file used
 %
-%         - The domains 'faces*' are reserved; type_class is faces_mpi; used with a setup file
-%         - The domain 'irgb' is reserved; type_class is 'irgb'; used with a setup file
-%         - The domain 'mater' is reserved; type_class is 'mater'; used with a setup file
-%         - The domain opts_read.type_class_aux is NOT reserved; type class is type_class_aux; no setup file used
-%         - Any domain that is listed in opts_read.domain_list_def is NOT reserved; type class is 'domain'; no setup file used
 %         - Otherwise, type_class is set to opts_read.type_class_def, ('btc' unless customized); used with a setup file
 %
 %     - When a `dataset structure` is written by `rs_write_coordsets`, the setup file information, if any, will be embedded. When that file is read in and an embedded setup file is detected, no setup file is requested.
 %     - Also see note below regarding customization
 %
+% Note regarding quadratic form model:
+%     - Quadratic form models may be used to generate a `coordinate structure` based on stimulus coordinates.
+%     - The file must a cell array r, and each r{imodel} has at least has structure r The quadratic form model file must contain a field r, which must contain
+%
+%         - results.qfit (float 2-D array): a symmetric matrix indicating the quadratic form  which, when applied to stimulus coordinates, yields the model coordinates
+%         - setup.label (char): a label for the model
+%
+%     - See demos/opposites_qform_example.mat for an example file with four quadratic form models, applicable to a stimulus set in which stimuli have three coordinates
+%
 % Note regarding customization:
-%     The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%     - The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
 %         - if_gui
 %         - ui_filter
@@ -137,6 +138,11 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %         - if_symaug
 %         - sym_apply
 %         - if_symaug_log
+%
+%     - The defaults for the following parameters can be set by editing the line containing generic.opts_qpred.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
+%
+%         - qform_datafile_def
+%         - qform_modeltype
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_FINDRAYS, RS_CHECK_COORDSETS, PSG_GET_COORDSETS, PSG_COORDDATA_PARSENAME.
 %
