@@ -12,8 +12,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   xforms (struct): specification of the transformations, typically an output structure from rs_xform_specify [??how to hyperlink] or rs_geofit [??how to hyperlink], with fields
-%
+%   xforms (struct): specification of the transformations, typically an output structure from `rs_xform_specify`
+% 
 %      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
 %      - pipeline (structure): a structure that becomes the 'pipeline' field of a `set metadata structure` when the transformations are applied
 %
