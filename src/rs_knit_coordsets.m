@@ -58,7 +58,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-%     - opts_pcon (struct): options used in Procrustes alignment; see note below regarding Procrustes consensus algorithm
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
 %     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
