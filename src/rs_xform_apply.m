@@ -175,7 +175,8 @@ for k=1:nsets
         data_out.sets{k}.pipeline=struct();
     end
     data_out.sets{k}.pipeline.opts.opts_xform.transforms=xforms.ts;
-    data_out.sets{k}.pipeline.sets=data_in.sets{k};
+    data_out.sets{k}.pipeline=filldefault(data_out.sets{k}.pipeline,'sets',data_in.sets{k});
+    data_out.sets{k}.pipeline=filldefault(data_out.sets{k}.pipeline,'type','xform');
     data_out.sets{k}.dim_list=dim_list_out;
 end
 if ~isempty(missing_params)
