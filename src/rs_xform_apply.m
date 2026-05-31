@@ -15,7 +15,8 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %   xforms (struct): specification of the transformations, typically an output structure from `rs_xform_specify`
 % 
 %      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
-%      - pipeline (structure): a structure that becomes the 'pipeline' field of a `set metadata structure` when the transformations are applied
+%      - pipeline (struct): a structure that becomes the starting point for
+%      the 'pipeline' field of a `set metadata structure` when the transformations are applied, may be omitted; default is omitted
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
 %
