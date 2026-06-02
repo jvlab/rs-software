@@ -40,11 +40,15 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - **Statistics**
 %          - if_stats (int): 1 to enable statistics, 0 to omit; default is 1; a value of 0 will override a nonzero `if_nestbymodel` and `if_nestbydim`
 %          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
+%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
 %          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
 %          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
 %          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
 %          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
-%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
+%          - if_keep_transforms (int): 1 to keep transforms from shuffles, 0 to omit; default is 0
+%          - if_keep_transforms_nestbymodel (int): 1 to keep transforms from nesting by model, 0 to omit; default is 0 if if_nestbymodel=0, 1 otherwise
+%          - if_keep_transforms_nestbydim_in (int): 1 to keep transforms from nesting by dimension of input, 0 to omit; default is 0 if if_nestbydim_in=0, 1 otherwise
+%          - if_keep_transforms_nestbydim_out (int): 1 to keep transforms from nesting by dimension of output, 0 to omit; default is 0 if if_nestbydim_out=0, 1 otherwise
 %
 %          - **Logging and optimization**
 %          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
@@ -159,7 +163,12 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE,
 %    PSG_GEOMODELS_NESTORDER, RS_DISP_GEOFIT.
 %
-psg_geomodels_def=psg_geomodels_define();
+%
+fields_unchanged={'nshuffs','if_nestbydim','if_center','if_frozen','persp_method','if_nestbymodel','if_nestbydim_in','if_nestbydim_out',...
+    'if_keep_transforms','if_keep_transforms_nestbymodel','if_keep_transforms_nestbydim_in','if_keep_transforms_nestbydim_out'};
+%
+psg_geomodels_def=psg_geomodels_define(); %access the available models and their characteristics
+%
 %special case: display available models
 if nargin==0
     gfs=psg_geomodels_def;
@@ -190,6 +199,11 @@ aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
 aux.opts_geof=filldefault(aux.opts_geof,'persp_method','best');
+%
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms',0);
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbymodel',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbymodel));
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbydim_in',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbydim_in));
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbydim_out',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbydim_out));
 %
 aux=filldefault(aux,'opts_check',struct); %options for other modules called
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -295,15 +309,10 @@ opts_psgfit_base=struct;
 opts_psgfit_base.model_types_def=z.model_definitions;
 opts_psgfit_base.if_log=z.if_fit_log;
 opts_psgfit_base.if_summary=z.if_fit_summary;
-%fields copied with no change
-opts_psgfit_base.nshuffs=z.nshuffs;
-opts_psgfit_base.if_nestbydim=z.if_nestbydim;
-opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
-opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
-opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
-opts_psgfit_base.if_center=z.if_center;
-opts_psgfit_base.if_frozen=z.if_frozen;
-opts_psgfit_base.persp_method=z.persp_method;
+%fields passed from aux.opts_geof to opts_psgfit with no change
+for k=1:length(fields_unchanged)
+    opts_psgfit_base.(fields_unchanged{k})=z.(fields_unchanged{k});
+end
 %
 for iset=1:nsets
     iset_in=1+mod(iset-1,check_in.nsets);
