@@ -16,7 +16,7 @@ function opts_used=rs_warning(msg,if_bad,opts_warn)
 %  Returns:
 %    opts_used (struct): updated opts_warn structure
 %
-% Note: 
+% Note: Note
 %    Typical usage is
 %    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux_out.if_warn)) [?how to show code?]
 %    which appends the warning message 'wmsg' to aux_out.warnings, and increments tally of aux_out.warn_bad

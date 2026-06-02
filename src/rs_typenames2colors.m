@@ -58,7 +58,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %     - opts_tn2c (struct): aux.opts_tn2c, with defaults filled in
 %
-% Note regarding parsing of typenames into coordinates:
+% Note: Note regarding parsing of typenames into coordinates
 %     - The typenames argument is a string, or a a cell array of strings; each of which is parsed into coordinates.
 %     - These strings consist of a coordinate axis designator, typically [a-j] ynless modified by opts_tn2c.coord_lets, followed by a numeric quantity.
 %     - The numeric quantity consists either of string of digits (assumed to represent a positive quantity),
@@ -79,7 +79,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %         - If more than one axis is present anong the typenames, and color values are given as rgb triples, and if_color_arith=1, then colors are weighted by the magnitudes.
 %         - Otherwise the color of the axis that has the largest magnitude coordinate will be used, with ties broken by order of axes.
 %
-% Note regarding reserved paradigm types:
+% Note: Note regarding reserved paradigm types
 %     - For certain reserved paradigm types, color and symbol assignments deviate from the behavior described here and are controlled by psg_typenames2colors.
 %     - paradigm_type='btc': this refers to stimuli from the `binary texture domain` . Symbols are assigned as described above. 'cvecs' are decoded based on
 %     coord_lets='gbcdetuvwa', and typename strings such as 'gm0461' are interpreted as a value of 0.461 on the g (first) axis. Colors are assigned to coordinates as follows:

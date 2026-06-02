@@ -26,7 +26,7 @@ function [data_out,aux_out]=rs_extract_coordsets(data_in,extract_list,aux)
 %     - warn_bad (int): number of warnings that prevent further processing
 %     - opts_extract (struct): aux.opts_extract, with defaults filled in
 %
-% Notes:
+% Note: Notes
 %   -  aux may be omitted; defaults are filled in.
 %   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
 %

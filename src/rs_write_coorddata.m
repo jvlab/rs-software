@@ -34,7 +34,7 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %     - fullname (char): file name written
 %     - s_written (struct): structure written
 %
-% Note re `setup metadata`:
+% Note: Note re `setup metadata`
 %
 %    - The `setup metadata` is required for `binary texture domain` datasets; not otherwise required unless configured on installation.
 %    - If `setup metadata` is required, it is read along with the coordinate data by `rs_read_coorddata` or

@@ -39,7 +39,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     - opts_xform (struct): aux.opts_xform, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding transformations:
+% Note: Note regarding transformations
 %   - xforms.ts{k}{idim} are the transformations to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
 %
 %       - If length(xforms.ts{k})<length(data_in), transformations are used in cyclic order.

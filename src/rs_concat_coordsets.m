@@ -26,7 +26,7 @@ function [data_out,aux_out]=rs_concat_coordsets(data_in1,data_in2,aux)
 %     - warn_bad (int): number of warnings that prevent further processing
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Notes:
+% Note: Notes
 %   -  aux may be omitted; defaults are filled in.
 %   - `data_in1` and `data_in2` are typically created by `rs_get_coordsets`, `rs_align_coordsets`, or `rs_import_coordsets`.
 %   -  data_out.sets{k}.pipeline is copied from data_in1 or data_in2 and is not updated.

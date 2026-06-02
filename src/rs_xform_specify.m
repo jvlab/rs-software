@@ -70,7 +70,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %     - opts_xform (struct): aux.opts_xform, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding transformations:
+% Note: Note regarding transformations
 %     - The transformations specified by rs_xform_specify are combinations of translations
 %     and linear transformations.  With ts=xforms.ts{k}{idim}, and each
 %     input a row vector the transformation is

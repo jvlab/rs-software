@@ -97,7 +97,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - opts_geof (struct): aux.opts_geof, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding geometric models:
+% Note: Note regarding geometric models
 %    - Model types to be fit are specified by the entries in opts_geof.model_list. The following model types are available:
 %
 %        - 'mean': all input values mapped to a single output value 
@@ -116,18 +116,18 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
 %    - See `transformation structure` for details on how the models are parameterized
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %   
-% Note regarding model definition structure: 
+% Note: Note regarding model definition structure
 %    - mdef=rs_geofit() returns a model definition structure, which defines the available models and their characteristics.
 %    - mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
 %    - mdef.(model_name) defines each model
 %    - mdef.(model_name).class is the model class: 'mean','procrusetes,'affine','projective','pwaffine' (see `rs_xform_apply` ??how to hyperlink)
 %    - mdef.(model_name).nested lists the names of the nested models
 %
-% Note regarding nesting:
+% Note: Note regarding nesting
 %    - Nesting by model type: Some models are extensions of others. For example, the affine_offset model extends the affine_noofset model, by allowing offsets.
 %    The more general model will always provide a fit that is at least as good as the less-general model, but will have more parameters.  The if_nestbymodel option provides a way to determine
 %    whether the improvement in fit is better than would be expected by chance.

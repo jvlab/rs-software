@@ -58,12 +58,12 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %     - opts_import (struct): aux.opts_import, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding coordinates:
+% Note: Note regarding coordinates
 %    - if 'coords' is a 2-dimensional array of size [nstims dmax], then coords(:,1:k) is taken to be the coordinate set data_out.ds{1}{:,idim},
 %    for each idim=1,...,dmax
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %    The default values of these parameters can be changed by editing `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm

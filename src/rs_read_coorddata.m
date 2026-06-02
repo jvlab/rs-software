@@ -62,7 +62,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     - syms_list (struct): empty (included for compatibility with `rs_get_coordsets`)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding domain names and stimulus coordinates and setup files:
+% Note: Note regarding domain names, stimulus coordinates, and setup files
 %     - The domain name is determined from the data file name based on the string preceding '_coords' (or, opts_read.coord_string, if customized).  This in turn determines how stimulus coordinates are specified.
 %
 %         - For non-reserved domain names (opts_read.type_class_aux, or any domain in opts_read.domain_list_def), stimulus coordinates are specified by 'type_coords' and no setup file is used.
@@ -80,7 +80,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %     - When a `dataset structure` is written by `rs_write_coordsets`, the setup file information, if any, will be embedded. When that file is read in and an embedded setup file is detected, no setup file is requested.
 %     - Also see note below regarding customization
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %     - The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
 %         - if_gui
