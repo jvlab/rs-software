@@ -6,7 +6,7 @@
 %
 rs_module='read_coorddata';
 %
-%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+%section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
 if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
 auxs_force=struct;
 opts_needed={'opts_read','opts_rays','opts_check'};

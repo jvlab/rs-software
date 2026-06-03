@@ -8,7 +8,7 @@
 %testing is in several sets, each of which contains (by rs_auto_test) one test, so ntests=1 but testset may be > 1
 rs_module='disp_coordsets';
 %
-%section to force btc defaults, even if rs_aux_deefaults.mat has been created or modified
+%section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
 if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
 auxs_force=struct;
 opts_needed={'opts_read','opts_rays','opts_check','opts_qpred','opts_align','opts_import','opts_knit','opts_disp','opts_disp_enh','opts_tn2c'};
