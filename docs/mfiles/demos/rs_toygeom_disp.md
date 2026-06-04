@@ -1,5 +1,5 @@
 # rs_toygeom_disp
-Display the results of rs_toygeom_demo
+Display the results of rs_toygeom_demo* with `rs_disp_geofit`
 
 sims: a structure containing simulations, geometric model fits, and key parameters
 

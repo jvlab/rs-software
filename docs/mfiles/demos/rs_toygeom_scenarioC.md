@@ -1,4 +1,6 @@
-rs_toygeom_scenarioC.m
+# rs_toygeom_scenarioC
+Geometric transformations, affine model, with statistical analysis of nesting by output dimension
+
 Scenario C for rs_toygeom_demo:
 illustration of gemoetric models, focusing on nesting by output dimension
 

@@ -1,4 +1,5 @@
-% rs_knit_coordsets_demo: demonstrate knitting across datasets with partially overlapping stimuli
+% rs_knit_coordsets_demo: combine coordinate sets with partially overlapping stimuli
+%
 % calculates statistics, without and with scaling allowed between datasets
 % plots both sets of stats on same figure , adjusting dataset and stimulus names
 %
