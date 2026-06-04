@@ -12,8 +12,8 @@ Set the path.
 
 Navigate to /rs/src, clear the workspace, set if\_auto\_skip=1, and run rs\_auto\_test.
 
-* This will take several minutes, exercising the modules, producing fig and mat files, placing them in /tests.
-* You will be asked to respond to several keyboad prompts.  If a default is supplied, then accept it (Enter key); if confirmation is requested, confirm by entering a 1.
+* This will exercise several modules, produce fig and mat files, and place them in /tests; it will take several minutes.
+* Early in the process, you will be asked to respond to several keyboad prompts.  If a default is supplied, then accept it (Enter key); if confirmation is requested, confirm by entering a 1.
 
 After execution, the fig files and mat files in /tests will be compared with files in /benchmarks that were downloaded from the repository.
 
