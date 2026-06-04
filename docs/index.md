@@ -44,6 +44,7 @@ Key demos are ??
 ## Manipulating representational spaces
 
 The primary input is the `dataset structure`, which can be created two ways.
+
 * from outputs of the above process via `rs_read_coordsets` or `rs_get_coorddata`.
 * from any set of coordinates, via `rs_import_coordsets	`
 
