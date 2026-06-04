@@ -33,9 +33,9 @@ The software produces several kinds of outputs:
 Two kinds of paradigms are supported
 
 * "triadic" judgments:  is A or B more similar to S?
-* "tetradic" judgments: which is more similar: A and B, or C and D?"
+* "tetradic" judgments: which is more similar: A and B, or C and D?
 
-The main outputs are files containing sets of coordinates and the associated metadata, which embody a  `dataset structure`, along with statistics to assess the goodness of fit of the model.
+The main outputs are files containing sets of coordinates and the associated metadata, which constitute a  `dataset structure`, along with statistics to assess the goodness of fit of the model.
 
 This component is written in Python.  It may be run from a MATLAB/Octave environment as shown here ??
 
