@@ -3,8 +3,10 @@
 Ensure that MATLAB or Octave is installed. MATLAB versions 2023 and later have been tested.
 
 Clone or download GitHub repositories from https://github.com/jvlab/rs-software and https://github.com/jvlab/perceptual\_space\_geometry.
-If using MATLAB: add all folders to the search path except src/octave\_compat from rs-software. If you have downloaded a static copy, you may delete  src/octave\_compat.
-If using Octave: add all folders to the search path.
+Set the path.
+
+* If using MATLAB: add all folders to the search path except src/octave\_compat from rs-software. If you have downloaded a static copy, you may delete  src/octave\_compat.
+* If using Octave: add all folders to the search path.
 
 ## Verify the install
 
@@ -22,19 +24,19 @@ Copy all the fig files and mat files from /tests to /benchmarks for future use.
 
 Clear the workspace and rerun run rs\_auto\_test.  No differences should be encountered, and the final output should look like this:
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+&#x20;   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     results of comparisons with benchmarks
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     date: 03-Jun-2026
-    working directory: C:\Users\jdvicto\Documents\jv\EY7977\rs\src
-    C:\Users\jdvicto\Documents\jv\EY7977\rs\src
+    working directory: C:\\Users\\jdvicto\\Documents\\jv\\EY7977\\rs\\src
+    C:\\Users\\jdvicto\\Documents\\jv\\EY7977\\rs\\src
     ---
     
     MATLAB Version: 23.2.0.2459199 (R2023b) Update 5
     MATLAB License Number: 79639
     Operating System: Microsoft Windows 11 Enterprise Version 10.0 (Build 22631)
-    Java Version: Java 1.8.0\_202-b08 with Oracle Corporation Java HotSpot(TM) 64-Bit Server VM mixed mode
+    Java Version: Java 1.8.0\\\_202-b08 with Oracle Corporation Java HotSpot(TM) 64-Bit Server VM mixed mode
     ---
     
     MATLAB                                                Version 23.2        (R2023b)
@@ -46,21 +48,24 @@ Clear the workspace and rerun run rs\_auto\_test.  No differences should be enco
     Signal Processing Toolbox                             Version 23.2        (R2023b)
     Statistics and Machine Learning Toolbox               Version 23.2        (R2023b)
     System Identification Toolbox                         Version 23.2        (R2023b)
-    aux\_customize:   0 tests of   2 show differences (  0 skipped in auto mode)
-    get\_coordsets:   0 tests of   4 show differences (  1 skipped in auto mode)
-    read\_coorddata:   0 tests of   5 show differences (  0 skipped in auto mode)
-    import\_coordsets:   0 tests of   7 show differences (  0 skipped in auto mode)
-    align\_coordsets:   0 tests of   5 show differences (  1 skipped in auto mode)
-    knit\_coordsets:   0 tests of   5 show differences (  0 skipped in auto mode)
-    xform\_specify:   0 tests of   8 show differences (  0 skipped in auto mode)
-    xform\_specify\_apply:   0 tests of  16 show differences (  0 skipped in auto mode)
+    aux\\\_customize:   0 tests of   2 show differences (  0 skipped in auto mode)
+    get\\\_coordsets:   0 tests of   4 show differences (  1 skipped in auto mode)
+    read\\\_coorddata:   0 tests of   5 show differences (  0 skipped in auto mode)
+    import\\\_coordsets:   0 tests of   7 show differences (  0 skipped in auto mode)
+    align\\\_coordsets:   0 tests of   5 show differences (  1 skipped in auto mode)
+    knit\\\_coordsets:   0 tests of   5 show differences (  0 skipped in auto mode)
+    xform\\\_specify:   0 tests of   8 show differences (  0 skipped in auto mode)
+    xform\\\_specify\\\_apply:   0 tests of  16 show differences (  0 skipped in auto mode)
     geofit:   0 tests of   9 show differences (  0 skipped in auto mode)
-    plot\_style:   0 tests of   1 show differences (  0 skipped in auto mode)
-    disp\_coordsets1:   0 tests of   1 show differences (  0 skipped in auto mode)
-    disp\_coordsets2:   0 tests of   1 show differences (  0 skipped in auto mode)
-    disp\_coordsets3:   0 tests of   1 show differences (  0 skipped in auto mode)
-    run with if\_auto\_skip=1, if\_ignore\_svdambig=0, if\_save\_and\_close=1
+    plot\\\_style:   0 tests of   1 show differences (  0 skipped in auto mode)
+    disp\\\_coordsets1:   0 tests of   1 show differences (  0 skipped in auto mode)
+    disp\\\_coordsets2:   0 tests of   1 show differences (  0 skipped in auto mode)
+    disp\\\_coordsets3:   0 tests of   1 show differences (  0 skipped in auto mode)
+    run with if\\\_auto\\\_skip=1, if\\\_ignore\\\_svdambig=0, if\\\_save\\\_and\\\_close=1
     total number of tests with differences:    0
+
+
+
 
 
 ## Customize
