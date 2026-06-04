@@ -43,7 +43,9 @@ Key demos are ??
 
 ## Manipulating representational spaces
 
-The primary input is the `dataset structure`.
+The primary input is the `dataset structure`, which can be created two ways.
+* from outputs of the above process via `rs_read_coordsets` or `rs_get_coorddata`.
+* from any set of coordinates, via `rs_import_coordsets	`
 
 The key operations that are performed are
 
@@ -55,6 +57,8 @@ The key operations that are performed are
 * Visualizations (`rs_disp_coordsets`)
 * Modeling transformations between perceptual spaces: affine, projective, piecewise affine (`rs_geofit`)
 * Statistics related to these operations
+
+Combining representational spaces (`rs_knit_coordsets`), and application of geometric transformations to representational structures (`rs_xform_apply`), are operations that act on one or more `dataset structures` and produce a new `dataset structure`, whose metadata tracks the sequence of operations.  The resulting `dataset structure` can then be saved with `rs_write_coordsets`.
 
 This component is written in MATLAB, and is Octave-compatible.  It may be run from a Python environment as shown here ??
 
