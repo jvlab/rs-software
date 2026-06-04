@@ -45,7 +45,7 @@ Key demos are ??
 
 The primary input is the `dataset structure`, which can be created two ways.
 
-* from outputs of the above process via `rs_read_coordsets` or `rs_get_coorddata`.
+* from outputs of the above process via `rs_get_coordsets` or `rs_read_coorddata`.
 * from any set of coordinates, via `rs_import_coordsets	`
 
 The key operations that are performed are
