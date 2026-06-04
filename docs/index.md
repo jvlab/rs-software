@@ -6,13 +6,5 @@
 
 
 
-
-
-## How to cite
-
-
-
-
-
-## License
+## 
 
