@@ -3,8 +3,8 @@
 Ensure that MATLAB or Octave is installed. MATLAB versions 2023 and later have been tested.
 
 Clone or download GitHub repositories from https://github.com/jvlab/rs-software and https://github.com/jvlab/perceptual\_space\_geometry.
-If using MATLAB:  remove the folder src/octave\_compat.
-Add all folders to the path.
+If using MATLAB: add all folders to the search path except src/octave\_compat from rs-software. If you have downloaded a static copy, you may delete  src/octave\_compat.
+If using Octave: add all folders to the search path.
 
 ## Verify the install
 
