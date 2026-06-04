@@ -6,9 +6,7 @@
 
 This software package is a set of tools to construct and analyze representational spaces.
 
-A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to similarities in the space.
-
-Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
+A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to similarities in the space. Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
 
 This software enables creation of representational spaces from similarity data, and once such spaces have been created, comparisons between spaces and assessment of models that relate one space to another.
 
@@ -27,10 +25,11 @@ The software produces several kinds of outputs:
 * Coordinate sets
 * Visualization of representational spaces
 * Geometric transformations between representational spaces
+* Statistics for comparison of representational spaces and assessment of transformations
 
 ## Creating representational spaces from perceptual judgments
 
-Two kinds of paradigms are supported
+The primary input is ?? that contains choice data and associated metadata. Two kinds of paradigms are supported:
 
 * "triadic" judgments:  is A or B more similar to S?
 * "tetradic" judgments: which is more similar: A and B, or C and D?
@@ -43,7 +42,7 @@ Key demos are ??
 
 ## Manipulating representational spaces
 
-The primary input is the `dataset structure`, which can be created two ways.
+The primary input is the `dataset structure`, which contains coordinates and associated metadata.  It can be created two ways:
 
 * from outputs of the above process via `rs_get_coordsets` or `rs_read_coorddata`.
 * from any set of coordinates, via `rs_import_coordsets	`
