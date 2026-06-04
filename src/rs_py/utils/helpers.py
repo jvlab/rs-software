@@ -64,14 +64,14 @@ def stimulus_id_to_name_for_mat(stimlist):
     return id_to_name
 
 
-def read_in_params():
-    # Read in parameters from config file
-    from src.rs_py.utils.config import CONFIG as USER_PARAMS
-    # Fix type of all inputs
-    USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['dataset']['stimfile'])
-    return (USER_PARAMS,
-            stimulus_name_to_id(USER_PARAMS['stim_list']),
-            stimulus_id_to_name_for_mat(USER_PARAMS['stim_list']))
+# def read_in_params():
+#     # Read in parameters from config file
+#     from src.rs_py.utils.config import CONFIG as USER_PARAMS
+#     # Fix type of all inputs
+#     USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['dataset']['stimfile'])
+#     return (USER_PARAMS,
+#             stimulus_name_to_id(USER_PARAMS['stim_list']),
+#             stimulus_id_to_name_for_mat(USER_PARAMS['stim_list']))
 
 
 def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim_labels, tolerance=0.5, samples=70):

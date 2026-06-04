@@ -1,13 +1,18 @@
-# Welcome to Representational spaces sofware (rs-software)
+# Welcome to Representational Spaces software (rs-software)
 
-## Description and purpose
+## 
+
+## Overview
+
+
+
 
 
 ## How to cite
 
 
-## Licence
 
 
 
+## License
 

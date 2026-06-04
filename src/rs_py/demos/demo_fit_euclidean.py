@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from scipy.spatial.distance import pdist
-
+from src.rs_py.utils.config import CONFIG
 import src.rs_py.model.fit_geometric_models as rs
 import src.rs_py.choices.choice_likelihoods as an
-from src.rs_py.utils.helpers import read_in_params, create_coords_file
+from src.rs_py.utils.helpers import create_coords_file
 from src.rs_py.utils.util import read_combined_choices
 
 
@@ -20,23 +20,23 @@ def demo_inputs():
     Populate demo defaults.
     Adjust the default filepath/outdir to wherever your sample materials live.
     """
-    user_params, names_to_id, id_to_name = read_in_params()
     base_dir = Path(__file__).resolve().parent.parent
+    model_defaults = CONFIG["inputs"]["model_fit"]
 
     defaults = {
         "filepath": (base_dir / "samples/choice_files/animals_combined_choices_S4.mat").resolve(),
         "exp_name": "animals",
         "subject": "S4",
         "outdir": (base_dir / "samples/models").resolve(),
-        'sigma': user_params['inputs']['model_fit']['sigma'],
-        'model_dimensions': user_params['inputs']['model_fit']['model_dimensions'],
-        'num_stimuli': user_params['inputs']['model_fit']['num_stimuli'],
-        'learning_rate': user_params['inputs']['model_fit']['learning_rate'],
-        'tolerance': user_params['inputs']['model_fit']['tolerance'],
-        'max_trials': None,
-        'max_iterations': user_params['inputs']['model_fit']['max_iterations'],
-        'minimization': user_params['inputs']['model_fit']['minimization']
+        "sigma": model_defaults['sigma'],
+        "model_dimensions": model_defaults['model_dimensions'],
+        "learning_rate": model_defaults['learning_rate'],
+        "tolerance": model_defaults['tolerance'],
+        "max_trials": model_defaults['max_trials'],
+        "max_iterations": model_defaults['max_iterations'],
+        "minimization": model_defaults['minimization']
     }
+
     return defaults
 
 
@@ -56,7 +56,6 @@ if __name__ == '__main__':
     EXP = input("Experiment name: ")
     SUBJECT = input("Subject name or ID: ")
     OUTDIR = input("Output directory : ")
-    NUM_STIMULI = input("Enter the number of stimuli in experiment: ")
     print("The following arguments are optional. ")
     MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list: ")
     SIGMA = input("\tEnter a noise level to model error in comparing distances: ")
@@ -73,7 +72,6 @@ if __name__ == '__main__':
             'exp_name': CONFIG['exp_name'] if _use_default(EXP) else EXP,
             'subject': CONFIG['subject'] if _use_default(SUBJECT) else SUBJECT,
             'outdir': CONFIG['outdir'] if _use_default(OUTDIR) else OUTDIR,
-            'num_stimuli': CONFIG['num_stimuli'] if _use_default(NUM_STIMULI) else int(NUM_STIMULI),
             'max_iterations': CONFIG['max_iterations'] if _use_default(MAX_ITER) else int(MAX_ITER),
             'learning_rate': CONFIG['learning_rate'] if _use_default(LEARN_RATE) else float(LEARN_RATE),
             'tolerance': CONFIG['tolerance'] if _use_default(TOLERANCE) else float(TOLERANCE),
@@ -113,7 +111,8 @@ if __name__ == '__main__':
     print("=" * 70)
 
     # break up ranking responses into pairwise judgments
-    pairwise_responses, pairwise_num_repeats, metadata = read_combined_choices(ARGS['filepath'])
+    pairwise_responses, pairwise_num_repeats, metadata, stim_list = read_combined_choices(ARGS['filepath'])
+    ARGS["num_stimuli"] = len(stim_list)
 
     print("\nLoaded pairwise judgments")
     print("-" * 60)
@@ -134,6 +133,8 @@ if __name__ == '__main__':
             print(f"Trials used: {len(subset)}")
             print(f"Total triads used: {sum(pairwise_num_repeats[k] for k in subset)}")
             print("=" * 60)
+        else:
+            subset = pairwise_responses
     else:
         subset = pairwise_responses
 

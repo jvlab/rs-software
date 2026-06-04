@@ -106,7 +106,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             - 'split': first half of segment matches first record in connected pair; second half of segmentmatches second record in connected pair
 %             - 'list': specify colors in connect_sets_colors
 %
-%         - connect_sets_colors (color specifier or cell array of color specifiers): iff connect_sets_color_mode='list;, these are the colors for for connecting segments; cycled through if necessary
+%         - connect_sets_colors (color specifier or cell array of color specifiers): if connect_sets_color_mode='list';, these are the colors for for connecting segments; cycled through if necessary
 %         - connect_sets_linestyles (char or cell array of char): line styles assigned to connections between records; default is  '-'; cycled through if necessary
 %         - connect_sets_linewidths (int 1-D array): line widths assigned to connections between records; default is 1; cycled through if necessary
 %
@@ -140,18 +140,18 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 % 
 % Returns:
-%   aux_out: auxiliary outputs and parameter values used
+%   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
 %     - opts_disp (struct): aux.opts_disp, with defaults and overrides filled in, including fig_handle (handle to the figure) and axis_handles (handles to the subplot axes)
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %     - The default figure position can be changed by editing the line containing generic.opts_disp.fig_position in `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %     - The default font size for axis labels can be changed by editing the line containing generic.opts_disp.axis_font_size in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
 %     - The default prefix for the axis label can be changed by editing the line containing generic.opts_disp.axis_label_prefix in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
 %
-% Note regarding plot formatting:
+% Note: Note regarding plot formatting
 %     - By default, each record is plotted with a different color, a solid dot marker, and no connecting lines. 
 %     - These choices can be changed by 'set_colors', 'set_markers',  'set_markersizes', 'set_filled', 'set_colors_filled', 'set_alphas' (but alpha blending may not be availble on all systems).
 %     - The above specifiers can be singletons or cell arrays, and are indexed by the record position in data_in.  If there are more records than specifiers, the specifiers are cycled.

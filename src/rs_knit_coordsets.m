@@ -58,7 +58,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
-%     - opts_pcon (struct): options used in Procrustes alignment; see note below regarding Procrustes consensus algorithm
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
 %     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
@@ -105,13 +104,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
-% General notes:
+% Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
 %     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
-% Note regarding statistics and plots:
+% Note: Note regarding statistics and plots
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus
 %     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
 %
@@ -124,8 +123,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     and the results are returned in
 %     rmsdev_[overall|setwise|stimwise]_shuff.
 %     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
-%     always 1; dimension 4 (length: nshuffs) is which shuffle; and dimension 5 (length: 2) is the mode: in mode 1, all coordinates
-%     are shuffled, in mode 2 only the last coordinate is shuffled.
+%     always 1; dimension 4 (length: nshuffs) is which shuffle; dimension 5 (length: 2) is the mode: 1 for last coordinate only shuffled, 2 for all coordinates shuffled.
 %     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
@@ -147,20 +145,20 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         The transformation is [consensus]=ts.scaling*[component]*ts.orthog+ts.translation.
 %         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
-% Note regarding recalculation of alignment:
+% Note: Note regarding recalculation of alignment
 %     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of `data_in`, and to 
 %     place them in the same order. By default, this is carried out in rs_knit_coordsets by a call to rs_align_coordsets, using options aux.align_opts.
 %     This recalculation can be avoided by supplying aux_out from a
 %     previous call to rs_align_coordsets, as follows: aux.sa_pooled=aux_out.sa_pooled, aux.data_align=aux_out.data_out
 %
-% Note regarding Procrustes consensus algorithm:
+% Note: Note regarding Procrustes consensus algorithm
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
 %     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
 %     - The algorithm, in procrustes_consensus.m, is iterative.  Briefly, after an initial guess is determined, a Procrustes 
-%     transformation is found that minimizes the rms deviation between that dataset and the current guess. The guess is then
-%     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stimulus across the records, and then Procrustes-transformed for closest match
-%     to an alignment coordinate set (so that the guess does not drift), which, unless otherwise specified, is equal to the initial guess.
+%     transformation is found that minimizes the rms deviation between each record and the current guess. The guess is then
+%     revised by setting each stimulus' coordinates equal to the centroid of the coordinates of that stimulus across the records.  To avoid drift of the updated guess, it is Procrustes-transformed for closest match
+%     to an alignment coordinate set (the alignment set, unless otherwise specified, is equal to the initial guess).
 %     - The iteration ends when either the number of iterations exceeds max_niters (default=1000),
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - There are several choices for initialization and alignment.
@@ -189,7 +187,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
-% Note regarding replotting a previous analysis:
+% Note: Note regarding replotting a previous analysis
 %     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
 %     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
 %     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
@@ -206,7 +204,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
 %
-% Note regarding rays:
+% Note: Note regarding rays
 %     - The `ray structure` describes relationships among the simulus coordinates: 
 %     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
 %     `rings`, stimuli that lie at an approximately equal distance from the origin, and nearest neighbors.
@@ -515,7 +513,7 @@ if aux_out.warn_bad==0
     aux_out.opts_align=opts_align_used;
     %
     aux_out.components.ds=ds_components;
-    aux_out.components.sas=data_in.sas;
+    aux_out.components.sas=data_align.sas;
     aux_out.components.sets=data_in.sets;
     %
     if aux.opts_knit.keep_details

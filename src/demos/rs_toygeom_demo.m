@@ -1,4 +1,4 @@
-% rs_toygeom_demo: demonstrate geometric modeling with toy simulated datasets
+% rs_toygeom_demo: geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
 %
 % This illustrates fitting of geometric models via creation of simulated coordinate set structures. 
 % It is intended that several of the parameters, especially paradigm_names, transform_names, are edited, 

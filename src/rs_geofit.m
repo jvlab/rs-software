@@ -22,8 +22,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          then requested interactively; see notes below regarding geometric models and model definition structure
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
-%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1; 
-%          note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1;  note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
 %
 %          - **Dimension selection**
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
@@ -41,16 +40,19 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - **Statistics**
 %          - if_stats (int): 1 to enable statistics, 0 to omit; default is 1; a value of 0 will override a nonzero `if_nestbymodel` and `if_nestbydim`
 %          - nshuffs (int): number of shuffles for `if_nestbymodel` and `if_nestbydim`; default is 100 if if_stats=1, 0 if if_stats=0
+%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
 %          - if_nestbymodel (int): 1 to do statistics on nesting by model, 0 to omit, -1 to only do statistics for maximally nested models; default is 1; see note below regarding nesting
 %          - if_nestbydim (int): +/-1 to do statistics for nesting by dimension, 0 to omit; default is 0; see note below regarding nesting
 %          - if_nestbydim_in (int): +/-1 to do statistics for nesting by dimension of input, 0 to omit; default is if_nestbydim; see note below regarding nesting
 %          - if_nestbydim_out (int): +/-1 to do statistics for nesting by dimension of output, 0 to omit; default is if_nestbydim; see note below regarding nesting
-%          - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%          default is 1
+%          - if_keep_transforms (int): 1 to keep transforms from shuffles, 0 to omit; default is 0
+%          - if_keep_transforms_nestbymodel (int): 1 to keep transforms from nesting by model, 0 to omit; default is 0 if if_nestbymodel=0, 1 otherwise
+%          - if_keep_transforms_nestbydim_in (int): 1 to keep transforms from nesting by dimension of input, 0 to omit; default is 0 if if_nestbydim_in=0, 1 otherwise
+%          - if_keep_transforms_nestbydim_out (int): 1 to keep transforms from nesting by dimension of output, 0 to omit; default is 0 if if_nestbydim_out=0, 1 otherwise
 %
 %          - **Logging and optimization**
 %          - if_log (int): 1 to log overall progress, 0 to omit; default is 1
-%          - if_fit_summary(int): 1 to log a summary of fits, 0 to omit; default is 1
+%          - if_fit_summary (int): 1 to log a summary of fits, 0 to omit; default is 1
 %          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
 %          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
 %          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
@@ -99,7 +101,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - opts_geof (struct): aux.opts_geof, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding geometric models:
+% Note: Note regarding geometric models
 %    - Model types to be fit are specified by the entries in opts_geof.model_list. The following model types are available:
 %
 %        - 'mean': all input values mapped to a single output value 
@@ -118,18 +120,18 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
 %    - See `transformation structure` for details on how the models are parameterized
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %   
-% Note regarding model definition structure: 
+% Note: Note regarding model definition structure
 %    - mdef=rs_geofit() returns a model definition structure, which defines the available models and their characteristics.
 %    - mdef.model_types is a cell array {model_name1,model_name2,...} of the names of available models
 %    - mdef.(model_name) defines each model
 %    - mdef.(model_name).class is the model class: 'mean','procrusetes,'affine','projective','pwaffine' (see `rs_xform_apply` ??how to hyperlink)
 %    - mdef.(model_name).nested lists the names of the nested models
 %
-% Note regarding nesting:
+% Note: Note regarding nesting
 %    - Nesting by model type: Some models are extensions of others. For example, the affine_offset model extends the affine_noofset model, by allowing offsets.
 %    The more general model will always provide a fit that is at least as good as the less-general model, but will have more parameters.  The if_nestbymodel option provides a way to determine
 %    whether the improvement in fit is better than would be expected by chance.
@@ -161,7 +163,12 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_GEOMODELS_FIT, PSG_GEOMODELS_PLOT, PSG_GEOMODELS_DEFINE,
 %    PSG_GEOMODELS_NESTORDER, RS_DISP_GEOFIT.
 %
-psg_geomodels_def=psg_geomodels_define();
+%
+fields_unchanged={'nshuffs','if_nestbydim','if_center','if_frozen','persp_method','if_nestbymodel','if_nestbydim_in','if_nestbydim_out',...
+    'if_keep_transforms','if_keep_transforms_nestbymodel','if_keep_transforms_nestbydim_in','if_keep_transforms_nestbydim_out'};
+%
+psg_geomodels_def=psg_geomodels_define(); %access the available models and their characteristics
+%
 %special case: display available models
 if nargin==0
     gfs=psg_geomodels_def;
@@ -192,6 +199,11 @@ aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
 aux.opts_geof=filldefault(aux.opts_geof,'persp_method','best');
+%
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms',0);
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbymodel',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbymodel));
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbydim_in',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbydim_in));
+aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbydim_out',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbydim_out));
 %
 aux=filldefault(aux,'opts_check',struct); %options for other modules called
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -297,15 +309,10 @@ opts_psgfit_base=struct;
 opts_psgfit_base.model_types_def=z.model_definitions;
 opts_psgfit_base.if_log=z.if_fit_log;
 opts_psgfit_base.if_summary=z.if_fit_summary;
-%fields copied with no change
-opts_psgfit_base.nshuffs=z.nshuffs;
-opts_psgfit_base.if_nestbydim=z.if_nestbydim;
-opts_psgfit_base.if_nestbydim_in=z.if_nestbydim_in;
-opts_psgfit_base.if_nestbydim_out=z.if_nestbydim_out;
-opts_psgfit_base.if_nestbymodel=z.if_nestbymodel;
-opts_psgfit_base.if_center=z.if_center;
-opts_psgfit_base.if_frozen=z.if_frozen;
-opts_psgfit_base.persp_method=z.persp_method;
+%fields passed from aux.opts_geof to opts_psgfit with no change
+for k=1:length(fields_unchanged)
+    opts_psgfit_base.(fields_unchanged{k})=z.(fields_unchanged{k});
+end
 %
 for iset=1:nsets
     iset_in=1+mod(iset-1,check_in.nsets);

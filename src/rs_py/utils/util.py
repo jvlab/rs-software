@@ -1,7 +1,7 @@
 """
 Some utilities to help with processing psychophysical data files
 """
-
+import re
 import json
 import numpy as np
 from itertools import combinations
@@ -65,11 +65,21 @@ def judgments_to_arrays(judgments_dict, repeats):
     return first_pair, second_pair, comparison_counts, comparison_repeats
 
 
+def matlab_stim_list_to_pylist(stim_list):
+    # turn the nested MATLAB-loaded object into one string
+    s = str(stim_list[0][0])
+    # extract the quoted stimulus names
+    items = re.findall(r"'([^']*)'", s)
+    # strip padding
+    return [x.strip() for x in items]
+
+
 def read_combined_choices(filepath):
     # input path to combined choice file
     matfile = loadmat(filepath)
     responses = matfile["responses"]
     metadata = matfile["metadata"]
+    stim_list = matlab_stim_list_to_pylist(metadata['stim_list'])
 
     colnames = [str(x).strip() for x in matfile["response_colnames"].ravel()]
     col_idx = {name: i for i, name in enumerate(colnames)}
@@ -102,7 +112,7 @@ def read_combined_choices(filepath):
             pairwise_responses[key] += count
             pairwise_num_repeats[key] += repeats
 
-    return pairwise_responses, pairwise_num_repeats, metadata
+    return pairwise_responses, pairwise_num_repeats, metadata, stim_list
 
 
 def json_to_pairwise_choice_probs(filepath):

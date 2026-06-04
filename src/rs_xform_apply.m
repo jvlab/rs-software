@@ -12,10 +12,11 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
-%   xforms (struct): specification of the transformations, typically an output structure from rs_xform_specify [??how to hyperlink] or rs_geofit [??how to hyperlink], with fields
-%
+%   xforms (struct): specification of the transformations, typically an output structure from `rs_xform_specify`
+% 
 %      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
-%      - pipeline (structure): a structure that becomes the 'pipeline' field of a `set metadata structure` when the transformations are applied
+%      - pipeline (struct): a structure that becomes the starting point for
+%      the 'pipeline' field of a `set metadata structure` when the transformations are applied, may be omitted; default is omitted
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
 %
@@ -38,7 +39,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     - opts_xform (struct): aux.opts_xform, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding transformations:
+% Note: Note regarding transformations
 %   - xforms.ts{k}{idim} are the transformations to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
 %
 %       - If length(xforms.ts{k})<length(data_in), transformations are used in cyclic order.
@@ -174,7 +175,8 @@ for k=1:nsets
         data_out.sets{k}.pipeline=struct();
     end
     data_out.sets{k}.pipeline.opts.opts_xform.transforms=xforms.ts;
-    data_out.sets{k}.pipeline.sets=data_in.sets{k};
+    data_out.sets{k}.pipeline=filldefault(data_out.sets{k}.pipeline,'sets',data_in.sets{k});
+    data_out.sets{k}.pipeline=filldefault(data_out.sets{k}.pipeline,'type','xform');
     data_out.sets{k}.dim_list=dim_list_out;
 end
 if ~isempty(missing_params)

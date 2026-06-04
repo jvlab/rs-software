@@ -7,10 +7,10 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % These transformations can be chosen to center the coordinates in data_in
 % (i.e., move the centroid to the origin), to move the coordinates of a
 % specific stimulus to the origin, and/or or rotate the coordinates into their principal components.
-% To fit a geometric model to a transformation between coordinate sets, see ` rs_geofit` [??how to hyperlink]
+% To fit a geometric model to a transformation between coordinate sets, see `rs_geofit`
 % 
 % Args:
-%   data_in (struct): `dataset structure` to be aligned containing n records, with fields
+%   data_in (struct): `dataset structure` to use for specifying the transformations, with fields
 %
 %     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record
@@ -70,7 +70,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %     - opts_xform (struct): aux.opts_xform, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding transformations:
+% Note: Note regarding transformations
 %     - The transformations specified by rs_xform_specify are combinations of translations
 %     and linear transformations.  With ts=xforms.ts{k}{idim}, and each
 %     input a row vector the transformation is

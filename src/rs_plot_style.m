@@ -39,11 +39,11 @@ function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts
 % 
 %   opts_used (struct): opts, with defaults filled in; see note below regarding graphic hints
 % 
-% General notes:
+% Note: General notes
 %    - Plotting will be into current axis if available; otherwise a new axis will be created.
 %    - Axis hold state will be 'on' after plotting.
 %
-% Note regarding graphic hints:
+% Note: Note regarding graphic hints
 %    - Capabilities for alpha-blending may be version-dependent, and should be indicated during installation by customizing `rs_graphic_hints`
 %    - An entry of -1 (default) in 'opts' uses `rs_graphic_hints` to determine the capability.
 %    - If `rs_graphic_hints` is absent, the present, and if not, by attempting to set an alpha property

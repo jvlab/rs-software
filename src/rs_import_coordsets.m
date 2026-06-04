@@ -1,10 +1,15 @@
 function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 % [data_out,aux_out]=rs_import_coordsets(data_in,aux) imports coordinates into a `dataset structure`  with one record
 %
-% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record.
-% If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
-%   combine several one-record `dataset structures` created here into a single `dataset structure`.
-% If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
+% This is the preferred method for bringing coordinates (as arrays) into the rs package, to create a `dataset structure` with one record, suitable for display and geometrical analysis.
+%
+%  - If more than one record is to be combined into a single `dataset structure`, then  `rs_concat_coordsets` can be used to
+%    combine several one-record `dataset structures` created here into a single `dataset structure`.
+%  - If the record is in a file, `rs_read_coorddata` can be used for a single record, or `rs_get_coordsets` for multiple files.
+%  - For multiple coordinate sets collected with the same experimental paradigm, use `rs_get_coordsets`, or use this routine and combine multiple `dataset structures` 
+%    into a single `dataset structure` with `rs_concat_coordsets`.
+%  - No `ray structure` will be created; to do so, use rs_findrays
+%  - To createa a `coordinate structure` based on a `quadratic form model`, use `rs_findrays` and supply 'type_coords' to indicate the stimulus coordinates
 %
 % Args:
 %   coords (float 2-D array, or cell array of float 2-D arrays): the coordinates; see note below regarding coordinates.
@@ -53,12 +58,12 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %     - opts_import (struct): aux.opts_import, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% Note regarding coordinates:
+% Note: Note regarding coordinates
 %    - if 'coords' is a 2-dimensional array of size [nstims dmax], then coords(:,1:k) is taken to be the coordinate set data_out.ds{1}{:,idim},
 %    for each idim=1,...,dmax
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
-% Note regarding customization:
+% Note: Note regarding customization
 %    The default values of these parameters can be changed by editing `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm

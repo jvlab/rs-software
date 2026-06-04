@@ -58,7 +58,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %     - rings (cell array of struct): aux_out from `rs_disp_coordsets` for display of each ring; omitted if no rings are displayed or opts_disp_enh.if_rings=0
 %     - nbrs (struct): aux_out from `rs_disp_coordsets` for connections between neighbors; omitted if no connections are displayed or opts_disp_enh.if_nbrs=0
 %
-% Note regarding points and rays:
+% Note: Note regarding points and rays
 %     - Rays are plotted before data points, so that data points overlay the rays and can be color-coded by set.
 %     - Legend behavior: If opts_disp_enh.if_rays=1 and opts_disp_enh.if_points=0, legend is the ray label; otherwise legend is set label.
 %

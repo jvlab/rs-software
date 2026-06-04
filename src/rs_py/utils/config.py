@@ -1,4 +1,5 @@
 from pathlib import Path
+import numpy as np
 base_dir = Path(__file__).resolve().parent.parent
 
 CONFIG = {
@@ -29,7 +30,7 @@ CONFIG = {
         'model_fit': {
             'num_stimuli': 37,  
             'sigma': 1,               # required   # should normally be kept at 1. # what is it? 1 sd in the error in the noise in the distance comparisons. JoVE paper for similar language. It is required and everything scales by it.
-            'max_trials': 10000,      # make default np.inf - keep - what happens when you have less data (RANDOM)
+            'max_trials': np.inf,      # make default np.inf - keep - what happens when you have less data (RANDOM)
             'model_dimensions': [1, 2, 3, 4, 5],    # required - but document what combinations can be given, 1-5 default. Tested up to 10. choice may depend on num stim
             'minimization': 'gradient-descent',     # 'nelder-mead' is opt but grad desc is faster.
             'tolerance': 1e-6,  # is this used?     # stopping criterion log2 (CHECK)

@@ -6,7 +6,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 % and, optionally, for selected models and comparisons across models that are nested by model type and/or dimension.
 %
 % Args:
-%   gf (2-D cell array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
+%   gf (cell 2-D array): geometrical fit data, typically gfs{k}.gf, where gfs is the output of `rs_geofit`, containing the model fits for the kth record
 %      of a pair of `dataset structures`; gf{d_out,d_in} contains the statistics for transforming a dataset of d_in dimensions to one with d_out dimensions
 %
 %   aux (struct): auxiliary options, may be omitted, with fields
@@ -44,7 +44,7 @@ function aux_out=rs_disp_geofit(gf,aux)
 %          - lw_model (int): line width for model, default is 2
 %          - lw_nest (int): line width for nested model, default is 2
 %          - lw_quant (int): line width for quantiles of shuffles of nested models, default is 1
-%          - view (int or float 1-D array): 3-D view descriptor, default is 3 (standard 3-d view), 2 is 2-d view; can also be azimuth-elevation pair, standard 3-d view is [-37.5 30]
+%          - view (int or float 1-D array): 3-D view descriptor, 2 is 2-d view; can also be azimuth-elevation pair, standard 3-d view is [-37.5 30]; default is 3 unless if_diag=1, in which case default is [0 0], which shows the plot in a plane
 % 
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -75,7 +75,6 @@ aux=filldefault(aux,'opts_dgeo',struct); %options for this module
 %plot format options
 %
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'models_show_select',[]); %strings to select models to show
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',[]);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'sig_level',0.05);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_showsig',3); % which significance flags to show(0: none, 1: orig, 2: shuff, 3: both','d',[0 3],3);
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_nestbydim_showd',1); %1 to show nested-by-dim d-values
@@ -95,7 +94,6 @@ aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_omnicolors',1); %1 to use colors fro
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'out_label','output dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'in_label','input dim');
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'dia_label','dim');
-aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',3);
 %
 aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_log',0);
 %
@@ -133,10 +131,21 @@ if npairs==0
     return;
 end
 if_onlydiag=double(sum(have_data(:))==sum(diag(have_data)));
+if if_onlydiag
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',1);
+else
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'if_diag',0);
+end
 if if_onlydiag & (aux.opts_dgeo.if_diag==0)
     wmsg=sprintf('only data for input dim = output dim are available, but 2D plot requested (if_diag=0)');
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn)); %to accumulate warnings and log based on aux_out
 end
+if aux.opts_dgeo.if_diag==1
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',[0 0]);
+else
+    aux.opts_dgeo=filldefault(aux.opts_dgeo,'view',3);
+end
+
 gf_example=gf{dim_pairs(1,1),dim_pairs(1,2)};
 nshuffs=size(gf_example.d_shuff,2);
 %

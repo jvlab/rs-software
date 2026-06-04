@@ -1,4 +1,5 @@
-%rs_toygeom_scenarioD.m
+%rs_toygeom_scenarioD: geometric transformations, affine model, with statistical analysis of nesting by input dimension
+%
 % Scenario D for rs_toygeom_demo: 
 % illustration of gemoetric models, focusing on nesting by input dimension and "knitting" datasets together 
 %

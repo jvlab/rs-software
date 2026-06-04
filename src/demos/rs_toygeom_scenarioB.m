@@ -1,4 +1,5 @@
-%rs_toygeom_scenarioB.m
+%rs_toygeom_scenarioB: geometric transformations, with statistical analysis of nested models: procrustes, affine, projective
+%
 % Scenario B for rs_toygeom_demo: 
 % illustration of gemoetric models, focusing on nesting by model
 %

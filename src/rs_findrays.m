@@ -37,7 +37,7 @@ function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
 %
 %  opts_rays_used (struct): opts_rays, with defaults and overrides filled in
 %
-% Note regarding nondefault ray parameters:
+% Note: Note regarding nondefault ray parameters
 %     - For specific paradigm names (passed via 'label'), selected default parameters in opts_rays are overriden as follows.
 %
 %         - 'bcpm24': ray_dirkeep='card_diag' and ray_minpts=2

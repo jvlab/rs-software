@@ -1,6 +1,7 @@
-%rs_toygeom_scenarioA.m
+%rs_toygeom_scenarioA: geometric transformations, without statistics: procrustes, affine, projective, piecewise affine
+%
 % Scenario A for rs_toygeom_demo: 
-% general illustration of gemoetric models, without statistics
+% general illustration of geometric models, without statistics
 %
 % Geometric models simulated: procrustes, affine, projective, and piecewise affine (3 dimensions each)
 % Shows that:

@@ -59,13 +59,13 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 %     - rayss (cell array of struct): rayss{k} is the `ray structure` for record k in `data_out`; see note below regarding rays
 %     - opts_btcremz (cell array of struct): see note below regarding labels for binary texture coordinates
 %
-% General notes:
+% Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %     - Pipeline: data_out.sets{k}.pipeline.sets{1} contains metadata for the kth record of `data_in`;
 %     data_out.sets{k}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
 %     data_out.sets{1}.pipeline.type='align'.
 %
-% Note regarding stimulus coordinates:
+% Note: Note regarding stimulus coordinates
 %     - Stimulus coordinates are optionally present in data_in.sas{k} in the fields type_coords, btc_specoords, or btc_augcoords.
 %     Their treatment is governed by aux.opts_align.if_type_coords_remake.
 %     If this field is omitted or [], behavior is determined by the stimulus coordinates supplied in data_in.sas{k}.
@@ -87,13 +87,13 @@ function [data_out,aux_out]=rs_align_coordsets(data_in,aux)
 % 
 %     - The behavior taken is reported in aux_out.opts_align.if_type_coords_remake.
 %
-% Note regarding rays:
+% Note: Note regarding rays
 %     - The `ray structure` describes relationships among the simulus coordinates: 
 %     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
 %     `rings`, stimuli that lie at an approximately equal distance from the origin, and nearest neighbors.
 %     It is only created if there is a valid set of stimulus coordinates.  
 %
-% Note regarding labels for binary texture coordinates:
+% Note: Note regarding labels for binary texture coordinates
 %     - if_btcremz is only relevant for `binary texture domain` metadata, and controls whether an attempt should be made to simplify fields sas{k}.spec_labels and sas{k}.typenames
 %     prior to matching and alignmnent.  If 1 (default), coordinates that are specified as zero are removed, provided
 %     that this does not change the stimulus after maximum-entropy extension.  For example, in data_in.sas{k}.spec_labels, 'b=-0.00 c=-0.40' becomes 'c=-0.40'

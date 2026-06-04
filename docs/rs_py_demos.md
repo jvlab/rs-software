@@ -28,17 +28,427 @@ This is a simplified description. For full details, see:
 
 The `rs_py` package is a more user-friendly version of the code used in these studies.
 
-### Flexibility
+## Entry Points
 
-You can enter the pipeline at any stage provided you have the correct inputs:
-* raw data (Step 1)
-* detailed choice file (Step 2)
-* combined choice file (Step 3)
+The `rs_py` package can be used at three stages of the analysis pipeline.
 
-**NOTE:**
+### Step 1: Raw Rankings to Detailed Choice File
 
-Step 1 requires that your data were collected using the ranking paradigm described in Waraich & Victor (2022, 2024).
-If your data differ, you should start from Step 2 or Step 3.
+Use `write_choice_file_detailed`.
+
+**Input:** Raw ranking data (CSV files) collected using the Waraich & Victor paradigm.
+
+**Output:** A detailed choice file:
+
+```text
+*_detailed_choices_<subject>.mat
+```
+
+This file contains trial-by-trial similarity judgments. Each row corresponds to a single comparison made during a trial, along with metadata describing the experiment.
+
+**Associated Demo:** `demo_detailed_choices.py`
+
+If you are new to the package, we recommend running the demo first using the sample data included with the repository. See the **Demos** section for a complete walkthrough.
+
+**Note:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024). If your data come from a different paradigm, you should typically start at Step 2 or Step 3 instead.
+
+---
+
+### Step 2: Detailed Choice File to Combined Choice File
+
+Use `write_choice_file_combined`.
+
+**Input:** A detailed choice file.
+
+**Output:** A combined choice file:
+
+```text
+*_combined_choices_<subject>.mat
+```
+
+This step aggregates repeated occurrences of the same comparison across trials and sessions. The resulting file contains unique comparisons along with the number of times each judgment was observed.
+
+Think of this as converting trial-by-trial data into summary statistics that are ready for model fitting.
+
+**Associated Demo:** `demo_combined_choices.py`
+
+The demo can be run using the sample detailed choice file produced in Step 1. See the **Demos** section for details.
+
+---
+
+### Step 3: Combined Choice File to Geometric Model
+
+Use `run_model_fitting`.
+
+**Input:** A combined choice file.
+
+**Output:**
+
+* Stimulus coordinates
+* Model likelihoods
+* A summary `.mat` file containing model results
+
+This step fits geometric models that explain the observed similarity judgments. The model searches for coordinates such that distances between points best account for the observed choice probabilities.
+
+The resulting coordinates can be interpreted as a geometric representation of the perceptual space underlying the behavioral data.
+
+**Associated Demo:** `demo_fit_euclidean.py`
+
+The demo can be run using the sample combined choice file produced in Step 2. See the **Demos** section for details.
+
+## Demos (Run Everything End-to-End)
+
+If you are new to `rs_py`, we recommend starting with the demos. The demos use sample data included with the repository and illustrate the three stages of the pipeline:
+
+Raw ranking data
+        ↓
+Detailed choice file
+        ↓
+Combined choice file
+        ↓
+Geometric model
+
+Each demo corresponds to one of the three entry points described above.
+
+### Demo 1: Raw Rankings → Detailed Choice File
+
+This demo converts raw ranking responses collected using the Waraich & Victor paradigm into a detailed choice file.
+
+#### Run the demo
+
+From the terminal:
+
+```bash
+cd rs-software
+python -m src.rs_py.demos.demo_detailed_choices.py
+```
+
+---
+
+#### Inputs
+
+The demo will prompt you for the following:
+
+| Prompt                   | What the parameter is                                                  |
+| ------------------------ |------------------------------------------------------------------------|
+| Path to subject data     | Folder containing raw response CSV files from the Waraich and Victor paradigm |
+| Output directory         | Directory where any output files will be written                       |
+| Experiment/paradigm name | Name of the condition or experiment. It is used when naming output files |
+| Subject ID               | Subject identifier, used when naming output files                      |
+| Judgment type            | `triadic` or `tetradic` (see [Notes on Comparison Formats](#notes-on-comparison-formats)|                                   |
+| Total number of trials   | Stored as metadata                                                     |
+| Total number of sessions | Stored as metadata                                                     |
+
+To use the sample data included with the repository, enter:
+
+```text
+0
+```
+
+for all prompts.
+
+---
+
+
+#### What the user sees
+
+The script will display the following prompts:
+
+```text
+Path to subject data:
+Output directory:
+Experiment/paradigm name (for output filename):
+Subject ID (for output filename):
+Judgment type: (triadic or tetradic)
+For metadata
+    provide total number of trials (optional):
+For metadata
+    provide total number of sessions (optional):
+```
+
+---
+
+#### Example terminal output
+
+```text
+Processing raw data...
+  Input directory: /path/to/S4
+  Output directory: /path/to/output
+  Subject: S4
+  Experiment: animals
+  Types of judgments: triadic
+
+Saved results to /path/to/output/animals_detailed_choices_S4.mat
+
+Done.
+```
+
+---
+
+#### Output file
+
+```text
+animals_detailed_choices_S4.mat
+```
+
+---
+
+#### Contents of the output file
+
+The file contains three fields:
+
+```text
+metadata
+response_colnames
+responses
+```
+
+##### metadata
+
+Information describing the dataset:
+
+```text
+subject = S4
+exp_name = animals
+num_trials = 1110
+num_sessions = 10
+judgment_type = triadic
+stim_list = [...]
+```
+
+##### response_colnames
+
+```text
+trial
+ref
+s1
+s2
+N(D(ref, s1) > D(ref, s2))
+```
+
+##### responses
+
+For the sample dataset:
+
+```text
+31080 rows × 5 columns
+```
+
+Each row represents a single triadic comparison derived from a ranking response.
+
+Example:
+
+```text
+trial   ref   s1   s2   N(D(ref,s1) > D(ref,s2))
+1       16    3    13            1
+```
+
+The first column indicates the trial from which the comparison originated. In this example, both rows come from trial 1.
+
+The stimulus IDs correspond to entries in:
+
+```text
+metadata.stim_list
+```
+
+In this example, the stimulus IDs correspond to these stimuli:
+```text
+3  = bear
+7  = cow
+13 = elephant
+16 = giraffe
+```
+
+Thus the first row corresponds to the comparison:
+
+```text
+(ref, s1, s2)
+(giraffe, bear, elephant)
+```
+The participant's response of 1 indicates that they considered 'giraffe' to be more similar 'elephant' than to 'bear.'
+In other words, when asked to click the most similar stimulus to 'giraffe', they clicked on 'elephant' before clicking on 'bear'.
+
+To determine the name associated with any stimulus ID, look it up in:
+
+```text
+metadata.stim_list
+```
+
+within the same file.
+
+The output of this demo becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
+
+---
+
+#### Next step
+
+The output of Demo 1 becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
+
+### Demo 2: Detailed Choice File → Combined Choice File
+
+This demo aggregates repeated comparisons from a detailed choice file into a combined choice file.
+
+#### Run the demo
+
+```bash
+cd rs-software
+python -m src.rs_py.demos.demo_combined_choices.py
+```
+
+#### Inputs
+
+| Prompt                             | What the parameter is                             |
+| ---------------------------------- | ------------------------------------------------- |
+| Path to detailed choices .mat file | Output file produced by Demo 1                    |
+| Output directory                   | Directory where the combined file will be written |
+| Experiment/paradigm name           | Used when naming output files                     |
+| Subject ID                         | Used when naming output files                     |
+
+To use the sample data included with the repository, enter:
+
+```text
+0
+```
+
+for all prompts.
+
+#### Example terminal output
+
+```text
+Combining trial wise judgments.
+  Input detailed .mat: /path/to/animals_detailed_choices_S4.mat
+  Output dir:         /path/to/output
+  Exp name:           animals
+  Subject:            S4
+
+Writing combined file in three-column format (ref, s1, s2).
+Saved results to /path/to/output/animals_combined_choices_S4.mat
+
+Done.
+```
+
+#### Output file
+
+```text
+animals_combined_choices_S4.mat
+```
+
+#### Contents of the output file
+
+The file contains:
+
+```text
+metadata
+response_colnames
+responses
+```
+
+The metadata field is carried over from Demo 1.
+
+##### response_colnames
+
+```text
+ref
+s1
+s2
+N(D(ref, s1) > D(ref, s2))
+N_Repeats(D(ref, s1) > D(ref, s2))
+```
+
+##### responses
+
+For the sample dataset:
+
+```text
+5994 rows × 5 columns
+```
+
+Unlike the detailed choice file, there is no `trial` column. Repeated occurrences of the same comparison have been combined into a single row.
+
+Example:
+
+```text
+ref   s1   s2   N(D(ref,s1) > D(ref,s2))   N_Repeats(D(ref,s1) > D(ref,s2))
+16     3   13              5                              5
+```
+
+Using `metadata.stim_list`:
+
+```text
+3  = bear
+13 = elephant
+16 = giraffe
+```
+
+This row corresponds to:
+
+```text
+(ref, s1, s2)
+(giraffe, bear, elephant)
+```
+
+The final two columns indicate that this comparison appeared 5 times in the experiment and the same outcome was observed on all 5 occasions.
+
+Compared to the detailed choice file, many repeated comparisons have been merged, reducing the number of rows from 31,080 to 5,994.
+
+#### Next step
+
+The output of this demo becomes the input to **Demo 3**, which fits geometric models to the similarity judgments.
+
+
+
+### Step 1. Create detailed choice file
+
+In the terminal or your IDE, run the `demo_detailed_choice` file. Below, we provide instructions 
+for the terminal.
+
+```
+python -m demo_detailed_choices.py
+```
+### Step 2. Create combined choice file
+### Step 3. Fit geometric models
+
+
+FOCUS ON ENTRY POINTS 
+FROM TRIPLET DATA TO CHOICE PROB
+FROM CHOICE PROB TO ..  headings 
+
+
+
+Enter 0 for all prompts to use defaults.
+4. 
+5. Convert raw rank ordering judgments acquired using the Waraich and Victor (2022) paradigm into a tabular format in which every row contains the occurrence of a triadic comparison, (i.e., a comparison between the similarities of a reference stimulus to two other stimuli). 
+* Tally the choices for repeated occurrences of the same traidic comparisons across all sessions of the experiment.
+* From the above similarity judgments, estimate geometric models of the representational spaces in which distances between points best explain them.
+
+There are three entry points that a user may find useful corresponding to the three steps above. They are in the scripts module. 
+Below we describe their inputs and outputs and after that how to use them in Python or MATLAB.
+
+```python
+rs_py.scripts.write_choice_file_detailed
+rs_py.scripts.write_choice_file_combined
+rs_py.scripts.run_model_fitting
+```
+
+*detailed choice file script. lets say a diff paradigm, then better to enter at the next stage. Document this. *
+What rules do you have to follow? Where is it flexible vs not.*
+
+**Show how to use sample files to process the data to get the different outputs.** 
+**some provision so it doesn't get overwritten when someone tries to run it. 
+Should happen... with through both python and MATLAB.
+If you have something like the binary texture exp you enter at the level of accumulated choice files which is the format we already have.** 
+**JoVE procedure no need to generalize to our bw**
+
+what these scripts can do and what they expect. What they take as input, what they return as output.
+The key steps of this process are explained in the following demos.
+A user may supply their files in the initial input form (needed by demo 1), or as intermediate form
+as expected by demo 2 or demo 3 etc.
+
+The first demo does X.
+
+The second demo shows Y.
+
+The demos build on each other.
 
 ## Installation and Set-up
 We recommend using Python 3.10 or higher and installing dependencies in a virtual environment.
@@ -97,65 +507,7 @@ Ensure you replace the above path with what you copied in the previous step.
 Now, you should be able to import python modules and run them. See section **Using MATLAB to run `rs_py`** for details. 
 
 
-## Quick Start (Run Everything End-to-End)
 
-If you are new:
-
-1. Complete the Installation and Set-up steps above
-2. Run the following scripts in order
-
-### Step 1. Create detailed choice file
-
-In the terminal or your IDE, run the `demo_detailed_choice` file. Below, we provide instructions 
-for the terminal.
-
-```
-python demo_detailed_choices.py
-```
-### Step 2. Create combined choice file
-### Step 3. Fit geometric models
-
-
-FOCUS ON ENTRY POINTS 
-FROM TRIPLET DATA TO CHOICE PROB
-FROM CHOICE PROB TO ..  headings 
-
-
-
-Enter 0 for all prompts to use defaults.
-4. 
-5. Convert raw rank ordering judgments acquired using the Waraich and Victor (2022) paradigm into a tabular format in which every row contains the occurrence of a triadic comparison, (i.e., a comparison between the similarities of a reference stimulus to two other stimuli). 
-* Tally the choices for repeated occurrences of the same traidic comparisons across all sessions of the experiment.
-* From the above similarity judgments, estimate geometric models of the representational spaces in which distances between points best explain them.
-
-There are three entry points that a user may find useful corresponding to the three steps above. They are in the scripts module. 
-Below we describe their inputs and outputs and after that how to use them in Python or MATLAB.
-
-```python
-rs_py.scripts.write_choice_file_detailed
-rs_py.scripts.write_choice_file_combined
-rs_py.scripts.run_model_fitting
-```
-
-*detailed choice file script. lets say a diff paradigm, then better to enter at the next stage. Document this. *
-What rules do you have to follow? Where is it flexible vs not.*
-
-**Show how to use sample files to process the data to get the different outputs.** 
-**some provision so it doesn't get overwritten when someone tries to run it. 
-Should happen... with through both python and MATLAB.
-If you have something like the binary texture exp you enter at the level of accumulated choice files which is the format we already have.** 
-**JoVE procedure no need to generalize to our bw**
-
-what these scripts can do and what they expect. What they take as input, what they return as output.
-The key steps of this process are explained in the following demos.
-A user may supply their files in the initial input form (needed by demo 1), or as intermediate form
-as expected by demo 2 or demo 3 etc.
-
-The first demo does X.
-
-The second demo shows Y.
-
-The demos build on each other.
 
 ### Using MATLAB to run `rs_py`
 
@@ -239,7 +591,64 @@ JSON example first time around. But otherwise pydict.
 TEST to see if missingh options fail from None. in MATLAB. 
 
 
-#### Further Reading
+### Notes on Comparison Formats
+
+The Waraich & Victor paradigm produces **triadic judgments**, in which two stimuli are compared relative to a common reference:
+
+```text
+Is A more similar to ref than B is?
+```
+The same judgment can be stored in two formats.
+##### Triadic format (recommended)
+`(ref, A, B)`
+
+Example:
+`(cat, dog, wolf)`
+
+corresponding to:
+`D(cat,dog) > D(cat,wolf)`
+
+
+This format is more compact and is the format used in the Waraich & Victor studies.
+
+##### Tetradic format
+`(ref, A, ref, B)`
+
+Example:
+`(cat, dog, cat, wolf)`
+
+corresponding to:
+`D(cat,dog) > D(cat,wolf)`
+
+
+This contains the same information, but represents the judgment as a comparison between two stimulus pairs.
+
+##### Which should I choose?
+
+For most users, we recommend choosing `triadic.` Choose `tetradic` only if your downstream analysis expects comparisons between stimulus pairs or you need compatibility with another tetradic dataset.
+
+
+### Note on optimization settings
+
+The fitting procedure stops when either:
+
+1. the maximum number of iterations is reached, or
+2. the change between iterations falls below the tolerance threshold.
+
+If you want a faster, rougher fit, you can try:
+
+* increasing `learning_rate`
+* increasing `tolerance`
+
+If the fit stops too early or has not settled, you can:
+
+* increase `max_iterations`
+* decrease `tolerance`
+
+The best settings will depend on your data. For the JNeurosci 2024 analysis, we used roughly 30,000 to 50,000 iterations for the main fits.
+
+
+### References
 Waraich, S. A., & Victor, J. D. (2022). A Psychophysics Paradigm for the Collection and Analysis of Similarity Judgments. Journal of Visualized Experiments, 181. https://doi.org/10.3791/63461
 
 Waraich, S. A., & Victor, J. D. (2024). The Geometry of Low- and High-Level Perceptual Spaces. Journal of Neuroscience, 44(4), e1460232023–e1460232023. https://doi.org/10.1523/jneurosci.1460-23.2023
