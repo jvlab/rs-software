@@ -52,7 +52,7 @@ The key operations that are performed are
     * finding a consensus space across several sources
     * knitting together spaces with partially overlapping elements
 
-* Visualizations ('rs_disp_coordsets`)
+* Visualizations (`rs_disp_coordsets`)
 * Modeling transformations between perceptual spaces: affine, projective, piecewise affine (`rs_geofit`)
 * Statistics related to these operations
 
