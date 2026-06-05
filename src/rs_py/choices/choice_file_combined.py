@@ -35,10 +35,65 @@ import numpy as np
 from scipy.io import savemat, loadmat
 
 
-def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
+def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name, subject):
     """
         Combine judgments across repeated traidic or tetradic comparisons across all trials
     """
+    data = loadmat(input_mat_path, squeeze_me=True)
+
+    responses = data['responses']
+    colnames = [name.strip() for name in data['response_colnames']]
+    metadata = data['metadata']
+
+    COL_REF = colnames.index("ref")
+    COL_S1 = colnames.index("s1")
+    COL_S2 = colnames.index("s2")
+    COL_JUDGMENT = colnames.index("N(D(ref, s1) > D(ref, s2))")
+
+    aggregated_responses = {}
+    comparison_repeats = {}
+
+    for row in responses:
+        key = (
+            int(row[COL_REF]),
+            int(row[COL_S1]),
+            int(row[COL_S2])
+        )
+        if key not in aggregated_responses:
+            aggregated_responses[key] = row[COL_JUDGMENT]
+            comparison_repeats[key] = 1
+        else:
+            aggregated_responses[key] += row[COL_JUDGMENT]
+            comparison_repeats[key] += 1
+
+    comb_response_colnames = ['ref', 's1', 's2', 'N(D(ref, s1) > D(ref, s2))', 'N_Repeats(D(ref, s1) > D(ref, s2))']
+    col_ref = 0
+    col_s1 = 1
+    col_s2 = 2
+    col_judgment = 3
+    col_count = 4
+
+    comb_responses = np.zeros((len(comparison_repeats), len(comb_response_colnames)), dtype=int)
+    i = 0
+    for key in aggregated_responses:
+        comb_responses[i, col_ref] = key[0]
+        comb_responses[i, col_s1] = key[1]
+        comb_responses[i, col_s2] = key[2]
+        comb_responses[i, col_judgment] = aggregated_responses[key]
+        comb_responses[i, col_count] = comparison_repeats[key]
+        i += 1
+
+    combined_choices = {
+        'metadata': metadata,
+        'response_colnames': comb_response_colnames,
+        'responses': comb_responses
+    }
+    output_path = os.path.join(output_dir, f"{exp_name}_combined_choices_{subject}.mat")
+    savemat(output_path, combined_choices)
+    print(f"Saved results to {output_path}")
+
+
+def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject):
     data = loadmat(input_mat_path, squeeze_me=True)
 
     responses = data['responses']
@@ -68,7 +123,8 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
             aggregated_responses[key] += row[COL_JUDGMENT]
             comparison_repeats[key] += 1
 
-    comb_response_colnames = ['s1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))', 'N_Repeats(D(s1, s2) > D(s3, s4))']
+    comb_response_colnames = ['s1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))',
+                              'N_Repeats(D(s1, s2) > D(s3, s4))']
     COL_S1 = 0
     COL_S2 = 1
     COL_S3 = 2
@@ -95,6 +151,23 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
     output_path = os.path.join(output_dir, f"{exp_name}_combined_choices_{subject}.mat")
     savemat(output_path, combined_choices)
     print(f"Saved results to {output_path}")
+    return
+
+
+def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
+    """
+        Combine judgments across repeated traidic or tetradic comparisons across all trials
+    """
+    data = loadmat(input_mat_path, squeeze_me=True)
+    colnames = [name.strip() for name in data['response_colnames']]
+    from_triadic = "ref" in colnames
+    if from_triadic:
+        print("Writing combined file in three-column format (ref, s1, s2).")
+        build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name, subject)
+    else:
+        print("Writing combined file in four-column format (s1, s2, s3, s4).")
+        build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject)
+    return
 
 # use
 # if __name__ == '__main__':

@@ -12,24 +12,22 @@ Enter 0 to use default values.
 """
 
 import os
-import numpy as np
-
+from pathlib import Path
 from src.rs_py.choices import choice_file_detailed as dcf
 from src.rs_py.utils.config import CONFIG
-from src.rs_py.utils.helpers import stimulus_names
 
 
 def demo_inputs():
+    base_dir = Path(__file__).resolve().parent.parent
     demo_defaults = CONFIG['inputs']['detailed_choice']
-    demo_defaults['input_path'] = '../samples/unprocessed_ranking_judgments/S4'  # looks for csv files here
-    demo_defaults['output_dir'] = '../samples/choice_files'  # returns detailed mat file here
+    demo_defaults['input_path'] = (base_dir / 'samples/unprocessed_ranking_judgments/S4').resolve()  # looks for csv files here
+    demo_defaults['output_dir'] = (base_dir / 'samples/choice_files').resolve()  # returns detailed mat file here
     demo_defaults['comparison_type'] = 'triadic'  # can only handle triadic judgments
     demo_defaults['metadata'] = {
-        'stimuli': stimulus_names(CONFIG['dataset']['stimfile']),
         'num_trials': 1110,  # sample had 222 unique trials x 5
         'num_sessions': 10,
-        'subject': CONFIG['dataset']['subject'],    # used to name out file
-        'exp_name': CONFIG['dataset']['name']       # used to name out file
+        'subject': 'S4',    # used to name out file
+        'exp_name': 'animals'       # used to name out file
     }
     return demo_defaults
 
@@ -47,7 +45,6 @@ if __name__ == '__main__':
     exp_name = input("Experiment/paradigm name (for output filename): ")
     subject = input("Subject ID (for output filename): ")
     comparison_type = input('Judgment type: (triadic or tetradic) ')
-    stimuli = input("For metadata,\n \tprovide a list of stimuli as a comma separated list (optional): ")
     num_trials = input("For metadata\n \tprovide total number of trials (optional): ")
     num_sessions = input("For metadata\n \tprovide total number of sessions (optional): ")
 
@@ -59,23 +56,18 @@ if __name__ == '__main__':
         input_dir = defaults['input_path']
     if output_dir == "0" or output_dir.strip() == "":
         output_dir = defaults['output_dir']
-    if comparison_type == 0 or comparison_type.strip() == "":
+    if comparison_type == "0" or comparison_type.strip() == "":
         comparison_type = defaults['comparison_type']
     if exp_name == "0" or exp_name.strip() == "":
         exp_name = defaults['metadata']['exp_name']
     if subject == "0" or subject.strip() == "":
         subject = defaults['metadata']['subject']
-    if stimuli == "0" or stimuli.strip() == "":
-        stimuli = defaults['metadata']['stimuli']
-    else:
-        split_items = stimuli.split(',')
-        stimuli = [y.strip() for y in split_items]
     if num_sessions == "0" or num_sessions.strip() == "":
         num_sessions = defaults['metadata']['num_sessions']
     if num_trials == "0" or num_trials.strip() == "":
         num_trials = defaults['metadata']['num_trials']
 
-    # Basic validation to see if detailed file exists
+    # Basic validation to see if input file exists
     if not os.path.exists(input_dir):
         raise FileNotFoundError(f"Input directory not found: {input_dir}")
 
@@ -84,8 +76,7 @@ if __name__ == '__main__':
     metadata = {
         'exp_name': exp_name,
         'subject': subject,
-        'stim_labels': None,
-        'stim_ids': None,
+        'stim_list': [],  # to be filled in after reading data from csv files
         'num_sessions': int(num_sessions),
         'num_trials': int(num_trials),
         'total_judgments': None,

@@ -1,6 +1,5 @@
-"""
-To demo the script choice_file_detailed.py
-"""
+"""Script wrapper for the combined-choice demo."""
+
 from __future__ import annotations
 
 import os
@@ -9,23 +8,13 @@ from copy import deepcopy
 
 
 from src.rs_py.utils.config import CONFIG
-from src.rs_py.choices import choice_file_detailed as cfd
+from src.rs_py.choices import choice_file_combined as cfc
 
 REQUIRED_KEYS = ["input_path", "output_dir"]
 
 
 def options_default():
-    opt_defaults = deepcopy(CONFIG["inputs"]["detailed_choice"])
-
-    opt_defaults["metadata"] = {
-        "exp_name": "unknown",
-        "subject": "unknown",
-        "stim_list": [],
-        "num_sessions": None,
-        "num_trials": None,
-        "total_judgments": None,
-        "judgment_type": "triadic"
-    }
+    opt_defaults = deepcopy(CONFIG["inputs"]["combined_choice"])
     return opt_defaults
 
 
@@ -96,22 +85,19 @@ def run(user_params: dict | None = None):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print("\nProcessing raw data...")
+    print("\nProcessing detailed choices ...")
     print(f"  Input directory: {input_path}")
     print(f"  Output directory: {output_dir}")
     print(f"  Subject: {subject}")
     print(f"  Experiment: {exp_name}")
     print(f"  Types of judgments: {metadata['judgment_type']}\n")
 
-    cfd.build_detailed_choice_mat(
-        input_dir=input_path,
+    cfc.build_combine_choice_mat(
+        input_mat_path=input_path,
         output_dir=output_dir,
         exp_name=exp_name,
-        subject=subject,
-        metadata=metadata,
+        subject=subject
     )
 
     print("\nDone.")
-
-
 

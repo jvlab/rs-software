@@ -320,6 +320,7 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
 
         # Alphabetical: A=1, M=2, Z=3
         self.assertEqual(out[0]["s1"], 3)
+        self.assertEqual(out[0]["s3"], 3)
         self.assertEqual(out[0]["s2"], 1)
         self.assertEqual(out[0]["s4"], 2)
 
