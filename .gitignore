@@ -15,5 +15,7 @@ site/
 *__pycache__*
 docs/mfiles
 docs/mfiles/demos
+docs/demos.md
+*.pyc
 
 
