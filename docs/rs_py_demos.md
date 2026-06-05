@@ -396,59 +396,13 @@ Compared to the detailed choice file, many repeated comparisons have been merged
 The output of this demo becomes the input to **Demo 3**, which fits geometric models to the similarity judgments.
 
 
-
-### Step 1. Create detailed choice file
-
-In the terminal or your IDE, run the `demo_detailed_choice` file. Below, we provide instructions 
-for the terminal.
-
-```
-python -m demo_detailed_choices.py
-```
-### Step 2. Create combined choice file
-### Step 3. Fit geometric models
-
-
-FOCUS ON ENTRY POINTS 
-FROM TRIPLET DATA TO CHOICE PROB
-FROM CHOICE PROB TO ..  headings 
-
-
-
-Enter 0 for all prompts to use defaults.
-4. 
-5. Convert raw rank ordering judgments acquired using the Waraich and Victor (2022) paradigm into a tabular format in which every row contains the occurrence of a triadic comparison, (i.e., a comparison between the similarities of a reference stimulus to two other stimuli). 
-* Tally the choices for repeated occurrences of the same traidic comparisons across all sessions of the experiment.
-* From the above similarity judgments, estimate geometric models of the representational spaces in which distances between points best explain them.
-
-There are three entry points that a user may find useful corresponding to the three steps above. They are in the scripts module. 
-Below we describe their inputs and outputs and after that how to use them in Python or MATLAB.
-
+### Scripts for demos
 ```python
-rs_py.scripts.write_choice_file_detailed
-rs_py.scripts.write_choice_file_combined
-rs_py.scripts.run_model_fitting
+src.rs_py.scripts.write_choice_file_detailed
+src.rs_py.scripts.write_choice_file_combined
+src.rs_py.scripts.run_model_fitting
 ```
 
-*detailed choice file script. lets say a diff paradigm, then better to enter at the next stage. Document this. *
-What rules do you have to follow? Where is it flexible vs not.*
-
-**Show how to use sample files to process the data to get the different outputs.** 
-**some provision so it doesn't get overwritten when someone tries to run it. 
-Should happen... with through both python and MATLAB.
-If you have something like the binary texture exp you enter at the level of accumulated choice files which is the format we already have.** 
-**JoVE procedure no need to generalize to our bw**
-
-what these scripts can do and what they expect. What they take as input, what they return as output.
-The key steps of this process are explained in the following demos.
-A user may supply their files in the initial input form (needed by demo 1), or as intermediate form
-as expected by demo 2 or demo 3 etc.
-
-The first demo does X.
-
-The second demo shows Y.
-
-The demos build on each other.
 
 ## Installation and Set-up
 We recommend using Python 3.10 or higher and installing dependencies in a virtual environment.
