@@ -6,7 +6,9 @@
 
 This software package is a set of tools to construct and analyze representational spaces.
 
-A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to similarities in the space. Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
+A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to similarities in the space.
+
+Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
 
 This software enables creation of representational spaces from similarity data, and once such spaces have been created, comparisons between spaces and assessment of models that relate one space to another.
 
@@ -25,16 +27,15 @@ The software produces several kinds of outputs:
 * Coordinate sets
 * Visualization of representational spaces
 * Geometric transformations between representational spaces
-* Statistics for comparison of representational spaces and assessment of transformations
 
 ## Creating representational spaces from perceptual judgments
 
-The primary input is ?? that contains choice data and associated metadata. Two kinds of paradigms are supported:
+Two kinds of paradigms are supported
 
 * "triadic" judgments:  is A or B more similar to S?
-* "tetradic" judgments: which is more similar: A and B, or C and D?
+* "tetradic" judgments: which is more similar: A and B, or C and D?"
 
-The main outputs are files containing sets of coordinates and the associated metadata, which constitute a  `dataset structure`, along with statistics to assess the goodness of fit of the model.
+The main outputs are files containing sets of coordinates and the associated metadata, which embody a  `dataset structure`, along with statistics to assess the goodness of fit of the model.
 
 This component is written in Python.  It may be run from a MATLAB/Octave environment as shown here ??
 
@@ -42,10 +43,7 @@ Key demos are ??
 
 ## Manipulating representational spaces
 
-The primary input is the `dataset structure`, which contains coordinates and associated metadata.  It can be created two ways:
-
-* from outputs of the above process via `rs_get_coordsets` or `rs_read_coorddata`.
-* from any set of coordinates, via `rs_import_coordsets	`
+The primary input is the `dataset structure`.
 
 The key operations that are performed are
 
@@ -54,11 +52,9 @@ The key operations that are performed are
     * finding a consensus space across several sources
     * knitting together spaces with partially overlapping elements
 
-* Visualizations (`rs_disp_coordsets`)
+* Visualizations ('rs_disp_coordsets`)
 * Modeling transformations between perceptual spaces: affine, projective, piecewise affine (`rs_geofit`)
 * Statistics related to these operations
-
-Combining representational spaces (`rs_knit_coordsets`), and application of geometric transformations to representational structures (`rs_xform_apply`), are operations that act on one or more `dataset structures` and produce a new `dataset structure`, whose metadata tracks the sequence of operations.  The resulting `dataset structure` can then be saved with `rs_write_coordsets`.
 
 This component is written in MATLAB, and is Octave-compatible.  It may be run from a Python environment as shown here ??
 
@@ -69,4 +65,3 @@ Jonathan Victor <jdvicto@med.cornell.edu> (please direct feedback)
 Suniyya Waraich <swaraich@ucdavis.edu>
 
 Guillermo Aguilar <guillermo.aguilar@mail.tu-berlin.de>
-
