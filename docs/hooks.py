@@ -24,8 +24,8 @@ hook (matlab_to_markdown.py).
 
 @author: G. Aguilar - Feb 2026
 """
-from __future__ import annotations
 
+from __future__ import annotations
 from glob import glob
 import sys
 import re

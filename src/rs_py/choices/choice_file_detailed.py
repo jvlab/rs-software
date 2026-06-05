@@ -345,23 +345,43 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
 
     # Build output structure and write to a mat file in the output_dir
     total_comparisons = len(standardized_comparisons)
-    responses_col_names = ['trial', 's1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))']
-    # Column mapping for clarity
-    COL_TRIAL = 0
-    COL_S1 = 1
-    COL_S2 = 2
-    COL_S3 = 3
-    COL_S4 = 4
-    COL_JUDGMENT = 5
+    responses_col_names = []
+    responses = []
 
-    responses = np.zeros((total_comparisons, len(responses_col_names)), dtype=int)
-    for i, comp in enumerate(standardized_comparisons):
-        responses[i, COL_TRIAL] = comp['trial']
-        responses[i, COL_S1] = comp['s1']
-        responses[i, COL_S2] = comp['s2']
-        responses[i, COL_S3] = comp['s3']
-        responses[i, COL_S4] = comp['s4']
-        responses[i, COL_JUDGMENT] = comp['judgment']
+    if metadata['judgment_type'] == 'triadic':
+        responses_col_names = ['trial', 'ref', 's1', 's2', 'N(D(ref, s1) > D(ref, s2))']
+        # Column mapping for clarity
+        COL_TRIAL = 0
+        COL_REF = 1
+        COL_S1 = 2
+        COL_S2 = 3
+        COL_JUDGMENT = 4
+
+        responses = np.zeros((total_comparisons, len(responses_col_names)), dtype=int)
+        for i, comp in enumerate(standardized_comparisons):
+            responses[i, COL_TRIAL] = comp['trial']
+            responses[i, COL_REF] = comp['s1']
+            responses[i, COL_S1] = comp['s2']
+            responses[i, COL_S2] = comp['s4']
+            responses[i, COL_JUDGMENT] = comp['judgment']
+    elif metadata['judgment_type'] == 'tetradic':
+        responses_col_names = ['trial', 's1', 's2', 's3', 's4', 'N(D(s1, s2) > D(s3, s4))']
+        # Column mapping for clarity
+        COL_TRIAL = 0
+        COL_S1 = 1
+        COL_S2 = 2
+        COL_S3 = 3
+        COL_S4 = 4
+        COL_JUDGMENT = 5
+
+        responses = np.zeros((total_comparisons, len(responses_col_names)), dtype=int)
+        for i, comp in enumerate(standardized_comparisons):
+            responses[i, COL_TRIAL] = comp['trial']
+            responses[i, COL_S1] = comp['s1']
+            responses[i, COL_S2] = comp['s2']
+            responses[i, COL_S3] = comp['s3']
+            responses[i, COL_S4] = comp['s4']
+            responses[i, COL_JUDGMENT] = comp['judgment']
 
     results = {
         'metadata': metadata,
@@ -369,8 +389,7 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
         'responses': responses
     }
 
-    results['metadata']['stim_labels'] = [stim_id_to_name[k] for k in stim_id_to_name.keys()]
-    results['metadata']['stim_ids'] = [k for k in stim_id_to_name.keys()]
+    results['metadata']['stim_list'] = [stim_id_to_name[k] for k in stim_id_to_name.keys()]
     results['metadata']['total_judgments'] = total_comparisons
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")

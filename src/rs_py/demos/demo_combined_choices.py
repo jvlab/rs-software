@@ -9,14 +9,16 @@ Enter 0 to use default values.
 """
 
 import os
+from pathlib import Path
 from src.rs_py.utils.config import CONFIG
 from src.rs_py.choices.choice_file_combined import build_combine_choice_mat
 
 
 def demo_inputs():
+    base_dir = Path(__file__).resolve().parent.parent
     demo_defaults = CONFIG['inputs']['combined_choice']
-    demo_defaults['input_path'] = "../samples/choice_files/animals_detailed_choices_S4.mat"
-    demo_defaults['output_dir'] = "../samples/choice_files"
+    demo_defaults['input_path'] = (base_dir / "samples/choice_files/animals_detailed_choices_S4.mat").resolve()
+    demo_defaults['output_dir'] = (base_dir / "samples/choice_files").resolve()
     demo_defaults['exp_name'] = "animals"
     demo_defaults['subject'] = "S4"
     return demo_defaults
@@ -50,7 +52,7 @@ if __name__ == "__main__":
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print("\nCombining trial wise judgments...")
+    print("\nCombining trial wise judgments.")
     print(f"  Input detailed .mat: {input_mat_path}")
     print(f"  Output dir:         {output_dir}")
     print(f"  Exp name:           {exp_name}")
@@ -60,7 +62,7 @@ if __name__ == "__main__":
         input_mat_path=input_mat_path,
         output_dir=output_dir,
         exp_name=exp_name,
-        subject=subject,
+        subject=subject
     )
 
     print("\nDone.")

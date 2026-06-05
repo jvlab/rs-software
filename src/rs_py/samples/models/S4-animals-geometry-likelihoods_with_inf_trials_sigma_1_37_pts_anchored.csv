@@ -1,0 +1,8 @@
+Model,Log Likelihood,number of points,Experiment,Subject
+1D,-0.7663835491430935,37,animals,S4
+2D,-0.6346740274116829,37,animals,S4
+3D,-0.6358583714187251,37,animals,S4
+4D,-0.6360497338022567,37,animals,S4
+5D,-0.6361187806982241,37,animals,S4
+best,-0.1863971305998792,37,animals,S4
+random,-1.0,37,animals,S4
