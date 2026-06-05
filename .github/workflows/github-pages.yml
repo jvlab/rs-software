@@ -1,8 +1,11 @@
 name: ci-gh-pages
 on:
   push:
+
+  pull_request:
     branches:
       - main
+
 permissions:
   contents: write
 jobs:
@@ -25,4 +28,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python
+      - run: mkdocs build
       - run: mkdocs gh-deploy --force

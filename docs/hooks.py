@@ -222,6 +222,9 @@ def parse_all_demos_to_markdown():
         # parse
         markdown = parse_matlab_to_markdown(matlab_code, FUNCTION_REGISTRY)
         
+        # make sure the output directory exists before writing
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         # writes parsed text as markdown file
         output_path.write_text(markdown, encoding="utf-8")
         print(f"File {input_path} parsed to {output_path}")
