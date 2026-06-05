@@ -16,5 +16,6 @@ site/
 docs/mfiles
 docs/mfiles/demos
 docs/demos.md
+*.pyc
 
 
