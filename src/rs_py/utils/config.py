@@ -28,6 +28,8 @@ CONFIG = {
             }
         },
         'model_fit': {
+            'filepath': None,                   # required
+            'output_dir': None,                 # required
             'num_stimuli': 37,  
             'sigma': 1,               # required   # should normally be kept at 1. # what is it? 1 sd in the error in the noise in the distance comparisons. JoVE paper for similar language. It is required and everything scales by it.
             'max_trials': np.inf,      # make default np.inf - keep - what happens when you have less data (RANDOM)

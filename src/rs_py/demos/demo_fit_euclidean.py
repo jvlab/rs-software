@@ -27,7 +27,7 @@ def demo_inputs():
         "filepath": (base_dir / "samples/choice_files/animals_combined_choices_S4.mat").resolve(),
         "exp_name": "animals",
         "subject": "S4",
-        "outdir": (base_dir / "samples/models").resolve(),
+        "output_dir": (base_dir / "samples/outputs").resolve(),
         "sigma": model_defaults['sigma'],
         "model_dimensions": model_defaults['model_dimensions'],
         "learning_rate": model_defaults['learning_rate'],
@@ -36,6 +36,8 @@ def demo_inputs():
         "max_iterations": model_defaults['max_iterations'],
         "minimization": model_defaults['minimization']
     }
+    # Creates the folder if missing; does nothing if it already exists
+    defaults["output_dir"].mkdir(parents=True, exist_ok=True)
 
     return defaults
 
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     ARGS = {'filepath': CONFIG['filepath'] if _use_default(FILEPATH) else FILEPATH,
             'exp_name': CONFIG['exp_name'] if _use_default(EXP) else EXP,
             'subject': CONFIG['subject'] if _use_default(SUBJECT) else SUBJECT,
-            'outdir': CONFIG['outdir'] if _use_default(OUTDIR) else OUTDIR,
+            'outdir': CONFIG['output_dir'] if _use_default(OUTDIR) else OUTDIR,
             'max_iterations': CONFIG['max_iterations'] if _use_default(MAX_ITER) else int(MAX_ITER),
             'learning_rate': CONFIG['learning_rate'] if _use_default(LEARN_RATE) else float(LEARN_RATE),
             'tolerance': CONFIG['tolerance'] if _use_default(TOLERANCE) else float(TOLERANCE),
