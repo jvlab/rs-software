@@ -21,7 +21,7 @@ def demo_inputs():
     base_dir = Path(__file__).resolve().parent.parent
     demo_defaults = CONFIG['inputs']['detailed_choice']
     demo_defaults['input_path'] = (base_dir / 'samples/unprocessed_ranking_judgments/S4').resolve()  # looks for csv files here
-    demo_defaults['output_dir'] = (base_dir / 'samples/choice_files').resolve()  # returns detailed mat file here
+    demo_defaults['output_dir'] = (base_dir / 'samples/outputs').resolve()  # returns detailed mat file here
     demo_defaults['comparison_type'] = 'triadic'  # can only handle triadic judgments
     demo_defaults['metadata'] = {
         'num_trials': 1110,  # sample had 222 unique trials x 5
@@ -29,6 +29,9 @@ def demo_inputs():
         'subject': 'S4',    # used to name out file
         'exp_name': 'animals'       # used to name out file
     }
+    # Creates the folder if missing; does nothing if it already exists
+    demo_defaults["output_dir"].mkdir(parents=True, exist_ok=True)
+
     return demo_defaults
 
 

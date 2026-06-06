@@ -2,6 +2,7 @@ __pycache__
 ./*/__pycache__
 .DS_Store
 src/rs_py/.idea
+src/rs_py/samples/outputs
 .idea
 src/tests/*.fig
 src/tests/*.mat
