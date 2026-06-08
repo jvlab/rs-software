@@ -1,6 +1,6 @@
-%rs_disp_coordsets_demo_opposites 
-% demonstration of display of a dataset for a structured domain 
-% run after rs_disp_coordsets_demo
+%rs_disp_coordsets_demo_opposites:  display datasets in a structured domain (stimulus coordinates and rays)
+%
+% run after rs_read_coorddata_demo_opposites
 %
 % See also:  RS_DISP_COORDSETS
 %
