@@ -14,12 +14,12 @@ As the appropriate number of dimensions for a representational space is typicall
 
 ## Tools for creating representational spaces from perceptual judgments
 
-The starting point is a set of perceptual judgments and the associated metadata.  Two kinds of paradigms are supported
+The starting point is a set of perceptual judgments and the associated metadata, typically contained in a `choice file`.  Two kinds of paradigms are supported:
 
 * "triadic" judgments:  is A or B more similar to S?
 * "tetradic" judgments: which is more similar: A and B, or C and D?
 
-The main outputs are files containing sets of coordinates and the associated metadata, along with statistics to assess how well the inferred coordinates account for the similarity judgments.
+The main outputs are `coordinate files`, which contain coordinates of the points in a representational space and the associated metadata, and with statistics to assess how well these coordinates account for the similarity judgments.
 
 Key demos are ??
 
@@ -27,7 +27,7 @@ This component is written in Python.  It may be run from a MATLAB/Octave environ
 
 ## Tools for manipulating representational spaces
 
-The starting point is a representational space (the coordinates and associated metadata produced by the first component), or, from another source. For example, representational spaces may also be
+The starting point is a representational space, read from a `coordinate file`, or, from another source. For example, representational spaces may also be
 
   * inferred from perceptual judgments via other procedures, such as multidimensional scaling
   * obtained in another way -- for example, from neural data via a dimension-reduction technique such as principal components analysis
