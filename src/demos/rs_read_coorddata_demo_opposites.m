@@ -1,5 +1,5 @@
-%rs_read_coorddata_demo_opposites 
-% demonstration of reading generic coordinate datasets in a structured domain
+%rs_read_coorddata_demo_opposites: read coordinate data and create a dattaset structure in a domain with stimulus coordinates
+%
 % data file: 16 stimuli, 3 pairs of opposites
 % also demonstrates interactive choice of files
 % also demonstates quadratic form model
