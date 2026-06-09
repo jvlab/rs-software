@@ -1,7 +1,7 @@
 function [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signflip(x,y,dimflip)
 % [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signflip(x,y,dimflip) compares two numeric arrays, allowing for sign flips
 % 
-% This is a utility used to verify computations against benchmnarks.
+% This is a utility used to verify computations against benchmarks, recognizing that PCA implementations may differ in sign assignemnts.
 % 
 %  Args:
 %    x (array or cell array): one array to be compared
@@ -17,17 +17,16 @@ function [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signfli
 %
 %    maxdiff_noflip (float): maximum absolute value of difference between x and y, without sign flips
 % 
-%    diffs (float array): maximum absolute value of difference between x and y along dimflip, after sign flips to minimize differences
+%    diffs (float array): maximum absolute value of difference between x and y along the dimension 'dimflip', after sign flips to minimize differences
 %
-%    diffs_noflip (float array): maximum absolute value of difference between x and y along dimflip, without sign flips
+%    diffs_noflip (float array): maximum absolute value of difference between x and y along the dimension 'dimflip', without sign flips
 %
 %    signs (int): +1 or -1, indicating whether the difference between x and y is minimized by a flip; 0 if x and y are both 0
 %
 %  Note: Array outputs
 %
-%    diffs,diffs_noflip, signs all have same shape as x and y except on dimflip, where they have length 1
+%    The arrays diffs,diffs_noflip, signs all have same shape as x and y except on the dimension 'dimflip', where they have length 1
 %
-% recursive logic
 if (nargin<=2)
     dimflip=1;
 end
