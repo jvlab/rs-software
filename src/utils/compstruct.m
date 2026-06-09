@@ -1,10 +1,30 @@
 function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
+% ifdif=compstruct(parent1,x1,parent2,x2,varargin) compares two structures
 %
-%  ifdif=compstruct(parent1,x1,parent2,x2,varargin) compares two structures
+% This function is adapted from a file "compare.m" downloaded from the MATLAB file exchange on 6/4/04, from Nicholas Gigis, gigisn@netscape.net.
+% Original documentation is retained at the beginning of the code.
 %
-%  Downloaded from matlab site as "Compare", 6/4/04; renamed to "compstruct"
-%  Uploaded by Nicholas Gigis, gigisn@netscape.net.  Original documentation follows.
+% Args:
+%   parent1 (char): name of first structure to be compared
+%   
+%   x1 (struct): first structure to be compared
+%
+%   parent2 (char): name of second structure to be compared
+%   
+%   x2 (struct): second structure to be compared
+%
+% Returns:
+%   ifdif (char): text string of differences, empty if structures are identical
+%
+
+%
+%  Modifications by JV:
 %  Modified so that the text is returned as an output; empty if structures are identical
+%  13Apr21: edit made to fix bug in comparenum when inputs have different dimensions
+%  26Dec25: edit made to avoid errors if grpahics objects are being compared
+%  06Feb26: edit made to avoid errors if cell arrays are empty and have different dimensions
+%
+% Original documentation from Nicholas Gigis, gigisn@netscape.net, follows.
 %
 % Compare - This function compares two objects and outputs the
 %           locations of differences between the two.  This function
@@ -27,10 +47,6 @@ function ifdif=compstruct(parent1,x1,parent2,x2,varargin)
 %
 %  Ver: 1.0  5/19/03
 %
-%  13Apr21: edit made to fix bug in comparenum when inputs have different dimensions
-%  26Dec25: edit made to avoid errors if grpahics objects are being compared
-%  06Feb26: edit made to avoid errors if cell arrays are empty and have different dimensions
-
 ifdif=[];
 if nargin<4;
     error('Incorrect usage of Compare');
