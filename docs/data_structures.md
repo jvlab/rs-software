@@ -120,7 +120,7 @@ A `ray structure` identifies simple relationships among the `stimulus coordinate
 
 It is created by 'rs_findrays' from the `stimulus coordinates`. The `ray structure` is used for visualizations in `rs_disp_enh_coordsets`.
 
-Auxiliary inputs of 'rs_findrays' set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
+Auxiliary inputs of `rs_findrays` set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
 
 
 ## Transformation structure
