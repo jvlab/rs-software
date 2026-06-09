@@ -1,12 +1,12 @@
 function [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signflip(x,y,dimflip)
 % [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signflip(x,y,dimflip) compares two numeric arrays, allowing for sign flips
 % 
-% This is a utility used to verify computations against benchmarks, recognizing that PCA implementations may differ via sign flips.
+% This is a utility used to verify computations against benchmarks, recognizing that PCA implementations may differ in sign assignemnts.
 % 
 %  Args:
-%    x (float array or cell array): one array to be compared
+%    x (array or cell array): one array to be compared
 %
-%    y (float array or cell array): second array to be compared
+%    y (array or cell array): second array to be compared
 %
 %    dimflip (int): dimension that can be flipped, defaults to 1
 %
@@ -27,7 +27,6 @@ function [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signfli
 %
 %    The arrays diffs,diffs_noflip, signs all have same shape as x and y except on the dimension 'dimflip', where they have length 1
 %
-
 if (nargin<=2)
     dimflip=1;
 end
