@@ -1,11 +1,11 @@
 function t_new=procrustes_compat(t)
 % t_new=procrustes_compat(t) is a utility that changes the names of the fields in 
 % a transformation structure prodcued by procrustes_consensus into a structure compatible with psg_geomodels_apply
-% The names are also compatible with the transformation proeduced by Matlab's procrustes, except athat
+% The names are also compatible with the transformation proeduced by Matlab's procrustes, except that
 %    the offset field, b, needs to be replicated for each data point
 %
 % t: a transformation with fields scaling, orthog, and translation
-%   znew=ts.scaling*z*ts.orthog+repmat(ts.translation,size(z,1))
+%   znew=ts.scaling*z*ts.orthog+repmat(ts.translation,size(z,1),1)
 % ts: fields are now named b, T, and c
 %
 % if scaling is omitted, b is set to 1

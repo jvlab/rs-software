@@ -15,8 +15,8 @@ function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
 %     - ray_tol (float): tolerance for collinearity of rays; default is 10<sup>-5</sup>
 %     - ray_minpts (int): minimum number of points (other than the origin) to constitute a ray; default is 3
 %     - ray_dirkeep (char): which rays to keep, default is 'all', alternatives are 'card' (keep only cardinal directions), 'diag' (keep only diagonal directions), 'card_diag' (keep ony cardinal and diagonal directions)
-%     - ray_reorder_ring (int); 1 to standardize the order of the rings, 0 to omit; default is 1
-%     - ray_plane_jit (float): small nonzero to standardize flattening of rays into a plane, 0 to omit; default is  10<sup>-3</sup>
+%     - ray_reorder_ring (int): 1 to standardize the order of the rings, 0 to omit; default is 1
+%     - ray_plane_jit (float): small nonzero value to standardize flattening of rays into a plane, 0 to omit; default is  10<sup>-3</sup>
 %     - ray_res_ring (float): tolerance for equal radii for a ring; default is 10<sup>-2</sup>
 %     - ray_min_ring (int): minimum number of points in a ring; default is 4
 %     - ray_mindist_tol (float): tolerance for ties for nearest-neighbor distance; default is 10<sup>-2</sup>

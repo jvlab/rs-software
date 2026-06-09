@@ -1,9 +1,25 @@
 # File formats, data structures, and other key elements
 
+## Detailed choice file
+
+A `detailed choice file` is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment.  Each line of the file corresponds to a single judgment.
+It contains three variables: 'stim\_list', 'responses', and 'responses_colnames'.  'stim\_list' is a character array in which each row is a unique stimulus label.
+
+File names should contain the string '\_detailed\_choices\_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
+
+* triadic comparisons
+
+    * Column 1 of 'responses' is the 1-based trial number
+    * Columns 2-4 of 'responses' are the 1-based indices into stim\_list of the reference stimulus and two comparison stimuli (s1 and s2).
+    * Column 4 of 'responses' is the number of times that s1 is judged more dis-similar to the reference than s2
+    * Column 5 of 'responses' is 1 if s1 is judged more dis-similar to the reference than s2, and 0 otherwise
+    * 'responses_colnames' are text strings that label these columns
+
+See rs_py/samples/choice_files/\*\_detailed_choices\_S\*.mat for examples.
+
 ## Choice file
 
-A `choice file` is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment.
-It contains three variables: 'stim\_list', 'responses', and 'responses_colnames'.  'stim\_list' is a character array in which each row is a unique stimulus label.
+A `choice file` (also called a `combined choice file`) is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment. In contrast to a `detailed choice file`, judgments from repeated presentations of the same stimuli are combined.  The file contains three variables: 'stim\_list', 'responses', and 'responses_colnames'.  'stim\_list' is a character array in which each row is a unique stimulus label.
 
 File names should contain the string '\_choices\_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
 
@@ -11,14 +27,14 @@ Two options are available for 'responses' and 'responses_colnames':
 
 * triadic comparisons
 
-    * The first three columns of 'responses' are the 1-based indices into stim\_list of the reference stimulus and two comparison stimuli (s1 and s2).
+    * Columns 1-3 of 'responses' are the 1-based indices into stim\_list of the reference stimulus and two comparison stimuli (s1 and s2).
     * Column 4 of 'responses' is the number of times that s1 is judged more dis-similar to the reference than s2
     * Column 5 of 'responses' is the number of times the triad is presented
     * 'responses_colnames' are text strings that label these columns
 
 * tetradic comparisons
 
-    * The first four columns of 'responses' are the 1-based indices into stim\_list for the stimuli s1, s2, s3, and s4 in the comparison
+    * Columns 1-4 of 'responses' are the 1-based indices into stim\_list for the stimuli s1, s2, s3, and s4 in the comparison
     * Column 5 of 'responses' is the number of times that s1 and s2 are judged more dis-similar than s3 and s4
     * Column 6 of 'responses' is the number of times the tetrad is presented
     * 'responses_colnames' are text strings that label these columns
@@ -60,9 +76,9 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
     * This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
         * nstims: number of stimuli
-        * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.
+        * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
         * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
-        * the optional variables *LL* and metadata from a `coordinate file`
+        * the optional variables \*LL\* and metadata from a `coordinate file`
 
 
 * ## Set metadata structure
@@ -84,132 +100,79 @@ For an example of a `dataset structure` with three records and with `stimulus co
 
 ## Stimulus coordinates
 
-examples of simple; mention binary texture coordinates
+For some domains, there may be an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example are adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. Stimulus coordinates are a numerical array, in which the rows correspond to the stimuli (in the order of 'typenames'), and each column is a dimension.
+
+*  For generic domains, these coordinates constitute the `type_coords` field of the `stimulus metadata structure`, and can be specified as auxiliary inputs in  `rs_get_coordsets`, `rs_read_coorddata`, or `rs_import_coordsets`.
+*  For `binary texture` data, these values are specified in the `setup metadata` and are in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.
+
+`Stimulus coordinates` are used in several ways:
+
+* As a framework for visualization of representational spaces (via `rs_disp_enh_coordsets`, run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
+* To create models for representational spaces (via `rs_read_coordsets`, run `rs_read_coorddata_demo_opposites`, option 3, for an example)
+
 ## Ray structure
 
-This contains metadata specifying rays (stimuli that lie on an approximate straight line from the origin) and
-rings (stimuli that lie in a plane at approximate equal distances from the origin).
+A `ray structure` identifies simple relationships among the `stimulus coordinates`:
 
-Options
+* stimuli that lie on rays (points on approximate straight lines from the origin)
+* stimuli that lie on rings (ponits in a plane at approximate equal distances from the origin)
+* nearest neighbors
 
-created by rs\_findrays
+It is created by 'rs_findrays' from the `stimulus coordinates`. The `ray structure` is used for visualizations in `rs_disp_enh_coordsets`.
 
-...
+Auxiliary inputs of 'rs_findrays' set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
+
 
 ## Transformation structure
 
-Very rough:
+`Transformation structures` specify geometric transformations, including linear transformations and several generalizations.  These are constructed by `rs_xform_specify`, `rs_geofit`, and `rs_knit_coordsets`, and can be applied to `dataset structures` by `rs_xform_apply`.
 
-These are the structures created by `rs\_geofit.m` and `rs\_xform\_specify`, and applied by `rs\_xform\_apply`.
-They are linear transformations and several generalizations.
+For transformations on a representational space of dimension k, a `transformation structure` has the following fields:
 
+* class: one of the following: 'affine' (default if omitted), 'procrustes', 'projective','pwaffine','pwprojective','mean'
+* b: a scalar multiplier
+* T: a square array of size [k k] or (for 'pwaffine' and 'pwprojective', a stack of such arrays, see below)
+* c: a vector of size [1 k] or (for 'pwaffine' and 'pwprojective', a stack of such vectors, see below)
+* additional arguments, depending on 'class'
 
+    * For class='projective' (a projective transformation): p is a vector of size [k 1]
+    * For class='pwaffine' (a piecewise affine transformation with ncuts cuts): c is [ncuts k], T is a 3D array of size [k k 2<sup>ncuts</sup>], acut is [ncuts 1], and vcut is [ncuts k]
+    * For class='pwprojective' (a piecewise projective transformation with ncuts cuts): the parameters in 'projective' and 'pwaffine'
+  
+To allow for compatibility with transformations produced by `procrustes` (a MATLAB built-in), or `procrustes_consensus`, the following alternative names are allowed: b -> scaling, T -> orthog, c -> translation
 
-%       - affine: \[output(istim,:)]=ts.b \* \[input(istim,:)] \* ts.T + ts.c;
-%       where size(b)=1, size(T)=\[idim,idim], and size(c)=\[1 idim]. If these fields are not present and xform.class='affine', then
-%       alternative parameter names are allowed: 'scaling' for b, 'orthog' for T, and 'translation' for c.
-%       This allows for compatibility with the transformations produced by `procrustes\_consensus`.
+The transformation applied to a row vector x produces a row vector y as follows:
 
-%       - procrustes: same as affine, but ts.b=1 and abs(det(T))=1.  *These are not checked.*
-%       - mean: same as affine, but ts.b=1, T=0. *These are not checked.*
-%       - projective: affine parameters and also p, size \[isim 1]. p=0
-%       reduces to affine.  See `transformation structure` for further details.
-%       - pwaffine (piecewise affine): b as in affine.  T has size \[idim idim 2^ncuts] and c
-%       has size \[2^nchuts idim], specifying the affine transformation on
-%       each cut. vcut has size \[ncuts idim], each row is a unit vector,
-%       orthogonal to the cutplanes. acut has size \[1 2^ncuts], specifying the cutpoints.
-%       See `transformation structure` for further details.
-%       - pwprojective (piecewise projective): parameters as in pwaffine, and also p, of size \[idim, 2^ncuts], used as in projective for each component
-%       See `transformation structure` for further details.
+* 'affine','procrustes','mean': y=b\*xT+c  (Note, for 'procrustes', abs(det(T)) should equal 1, and for 'mean', T should equal 0.)
+* 'projective':  This is a projective (or perspective) transformation. An array T<sup>aug</sup> of size [k+1 k+1] is formed with b\*T in its upper left, p in its upper right, c in its lower left, and 1 in its lower right. x<sup>aug</sup> is created by adjoining a 1 to the right of x. Then y<sup>aug</sup>=x<sup>aug</sup>\*T<sup>aug</sup> is computed, and y is the first k elements of y<sup>aug</sup> divided by its last.  For p=0, this reduces to an affine transformation.
+* 'pwaffine': This is a piecewise affine transformation.  There are ncuts hyperplanes, each defined by their normal vectors given in vcut.  To determine the component of the space that x lies in, s=sign(x\*vcut<sup>T</sup>-acut) is computed. The affine transformation used ('ipw') is determined by the entries in s: s=[+1 +1 ... +1] corresponds to ipw=1, [-1 +1 ... +1] corresponds to ipw=2, [+1 -1 ... +1] corresponds to ipw=3,..., and [-1 -1 ... -1] corresponds to ipw=2<sup>ncuts</sup>. Then T(:,:,ipw) and c(ipw,:) are used to compute the transformation, as in 'affine' above.  Notes:
 
-%
-% Definitions and parameters for the other classes, in addition to b, T, and c.
-% All must be supplied in xforms.ts{k}{idim}
-%
-%   projective: p: column vector of length idim
-%     The transformation adjoins a final 1 to each row of coordinates, and then applies the transformation.
-%       \[bT| p]
-%       \[-----]
-%       \[c | 1]
-%    to each row of the coordinates producing coordinates of dimension idim+1. These are then divided by the final column.
-%    So if p=zero, then this reduces to an affine transformation , then divided by the final colummn
-%
-%   pwaffine (piecewise affine)
-%    T: is a stack of matrices, size \[idim idm 2^ncuts], where ncuts is the number of cuts
-%      often ncuts=1, but in general, to transform a vector x:
-%      let sign\_vecs=sign(x\*vcut'-a), of size \[npts,ncuts] (with equality going to 1)
-%      consider each row of sign\_vecs:
-%      sign\_ind=1       for sign\_vec=\[+ + .... +]
-%      sign\_ind=2       for sign\_vec=\[- + .... +]
-%      sign\_ind=3       for sign\_vec=\[+ - .... +]
-%      sign\_ind=4       for sign\_vec=\[- - .... +]
-%         ....
-%      sign\_ind=2^ncuts for sign\_vec=\[- - .... -]
-%      Then the transform used for x is T(:,:,sign\_ind) for transformation
-%   c: stack of offsets, size \[2^ncuts idim], use (sign\_ind,:)
-%   vcut: unit vectors, stack of rows, size \[ncuts dim\_x], orthog to cut planes
-%   acut: vector of length ncuts, the cutpoints
-%      \[y,sign\_vecs,sign\_inds,ypw,unsign\_vecs]=psg\_pwaffine\_apply(ts{:},x)
-%  
-%  pwprojective (piecewise projective)
-%
-% x: original coordinates, size=\[npts,dim\_x]
-%   T as in pwaffine
-%   b as in pwaffine
-%   c as in pwaffine
-%   vcut as in pwaffine
-%   acut as in pwaffine
-%   p: an array of size \[idim, 2^ncuts], used as in projective; p(:,sign\_ind) is used along with T(:,:,sign\_ind)
-%
-%Remember to indicate that the parametric description of a transformation is not unique -- T can be multipled by a constant K, and b divided by K^(-idim), for example
-%Remember to indicate taht continuity at cutponts is not checked.
+    * The same value of b is used for all components. 
+    * For transformations created by `rs_geofit`, the pieces of the transformation are continuous where they meet at their boundaries. This is not checked.
 
+* 'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective'
 
+Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T.  The labeling of the pieces of an affine transformation can be permuted.
 
-...
+##Domains
 
-## Stimulus coordinates
-
-Very rough:
-
-Here describe the idea of conceptual coordinates
-
-...
-
-## Ray structure
-
-Very rough:
-
-Here describe rays, rings, nearest neighhbors, and how they are found and used
-
-...
-
-## Binary texture domain
+* ## Binary texture domain
 
 Very rough:
 
 Briefly introduce the textuers and the coordinates
 Provide pointers to literature
 
-...
 
-## Animal domain
-
-Very rough:
+* ## Animal domain
 
 Briefly introduce the animal domain
 Provide pointers to J Neurosci
 
+![Example stimuli from the five animal domains](./images/animal_domain\_fig1\_jneuro.jpg)
+<figcaption>Stimuli from the five animal domains. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
 
-
-<figure markdown="span">
-  !\[Animal domain](images/animal\_domain\_fig1\_jneuro.jpg){ width="400" }
-  <figcaption>Stimuli from the animal domain. Taken from Waraich \& Victor (2024).</figcaption>
-</figure>
-
-
-
-## MPI faces domain
+* ## MPI faces domain
 
 Very rough:
 
@@ -219,8 +182,6 @@ Introduce the coordinates
 % Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.
 
 ...
-
-
 
 ## Setup metadata
 
