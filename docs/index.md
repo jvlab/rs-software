@@ -12,6 +12,9 @@ The package has two components that may be used together or independently. One c
 
 As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel.
 
+![Workflow diagram](./images/overview_09Jun26.png)
+<figcaption>Overview of workflow.</figcaption>
+
 ## Tools for creating representational spaces from perceptual judgments
 
 The starting point is a set of perceptual judgments and the associated metadata, typically contained in a `choice file`.  Two kinds of paradigms are supported:

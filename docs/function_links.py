@@ -50,6 +50,10 @@ OWN_DATATYPES = {
     "coordinate files":             "data_structures/#coordinate file",
     "choice file":                  "data_structures/#choice file",
     "choice files":                 "data_structures/#choice file",
+    "combined choice file":         "data_structures/#choice file",
+    "combined choice files":        "data_structures/#choice file",
+    "detailed choice file":         "data_structures/#detailed choice file",
+    "detailed choice files":        "data_structures/#detailed choice file",
     "quadratic form model":         "data_structures/#quadratic form model",
     "qudaratic form models":        "data structures/#quadratic form models",
     # add more as needed...
