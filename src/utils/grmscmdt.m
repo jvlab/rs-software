@@ -1,14 +1,18 @@
 function [gs,gsn]=grmscmdt(a)
-% [gs,gsn]=grmscmdt(a) produces a matrix whose columns represent
-% the gram-schmidt procedure applied to a.
+% [gs,gsn]=grmscmdt(a) applies the Gram-Schmidt procedure to a set of column vectors
 %
-% note that complex conjugate is used properly, so procedure
-% will work if a is complex
+% Args:
+%    a (float 2-D array): a set of column vectors
 %
-% note that if the columns of a are linearly dependent, then gs will 
-% have some columns that are 0.
+% Returns:
+%   gs (float 2-D array): orthogonal column vectors; span of first k columns match those of a
 %
-% gsn: gs, normalized
+%   gsn (float 2-D array): orthonormal column vectors; span of first k columns match those of a
+%
+% Notes:
+%   If some columns of a are linearly dependent, then gs and gsn will have some columns that are zero.
+%   
+%   This works if a is complex.  gs'\*gs will be diagonal, and gsn'\*gsn will be the identity.
 %
 %    See also: EXTORTHB, EXTORTHB_GEN.
 %
