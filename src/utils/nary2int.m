@@ -9,7 +9,7 @@ function ints=nary2int(nary,d,lastdim)
 %
 %    d (int or int array): the base, 2 if omitted, d may be a vector; see note below regarding generalized n-ary conversion
 %
-%    lastdim: last dimension of nary; default is ndims(nary).  Required if, for example, size(nary)=[10 7] but this is thought of as [10 7 1]
+%    lastdim (int): last dimension of nary; default is ndims(nary).  Required if, for example, size(nary)=[10 7] but this is thought of as [10 7 1]
 %
 % Returns:
 %   ints (int or int array): the converted integers.
