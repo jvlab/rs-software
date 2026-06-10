@@ -6,7 +6,7 @@ function [x,opts_used]=fibspiral(n,d,opts)
 % Args:
 %   n (int): number of points
 %
-%   d (int): number of points: dimension.  Should work for any number of dimensions >=1
+%   d (int): dimension.  Should work for any number of dimensions >=1
 %
 %       - d=1 yields samples that alternate between +1 and -1
 %       - d=2 yields smaples equally spaced around a circle
