@@ -1,19 +1,25 @@
 function r=rmsubfield(s,fns)
 % r=rmsubfield(s,fns) removes a (possibly deeply) nested subfield
 %
-% s: a structure
-% fns: a cell array of field names, fns={n_1,n_2,...,n_k}, where n_i are strings
+% Args:
+%   s (struct): a structure
 %
-% r: result
+%   fns (cell array): field names, fns={n<sub>1</sub>, n<sub>2</sub>,..., n<sub>k</sub>}
 %
-% If any subfield is not present, then r=s.
-% Subfield arrays not supported.
+% Returns: 
+%   r (struct): s, with  s.(n<sub>1</sub>).(n<sub>2</sub>). ... .(n<sub>k</sub>) removed
 %
-% recursive logic:
-%    k>=2: rmsubfield(s,{n_1,n_2,...,n_k})=setfield(s,n_1,rmsubfield(s.(n_1),{n_2,...,n_k}))
-%    k=1:  rmsubfield(s,{n_1,n_2,...,n_k})=rmfield(s,n_1));
+% Note: Notes
+%   If any of the subfields are not present, r=s.
+% 
+%   Subfield arrays not supported.
 %
-%   See also:  SETFIELD, RMFIELD, GETSUBFIELD.
+%   Uses recursion:
+%
+%     - k>=2: rmsubfield(s,{n<sub>1</sub>, n<sub>2</sub>,..., n<sub>k</sub>})=setfield(s.(n<sub>1</sub>),rmsubfield(s.(n<sub>1</sub>),{n<sub>2</sub>,..., n<sub>k</sub>}))
+%     - k=1:  rmsubfield(s,{n<sub>1</sub>, n<sub>2</sub>,..., n<sub>k</sub>})=rmfield(s,n<sub>1</sub>)
+%
+%  See also:  SETFIELD, RMFIELD, GETSUBFIELD.
 %
 if isfield(s,fns{1})   
     k=length(fns);

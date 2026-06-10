@@ -1,19 +1,25 @@
 function x=getsubfield(s,fns)
 % x=getsubfield(s,fns) gets a (possibly deeply) nested subfield
 %
-% s: a structure
-% fns: a cell array of field names, fns={n_1,n_2,...,n_k}, where n_i are strings
+% Args:
+%   s (struct): a structure
 %
-% x: result
+%   fns (cell array): field names, fns={n<sub>1</sub>, n<sub>2</sub>,..., n<sub>k</sub>}
 %
-% If any of the subfields are not present, [] is returned.
-% Subfield arrays not supported.
+% Returns: 
+%   x (int, float, cell, or struct): the nested subfield s.(n<sub>1</sub>).(n<sub>2</sub>). ... .(n<sub>k</sub>)
 %
-% recursive logic:
-%    k>=2: getsubfield(s,{n_1,n_2,...,n_k})=getsubfield(s.(n_1),{n_1,n_2,...,n_k})
-%    k=1:  getsubfield(s,{n_1})=x.(n_1)
+% Note: Notes
+%   If any of the subfields are not present, x=[].
+% 
+%   Subfield arrays not supported.
 %
-%  See also:  GETFIELD, RMSUBFIELD.
+%   Uses recursion:
+%
+%     - k>=2: getsubfield(s,{n<sub>1</sub>, n<sub>2</sub>,..., n<sub>k</sub>})=getsubfield(s.(n<sub>1</sub>),{n<sub>2</sub>,..., n<sub>k</sub>})
+%     - k=1:  getsubfield(s,{n<sub>1</sub>})=s.(n<sub>1</sub>)
+%
+%  See also:  RMSUBFIELD.
 %
 if isfield(s,fns{1})
     k=length(fns);
