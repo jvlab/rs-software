@@ -1,16 +1,18 @@
 function chains=pairs2chains(pairs)
-% chains=pairs2chains(pairs) is a utility function to take a list of pairs
-% of tokens e.g., [a b;c d;a e;a f;c f] to chains {[a b],[e a f],[d c f]}.
-% The pairs are un-ordered, and must be unique.
+% chains=pairs2chains(pairs) converts pairs of tokens to chains of tokens
 %
-%  This is useful if one needs to connect many pairs in a plot using only a
-%  small number of Line elements.
+% For example, the pairs [a b;c d;a e;a f;c f] are converted to the chains  {[a b],[e a f],[d c f]}.
+% The pairs are un-ordered, and must be unique. This is useful for graphics: rather than connect multiple pairs of points with each pair connected as separate line objects,
+% one can instead connect them with a smaller number of line objects, one for each chain.
 %
-% It could likely be optimized -- jyst tries to extend chains until there is no unused node.
-% It does not attmept to merge chains after the chains have been found, e.g., by splicing together intersecting loops.
+% This likely could be optimized; here the algorithm is just to extend chains until there is no unused node.
+% There is no attmept to merge chains, e.g., by splicing together intersecting loops.
 % 
-% pairs: a 2-column array
-% chains: a cell array of vectors that contain all the pairs
+% Args:
+%   pairs (int 2-D array): a 2-column array of the pairs; each token is a unique integer
+%
+% Returns:
+%   chains (cell array): a cell array of vectors of chains; paired tokens are adjacent in exactly one chain
 % 
 chains=cell(0);
 loop_list=[];

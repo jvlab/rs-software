@@ -1,5 +1,5 @@
 function aux_out=rs_disp_coordsets(data_in,aux)
-% aux_out=rs_disp_coordsets(data_in,aux)  displays one or more views of pairs or triplets of coordinates in a `dataset structure`
+% aux_out=rs_disp_coordsets(data_in,aux) displays one or more views of pairs or triplets of coordinates in a `dataset structure`
 %
 % Multiple views can be plotted, one eachin a subplot of the same figure. This is particularly helpful if the dimensionality
 % of the coordinates is high:  each subplot could show a different combination of two or three coordinates.

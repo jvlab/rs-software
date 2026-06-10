@@ -3,29 +3,30 @@ function [ifdif,maxdiff,maxdiff_noflip,diffs,diffs_noflip,signs]=compare_signfli
 % 
 % This is a utility used to verify computations against benchmarks, recognizing that PCA implementations may differ in sign assignemnts.
 % 
-%  Args:
-%    x (array or cell array): one array to be compared
+% Args:
+%   x (array or cell array): one array to be compared
 %
-%    y (array or cell array): second array to be compared
+%   y (array or cell array): second array to be compared
 %
-%    dimflip (int): dimension that can be flipped, defaults to 1
+%   dimflip (int): dimension that can be flipped, defaults to 1
 %
-%  Returns:
-%    ifdif (char): empty if x and y are identical or identical after sign flips along dimension 'dimflip'; otherwise, 'different types', 'different shapes' or 'different values', depending on first difference encountered
+% Returns:
+%   ifdif (char): empty if x and y are identical or identical after sign flips along dimension dimflip; otherwise, 'different types', 'different shapes' or 'different values', depending on first difference encountered
 %
-%    maxdiff (float): maximum absolute value of difference between x and y, after sign flips along dimflip to minimize differences
+%   maxdiff (float): maximum absolute value of difference between x and y, after sign flips along dimflip to minimize differences
 %
-%    maxdiff_noflip (float): maximum absolute value of difference between x and y, without sign flips
+%   maxdiff_noflip (float): maximum absolute value of difference between x and y, without sign flips
 % 
-%    diffs (float array): maximum absolute value of difference between x and y along the dimension 'dimflip', after sign flips to minimize differences
+%   diffs (float array): maximum absolute value of difference between x and y along the dimension dimflip, after sign flips to minimize differences
 %
-%    diffs_noflip (float array): maximum absolute value of difference between x and y along the dimension 'dimflip', without sign flips
+%   diffs_noflip (float array): maximum absolute value of difference between x and y along the dimension dimflip, without sign flips
 %
-%    signs (int): +1 or -1, indicating whether the difference between x and y is minimized by a flip; 0 if x and y are both 0
+%   signs (int): +1 or -1, indicating whether the difference between x and y is minimized by a flip; 0 if x and y are both 0
 %
-%  Note: Array outputs
+% Note: Array outputs
+%   The arrays diffs, diffs_noflip, and signs are empty if x and y differ in type or shape, and therefore cannort be compared numerically.
 %
-%    The arrays diffs,diffs_noflip, signs all have same shape as x and y except on the dimension 'dimflip', where they have length 1
+%   If x and y can be compared numerically, the arrays diffs, diffs_noflip, and signs all have same shape as x and y except on the dimension dimflip, where they have length 1
 %
 if (nargin<=2)
     dimflip=1;

@@ -19,7 +19,7 @@ function ints=nary2int(nary,d,lastdim)
 %
 %   In this case, ints(k)=nary(k,1)+d(1)\*nary(k,2)+d(1)\*d(2)\*nary(k,3)+...
 %
-% See also:  INT2NARY.
+% See also: INT2NARY.
 %
 if (nargin<=1) d=2; end
 sn=size(nary);
@@ -44,4 +44,3 @@ snres(end)=sn(end); %[1 1 1 1... 1 sn(end)]
 ints=sum(nary.*repmat(reshape(pwrs,snres),[sn([1:(end-1)]) 1]),lastdim);
 %
 return
-
