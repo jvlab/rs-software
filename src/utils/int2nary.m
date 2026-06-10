@@ -13,7 +13,7 @@ function nary=int2nary(ints,d,pmin)
 %   pmin (int): minimum length of the created dimension; if omitted, minimum possible value is used
 %
 % Returns:
-%   nary: the converted array of n-ary numbers
+%   nary (int array): the converted array of n-ary numbers
 %
 % Note: Generalized n-ary conversion
 %   If d is a vector, then d(1) is used for the first place, d(2) for the second, etc. and d(end) used if d does not have sufficient length.
