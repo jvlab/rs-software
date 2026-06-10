@@ -1,14 +1,22 @@
 function [opts_used,mindex,mults]=mindex_make_check(tags,opts)
-% [opts_used,mindex,mults]=mindex_make_check(tags,opts) creates or checks a multi-index
+% [opts_used,mindex,mults]=mindex_make_check(tags,opts) creates or checks a multi-index computed by `mindex_make`
 %
-% tags: a multidimensional aray (typically of integers), must have dimension >=2
-% opts: options
-%    opts.mindex:  multi-index array, from mindex_make (computed if not supplied)
-%    opts.mults:   multiplier from mindex_make (computed if not supplied)
+% Args:
+%   tags (int or float array): target for multi-indexing: a multidimensional array (typically of integers), must have dimension >=2
 %
-% opts_used: opts, with mindex, mults, and any defaults
+%   opts (struct): options, with fields
 %
-%   See also:  MINDEX_MAKE, FILLDEFAULT
+%     - mindex (int 2-D array):  multi-index array, from `mindex_make`, computed if not supplied
+%     - mults (int 1-D array): multiplier from `mindex_make` (computed if not supplied)
+%
+% Returns:
+%   opts_used (struct): opts, with mindex, mults computed
+%
+%   mindex (int 2-D array): opts_used.mindex
+%
+%   mults (int 1-D array): opts_used.mults
+%
+% See also:  MINDEX_MAKE, FILLDEFAULT
 %
 opts=filldefault(opts,'mindex',[]);
 opts=filldefault(opts,'mults',[]);
