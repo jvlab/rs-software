@@ -35,7 +35,7 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %          - 0 does not rotate the initial guess into its initial components, best if the data are zero-padded to access higher dimensions
 %
 %      - max_niters (int): maximum number of iterations; default is 100
-%      - max_rmstol (float): rms tolerance for termination, as rms change in all coordinates of consensus, default is 10^<sup>-5</sup>
+%      - max_rmstol (float): rms tolerance for termination, as rms change in all coordinates of consensus, default is 10<sup>-5</sup>
 %
 %      - **Treatment of overlaps**
 %       - exclude_nan (int): 1 to exclude NaN values when computing overlaps, 0 to not exclude; default is 1
