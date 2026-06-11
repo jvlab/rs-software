@@ -6,9 +6,9 @@ function [a,b]=persp_fit(c,x,y)
 % Args:
 %   c (float 1-D array): array of size [dimx,    1], perspective component of the transformation
 %
-%   x (float 2-D array): array of size [npts, dimx], the (row) vectors to be transformed
+%   x (float 2-D array): array of size [npts, dimx], the (row) vectors to be transformed; npts is the number of vectors to be transformed
 %
-%   y (float 2-D array): array of size [npts, dimy], its row vectors are the results of transformation
+%   y (float 2-D array): array of size [npts, dimy], its row vectors are to be fit by applying the transformation to x
 %
 % Returns:
 %   a (float 2-D array): array of size [dimx, dimy], affine component of the transformation
