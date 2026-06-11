@@ -44,7 +44,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Logging and optimization**
 %         - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%         - pcon_init_method (int or char): typically omitted; default is 0; see note below regarding Procrustes consensus algorithm
+%         - pcon_init_method (int or char): typically omitted; default is 0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
