@@ -34,7 +34,7 @@ function [persp,y_fit,opts_used]=persp_xform_find(x,y,opts)
 %   points. If opts.if_cycle=1 (default is 0), this cycles through assignments of which data point is treated as the first point; the one that yields the best fit is returned in opts_used.best_point. 
 %   - 'best': Methods 'fmin' and 'oneshot' are both are used, and the results of the method that yields the smallest squared-error residuals is returned
 %
-%   See also: FILLDEFAULT, PERSP_SSQDIF, PERSP_SSQDIF_FIT.
+% See also: FILLDEFAULT, PERSP_SSQDIF, PERSP_SSQDIF_FIT.
 %
 if (nargin<=2) opts=struct; end
 opts=filldefault(opts,'method','oneshot');
