@@ -1,17 +1,21 @@
 function [a,b]=persp_fit(c,x,y)
-% [a,b]=persp_fit(c,x,y) fits a projective transformation, assuming a
-% vector of  "offset" values
+% [a,b]=persp_fit(c,x,y) fits a projective transformation, assuming a vector for the perspective component
+% 
+% Transformation parameters a,b, and c are described in `persp_apply`.
 %
-% c: array of size [dimx,    1]
-% x: array of size [npts, dimx], the (row) vectors to be transformed
-% y: array of size [npts, dimy], the target
+% Args:
+%   c (float 1-D array): array of size [dimx,    1], perspective component of the transformation
 %
-% a: array of size [dimx, dimy]
-% b: array of size [   1, dimy]
+%   x (float 2-D array): array of size [npts, dimx], the (row) vectors to be transformed
 %
-% See persp_apply for the details of the projective transformation
+%   y (float 2-D array): array of size [npts, dimy], its row vectors are the results of transformation
 %
-%   See also:  PERSP_XFORM_FIND, PERSP_APPLY, PERSP_SSQDIF, PERSP_SSQDIF_FIT, REGRESS.
+% Returns:
+%   a (float 2-D array): array of size [dimx, dimy], affine component of the transformation
+%
+%   b (float 1-D array): array of size [   1, dimy], offset component of the transformation
+%
+% See also:  PERSP_XFORM_FIND, PERSP_APPLY, PERSP_SSQDIF, PERSP_SSQDIF_FIT.
 %
 denom=x*c+1;
 regressors=[x./repmat(denom,1,size(x,2)) 1./denom];

@@ -1,10 +1,17 @@
-function newstruct=setfields(struct,cfields,cvals)
+function newstruct=setfields(oldstruct,cfields,cvals)
+% newstruct=setfields(oldstruct,cfields,cvals) sets multiple fields of a structure
 %
-% newstruct=setfields(struct,cfields,cvals) sets multiple fields of a structure
-% cfields: cell array of field names
-% cvals: cell array of field values
+% Args:
+%   oldstruct (struct): structure, may be empty
 %
-newstruct=struct;
+%   cfields (cell array of char): field names
+%
+%   cvals (cell array): field values
+%
+% Returns:
+%   newstruct (struct): oldstruct, with each field cfields{k} set equal to cvals{k}
+%
+newstruct=oldstruct;
 if (length(cfields)~=length(cvals))
    error('number of fields and number of values must match.')
 end
