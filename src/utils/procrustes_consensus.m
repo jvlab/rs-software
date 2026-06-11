@@ -1,90 +1,85 @@
 function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_pcon)
-% [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_pcon)
-% carries out a Procrustes consensus calculation; see procrustes_notes.docx.
+% [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_pcon) carries out a Procrustes consensus calculation
 %
-% Basic algorithm is  guess a centroid from one of the datasets;
-% * Step 1: align all the datasets with the centroid
-% * Step 2: recompute the centroid dataset
-% * Step 3: align the centroid dataset as specified by opts_pcon.alignment, to prevent drift
-%  "Centroid" means the all point-by-point centroids, considering, for each point the mean
-%  of the datasets for which overlap(ipt,:)=1)
+% This algorithm generalizes MATLAB's procrustes tomore than two datasets, allowing for missig values (indicated by NaNs), eliminating translations,
+% and creation of a consensus that is of higher dimension than any of the components, by zero-padding z along dimension 2.
 %
-% At each step, settings in opts_pcon are used for scale, reflection, and offset.
+% Args:
+%   z (float 3-D array): input data, size is [npts nds nsets] where npts is the number of points, nds is the number of dimensions, and nsets is the number of datasets
 %
-% z: input data, size is [npts nds nsets] (nds is number of dimensions)
-% opts_pcon: options
-%   max_niters: maximum number of iterations
-%   max_rmstol: tolerance (rms change in all coordinates of consensus) for termination
-%   allow_scale: 1 to allow scaling, defaults to 1
-%   allow_reflection: 1 to allow reflection, defaults to 1
-%   allow_offset: 1 to allow translation, defaults to 1
-%   initialize_set: initialization method
-%     If in range [1:nsets]: use (z(:,:,intialize_set)) for initial guess and repeated alignment.
-%     If 0: then opts_pcon.initial_guess is an array of size [npts nds] for the initial guess
-%        and opts_pcon.alignment is an array of size [npts nds] is used for
-%        alignment. In this case, if opts_pcon.alignment is not specified, then opts_pcon.initial_guess
-%        is used for the alignment.
-%        If opts_pcon.initial_guess is empty, it is replaced by normally distributed random quantities,
-%        with std equal to that of the data, and also used for opts_pcon.alignment.
-%     If 'pca','pca_center','pca_nocenter': use principal components of combined datasets,
-%         considering each dimension of each component set as a potential factor.
-%      pca_center: replace NaNs by mean and then center
-%      pca_nocenter: replace NaN's by mean and do not center
-%      pca: as above, center if allow_offset=1, nocenter if allow_offset=0
-%     If pca, pca_center,pca_nocenter:  then if_initpca_rot is relevant.
-%      A value of 1 (default) rotates match the datasets
-%      A value of 0 does NOT rotate.  This should be used if the data are
-%       zero-padded to access higher dimensions.
-%   overlaps: [npts nsets]: binary array, indicating which points should be used in the calculation
-%     If omitted and opts_pcon.exclude_nan=1, [default] computed to be ones where data are present and 0 for NaN's
-%     If omitted and opts_pcon.exclude_nan=0, computed to be ones(npts,nsets)
-%   if_justcheck: just check if overlap matrix is ok (results in details.warnings)
+%   opts_pcon (struct): options struture, may be omitted, with fields
 %
-% consensus: [npts ndims]: the consensus data
-% znew: [npts ndims nsets]: each original dataset, after transformation
-% ts: the found transformations.  ts is a cell array, size (1,nsets);
-%    ts{iset}.scaling is a scalar, ts{iset}.orthog is [nds nds], ts{iset}.translation is [1 nds]
-%    znew(:,:,iset)=ts{iset}.scaling*z(:,:,iset)*ts{iset}.orthog+repmat(ts{iset}.translation,npts,1);
-%    Note that procrustes_compat translates these fields into fields with same names as 
-%      psg_geomodels_apply and Matlab's procrustes (but for Matlab's
-%      procrustes, the offset field, b, needs to be replicated for each data point)
-% details: details of convergence
-%    details.ts_cum{k}{iset} is the cumulative transformation found at iteration k
-%    details.consensus(:,:,k) is the consensus found at iteration k
-%    details.z(:,:,iset,k) is the best fit of each dataset at iteration k
-%    details.rms_change(k) is the rms change at iteration k
-%    details.rms_dev(:,k) is the rms deviation between all fitted points and the
-%       consensus at iteration k (points without overlaps are omitted), per coordinate, for each dataset
-%       Note that this is intended to diagnose convergence, rather than goodness of fit.
-%       For goodness of fit, vector distance (squared) is likely preferable:
-%          sqdevs=sum((znew-repmat(consensus,[1 1 nsets])).^2,2)
-%    details.zz_check_diff is a check for the difference between
-%       transformed points computed by Procrustes and by hand
-%    details.warnings: warnings if not enough overlaps
-%    details.overlap_pairs(nsets,nsets): number of pairwise overlaps
-%    details.overlap_totals(npts,1): number of overlaps for each data point
-%    details.initialize_use(npts,1): which dataset is used to initialize each point
+%      - **Allowed transformations**
+%      - allow_scale (int): 1 to allow scaling, 0 to not allow; default is 1
+%      - allow_reflection (int): 1 to allow reflection, 0 to not allow; default is 1
+%      - allow_offset (int): 1 to allow translation, 0 to not allow; default is 1
 %
-% opts_pcon_used: options used
+%      - **Initialization and termination**
+%      - initialize_set (int or char): method for initialization and alignment on each iteration; default is 1
 %
-% Notes:
-%   Variable names in ts do not match those of Matlab's procrustes.m
-%   Matlab's procrustes.m does not allow for eliminating translations
-%   Matlab's procrustes.m returns the translation as a matrix, rather than just the row in common
+%          - If in [1:nsets]: use (z(:,:,intialize_set)) for initial guess and alignment, or first dataset after that with at least some overlap
+%          - if 'pca','pca_center','pca_nocenter': use first nds principal components across all datasets for initial guess and alignment
+%          
+%              - 'pca_center': replace NaN's by mean and then center prior to PCA
+%              - 'pca_nocenter': replace NaN's by mean and do not center prior to PCA
+%              - 'pca': replace NaN's by mean and center if allow_offset=1, do not center if allow_offset=0
 %
-% 06Nov23: begin to work on version with partial overlaps
-% 16Feb24: documentation fixes re initialization
-% 25May24: add opts_pcon.exclude_nan, and overlap computation that removes NaN
-% 29Nov24: if_normscale=1: normalize the allow-scale consensus by forcing geometric means
-%     of the dilation factors of transformations of the components to 1 (default is 0)
-% 29Nov24: fixed bug in no-offset option (offset now properly removed from consensus)
-% 27Jan25: if initial guess is empty and initialization type = 0, then it is generated, and also used for alignment
-% 27Oct25: added if_initpca_rot
-% 10Nov25: use isgraphc to determine whether graph of overlaps is connected, rather than routines in matlab's graph toolbox
+%          - If 0: specify initial guess and alignment explicitly with the fields
 %
-% See also:  PROCRUSTES_CONSENSUS_TEST, PROCRUSTES, PSG_PROCRUSTES_DEMO, FILLDEFAULT, PROCRUSTES_CONSENSUS_PTL_TEST,
-%    CONNCOMP, PSG_ALIGN_KNIT_DEMO, PSG_ALIGN_STATS_DEMO,, PSG_ALIGN_VARA_DEMO, GRAPH, PROCRUSTES_COMPAT,
-%    PSG_GEOMODELS_APPLY, ISGRAPHC.
+%              - initial_guess (float 2-D array): array of size [npts nds] for initial guess; if empty ([]), then normally distributed random quantities,
+%              - alignment (float 2-D array): array of size [npts nds] for alignment; if empty ([]), use initial_guess
+%
+%      - if_initpca_rot (int): specifies how to use PCA for initialization, if initialize_set='pca_center','pca_nocenter',or 'pca'; default is 1
+%
+%          - 1 rotates the initial guess into its principal components, best if data are not zero-padded
+%          - 0 does not rotate the initial guess into its initial components, best if the data are zero-padded to access higher dimensions
+%
+%      - max_niters (int): maximum number of iterations; default is 100
+%      - max_rmstol (float): rms tolerance for termination, as rms change in all coordinates of consensus, default is 10<sup>-5</sup>
+%
+%      - **Treatment of overlaps**
+%       - exclude_nan (int): 1 to exclude NaN values when computing overlaps, 0 to not exclude; default is 1
+%      - overlaps (int 2-D array): array of size [npts nsets]; 1 indicates which points should be included, 0 to exclude.  If omitted or empty (default), it is computed based on exclude_nan
+%      - if_justcheck (int): 1 to just check if overlaps are sufficient, 0 for full computation; default is 0; see note below rearding algorihtm.
+%
+% Returns:
+%   consensus (float 2-D array): [npts ndims]: the consensus data
+%
+%   znew (float 3-D array): [npts ndims nsets]: the original data, after transformation to the consensus
+%
+%   ts (cell 1-D array): the transformations.  They act as follows: znew(:,:,iset)=ts{iset}.scaling\*z(:,:,iset)\*ts{iset}.orthog+repmat(ts{iset}.translation,npts,1). These variable names can be converted to MATLAB's conventions via `procrustes_compat`.
+%   
+%   details (struct): details of convergence, with fields
+%
+%        - ts_cum{k}{iset} is the cumulative transformation found for dataset iset at iteration k
+%        - consensus(:,:,k) is the consensus found at iteration k
+%        - z(:,:,iset,k) is the best fit of each dataset at iteration k
+%        - rms_change(k) is the rms change at iteration k
+%        - rms_dev(iset,k) is the rms deviation between all fitted points in dataset iset and the consensus at iteration k (points without overlaps are omitted), per coordinate
+%        - zz_check_diff(k+1,iset):, are computatooinal checks at each iteration, should be neaer zero
+%        - warnings: warnings if not enough overlaps
+%        - overlap_pairs(iset1,iset2): number of points that overlap between datasets 1 and 2
+%        - overlap_totals(ipt): number of overlaps at each data point
+%        - initialize_use(ipt,1): which dataset is used to initialize each point (if initialize_set>0)
+%
+%   opts_pcon_used (struct): opts_pcon, with options used filled in
+%
+% Note: The algorithm
+%   Initialization: guess a consensus via one of the methods specified by initialize_set
+%
+%   Iteration: 
+%       - Align all the datasets to the tentative consensus, using settings in opts_pcon for scale, reflection, and offset
+%       - Set the new tentative consensus to be the point-by-point centroid of each of the component dataasets, following the above alignment
+%       - Align the tentative consensus as specified by opts_pcon.alignment, to prevent drift
+%
+%   Terminate after coordinates have not changed within tolerance of opts_pcon.max_rmstol
+%
+%   As a screen for whether there is sufficient overlap between the datasets,
+%   `isgraphc` is used; if the overlap graph is disconnected, a consensus alignment should not be attempted. But note that connectivity of the overlap graph is not sufficient to
+%   guarantee stability, as multiple points (depending on the dimension to be fit, and the number of datasets that overlap) are needed to determine a
+%   transformation. Overlap details are in details.overlap_pairs and details.overlap_totals .
+%
+% See also:  PROCRUSTES_COMPAT, ISGRAPHC.
 %
 if (nargin<2)
     opts_pcon=struct;
