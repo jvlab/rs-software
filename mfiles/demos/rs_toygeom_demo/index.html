@@ -1,0 +1,983 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://jvlab.github.io/rs-software/mfiles/demos/rs_toygeom_demo/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>rs_toygeom_demo - Representational spaces</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../css/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rs_toygeom_demo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Representational spaces" class="md-header__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Representational spaces
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              rs_toygeom_demo
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Representational spaces" class="md-nav__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Representational spaces
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../function-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../function-index-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index - python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../demos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data_structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="rs_toygeom_demo">rs_toygeom_demo</h1>
+<p>Geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*</p>
+<p>This illustrates fitting of geometric models via creation of simulated coordinate set structures.
+It is intended that several of the parameters, especially paradigm_names, transform_names, are edited,
+or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.</p>
+<p>Constructs several transformations, designated by the strings in transform_names:
+    null: the identity
+    procrustes: rotation, no offset, inversion forced
+    affine: affine (linear) transformation, no offset
+    projective: projective transformation
+    pwaffine: piecewise affine transformation with one cutplane</p>
+<p>Creates several stimulus sets in a space of ncoords dimensions, designated by the strings in paradigm_names
+    Axes: points in positive and negative directions along each of the axes
+    Rings_C12, Rings_C13, Rings_C23: concentric rings in planes (1,2), (1,3), and (2,3)
+    Random: random points that avoid the axes
+    RandomAndAxisEnds: random points and the endponts of Axes
+  These coordinate set structures imported into sims.(paradigm_name).stimspace, using rs_import_coordsets, and
+    are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.
+  Note that coordinate values are always integers, in range [-9:9]</p>
+<p>Sets up nsubjs subjects.  For each subject, the parameters of the above transformations are jittered and applied to stimspace using rs_xform_apply,
+    noise is added, and, optionally, extra dimensions (ncoords_noise) with just noise are added.  These are in sims.(paradigm_name).dataspace.(transform_name).
+    and are displayed with rs_disp_coordsets or rs_disp_enh_coordsets.</p>
+<p>Optionally knits together the stimuli across pardigms, creating the
+   coordinate set structure sims.knitted.stimspace, and, for each subject, sims.knitted.dataspace.(transform_name)</p>
+<p>The transformation from stimspace to dataspace are then fitted with geometric models with rs_geofit.
+  The model list defaults to {procrustes_noscale_offset','procrustes_scale_offset','affine_offset','projective'})
+   but can modified by changing model_list</p>
+<p>Results of the fitting are displayed with rs_toygeom_disp, which invokes rs_disp_geofit.</p>
+<p>See also:  <a href="../../rs_import_coordsets/"><a href="/rs-software/function-index/#rs_import_coordsets">rs_import_coordsets</a></a>, <a href="../../rs_disp_coordsets/"><a href="/rs-software/function-index/#rs_disp_coordsets">rs_disp_coordsets</a></a>, <a href="../../rs_disp_geofit/"><a href="/rs-software/function-index/#rs_disp_geofit">rs_disp_geofit</a></a>
+ <a href="/rs-software/function-index/#rs_disp_enh_coordsets">rs_disp_enh_coordsets</a>, <a href="/rs-software/function-index/#rs_xform_apply">rs_xform_apply</a>, RS_CONCAT_DATASETS, <a href="/rs-software/function-index/#rs_extract_coordsets">rs_extract_coordsets</a>, <a href="/rs-software/function-index/#demos.rs_toygeom_disp">demos.rs_toygeom_disp</a>.</p>
+<p>these are the main simulation parameters that may be edited, or have values set before running</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;transform_names&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">transform_names</span><span class="p">={</span><span class="s">&#39;null&#39;</span><span class="p">,</span><span class="s">&#39;procrustes&#39;</span><span class="p">,</span><span class="s">&#39;affine&#39;</span><span class="p">,</span><span class="s">&#39;projective&#39;</span><span class="p">,</span><span class="s">&#39;pwaffine&#39;</span><span class="p">};</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%some may be deleted</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;affine_mag&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">affine_mag</span><span class="p">=</span><span class="mf">0.5</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%magnitude of distortion in affine transforms</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;projective_mag&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">projective_mag</span><span class="p">=</span><span class="mf">0.1</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%controls amount of distortion in projective transform</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;pwaffine_mag&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">pwaffine_mag</span><span class="p">=</span><span class="mf">0.25</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%controls difference in linear transforms of piecewise affine</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;paradigm_names&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">paradigm_names</span><span class="p">={</span><span class="s">&#39;Axes&#39;</span><span class="p">,</span><span class="s">&#39;Rings_C12&#39;</span><span class="p">,</span><span class="s">&#39;Rings_C13&#39;</span><span class="p">,</span><span class="s">&#39;Rings_C23&#39;</span><span class="p">,</span><span class="s">&#39;Random&#39;</span><span class="p">,</span><span class="s">&#39;RandomAndAxisEnds&#39;</span><span class="p">};</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%some may be deleted</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;axis_samples&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">axis_samples</span><span class="p">=[</span><span class="mi">2</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%sample points in each direction along each axis</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;ring_radii&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">ring_radii</span><span class="p">=[</span><span class="mi">4</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%radii for the rings</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;ring_angles&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">ring_angles</span><span class="p">=</span><span class="mi">8</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%number of sample points in a ring</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;nrandom&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">nrandom</span><span class="p">=</span><span class="mi">16</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%number of random stimuli</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;nsubjs&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">nsubjs</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">% number of subjects to simulate; at least 1; subjects have progressively more noise</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;subjs_disp&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">subjs_disp</span><span class="p">=</span><span class="nb">unique</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">nsubjs</span><span class="p">]);</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%which subjects to show in plots of response space</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;ncoords&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">ncoords</span><span class="p">=</span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%number of coordinates in stimulus set, should be at least 3</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;ncoords_noise&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">ncoords_noise</span><span class="p">=</span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%simulations can have noise on additional coordinates</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;noise_transform_mag&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">noise_transform_mag</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%set to nonzero (e..g, 0.2) to allow each subject&#39;s transformation to differ</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;noise_transform_subj&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">noise_transform_subj</span><span class="p">=[</span><span class="mi">1</span><span class="p">:</span><span class="n">nsubjs</span><span class="p">];</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">% multiplies noise_transform_mag to vary transform noise for each subject</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;noise_add_mag&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">noise_add_mag</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%additive Gaussian noise</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;noise_add_subj&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">noise_add_subj</span><span class="p">=[</span><span class="mi">1</span><span class="p">:</span><span class="n">nsubjs</span><span class="p">];</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">% mutliplies noise_add_mag to vary noise for each subject</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;if_disp_coordsets&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">if_disp_coordsets</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%set to 0 to suppress plots of coordinate sets for stimuli and subjects</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;if_frozen&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">if_frozen</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="c">%set to 0 for random numbers each time, negative integer for fixed alternative seeds</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;if_knit&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">if_knit</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">end</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;model_list&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">model_list</span><span class="p">={</span><span class="s">&#39;procrustes_noscale_offset&#39;</span><span class="p">,</span><span class="s">&#39;procrustes_scale_offset&#39;</span><span class="p">,</span><span class="s">&#39;affine_offset&#39;</span><span class="p">,</span><span class="s">&#39;projective&#39;</span><span class="p">};</span><span class="w"> </span><span class="k">end</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">if_frozen</span><span class="o">~=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nb">rng</span><span class="p">(</span><span class="s">&#39;default&#39;</span><span class="p">);</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">if_frozen</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nb">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">abs</span><span class="p">(</span><span class="n">if_frozen</span><span class="p">));</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">else</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nb">rng</span><span class="p">(</span><span class="s">&#39;shuffle&#39;</span><span class="p">);</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>define the coordinates</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">ncoords</span><span class="p">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">coord_labels</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">coord_labels</span><span class="p">{</span><span class="n">ic</span><span class="p">}=</span><span class="nb">char</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="o">+</span><span class="n">ic</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">end</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">ncoords_tot</span><span class="p">=</span><span class="n">ncoords</span><span class="o">+</span><span class="n">ncoords_noise</span><span class="p">;</span>
+</span></code></pre></div>
+<p>define the paradigm (stimulus choices within each paradigm)</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">paradigm_type</span><span class="p">=</span><span class="s">&#39;toygeom&#39;</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">random_max</span><span class="p">=</span><span class="mi">9</span><span class="p">;</span><span class="w"> </span><span class="c">%maximum random value; plotted range will be [-1,1]*(random_max+1)</span>
+</span></code></pre></div>
+<p>define the simulations: several transformations of the stimulus space, of dimension ncoords</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">transform_names_avail</span><span class="p">={</span><span class="s">&#39;null&#39;</span><span class="p">,</span><span class="s">&#39;procrustes&#39;</span><span class="p">,</span><span class="s">&#39;affine&#39;</span><span class="p">,</span><span class="s">&#39;projective&#39;</span><span class="p">,</span><span class="s">&#39;pwaffine&#39;</span><span class="p">};</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">ntransforms</span><span class="p">=</span><span class="nb">length</span><span class="p">(</span><span class="n">transform_names</span><span class="p">);</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">transform_class_table</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">transform_class_table</span><span class="p">.</span><span class="n">null</span><span class="p">=</span><span class="s">&#39;affine&#39;</span><span class="p">;</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">transform_class_table</span><span class="p">.</span><span class="n">procrustes</span><span class="p">=</span><span class="s">&#39;affine&#39;</span><span class="p">;</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">transform_class_table</span><span class="p">.</span><span class="n">affine</span><span class="p">=</span><span class="s">&#39;affine&#39;</span><span class="p">;</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="n">transform_class_table</span><span class="p">.</span><span class="n">projective</span><span class="p">=</span><span class="s">&#39;projective&#39;</span><span class="p">;</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">transform_class_table</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">=</span><span class="s">&#39;pwaffine&#39;</span><span class="p">;</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="k">for</span><span class="w"> </span><span class="n">it</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ntransforms</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="n">transform_classes</span><span class="p">{</span><span class="n">it</span><span class="p">}=</span><span class="n">transform_class_table</span><span class="p">.(</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">});</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>null transformation</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">transforms</span><span class="p">.</span><span class="n">null</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="nb">eye</span><span class="p">(</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">transforms</span><span class="p">.</span><span class="n">null</span><span class="p">.</span><span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">transforms</span><span class="p">.</span><span class="n">null</span><span class="p">.</span><span class="n">c</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="nb">eye</span><span class="p">(</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)=</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%invert</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span><span class="o">-</span><span class="mi">1</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">jc</span><span class="p">=</span><span class="n">ic</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">        </span><span class="n">ang</span><span class="p">=</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="nb">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="n">rot</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="n">rot</span><span class="p">([</span><span class="n">ic</span><span class="w"> </span><span class="n">jc</span><span class="p">],[</span><span class="n">ic</span><span class="w"> </span><span class="n">jc</span><span class="p">])=[</span><span class="nb">cos</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">);</span><span class="o">-</span><span class="nb">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="n">ang</span><span class="p">)];</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="n">roteye</span><span class="p">=</span><span class="nb">setdiff</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span><span class="p">,[</span><span class="n">ic</span><span class="w"> </span><span class="n">jc</span><span class="p">]);</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">        </span><span class="n">rot</span><span class="p">(</span><span class="n">roteye</span><span class="p">,</span><span class="n">roteye</span><span class="p">)=</span><span class="nb">eye</span><span class="p">(</span><span class="n">ncoords</span><span class="o">-</span><span class="mi">2</span><span class="p">);</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">        </span><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="o">*</span><span class="n">rot</span><span class="p">;</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="k">end</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="n">transforms</span><span class="p">.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">c</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">T</span><span class="p">=(</span><span class="mi">1</span><span class="o">-</span><span class="n">affine_mag</span><span class="p">)</span><span class="o">*</span><span class="nb">eye</span><span class="p">(</span><span class="n">ncoords</span><span class="p">)</span><span class="o">+</span><span class="n">affine_mag</span><span class="o">*</span><span class="nb">randn</span><span class="p">(</span><span class="n">ncoords</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span><span class="w"> </span><span class="c">%mix the identity with a random matrix</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="n">T</span><span class="o">/</span><span class="nb">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">eig</span><span class="p">(</span><span class="n">T</span><span class="o">&#39;*</span><span class="n">T</span><span class="p">)));</span><span class="w"> </span><span class="c">%limit the max dilation to keep in range</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">.</span><span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">.</span><span class="n">c</span><span class="p">=</span><span class="n">affine_mag</span><span class="o">*</span><span class="nb">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">transforms</span><span class="p">.</span><span class="n">projective</span><span class="p">=</span><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">;</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">transforms</span><span class="p">.</span><span class="n">projective</span><span class="p">.</span><span class="n">p</span><span class="p">=</span><span class="n">projective_mag</span><span class="o">*</span><span class="nb">randn</span><span class="p">(</span><span class="n">ncoords</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">=</span><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">;</span>
+</span></code></pre></div>
+<p>construct by adding a linear transformation to a rectification
+params needed to ensure continuity across boundary</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">pw_vcut</span><span class="p">=</span><span class="nb">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">pw_vcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="o">./</span><span class="nb">sqrt</span><span class="p">(</span><span class="n">pw_vcut</span><span class="o">*</span><span class="n">pw_vcut</span><span class="o">&#39;</span><span class="p">);</span><span class="w"> </span><span class="c">%random direction of unit normal to cutplane</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">pw_acut</span><span class="p">=</span><span class="nb">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c">%random offset</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">pw_h</span><span class="p">=</span><span class="nb">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span><span class="w"> </span><span class="c">%the output of the rectification</span>
+</span></code></pre></div>
+<p>the cutplane is x*pw_cut'=pw_acut.</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">Tcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="o">&#39;*</span><span class="n">pw_h</span><span class="p">;</span><span class="w"> </span><span class="c">%if x*pw_vcut&#39;=pw_acut, then x*Tcut=a*pw_h,so x*Tcut-pw_acut*pw_h is zero on the boundary</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="nb">repmat</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">pwaffine_mag</span><span class="p">)</span><span class="o">*</span><span class="n">transforms</span><span class="p">.</span><span class="n">affine</span><span class="p">.</span><span class="n">T</span><span class="p">,[</span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">])</span><span class="o">+</span><span class="n">pwaffine_mag</span><span class="o">*</span><span class="nb">cat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">Tcut</span><span class="p">,</span><span class="o">-</span><span class="n">Tcut</span><span class="p">);</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">c_off</span><span class="p">=</span><span class="nb">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">c</span><span class="p">=</span><span class="n">pwaffine_mag</span><span class="o">*</span><span class="n">pw_acut</span><span class="o">*</span><span class="p">[</span><span class="o">-</span><span class="n">pw_h</span><span class="p">;</span><span class="n">pw_h</span><span class="p">]</span><span class="o">+</span><span class="nb">repmat</span><span class="p">(</span><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">c_off</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">acut</span><span class="p">=</span><span class="n">pw_acut</span><span class="p">;</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">vcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="p">;</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">transforms</span><span class="p">.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">h</span><span class="p">=</span><span class="n">pw_h</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39; %2.0f transforms set up, on %3.0f coordinates.&#39;</span><span class="p">,</span><span class="n">ntransforms</span><span class="p">,</span><span class="n">ncoords</span><span class="p">));</span>
+</span></code></pre></div>
+<p>define the number of subjects and levels of noise for each</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">noise_transform_base</span><span class="p">=</span><span class="n">noise_transform_mag</span><span class="o">*</span><span class="n">noise_transform_subj</span><span class="p">;</span><span class="w"> </span><span class="c">%subjects have varying amounts of noise in transform</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">noise_transform</span><span class="p">=</span><span class="n">noise_transform_base</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="nb">mod</span><span class="p">([</span><span class="mi">0</span><span class="p">:</span><span class="n">nsubjs</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="nb">length</span><span class="p">(</span><span class="n">noise_transform_base</span><span class="p">)));</span><span class="w"> </span><span class="c">%in case noise_transform_subj is too short</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">noise_add_base</span><span class="p">=</span><span class="n">noise_add_mag</span><span class="o">*</span><span class="n">noise_add_subj</span><span class="p">;</span><span class="w"> </span><span class="c">%subjects have varying amounts of additive noise</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">noise_add</span><span class="p">=</span><span class="n">noise_add_base</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="nb">mod</span><span class="p">([</span><span class="mi">0</span><span class="p">:</span><span class="n">nsubjs</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="nb">length</span><span class="p">(</span><span class="n">noise_add_base</span><span class="p">)));</span><span class="w"> </span><span class="c">%in case noise_add_subj is too short</span>
+</span></code></pre></div>
+<p>create the transformations for each subject by corrupting the parameters of the basic transforms by noise
+note that all transforms are treatd, even if they won't be used, since some transforms are dependent on others</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">transforms_noisy</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nsubjs</span><span class="p">);</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="k">for</span><span class="w"> </span><span class="n">it</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">transform_names_avail</span><span class="p">)</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="n">transform_name</span><span class="p">=</span><span class="n">transform_names_avail</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="nb">transform</span><span class="p">=</span><span class="n">transforms</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">);</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span><span class="n">fns</span><span class="p">=</span><span class="nb">fieldnames</span><span class="p">(</span><span class="nb">transform</span><span class="p">);</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">is</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">nsubjs</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">         </span><span class="k">for</span><span class="w"> </span><span class="n">ifn</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">fns</span><span class="p">)</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="nb">strcmp</span><span class="p">(</span><span class="n">fns</span><span class="p">{</span><span class="n">ifn</span><span class="p">},</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">                </span><span class="n">noise_param_mult</span><span class="p">=</span><span class="n">projective_mag</span><span class="p">;</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">            </span><span class="k">else</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">                </span><span class="n">noise_param_mult</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">            </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.(</span><span class="n">transform_name</span><span class="p">).(</span><span class="n">fns</span><span class="p">{</span><span class="n">ifn</span><span class="p">})=</span><span class="nb">transform</span><span class="p">.(</span><span class="n">fns</span><span class="p">{</span><span class="n">ifn</span><span class="p">})</span><span class="o">+</span><span class="n">noise_param_mult</span><span class="o">*</span><span class="n">noise_transform</span><span class="p">(</span><span class="n">is</span><span class="p">)</span><span class="o">*</span><span class="nb">randn</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="nb">transform</span><span class="p">.(</span><span class="n">fns</span><span class="p">{</span><span class="n">ifn</span><span class="p">})));</span>
+</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">        </span><span class="k">end</span><span class="w"> </span><span class="c">%fn</span>
+</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="w">        </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.(</span><span class="n">transform_name</span><span class="p">).</span><span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%scale factor unchanged; redundant with T and it will disrupt pwaffine continuity</span>
+</span></code></pre></div>
+<p>adjustment for procrustes to ensure that the transform is isotropic</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="k">if</span><span class="w"> </span><span class="nb">strcmp</span><span class="p">(</span><span class="n">transform_name</span><span class="p">,</span><span class="s">&#39;procrustes&#39;</span><span class="p">)</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">            </span><span class="p">[</span><span class="n">Torth</span><span class="p">,</span><span class="n">Torthonormal</span><span class="p">]=</span><span class="n">grmscmdt</span><span class="p">(</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="p">);</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">            </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">procrustes</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="n">Torthonormal</span><span class="p">;</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">        </span><span class="k">end</span>
+</span></code></pre></div>
+<p>adjustments for pwaffine to ensure continuity at boundary</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">if</span><span class="w"> </span><span class="nb">strcmp</span><span class="p">(</span><span class="n">transform_name</span><span class="p">,</span><span class="s">&#39;pwaffine&#39;</span><span class="p">)</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">            </span><span class="n">pw_vcut</span><span class="p">=</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">vcut</span><span class="p">;</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">            </span><span class="n">pw_acut</span><span class="p">=</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">acut</span><span class="p">;</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">            </span><span class="n">pw_h</span><span class="p">=</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">h</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">pw_vcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="o">./</span><span class="nb">sqrt</span><span class="p">(</span><span class="n">pw_vcut</span><span class="o">*</span><span class="n">pw_vcut</span><span class="o">&#39;</span><span class="p">);</span><span class="w"> </span><span class="c">%random direction of unit normal to cutplane</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">            </span><span class="n">Tcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="o">&#39;*</span><span class="n">pw_h</span><span class="p">;</span><span class="w"> </span><span class="c">%if x*pw_vcut&#39;=pw_acut, then x*Tcut=a*pw_h</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">            </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">T</span><span class="p">=</span><span class="nb">repmat</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">pwaffine_mag</span><span class="p">)</span><span class="o">*</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">affine</span><span class="p">.</span><span class="n">T</span><span class="p">,[</span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">])</span><span class="o">+</span><span class="n">pwaffine_mag</span><span class="o">*</span><span class="nb">cat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">Tcut</span><span class="p">,</span><span class="o">-</span><span class="n">Tcut</span><span class="p">);</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">            </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">c</span><span class="p">=</span><span class="n">pwaffine_mag</span><span class="o">*</span><span class="n">pw_acut</span><span class="o">*</span><span class="p">[</span><span class="o">-</span><span class="n">pw_h</span><span class="p">;</span><span class="n">pw_h</span><span class="p">]</span><span class="o">+</span><span class="nb">repmat</span><span class="p">(</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">c_off</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">            </span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">pwaffine</span><span class="p">.</span><span class="n">vcut</span><span class="p">=</span><span class="n">pw_vcut</span><span class="p">;</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">        </span><span class="k">end</span><span class="w"> </span><span class="c">%pwaffine</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="k">end</span><span class="w"> </span><span class="c">%is</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="k">end</span><span class="w"> </span><span class="c">%it</span>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;jittered transformations created for %2.0f subjects&#39;</span><span class="p">,</span><span class="n">nsubjs</span><span class="p">));</span>
+</span></code></pre></div>
+<p>define the coordinates of the stimulus sets</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">nparadigms</span><span class="p">=</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">);</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">sims</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">sign_chars</span><span class="p">={</span><span class="s">&#39;m&#39;</span><span class="p">,</span><span class="s">&#39;z&#39;</span><span class="p">,</span><span class="s">&#39;p&#39;</span><span class="p">};</span><span class="w"> </span><span class="c">%tokens for negative, zero, or positive</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span><span class="n">sim</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="n">paradigm_name</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;Axes&#39;</span>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">=</span><span class="mi">2</span><span class="o">*</span><span class="n">ncoords</span><span class="o">*</span><span class="nb">length</span><span class="p">(</span><span class="n">axis_samples</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%bidirectional samples on each axis, and the origin</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">            </span><span class="n">coord_ptr</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="n">isamp</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">axis_samples</span><span class="p">)</span>
+</span><span id="__span-25-14"><a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a><span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="n">isign</span><span class="p">=</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span><span class="mi">1</span>
+</span><span id="__span-25-15"><a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="w">                        </span><span class="n">coord_ptr</span><span class="p">=</span><span class="n">coord_ptr</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-25-16"><a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a><span class="w">                        </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(</span><span class="n">coord_ptr</span><span class="p">,</span><span class="n">ic</span><span class="p">)=</span><span class="n">isign</span><span class="o">*</span><span class="n">axis_samples</span><span class="p">(</span><span class="n">isamp</span><span class="p">);</span>
+</span><span id="__span-25-17"><a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="w">                    </span><span class="k">end</span>
+</span><span id="__span-25-18"><a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a><span class="w">                </span><span class="k">end</span>
+</span><span id="__span-25-19"><a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-25-20"><a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-25-21"><a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_rings</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-25-22"><a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;Rings_C12&#39;</span><span class="p">,</span><span class="s">&#39;Rings_C13&#39;</span><span class="p">,</span><span class="s">&#39;Rings_C23&#39;</span><span class="p">}</span>
+</span><span id="__span-25-23"><a id="__codelineno-25-23" name="__codelineno-25-23" href="#__codelineno-25-23"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">=</span><span class="nb">length</span><span class="p">(</span><span class="n">ring_radii</span><span class="p">)</span><span class="o">*</span><span class="n">ring_angles</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%rings in the plane two coords, and the origin</span>
+</span><span id="__span-25-24"><a id="__codelineno-25-24" name="__codelineno-25-24" href="#__codelineno-25-24"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-25-25"><a id="__codelineno-25-25" name="__codelineno-25-25" href="#__codelineno-25-25"></a><span class="w">            </span><span class="n">coord_ptr</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-25-26"><a id="__codelineno-25-26" name="__codelineno-25-26" href="#__codelineno-25-26"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="nb">contains</span><span class="p">(</span><span class="n">paradigm_name</span><span class="p">,</span><span class="s">&#39;C12&#39;</span><span class="p">)</span>
+</span><span id="__span-25-27"><a id="__codelineno-25-27" name="__codelineno-25-27" href="#__codelineno-25-27"></a><span class="w">                </span><span class="n">ring_plane</span><span class="p">=[</span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
+</span><span id="__span-25-28"><a id="__codelineno-25-28" name="__codelineno-25-28" href="#__codelineno-25-28"></a><span class="w">            </span><span class="k">elseif</span><span class="w"> </span><span class="nb">contains</span><span class="p">(</span><span class="n">paradigm_name</span><span class="p">,</span><span class="s">&#39;C13&#39;</span><span class="p">)</span>
+</span><span id="__span-25-29"><a id="__codelineno-25-29" name="__codelineno-25-29" href="#__codelineno-25-29"></a><span class="w">                </span><span class="n">ring_plane</span><span class="p">=[</span><span class="mi">1</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span>
+</span><span id="__span-25-30"><a id="__codelineno-25-30" name="__codelineno-25-30" href="#__codelineno-25-30"></a><span class="w">            </span><span class="k">else</span>
+</span><span id="__span-25-31"><a id="__codelineno-25-31" name="__codelineno-25-31" href="#__codelineno-25-31"></a><span class="w">                </span><span class="n">ring_plane</span><span class="p">=[</span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span>
+</span><span id="__span-25-32"><a id="__codelineno-25-32" name="__codelineno-25-32" href="#__codelineno-25-32"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-25-33"><a id="__codelineno-25-33" name="__codelineno-25-33" href="#__codelineno-25-33"></a><span class="w">            </span><span class="n">angs</span><span class="p">=</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">ring_angles</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">&#39;/</span><span class="n">ring_angles</span><span class="p">;</span>
+</span><span id="__span-25-34"><a id="__codelineno-25-34" name="__codelineno-25-34" href="#__codelineno-25-34"></a><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">ir</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">ring_radii</span><span class="p">)</span>
+</span><span id="__span-25-35"><a id="__codelineno-25-35" name="__codelineno-25-35" href="#__codelineno-25-35"></a><span class="w">                </span><span class="n">ring_locs</span><span class="p">=</span><span class="n">ring_radii</span><span class="p">(</span><span class="n">ir</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="nb">cos</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">angs</span><span class="p">)];</span>
+</span><span id="__span-25-36"><a id="__codelineno-25-36" name="__codelineno-25-36" href="#__codelineno-25-36"></a><span class="w">                </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(</span><span class="n">coord_ptr</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">ring_angles</span><span class="p">],</span><span class="n">ring_plane</span><span class="p">)=</span><span class="n">ring_locs</span><span class="p">;</span>
+</span><span id="__span-25-37"><a id="__codelineno-25-37" name="__codelineno-25-37" href="#__codelineno-25-37"></a><span class="w">                </span><span class="n">coord_ptr</span><span class="p">=</span><span class="n">coord_ptr</span><span class="o">+</span><span class="n">ring_angles</span><span class="p">;</span>
+</span><span id="__span-25-38"><a id="__codelineno-25-38" name="__codelineno-25-38" href="#__codelineno-25-38"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-25-39"><a id="__codelineno-25-39" name="__codelineno-25-39" href="#__codelineno-25-39"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-25-40"><a id="__codelineno-25-40" name="__codelineno-25-40" href="#__codelineno-25-40"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_rings</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-25-41"><a id="__codelineno-25-41" name="__codelineno-25-41" href="#__codelineno-25-41"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;Random&#39;</span><span class="p">,</span><span class="s">&#39;RandomAndAxisEnds&#39;</span><span class="p">}</span>
+</span><span id="__span-25-42"><a id="__codelineno-25-42" name="__codelineno-25-42" href="#__codelineno-25-42"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="nb">strcmp</span><span class="p">(</span><span class="n">paradigm_name</span><span class="p">,</span><span class="s">&#39;RandomAndAxisEnds&#39;</span><span class="p">)</span>
+</span><span id="__span-25-43"><a id="__codelineno-25-43" name="__codelineno-25-43" href="#__codelineno-25-43"></a><span class="w">                </span><span class="n">if_axend</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-25-44"><a id="__codelineno-25-44" name="__codelineno-25-44" href="#__codelineno-25-44"></a><span class="w">            </span><span class="k">else</span>
+</span><span id="__span-25-45"><a id="__codelineno-25-45" name="__codelineno-25-45" href="#__codelineno-25-45"></a><span class="w">                </span><span class="n">if_axend</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-25-46"><a id="__codelineno-25-46" name="__codelineno-25-46" href="#__codelineno-25-46"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-25-47"><a id="__codelineno-25-47" name="__codelineno-25-47" href="#__codelineno-25-47"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">=</span><span class="n">nrandom</span><span class="o">+</span><span class="n">if_axend</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ncoords</span><span class="o">+</span><span class="n">nrandom</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c">%random samples and possibly (bidirectional samples at the ends of the axes and the origin)</span>
+</span><span id="__span-25-48"><a id="__codelineno-25-48" name="__codelineno-25-48" href="#__codelineno-25-48"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-25-49"><a id="__codelineno-25-49" name="__codelineno-25-49" href="#__codelineno-25-49"></a><span class="w">            </span><span class="n">random_vals</span><span class="p">=[[</span><span class="o">-</span><span class="n">random_max</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">random_max</span><span class="p">]];</span><span class="w"> </span><span class="c">%random values avoid the axes;</span>
+</span><span id="__span-25-50"><a id="__codelineno-25-50" name="__codelineno-25-50" href="#__codelineno-25-50"></a><span class="w">            </span><span class="n">rand_samps</span><span class="p">=</span><span class="nb">ceil</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">random_max</span><span class="o">*</span><span class="nb">rand</span><span class="p">(</span><span class="n">nrandom</span><span class="p">,</span><span class="n">ncoords</span><span class="p">));</span>
+</span><span id="__span-25-51"><a id="__codelineno-25-51" name="__codelineno-25-51" href="#__codelineno-25-51"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nrandom</span><span class="p">,:)=</span><span class="n">random_vals</span><span class="p">(</span><span class="n">rand_samps</span><span class="p">);</span>
+</span><span id="__span-25-52"><a id="__codelineno-25-52" name="__codelineno-25-52" href="#__codelineno-25-52"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">if_axend</span>
+</span></code></pre></div>
+<p>make the samples at the ends of the axes</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">coord_ptr</span><span class="p">=</span><span class="n">nrandom</span><span class="p">;</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="n">isign</span><span class="p">=</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span><span class="mi">1</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">                        </span><span class="n">coord_ptr</span><span class="p">=</span><span class="n">coord_ptr</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">                        </span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(</span><span class="n">coord_ptr</span><span class="p">,</span><span class="n">ic</span><span class="p">)=</span><span class="n">isign</span><span class="o">*</span><span class="n">axis_samples</span><span class="p">(</span><span class="k">end</span><span class="p">);</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">                    </span><span class="k">end</span>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">                </span><span class="k">end</span>
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">if_rings</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">        </span><span class="k">otherwise</span>
+</span><span id="__span-26-12"><a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="w">            </span><span class="n">rs_warning</span><span class="p">(</span><span class="s">&#39;unrecognized paradigm name&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-26-13"><a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-26-14"><a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="w">    </span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">)=</span><span class="n">sim</span><span class="p">;</span>
+</span><span id="__span-26-15"><a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="w">    </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;coordinate sets created for paradigm %s&#39;</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">));</span>
+</span><span id="__span-26-16"><a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>create the type names, e.g., conceptual coordinate [-3 0 4] -&gt; 'am3 cp4'
+and create a simulated dataset in which data coordinates are equal to
+conceptual coordinates</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">ray_opts</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">ray_opts</span><span class="p">.</span><span class="n">ray_minpts</span><span class="p">=</span><span class="nb">length</span><span class="p">(</span><span class="n">ring_radii</span><span class="p">);</span><span class="w"> </span><span class="c">%a point on each ring qualifies as a ray</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="n">sim</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">);</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span><span class="n">typenames</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">istim</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">        </span><span class="n">tn</span><span class="p">=</span><span class="s">&#39; &#39;</span><span class="p">;</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">            </span><span class="n">cval</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(</span><span class="n">istim</span><span class="p">,</span><span class="n">ic</span><span class="p">);</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">cval</span><span class="p">)</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="w"> </span><span class="c">%omit zeros from stimulus names to shorten them</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="w">                </span><span class="n">tn</span><span class="p">=</span><span class="nb">cat</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">tn</span><span class="p">,</span><span class="n">coord_labels</span><span class="p">{</span><span class="n">ic</span><span class="p">},</span><span class="n">sign_chars</span><span class="p">{</span><span class="mi">2</span><span class="o">+</span><span class="nb">sign</span><span class="p">(</span><span class="n">cval</span><span class="p">)},</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;%1.0f&#39;</span><span class="p">,</span><span class="nb">round</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">cval</span><span class="p">))),</span><span class="s">&#39; &#39;</span><span class="p">);</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="w">        </span><span class="k">end</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="w">        </span><span class="n">typenames</span><span class="p">{</span><span class="n">istim</span><span class="p">}=</span><span class="nb">strtrim</span><span class="p">(</span><span class="n">tn</span><span class="p">);</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="w">    </span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">).</span><span class="n">typenames</span><span class="p">=</span><span class="n">typenames</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">aux_stimspace</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">nstims</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">;</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">typenames</span><span class="p">=</span><span class="n">typenames</span><span class="p">;</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">type_coords</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">;</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">paradigm_type</span><span class="p">=</span><span class="n">paradigm_type</span><span class="p">;</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_name</span><span class="p">;</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">subj_id</span><span class="p">=</span><span class="s">&#39;stimspace&#39;</span><span class="p">;</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">subj_id_short</span><span class="p">=</span><span class="s">&#39;stims&#39;</span><span class="p">;</span>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="w">    </span><span class="n">aux_stimspace</span><span class="p">.</span><span class="n">opts_import</span><span class="p">.</span><span class="n">label_long</span><span class="p">=</span><span class="s">&#39;conceptual coordinates&#39;</span><span class="p">;</span>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="w">    </span><span class="n">import_coords</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ncoords</span><span class="p">);</span>
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords</span>
+</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="w">        </span><span class="n">import_coords</span><span class="p">{</span><span class="n">ic</span><span class="p">}=</span><span class="n">sim</span><span class="p">.</span><span class="n">type_coords</span><span class="p">(:,</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">);</span>
+</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a><span class="w">    </span><span class="p">[</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">,</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_import_auxout</span><span class="p">]=</span><span class="n">rs_import_coordsets</span><span class="p">(</span><span class="n">import_coords</span><span class="p">,</span><span class="n">aux_stimspace</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="k">if</span><span class="w"> </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">        </span><span class="p">[</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_rays</span><span class="p">,</span><span class="n">wmsg</span><span class="p">,</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_findrays_auxout</span><span class="p">]=</span><span class="n">rs_findrays</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">.</span><span class="n">sas</span><span class="p">{</span><span class="mi">1</span><span class="p">},[],</span><span class="n">ray_opts</span><span class="p">);</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">        </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;ray structure created for paradigm %s&#39;</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">));</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span><span class="k">else</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">        </span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_rays</span><span class="p">=</span><span class="nb">struct</span><span class="p">();</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="w">        </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;ray structure skipped for paradigm %s&#39;</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">));</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="w">    </span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">)=</span><span class="n">sim</span><span class="p">;</span>
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>set up a page for each paradigm, with space for multiple subplots,
+and plot the conceptual coordinates</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">fig_rows</span><span class="p">=</span><span class="nb">length</span><span class="p">(</span><span class="n">subjs_disp</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%show </span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">fig_cols</span><span class="p">=</span><span class="n">ntransforms</span><span class="p">;</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">aux_stimdisp</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="w">    </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">    </span><span class="n">sim</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="k">if</span><span class="w"> </span><span class="n">if_disp_coordsets</span><span class="w"> </span><span class="c">%set up a page for each paradigm name</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">        </span><span class="nb">figure</span><span class="p">;</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">        </span><span class="nb">set</span><span class="p">(</span><span class="nb">gcf</span><span class="p">,</span><span class="s">&#39;Position&#39;</span><span class="p">,[</span><span class="mi">100</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="mi">1400</span><span class="w"> </span><span class="mi">800</span><span class="p">]);</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">        </span><span class="nb">set</span><span class="p">(</span><span class="nb">gcf</span><span class="p">,</span><span class="s">&#39;NumberTitle&#39;</span><span class="p">,</span><span class="s">&#39;off&#39;</span><span class="p">);</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="w">        </span><span class="nb">set</span><span class="p">(</span><span class="nb">gcf</span><span class="p">,</span><span class="s">&#39;Name&#39;</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">fig_handle</span><span class="p">=</span><span class="nb">gcf</span><span class="p">;</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">fig_name</span><span class="p">=</span><span class="n">paradigm_name</span><span class="p">;</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">axis_range</span><span class="p">=</span><span class="s">&#39;list&#39;</span><span class="p">;</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">axis_range_list</span><span class="p">=[</span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">random_max</span><span class="p">);</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">callout_amount</span><span class="p">=</span><span class="mf">0.3</span><span class="p">;</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">axis_labels</span><span class="p">=</span><span class="n">coord_labels</span><span class="p">;</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">legend_location</span><span class="p">=</span><span class="s">&#39;North&#39;</span><span class="p">;</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">set_labels</span><span class="p">=</span><span class="s">&#39;stims&#39;</span><span class="p">;</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="w">        </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">axis_handles</span><span class="p">={</span><span class="nb">subplot</span><span class="p">(</span><span class="n">fig_rows</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)};</span><span class="w"> </span><span class="c">%show centered in column</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="k">if</span><span class="w"> </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp_enh</span><span class="p">.</span><span class="n">if_rings</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">if_rings</span><span class="p">;</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp_enh</span><span class="p">.</span><span class="n">if_points</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c">%so legends are set labels</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">data_show_method</span><span class="p">=</span><span class="s">&#39;last&#39;</span><span class="p">;</span><span class="w"> </span><span class="c">%last point is random; plotting a point allows rs_disp_enh_coordsets to make simple legend</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_disp_auxout</span><span class="p">=</span><span class="n">rs_disp_enh_coordsets</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">,</span><span class="n">aux_stimdisp</span><span class="p">,</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_rays</span><span class="p">);</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="w">        </span><span class="k">else</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">data_show_method</span><span class="p">=</span><span class="s">&#39;all&#39;</span><span class="p">;</span><span class="w"> </span>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">data_label_method</span><span class="p">=</span><span class="s">&#39;list&#39;</span><span class="p">;</span>
+</span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a><span class="w">            </span><span class="n">aux_stimdisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">data_label_list</span><span class="p">=</span><span class="nb">find</span><span class="p">(</span><span class="o">~</span><span class="nb">contains</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">.</span><span class="n">sas</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">typenames</span><span class="p">,</span><span class="s">&#39; &#39;</span><span class="p">));</span><span class="w"> </span><span class="c">%label only the on-axis points (off-axis point names all have blanks)</span>
+</span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="w">            </span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_disp_auxout</span><span class="p">=</span><span class="n">rs_disp_coordsets</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">,</span><span class="n">aux_stimdisp</span><span class="p">);</span>
+</span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a><span class="w">        </span><span class="k">end</span>
+</span><span id="__span-34-12"><a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a><span class="w">       </span><span class="nb">drawnow</span><span class="p">;</span>
+</span><span id="__span-34-13"><a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a><span class="w">    </span><span class="k">end</span><span class="w"> </span>
+</span><span id="__span-34-14"><a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="w">    </span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">)=</span><span class="n">sim</span><span class="p">;</span>
+</span><span id="__span-34-15"><a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>apply each subject's transform to the stimuli in each stimulus set, and display</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">    </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">    </span><span class="n">sim</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="k">for</span><span class="w"> </span><span class="n">it</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ntransforms</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">        </span><span class="n">transform_name</span><span class="p">=</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="w">        </span><span class="n">xform_subj</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nsubjs</span><span class="p">);</span>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">is</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">nsubjs</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="w">            </span><span class="n">xforms</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="w">            </span><span class="n">xforms</span><span class="p">.</span><span class="n">ts</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">ncoords</span><span class="p">}=</span><span class="n">transforms_noisy</span><span class="p">{</span><span class="n">is</span><span class="p">}.(</span><span class="n">transform_name</span><span class="p">);</span>
+</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="w">            </span><span class="n">opts_xform</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a><span class="w">            </span><span class="n">opts_xform</span><span class="p">.</span><span class="n">class</span><span class="p">=</span><span class="n">transform_classes</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a><span class="w">            </span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">}=</span><span class="n">rs_xform_apply</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace</span><span class="p">,</span><span class="n">xforms</span><span class="p">,</span><span class="nb">setfield</span><span class="p">(</span><span class="nb">struct</span><span class="p">,</span><span class="s">&#39;opts_xform&#39;</span><span class="p">,</span><span class="n">opts_xform</span><span class="p">));</span>
+</span></code></pre></div>
+<p>fill in lower and higher dimensions and add noise</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="k">for</span><span class="w"> </span><span class="n">ic</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords_tot</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">                </span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">ds</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">ic</span><span class="p">}=</span><span class="n">noise_add</span><span class="p">(</span><span class="n">is</span><span class="p">)</span><span class="o">*</span><span class="nb">randn</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="n">ic</span><span class="p">)</span><span class="o">+</span><span class="k">...</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">                    </span><span class="p">[</span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">ds</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">ncoords</span><span class="p">}(:,</span><span class="mi">1</span><span class="p">:</span><span class="nb">min</span><span class="p">(</span><span class="n">ic</span><span class="p">,</span><span class="n">ncoords</span><span class="p">)),</span><span class="nb">zeros</span><span class="p">(</span><span class="n">sim</span><span class="p">.</span><span class="n">nstims</span><span class="p">,</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">ic</span><span class="o">-</span><span class="n">ncoords</span><span class="p">))];</span>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="w">            </span><span class="k">end</span>
+</span></code></pre></div>
+<p>adjust metadata</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">sets</span><span class="p">=</span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">sets</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">            </span><span class="n">sets</span><span class="p">.</span><span class="n">dim_list</span><span class="p">=[</span><span class="mi">1</span><span class="p">:</span><span class="n">ncoords_tot</span><span class="p">];</span><span class="w"> </span><span class="c">%since we added lower and higher dimensions</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">            </span><span class="n">sets</span><span class="p">.</span><span class="n">subj_id</span><span class="p">=</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;%s%s&#39;</span><span class="p">,</span><span class="s">&#39;subject &#39;</span><span class="p">,</span><span class="n">zpad</span><span class="p">(</span><span class="n">is</span><span class="p">,</span><span class="mi">2</span><span class="p">));</span>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="w">            </span><span class="n">sets</span><span class="p">.</span><span class="n">subj_id_short</span><span class="p">=</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;%s%s&#39;</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">,</span><span class="n">zpad</span><span class="p">(</span><span class="n">is</span><span class="p">,</span><span class="mi">2</span><span class="p">));</span>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="w">            </span><span class="n">sets</span><span class="p">.</span><span class="n">label_long</span><span class="p">=</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;simulation: %s&#39;</span><span class="p">,</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">});</span>
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="w">            </span><span class="n">sets</span><span class="p">.</span><span class="n">label</span><span class="p">=</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-38-7"><a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="w">            </span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">}.</span><span class="n">sets</span><span class="p">{</span><span class="mi">1</span><span class="p">}=</span><span class="n">sets</span><span class="p">;</span>
+</span><span id="__span-38-8"><a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a><span class="w">        </span><span class="k">end</span>
+</span></code></pre></div>
+<p>concatenate datasets aross subjects</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">dataspace</span><span class="p">=</span><span class="n">xform_subj</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">is</span><span class="p">=</span><span class="mi">2</span><span class="p">:</span><span class="n">nsubjs</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">            </span><span class="n">dataspace</span><span class="p">=</span><span class="n">rs_concat_coordsets</span><span class="p">(</span><span class="n">dataspace</span><span class="p">,</span><span class="n">xform_subj</span><span class="p">{</span><span class="n">is</span><span class="p">});</span>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="w">        </span><span class="k">end</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="w">        </span><span class="n">sim</span><span class="p">.</span><span class="n">dataspace</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">)=</span><span class="n">dataspace</span><span class="p">;</span>
+</span></code></pre></div>
+<p>plot</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">aux_datadisp</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">if_disp_coordsets</span>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">is_ptr</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">subjs_disp</span><span class="p">)</span>
+</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">                </span><span class="n">is</span><span class="p">=</span><span class="n">subjs_disp</span><span class="p">(</span><span class="n">is_ptr</span><span class="p">);</span>
+</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">                </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_disp_auxout</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">;</span><span class="w"> </span><span class="c">%starting point for plot is how the transforms were plotted</span>
+</span></code></pre></div>
+<p>aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">=</span><span class="nb">rmfield</span><span class="p">(</span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">,</span><span class="s">&#39;axis_labels&#39;</span><span class="p">);</span><span class="w"> </span><span class="c">%use default labels</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">                </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">set_labels</span><span class="p">=</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;subj %1.0f %s&#39;</span><span class="p">,</span><span class="n">is</span><span class="p">,</span><span class="n">transform_name</span><span class="p">);</span>
+</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="w">                </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">set_select</span><span class="p">=</span><span class="n">is</span><span class="p">;</span><span class="w"> </span><span class="c">%just show this subject</span>
+</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">                </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">set_colors</span><span class="p">={</span><span class="s">&#39;k&#39;</span><span class="p">};</span><span class="w"> </span><span class="c">%black</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="nb">figure</span><span class="p">(</span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">fig_handle</span><span class="p">);</span><span class="w"> </span><span class="c">%activate the figure for this paradigm type</span>
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">                </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp</span><span class="p">.</span><span class="n">axis_handles</span><span class="p">={</span><span class="nb">subplot</span><span class="p">(</span><span class="n">fig_rows</span><span class="p">,</span><span class="n">fig_cols</span><span class="p">,</span><span class="n">it</span><span class="o">+</span><span class="n">is_ptr</span><span class="o">*</span><span class="n">fig_cols</span><span class="p">)};</span><span class="w"> </span><span class="c">%show each transform in a separate column</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="k">if</span><span class="w"> </span><span class="n">sim</span><span class="p">.</span><span class="n">if_findrays</span><span class="w"> </span><span class="c">%setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout</span>
+</span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="w">                    </span><span class="n">aux_datadisp</span><span class="p">.</span><span class="n">opts_disp_enh</span><span class="p">=</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_disp_auxout</span><span class="p">.</span><span class="n">opts_disp_enh</span><span class="p">;</span><span class="w"> </span><span class="c">%had if_rings info</span>
+</span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="w">                    </span><span class="n">sim</span><span class="p">.</span><span class="n">dataspace_disp_auxout</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">){</span><span class="n">is</span><span class="p">}=</span><span class="n">rs_disp_enh_coordsets</span><span class="p">(</span><span class="n">dataspace</span><span class="p">,</span><span class="n">aux_datadisp</span><span class="p">,</span><span class="n">sim</span><span class="p">.</span><span class="n">stimspace_rays</span><span class="p">);</span>
+</span><span id="__span-43-4"><a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a><span class="w">                </span><span class="k">else</span>
+</span><span id="__span-43-5"><a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a><span class="w">                    </span><span class="n">sim</span><span class="p">.</span><span class="n">dataspace_disp_auxout</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">){</span><span class="n">is</span><span class="p">}=</span><span class="n">rs_disp_coordsets</span><span class="p">(</span><span class="n">dataspace</span><span class="p">,</span><span class="n">aux_datadisp</span><span class="p">);</span>
+</span><span id="__span-43-6"><a id="__codelineno-43-6" name="__codelineno-43-6" href="#__codelineno-43-6"></a><span class="w">                </span><span class="k">end</span>
+</span><span id="__span-43-7"><a id="__codelineno-43-7" name="__codelineno-43-7" href="#__codelineno-43-7"></a><span class="w">                </span><span class="nb">drawnow</span><span class="p">;</span>
+</span><span id="__span-43-8"><a id="__codelineno-43-8" name="__codelineno-43-8" href="#__codelineno-43-8"></a><span class="w">             </span><span class="k">end</span><span class="w"> </span><span class="c">%is</span>
+</span><span id="__span-43-9"><a id="__codelineno-43-9" name="__codelineno-43-9" href="#__codelineno-43-9"></a><span class="w">         </span><span class="k">end</span>
+</span><span id="__span-43-10"><a id="__codelineno-43-10" name="__codelineno-43-10" href="#__codelineno-43-10"></a><span class="w">         </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;dataspace created for paradigm %20s and transform %s&#39;</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">,</span><span class="n">transform_name</span><span class="p">));</span>
+</span><span id="__span-43-11"><a id="__codelineno-43-11" name="__codelineno-43-11" href="#__codelineno-43-11"></a><span class="w">    </span><span class="k">end</span><span class="w"> </span><span class="c">%it</span>
+</span><span id="__span-43-12"><a id="__codelineno-43-12" name="__codelineno-43-12" href="#__codelineno-43-12"></a><span class="w">    </span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">)=</span><span class="n">sim</span><span class="p">;</span>
+</span><span id="__span-43-13"><a id="__codelineno-43-13" name="__codelineno-43-13" href="#__codelineno-43-13"></a><span class="k">end</span>
+</span></code></pre></div>
+<p>optinally align and knit the stimuli across paradigms</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="k">if</span><span class="w"> </span><span class="n">if_knit</span>
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span><span class="n">check_nowarn</span><span class="p">=</span><span class="nb">setfield</span><span class="p">(</span><span class="nb">struct</span><span class="p">,</span><span class="s">&#39;opts_check&#39;</span><span class="p">,</span><span class="nb">setfield</span><span class="p">(</span><span class="nb">struct</span><span class="p">,</span><span class="s">&#39;if_warn&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span>
+</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">    </span><span class="n">sims</span><span class="p">.</span><span class="n">knitted</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-44-4"><a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a><span class="w">    </span><span class="n">aux_align</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-44-5"><a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a><span class="w">    </span><span class="n">aux_align</span><span class="p">.</span><span class="n">opts_align</span><span class="p">.</span><span class="n">if_log</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-44-6"><a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="w">    </span><span class="n">aux_knit</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-44-7"><a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a><span class="w">    </span><span class="n">aux_knit</span><span class="p">.</span><span class="n">opts_knit</span><span class="p">.</span><span class="n">if_log</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="nb">disp</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">);</span>
+</span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-45-3"><a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="w">        </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-45-4"><a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a><span class="w">        </span><span class="n">stim_data</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">).</span><span class="n">stimspace</span><span class="p">;</span>
+</span><span id="__span-45-5"><a id="__codelineno-45-5" name="__codelineno-45-5" href="#__codelineno-45-5"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">ip</span><span class="o">==</span><span class="mi">1</span>
+</span><span id="__span-45-6"><a id="__codelineno-45-6" name="__codelineno-45-6" href="#__codelineno-45-6"></a><span class="w">            </span><span class="n">concat</span><span class="p">=</span><span class="n">stim_data</span><span class="p">;</span>
+</span><span id="__span-45-7"><a id="__codelineno-45-7" name="__codelineno-45-7" href="#__codelineno-45-7"></a><span class="w">        </span><span class="k">else</span>
+</span><span id="__span-45-8"><a id="__codelineno-45-8" name="__codelineno-45-8" href="#__codelineno-45-8"></a><span class="w">            </span><span class="n">concat</span><span class="p">=</span><span class="n">rs_concat_coordsets</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span><span class="n">stim_data</span><span class="p">,</span><span class="n">check_nowarn</span><span class="p">);</span>
+</span><span id="__span-45-9"><a id="__codelineno-45-9" name="__codelineno-45-9" href="#__codelineno-45-9"></a><span class="w">        </span><span class="k">end</span>
+</span><span id="__span-45-10"><a id="__codelineno-45-10" name="__codelineno-45-10" href="#__codelineno-45-10"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-45-11"><a id="__codelineno-45-11" name="__codelineno-45-11" href="#__codelineno-45-11"></a><span class="w">    </span><span class="nb">disp</span><span class="p">(</span><span class="s">&#39;aligning stimuli across paradigms&#39;</span><span class="p">);</span>
+</span><span id="__span-45-12"><a id="__codelineno-45-12" name="__codelineno-45-12" href="#__codelineno-45-12"></a><span class="w">    </span><span class="n">aligned</span><span class="p">=</span><span class="n">rs_align_coordsets</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span><span class="n">aux_align</span><span class="p">);</span>
+</span><span id="__span-45-13"><a id="__codelineno-45-13" name="__codelineno-45-13" href="#__codelineno-45-13"></a><span class="w">    </span><span class="nb">disp</span><span class="p">(</span><span class="s">&#39;knitting data across paradigms&#39;</span><span class="p">);</span>
+</span><span id="__span-45-14"><a id="__codelineno-45-14" name="__codelineno-45-14" href="#__codelineno-45-14"></a><span class="w">    </span><span class="n">knitted</span><span class="p">=</span><span class="n">rs_knit_coordsets</span><span class="p">(</span><span class="n">aligned</span><span class="p">,</span><span class="n">aux_knit</span><span class="p">);</span>
+</span><span id="__span-45-15"><a id="__codelineno-45-15" name="__codelineno-45-15" href="#__codelineno-45-15"></a><span class="w">    </span><span class="n">sims</span><span class="p">.</span><span class="n">knitted</span><span class="p">.</span><span class="n">stimspace</span><span class="p">=</span><span class="n">knitted</span><span class="p">;</span>
+</span></code></pre></div>
+<p>for each transformation and subject, align and knit the data across paradigms</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">sims</span><span class="p">.</span><span class="n">knitted</span><span class="p">.</span><span class="n">dataspace</span><span class="p">=</span><span class="nb">struct</span><span class="p">();</span>
+</span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">it</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ntransforms</span>
+</span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="w">        </span><span class="n">transform_name</span><span class="p">=</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-46-4"><a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a><span class="w">        </span><span class="n">concat_knitted</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-46-5"><a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">is</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">nsubjs</span>
+</span><span id="__span-46-6"><a id="__codelineno-46-6" name="__codelineno-46-6" href="#__codelineno-46-6"></a><span class="w">            </span><span class="n">concat</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-46-7"><a id="__codelineno-46-7" name="__codelineno-46-7" href="#__codelineno-46-7"></a><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigm_names</span><span class="p">)</span>
+</span><span id="__span-46-8"><a id="__codelineno-46-8" name="__codelineno-46-8" href="#__codelineno-46-8"></a><span class="w">                </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-46-9"><a id="__codelineno-46-9" name="__codelineno-46-9" href="#__codelineno-46-9"></a><span class="w">                </span><span class="n">subj_data</span><span class="p">=</span><span class="n">rs_extract_coordsets</span><span class="p">(</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">).</span><span class="n">dataspace</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">),</span><span class="n">is</span><span class="p">);</span><span class="w"> </span><span class="c">%extract this subject&#39;s data</span>
+</span><span id="__span-46-10"><a id="__codelineno-46-10" name="__codelineno-46-10" href="#__codelineno-46-10"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="n">ip</span><span class="o">==</span><span class="mi">1</span>
+</span><span id="__span-46-11"><a id="__codelineno-46-11" name="__codelineno-46-11" href="#__codelineno-46-11"></a><span class="w">                    </span><span class="n">concat</span><span class="p">=</span><span class="n">subj_data</span><span class="p">;</span>
+</span><span id="__span-46-12"><a id="__codelineno-46-12" name="__codelineno-46-12" href="#__codelineno-46-12"></a><span class="w">                </span><span class="k">else</span>
+</span><span id="__span-46-13"><a id="__codelineno-46-13" name="__codelineno-46-13" href="#__codelineno-46-13"></a><span class="w">                    </span><span class="n">concat</span><span class="p">=</span><span class="n">rs_concat_coordsets</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span><span class="n">subj_data</span><span class="p">,</span><span class="n">check_nowarn</span><span class="p">);</span>
+</span><span id="__span-46-14"><a id="__codelineno-46-14" name="__codelineno-46-14" href="#__codelineno-46-14"></a><span class="w">                </span><span class="k">end</span>
+</span><span id="__span-46-15"><a id="__codelineno-46-15" name="__codelineno-46-15" href="#__codelineno-46-15"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-46-16"><a id="__codelineno-46-16" name="__codelineno-46-16" href="#__codelineno-46-16"></a><span class="w">            </span><span class="nb">disp</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">);</span>
+</span><span id="__span-46-17"><a id="__codelineno-46-17" name="__codelineno-46-17" href="#__codelineno-46-17"></a><span class="w">            </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;aligning data from subject %1.0f, transform %s, across paradigms&#39;</span><span class="p">,</span><span class="n">is</span><span class="p">,</span><span class="n">transform_name</span><span class="p">))</span>
+</span><span id="__span-46-18"><a id="__codelineno-46-18" name="__codelineno-46-18" href="#__codelineno-46-18"></a><span class="w">            </span><span class="n">aligned</span><span class="p">=</span><span class="n">rs_align_coordsets</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span><span class="n">aux_align</span><span class="p">);</span>
+</span><span id="__span-46-19"><a id="__codelineno-46-19" name="__codelineno-46-19" href="#__codelineno-46-19"></a><span class="w">            </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;knitting data from subject %1.0f, transform %s, into a single dataset&#39;</span><span class="p">,</span><span class="n">is</span><span class="p">,</span><span class="n">transform_name</span><span class="p">))</span>
+</span><span id="__span-46-20"><a id="__codelineno-46-20" name="__codelineno-46-20" href="#__codelineno-46-20"></a><span class="w">            </span><span class="n">knitted</span><span class="p">=</span><span class="n">rs_knit_coordsets</span><span class="p">(</span><span class="n">aligned</span><span class="p">,</span><span class="n">aux_knit</span><span class="p">);</span>
+</span><span id="__span-46-21"><a id="__codelineno-46-21" name="__codelineno-46-21" href="#__codelineno-46-21"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">is</span><span class="o">==</span><span class="mi">1</span>
+</span><span id="__span-46-22"><a id="__codelineno-46-22" name="__codelineno-46-22" href="#__codelineno-46-22"></a><span class="w">                </span><span class="n">concat_knitted</span><span class="p">=</span><span class="n">knitted</span><span class="p">;</span>
+</span><span id="__span-46-23"><a id="__codelineno-46-23" name="__codelineno-46-23" href="#__codelineno-46-23"></a><span class="w">            </span><span class="k">else</span>
+</span><span id="__span-46-24"><a id="__codelineno-46-24" name="__codelineno-46-24" href="#__codelineno-46-24"></a><span class="w">                </span><span class="n">concat_knitted</span><span class="p">=</span><span class="n">rs_concat_coordsets</span><span class="p">(</span><span class="n">concat_knitted</span><span class="p">,</span><span class="n">knitted</span><span class="p">);</span>
+</span><span id="__span-46-25"><a id="__codelineno-46-25" name="__codelineno-46-25" href="#__codelineno-46-25"></a><span class="w">            </span><span class="k">end</span>
+</span><span id="__span-46-26"><a id="__codelineno-46-26" name="__codelineno-46-26" href="#__codelineno-46-26"></a><span class="w">        </span><span class="k">end</span>
+</span><span id="__span-46-27"><a id="__codelineno-46-27" name="__codelineno-46-27" href="#__codelineno-46-27"></a><span class="w">        </span><span class="n">sims</span><span class="p">.</span><span class="n">knitted</span><span class="p">.</span><span class="n">dataspace</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">)=</span><span class="n">concat_knitted</span><span class="p">;</span>
+</span><span id="__span-46-28"><a id="__codelineno-46-28" name="__codelineno-46-28" href="#__codelineno-46-28"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-46-29"><a id="__codelineno-46-29" name="__codelineno-46-29" href="#__codelineno-46-29"></a><span class="k">end</span><span class="w"> </span><span class="c">%if_knit</span>
+</span></code></pre></div>
+<p>fit models to transformation between stimulus space and data space</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">paradigms_all</span><span class="p">=</span><span class="nb">fieldnames</span><span class="p">(</span><span class="n">sims</span><span class="p">);</span><span class="w"> </span><span class="c">%includes original paradigms and knitted</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="nb">exist</span><span class="p">(</span><span class="s">&#39;opts_geof&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">opts_geof</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span><span class="w"> </span><span class="k">end</span>
+</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;model_list&#39;</span><span class="p">,</span><span class="n">model_list</span><span class="p">);</span>
+</span><span id="__span-47-4"><a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;dimpairs_method&#39;</span><span class="p">,</span><span class="s">&#39;all&#39;</span><span class="p">);</span>
+</span><span id="__span-47-5"><a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;if_stats&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-47-6"><a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;nshuffs&#39;</span><span class="p">,</span><span class="mi">20</span><span class="p">);</span>
+</span><span id="__span-47-7"><a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;if_nestbymodel&#39;</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-47-8"><a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;if_nestbydim&#39;</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-47-9"><a id="__codelineno-47-9" name="__codelineno-47-9" href="#__codelineno-47-9"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;if_log&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-47-10"><a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a><span class="n">opts_geof</span><span class="p">=</span><span class="n">filldefault</span><span class="p">(</span><span class="n">opts_geof</span><span class="p">,</span><span class="s">&#39;if_fit_summary&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-47-11"><a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a><span class="n">aux_geof</span><span class="p">=</span><span class="nb">struct</span><span class="p">;</span>
+</span><span id="__span-47-12"><a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a><span class="n">aux_geof</span><span class="p">.</span><span class="n">opts_geof</span><span class="p">=</span><span class="n">opts_geof</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">gfs</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="n">ntransforms</span><span class="p">,</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigms_all</span><span class="p">));</span>
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="n">xs</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="n">ntransforms</span><span class="p">,</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigms_all</span><span class="p">));</span>
+</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="n">aux_geof_out</span><span class="p">=</span><span class="nb">cell</span><span class="p">(</span><span class="n">ntransforms</span><span class="p">,</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigms_all</span><span class="p">));</span>
+</span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="k">for</span><span class="w"> </span><span class="n">it</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">ntransforms</span>
+</span><span id="__span-48-5"><a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="w">    </span><span class="n">transform_name</span><span class="p">=</span><span class="n">transform_names</span><span class="p">{</span><span class="n">it</span><span class="p">};</span>
+</span><span id="__span-48-6"><a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a><span class="w">    </span><span class="nb">disp</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">);</span>
+</span><span id="__span-48-7"><a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">ip</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">paradigms_all</span><span class="p">)</span>
+</span><span id="__span-48-8"><a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a><span class="w">        </span><span class="n">paradigm_name</span><span class="p">=</span><span class="n">paradigms_all</span><span class="p">{</span><span class="n">ip</span><span class="p">};</span>
+</span><span id="__span-48-9"><a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a><span class="w">        </span><span class="nb">disp</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;modeling transform %20s from stimulus space to subject space with paradigm %20s&#39;</span><span class="p">,</span><span class="n">transform_name</span><span class="p">,</span><span class="n">paradigm_name</span><span class="p">));</span>
+</span><span id="__span-48-10"><a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a><span class="w">        </span><span class="n">data_in</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">).</span><span class="n">stimspace</span><span class="p">;</span>
+</span><span id="__span-48-11"><a id="__codelineno-48-11" name="__codelineno-48-11" href="#__codelineno-48-11"></a><span class="w">        </span><span class="n">data_out</span><span class="p">=</span><span class="n">sims</span><span class="p">.(</span><span class="n">paradigm_name</span><span class="p">).</span><span class="n">dataspace</span><span class="p">.(</span><span class="n">transform_name</span><span class="p">);</span>
+</span><span id="__span-48-12"><a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a><span class="w">        </span><span class="p">[</span><span class="n">gfs</span><span class="p">{</span><span class="n">it</span><span class="p">,</span><span class="n">ip</span><span class="p">},</span><span class="n">xs</span><span class="p">{</span><span class="n">it</span><span class="p">,</span><span class="n">ip</span><span class="p">},</span><span class="n">aux_geof_out</span><span class="p">{</span><span class="n">it</span><span class="p">,</span><span class="n">ip</span><span class="p">}]=</span><span class="n">rs_geofit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span><span class="n">data_out</span><span class="p">,</span><span class="n">aux_geof</span><span class="p">);</span>
+</span><span id="__span-48-13"><a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a><span class="w">    </span><span class="k">end</span>
+</span><span id="__span-48-14"><a id="__codelineno-48-14" name="__codelineno-48-14" href="#__codelineno-48-14"></a><span class="k">end</span>
+</span><span id="__span-48-15"><a id="__codelineno-48-15" name="__codelineno-48-15" href="#__codelineno-48-15"></a><span class="n">sims</span><span class="p">.</span><span class="n">transform_names</span><span class="p">=</span><span class="n">transform_names</span><span class="p">;</span>
+</span><span id="__span-48-16"><a id="__codelineno-48-16" name="__codelineno-48-16" href="#__codelineno-48-16"></a><span class="n">sims</span><span class="p">.</span><span class="n">paradigm_names</span><span class="p">=</span><span class="n">paradigm_names</span><span class="p">;</span>
+</span><span id="__span-48-17"><a id="__codelineno-48-17" name="__codelineno-48-17" href="#__codelineno-48-17"></a><span class="n">sims</span><span class="p">.</span><span class="n">paradigms_all</span><span class="p">=</span><span class="n">paradigms_all</span><span class="p">;</span>
+</span><span id="__span-48-18"><a id="__codelineno-48-18" name="__codelineno-48-18" href="#__codelineno-48-18"></a><span class="n">sims</span><span class="p">.</span><span class="n">nsubjs</span><span class="p">=</span><span class="n">nsubjs</span><span class="p">;</span>
+</span><span id="__span-48-19"><a id="__codelineno-48-19" name="__codelineno-48-19" href="#__codelineno-48-19"></a><span class="n">sims</span><span class="p">.</span><span class="n">gfs</span><span class="p">=</span><span class="n">gfs</span><span class="p">;</span>
+</span><span id="__span-48-20"><a id="__codelineno-48-20" name="__codelineno-48-20" href="#__codelineno-48-20"></a><span class="n">sims</span><span class="p">.</span><span class="n">xs</span><span class="p">=</span><span class="n">xs</span><span class="p">;</span>
+</span><span id="__span-48-21"><a id="__codelineno-48-21" name="__codelineno-48-21" href="#__codelineno-48-21"></a><span class="n">sims</span><span class="p">.</span><span class="n">aux_geof_out</span><span class="p">=</span><span class="n">aux_geof_out</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">sims</span><span class="p">.</span><span class="n">ncoords</span><span class="p">=</span><span class="n">ncoords</span><span class="p">;</span>
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="n">sims</span><span class="p">.</span><span class="n">ncoords_noise</span><span class="p">=</span><span class="n">ncoords_noise</span><span class="p">;</span>
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_transform_mag</span><span class="p">=</span><span class="n">noise_transform_mag</span><span class="p">;</span>
+</span><span id="__span-49-4"><a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_transform_subj</span><span class="p">=</span><span class="n">noise_transform_subj</span><span class="p">;</span>
+</span><span id="__span-49-5"><a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_transform</span><span class="p">=</span><span class="n">noise_transform</span><span class="p">;</span>
+</span><span id="__span-49-6"><a id="__codelineno-49-6" name="__codelineno-49-6" href="#__codelineno-49-6"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_add_mag</span><span class="p">=</span><span class="n">noise_add_mag</span><span class="p">;</span>
+</span><span id="__span-49-7"><a id="__codelineno-49-7" name="__codelineno-49-7" href="#__codelineno-49-7"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_add_subj</span><span class="p">=</span><span class="n">noise_add_subj</span><span class="p">;</span>
+</span><span id="__span-49-8"><a id="__codelineno-49-8" name="__codelineno-49-8" href="#__codelineno-49-8"></a><span class="n">sims</span><span class="p">.</span><span class="n">noise_add</span><span class="p">=</span><span class="n">noise_add</span><span class="p">;</span>
+</span><span id="__span-49-9"><a id="__codelineno-49-9" name="__codelineno-49-9" href="#__codelineno-49-9"></a><span class="n">sims</span><span class="p">.</span><span class="n">model_list</span><span class="p">=</span><span class="n">model_list</span><span class="p">;</span>
+</span></code></pre></div>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="nb">disp</span><span class="p">(</span><span class="s">&#39;consider saving the structure &#39;&#39;sims&#39;&#39;, and using rs_toygeom_demo to display results&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["toc.integrate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

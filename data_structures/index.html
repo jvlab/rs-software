@@ -1,0 +1,875 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://jvlab.github.io/rs-software/data_structures/">
+      
+      
+        <link rel="prev" href="../demos/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Data structures - Representational spaces</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#file-formats-data-structures-and-other-key-elements" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Representational spaces" class="md-header__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Representational spaces
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data structures
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Representational spaces" class="md-nav__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Representational spaces
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../function-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../function-index-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index - python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data structures
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-choice-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed choice file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choice-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choice file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coordinate-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coordinate file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coordinate-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coordinate structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stimulus-metadata-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimulus metadata structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-metadata-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set metadata structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stimulus-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimulus coordinates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ray-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ray structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transformation-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transformation structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domains
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-texture-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binary texture domain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#animal-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Animal domain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mpi-faces-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MPI faces domain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup metadata
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadratic-form-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quadratic form model
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="file-formats-data-structures-and-other-key-elements">File formats, data structures, and other key elements</h1>
+<h2 id="detailed-choice-file">Detailed choice file</h2>
+<p>A <a href="/rs-software/data_structures/#detailed choice file"><code>detailed choice file</code></a> is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment.  Each line of the file corresponds to a single judgment.
+It contains three variables: 'stim_list', 'responses', and 'responses_colnames'.  'stim_list' is a character array in which each row is a unique stimulus label.</p>
+<p>File names should contain the string '_detailed_choices_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.</p>
+<ul>
+<li>
+<p>triadic comparisons</p>
+<ul>
+<li>Column 1 of 'responses' is the 1-based trial number</li>
+<li>Columns 2-4 of 'responses' are the 1-based indices into stim_list of the reference stimulus and two comparison stimuli (s1 and s2).</li>
+<li>Column 5 of 'responses' is 1 if s1 is judged more dis-similar to the reference than s2, and 0 otherwise</li>
+<li>'responses_colnames' are text strings that label these columns</li>
+</ul>
+</li>
+</ul>
+<p>See rs_py/samples/choice_files/*_detailed_choices_S*.mat for examples.</p>
+<h2 id="choice-file">Choice file</h2>
+<p>A <a href="/rs-software/data_structures/#choice file"><code>choice file</code></a> (also called a <a href="/rs-software/data_structures/#choice file"><code>combined choice file</code></a>) is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment. In contrast to a <a href="/rs-software/data_structures/#detailed choice file"><code>detailed choice file</code></a>, judgments from repeated presentations of the same stimuli are combined.  The file contains three variables: 'stim_list', 'responses', and 'responses_colnames'.  'stim_list' is a character array in which each row is a unique stimulus label.</p>
+<p>File names should contain the string '_choices_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.</p>
+<p>Two options are available for 'responses' and 'responses_colnames':</p>
+<ul>
+<li>
+<p>triadic comparisons</p>
+<ul>
+<li>Columns 1-3 of 'responses' are the 1-based indices into stim_list of the reference stimulus and two comparison stimuli (s1 and s2).</li>
+<li>Column 4 of 'responses' is the number of times that s1 is judged more dis-similar to the reference than s2</li>
+<li>Column 5 of 'responses' is the number of times the triad is presented</li>
+<li>'responses_colnames' are text strings that label these columns</li>
+</ul>
+</li>
+<li>
+<p>tetradic comparisons</p>
+<ul>
+<li>Columns 1-4 of 'responses' are the 1-based indices into stim_list for the stimuli s1, s2, s3, and s4 in the comparison</li>
+<li>Column 5 of 'responses' is the number of times that s1 and s2 are judged more dis-similar than s3 and s4</li>
+<li>Column 6 of 'responses' is the number of times the tetrad is presented</li>
+<li>'responses_colnames' are text strings that label these columns</li>
+</ul>
+</li>
+</ul>
+<p>See samples/animals/image_choices_S*.mat or samples/bwtextures/bgca3pt_choices_*_sess01_10.mat for examples of triadic comparisons, and see samples/bwtextures/bgca3pt_choices_*-gp_sess01_20.mat for examples of tetradic comparisons.</p>
+<h2 id="coordinate-file">Coordinate file</h2>
+<p>A <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a> is a .mat file that contains sets of coordinates for the elements of a representational space. It contains a variable 'stim_labels', a character array in which each row is a unique stimulus label. This corresponds to the <code>stim\_list</code> variable in a <a href="/rs-software/data_structures/#choice file"><code>choice file</code></a>, but the stimuli need not be listed in the same order. A <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a> also contains one or more variables with names such as 'dim1', 'dim2', ..., 'dim10'. 'dim[k]' specifies the k-dimensional representational space:  each row corresponds to a stimulus in <code>stim\_labels</code>; the k columns are the k coordinate values.</p>
+<p>File names should contain the string '_coords_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.</p>
+<p>Optional variables (produced by the modeling of choice data by this package but not required) are:</p>
+<ul>
+<li>rawLLs: log(2) likelihood of the observed responses for each of k-dimensional models, uncorrected for overfitting</li>
+<li>bestModelLL: log(2) likelihood of the observed responses, given a model that exactly matches the observed choice probabilities but is geometrically unconstrained</li>
+<li>debiasedRelativeLL: relative log(2) likelihood, compared to bestModelLL, after correction for overfitting: debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL</li>
+<li>biasEstimate: overfitting bias estimate</li>
+<li>metadata: summary of the above description</li>
+</ul>
+<p>See samples/animals/image_coords_S*.mat for examples that contain these optional variables, and samples/bwtextures/bgca3pt_cooords_*_sess01_10.mat for examples that do not.</p>
+<h2 id="dataset-structure">Dataset structure</h2>
+<p>A <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> is a container for representational spaces to be analyzed in parallel -- for example, determining a consensus between them via <a href="/rs-software/function-index/#rs_knit_coordsets"><code>rs_knit_coordsets</code></a>, visualizing them via <a href="/rs-software/function-index/#rs_disp_coordsets"><code>rs_disp_coordsets</code></a>, or transforming them via <a href="/rs-software/function-index/#rs_xform_apply"><code>rs_xform_apply</code></a>. </p>
+<p>It consists of three components:  a <a href="/rs-software/data_structures/#coordinate-structure"><code>coordinate structure</code></a> ('ds'), a <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a> ('sas'), and a <a href="/rs-software/data_structures/#set-metadata-structure"><code>set metadata structure</code></a> ('sets'), each of which is a MATLAB cell array with the same number of records.  A single record contains the coordinates and metadata for a representational space models of one or more dimensions, all derived from a common dataset.</p>
+<p>Typically a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> is created by reading one or more <a href="/rs-software/data_structures/#coordinate file"><code>coordinate files</code></a> via <a href="/rs-software/function-index/#rs_get_coordsets"><code>rs_get_coordsets</code></a>, a single <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a> via <a href="/rs-software/function-index/#rs_read_coorddata"><code>rs_read_coorddata</code></a>, or imported from coordinate arrays with user-supplied metadata via <a href="/rs-software/function-index/#rs_import_coordsets"><code>rs_import_coordsets</code></a>.</p>
+<ul>
+<li>
+<h2 id="coordinate-structure">Coordinate structure</h2>
+<ul>
+<li>For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a>. d{irec}{k} may be empty ('[]') if no model is available. </li>
+</ul>
+</li>
+<li>
+<h2 id="stimulus-metadata-structure">Stimulus metadata structure</h2>
+<ul>
+<li>
+<p>This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:</p>
+<ul>
+<li>nstims: number of stimuli</li>
+<li>typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim_labels' in the <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a> that was used to create the <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a>.  This field is used to identify unique stimuli when merging datasets and records.</li>
+<li>type_coords: a 2-D array of <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, if the domain has a priori coordinates; typically empty if not. See <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a> for further details.</li>
+<li>the optional variables *LL* and metadata from a <a href="/rs-software/data_structures/#coordinate file"><code>coordinate file</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h2 id="set-metadata-structure">Set metadata structure</h2>
+<ul>
+<li>
+<p>This contains dataset origin.  For each record, 'sets{irec}' has the following fields:</p>
+<ul>
+<li>dim_list: list of available dimensions in ds{irec}</li>
+<li>nstims: number of stimuli</li>
+<li>label_long: long file name, typically full file name and path</li>
+<li>label: shortened file name, suitable for display</li>
+<li>paradigm_name: a designator such as 'cars' or 'animals'</li>
+<li>paradigm_type: overall paradigm category; may be the same as paradigm_name</li>
+<li>subj_ID: unique subject identifier</li>
+<li>subj_ID_short: short form of subject identifier, suitable for display</li>
+<li>pipeline: structure describing the processing stages leading to this record</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>For an example of a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> with one record and without <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, run the demo <a href="/rs-software/function-index/#demos.rs_read_coorddata_demo_cars"><code>rs_read_coorddata_demo_cars</code></a> and look at 'data_out'.
+For an example of a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> with three records and with <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, run the demo <a href="/rs-software/function-index/#demos.rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a> and look at 'data_out'.</p>
+<h2 id="stimulus-coordinates">Stimulus coordinates</h2>
+<p>For some domains, there may be an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example are adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. Stimulus coordinates are a numerical array, in which the rows correspond to the stimuli (in the order of 'typenames'), and each column is a dimension.</p>
+<ul>
+<li>For generic domains, these coordinates constitute the <code>type_coords</code> field of the <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a>, and can be specified as auxiliary inputs in  <a href="/rs-software/function-index/#rs_get_coordsets"><code>rs_get_coordsets</code></a>, <a href="/rs-software/function-index/#rs_read_coorddata"><code>rs_read_coorddata</code></a>, or <a href="/rs-software/function-index/#rs_import_coordsets"><code>rs_import_coordsets</code></a>.</li>
+<li>For <a href="/rs-software/data_structures/#binary-texture-domain"><code>binary texture</code></a> data, these values are specified in the <a href="/rs-software/data structures/#setup-metadata"><code>setup metadata</code></a> and are in the <code>btc_specoords</code> and <code>btc_augcoords</code> fields of the <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a>.</li>
+</ul>
+<p><a href="/rs-software/data_structures/#stimulus-coordinates"><code>Stimulus coordinates</code></a> are used in several ways:</p>
+<ul>
+<li>As a framework for visualization of representational spaces (via <a href="/rs-software/function-index/#rs_disp_enh_coordsets"><code>rs_disp_enh_coordsets</code></a>, run <a href="/rs-software/function-index/#demos.rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a>, then <a href="/rs-software/function-index/#demos.rs_disp_coordsets_demo_opposites"><code>rs_disp_coordsets_demo_opposites</code></a>)</li>
+<li>To create models for representational spaces (via <code>rs_read_coordsets</code>, run <a href="/rs-software/function-index/#demos.rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a>, option 3, for an example)</li>
+</ul>
+<h2 id="ray-structure">Ray structure</h2>
+<p>A <a href="/rs-software/data_structures/#ray-structure"><code>ray structure</code></a> identifies simple relationships among the <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>:</p>
+<ul>
+<li>stimuli that lie on rays (points on approximate straight lines from the origin)</li>
+<li>stimuli that lie on rings (ponits in a plane at approximate equal distances from the origin)</li>
+<li>nearest neighbors</li>
+</ul>
+<p>It is created by 'rs_findrays' from the <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>. The <a href="/rs-software/data_structures/#ray-structure"><code>ray structure</code></a> is used for visualizations in <a href="/rs-software/function-index/#rs_disp_enh_coordsets"><code>rs_disp_enh_coordsets</code></a>.</p>
+<p>Auxiliary inputs of <a href="/rs-software/function-index/#rs_findrays"><code>rs_findrays</code></a> set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. </p>
+<h2 id="transformation-structure">Transformation structure</h2>
+<p><a href="/rs-software/data_structures/#transformation-structure"><code>Transformation structures</code></a> specify geometric transformations, including linear transformations and several generalizations.  These are constructed by <a href="/rs-software/function-index/#rs_xform_specify"><code>rs_xform_specify</code></a>, <a href="/rs-software/function-index/#rs_geofit"><code>rs_geofit</code></a>, and <a href="/rs-software/function-index/#rs_knit_coordsets"><code>rs_knit_coordsets</code></a>, and can be applied to <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structures</code></a> by <a href="/rs-software/function-index/#rs_xform_apply"><code>rs_xform_apply</code></a>.</p>
+<p>For transformations on a representational space of dimension k, a <a href="/rs-software/data_structures/#transformation-structure"><code>transformation structure</code></a> has the following fields:</p>
+<ul>
+<li>class: one of the following: 'affine' (default if omitted), 'procrustes', 'projective','pwaffine','pwprojective','mean'</li>
+<li>b: a scalar multiplier</li>
+<li>T: a square array of size [k k] or (for 'pwaffine' and 'pwprojective', a stack of such arrays, see below)</li>
+<li>c: a vector of size [1 k] or (for 'pwaffine' and 'pwprojective', a stack of such vectors, see below)</li>
+<li>
+<p>additional arguments, depending on 'class'</p>
+<ul>
+<li>For class='projective' (a projective transformation): p is a vector of size [k 1]</li>
+<li>For class='pwaffine' (a piecewise affine transformation with ncuts cuts): c is [ncuts k], T is a 3D array of size [k k 2<sup>ncuts</sup>], acut is [ncuts 1], and vcut is [ncuts k]</li>
+<li>For class='pwprojective' (a piecewise projective transformation with ncuts cuts): the parameters in 'projective' and 'pwaffine'</li>
+</ul>
+</li>
+</ul>
+<p>To allow for compatibility with transformations produced by <a href="/rs-software/function-index/#octave_compat.procrustes"><code>procrustes</code></a> (a MATLAB built-in), or <a href="/rs-software/function-index/#utils.procrustes_consensus"><code>procrustes_consensus</code></a>, the following alternative names are allowed: b -&gt; scaling, T -&gt; orthog, c -&gt; translation</p>
+<p>The transformation applied to a row vector x produces a row vector y as follows:</p>
+<ul>
+<li>'affine','procrustes','mean': y=b*xT+c  (Note, for 'procrustes', abs(det(T)) should equal 1, and for 'mean', T should equal 0.)</li>
+<li>'projective':  This is a projective (or perspective) transformation. An array T<sup>aug</sup> of size [k+1 k+1] is formed with b*T in its upper left, p in its upper right, c in its lower left, and 1 in its lower right. x<sup>aug</sup> is created by adjoining a 1 to the right of x. Then y<sup>aug</sup>=x<sup>aug</sup>*T<sup>aug</sup> is computed, and y is the first k elements of y<sup>aug</sup> divided by its last.  For p=0, this reduces to an affine transformation.</li>
+<li>
+<p>'pwaffine': This is a piecewise affine transformation.  There are ncuts hyperplanes, each defined by their normal vectors given in vcut.  To determine the component of the space that x lies in, s=sign(x*vcut<sup>T</sup>-acut) is computed. The affine transformation used ('ipw') is determined by the entries in s: s=[+1 +1 ... +1] corresponds to ipw=1, [-1 +1 ... +1] corresponds to ipw=2, [+1 -1 ... +1] corresponds to ipw=3,..., and [-1 -1 ... -1] corresponds to ipw=2<sup>ncuts</sup>. Then T(:,:,ipw) and c(ipw,:) are used to compute the transformation, as in 'affine' above.  Notes:</p>
+<ul>
+<li>The same value of b is used for all components. </li>
+<li>For transformations created by <a href="/rs-software/function-index/#rs_geofit"><code>rs_geofit</code></a>, the pieces of the transformation are continuous where they meet at their boundaries. This is not checked.</li>
+</ul>
+</li>
+<li>
+<p>'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective'</p>
+</li>
+</ul>
+<p>Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T.  The labeling of the pieces of an affine transformation can be permuted.</p>
+<h2 id="domains">Domains</h2>
+<ul>
+<li>
+<h2 id="binary-texture-domain">Binary texture domain</h2>
+</li>
+</ul>
+<p>Very rough:</p>
+<p>Briefly introduce the textuers and the coordinates
+Provide pointers to literature</p>
+<ul>
+<li>
+<h2 id="animal-domain">Animal domain</h2>
+</li>
+</ul>
+<p>Briefly introduce the animal domain
+Provide pointers to J Neurosci</p>
+<p><img alt="Example stimuli from the five animal domains" src="../images/animal_domain_fig1_jneuro.jpg"></p>
+<figcaption>Stimuli from the five animal domains. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
+
+<ul>
+<li>
+<h2 id="mpi-faces-domain">MPI faces domain</h2>
+</li>
+</ul>
+<p>Very rough:</p>
+<p>Introduce the coordinates</p>
+<p>%Ebner, N. C., Riediger, M., \&amp; Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men:
+% Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.</p>
+<p>...</p>
+<h2 id="setup-metadata">Setup metadata</h2>
+<p>for Binary texture domain
+or if configured</p>
+<h2 id="quadratic-form-model">Quadratic form model</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

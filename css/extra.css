@@ -1,0 +1,130 @@
+/* Increase overall content width */
+.md-grid {
+  max-width: 2000px;  /* Default is usually 1220px */
+}
+
+/* Specifically increase code block width */
+.md-typeset pre > code {
+  max-width: 100%;
+  display: block;
+}
+
+/* First-level argument items */
+.md-typeset ul {
+    list-style-type: "▸  ";
+}
+
+/* Second-level nested argument items */
+.md-typeset ul ul {
+    list-style-type: disc;
+}
+
+/* Third-level nested argument items */
+.md-typeset ul ul ul {
+    list-style-type: circle;
+}
+
+/* Collapsible parameter category groups */
+details.doc-param-group,
+details.doc-param-group * {
+    font-size: 1em !important;
+}
+
+details.doc-param-group {
+    margin: 0.5em 0 0.25em 0;
+    border: none; 
+    background: none;
+}
+
+details.doc-param-group > summary {
+    display: block;
+    list-style: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em  !important;
+    color: var(--md-default-fg-color);
+    padding-top: 0em;
+    padding-bottom: 0em;
+    padding-left: 0;
+    margin-left: 0;
+    margin-bottom: 0.15em;
+    border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/*
+details.doc-param-group > summary {
+    display: list-item;
+    list-style: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85em !important;
+    color: var(--md-default-fg-color);
+    padding-top: 0em;
+    padding-bottom: 0em;
+    margin-bottom: 0.15em;
+    border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+*/
+
+/*
+details.doc-param-group > summary::before {
+    content: "▶ ";
+    background-color: unset !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+}
+
+
+details.doc-param-group[open] > summary::before {
+    content: "▼ ";
+    background-color: unset !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+}
+
+*/
+
+details.doc-param-group > summary::before {
+    content: "" !important;
+    display: none !important;
+}
+
+details.doc-param-group[open] > summary::before {
+    content: "" !important;
+    display: none !important;
+}
+
+details.doc-param-group > summary::after {
+    display: none !important;
+}
+
+details.doc-param-group > summary {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+details.doc-param-group > ul.doc-param-group-items {
+    margin-top: 0.2em;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+details.doc-param-group > ul.doc-param-group-items > li {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+details.doc-param-group {
+    box-shadow: none !important;
+}
+
+
+
+details.doc-param-group code {
+    font-size: 0.85em !important;
+}
+
+.doc .md-typeset__table, .doc .md-typeset__table table {
+    display: table !important;
+    width: 50%;
+}
