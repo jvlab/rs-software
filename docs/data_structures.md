@@ -11,7 +11,6 @@ File names should contain the string '\_detailed\_choices\_', preceded by a desi
 
     * Column 1 of 'responses' is the 1-based trial number
     * Columns 2-4 of 'responses' are the 1-based indices into stim\_list of the reference stimulus and two comparison stimuli (s1 and s2).
-    * Column 4 of 'responses' is the number of times that s1 is judged more dis-similar to the reference than s2
     * Column 5 of 'responses' is 1 if s1 is judged more dis-similar to the reference than s2, and 0 otherwise
     * 'responses_colnames' are text strings that label these columns
 
