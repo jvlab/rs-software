@@ -1,14 +1,26 @@
 function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
-% aux_out=rs_aux_customize(aux,caller,aux_default_filename) customizes the default auxiliary inputs
+% aux_out=rs_aux_customize(aux,caller,aux_default_filename) sets the auxiliary inputs to customized defaults
 %
-%This reads rs_aux_defaults.mat, which is created by rs_aux_defaults_define.m
-%rs_aux_defaults_define.m should be edited to customize the default auxiliary inputs as needed
+%This read a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
 %
-% aux: a structure, typically with many opts subfields, e.g., opts_read, opts_disp
-% caller: string, name of calling function, may be empty
-% aux_default_filename: full path to the default auxiliary inputs, created with rs_aux_defaults_define, if empty or not specified, defaults to rs_aux_defaults.mat
+% Args:
+%   aux (struct):options structure, typically with subfields with names like opts_read, opts_disp, opts_knit, etc.
 %
-%  See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE_TEST, RS_AUX_FORCE.
+%   caller (string): string, name of calling function, e.g., 'rs_get_coordsets'; may be empty
+%
+%   aux_default_filename (string): full path to the file created by `rs_aux_defaults_define`; defaults to 'rs_aux_defaults.mat'
+%
+% Returns:
+%   aux_out (struct): aux, with defaults filled in
+%
+% Notes: Default assignment precedence
+%   Option values are assigned with the following priority
+%     - Value explicitly provided in a function call
+%     - Value specified in an rs_\*.m  module via a 'filldefault' statement
+%     - Value listed in the specific.(caller) section of `rs_aux_defaults_define`
+%     - Value listed in the generic section of `rs_aux_defaults_define`
+%
+% See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_FORCE.
 %
 if (nargin==0)
     aux=struct();
