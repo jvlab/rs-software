@@ -1,7 +1,7 @@
 function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
 % aux_out=rs_aux_customize(aux,caller,aux_default_filename) sets the auxiliary inputs to customized defaults
 %
-%This read a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
+% This read a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
 %
 % Args:
 %   aux (struct):options structure, typically with subfields with names like opts_read, opts_disp, opts_knit, etc.
@@ -14,11 +14,10 @@ function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
 %   aux_out (struct): aux, with defaults filled in
 %
 % Notes: Default assignment precedence
-%   Option values are assigned with the following priority
-%     - Value explicitly provided in a function call
-%     - Value specified in an rs_\*.m  module via a 'filldefault' statement
-%     - Value listed in the specific.(caller) section of `rs_aux_defaults_define`
-%     - Value listed in the generic section of `rs_aux_defaults_define`
+%     - First priority to value explicitly provided in a function call
+%     - Then, value specified in an rs_\*.m  module via a 'filldefault' statement
+%     - Then, value listed in the specific.(caller) section of `rs_aux_defaults_define`
+%     - Then, value listed in the generic section of `rs_aux_defaults_define`
 %
 % See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_FORCE.
 %
