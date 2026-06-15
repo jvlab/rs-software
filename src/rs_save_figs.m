@@ -1,6 +1,5 @@
 function rs_save_figs(fullname,whichfigs,opts)
-% rs_save_figs(whichfigs,whichfigs,opts)
-% is a utility to save one or more open figures to a fig file
+% rs_save_figs(whichfigs,whichfigs,opts) writes one or more open figures to a fig file
 %
 % Args:
 %   fullname (char): file name, with path; if no figure handle is given, then all figures are saved, and '_fig_n' is appended, where n is sequentially incremented

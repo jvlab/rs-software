@@ -1,9 +1,9 @@
 function [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts)
 % [handles,plotstyles_used,opts_used]=rs_plot_style(coords,plotstyle,opts)
-% plots a set of points into the current axis.
+% plots a set of points into the current axis
 % 
-% The data may be either 2D or 3D.  Plotting uses a specified marker type, marker size,
-% line style, line thickness, and alpha blending, and handles possible conflicts or unsupported properties.
+% The data may be either 2D or 3D. Marker type, marker size,
+% line style, line thickness, and alpha blending, may be specified.  Possible conflicts or unsupported properties are handled.
 %
 % Args:
 %   coords (float 2-D array): data to plot, 2 columns for a 2D plot, 3 columns for a 3D plot

@@ -1,7 +1,7 @@
 function [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays)
-% [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays) is a utility that creates a `ray structure`
+% [rays,wmsg,opts_rays_used]=rs_findrays(sa,label,opts_rays) creates a `ray structure`
 % from a single record of a `stimulus metadata structure`.  The `ray structure` lists the stimuli that lie on rays (points on approximate straight lines),
-% rings (points in a plane at approximately equal distance from the origin), and nearest neighbors), and is used by `rs_disp_enh_coordsets`.
+% rings (points in a plane at approximately equal distance from the origin), and nearest neighbors, and is used by `rs_disp_enh_coordsets`.
 %
 % Args:
 %  sa (struct): one record of a `stimulus metadata structure`, e.g., data.sas{k}, where data is a `dataset structure`
