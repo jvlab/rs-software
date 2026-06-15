@@ -1,12 +1,11 @@
-%rs_aux_defaults_define_pvt
-%This script defines the defaults for auxiliary parameters.
-%It should be run once in a clean workspace, and the resulting workspace saved as rs_aux_defaults.mat.
-%It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
+%rs_aux_defaults_define_pvt sets the defaults for auxiliary input parameters.
 %
-%This version of the file is intended for local use in the Victor lab
-%See rs_aux_defaults_define_dist for distribution version
+%This version of the file is intended for local use in the Victor lab and is provided as an example of customization; see `rs_aux_defaults_define` for distribution version.
 %
-%Values below are appropriate for binary texture psychophysical data, and have an option to customize for hlid (calcium imaging) data.
+%Run this file in a clean workspace, choose whether to take the for binary texture data or  calcium imaging data, and, if these defaults are to be used, save the resulting workspace in rs_aux_defaults.mat.
+%The resulting file rs_aux_defaults.mat is read by `rs_aux_customize` at run-time, to set defaults for auxiliary input parameters.
+%
+%Results of choosing the binary texture option are saved in rs_aux_defaults_btc.mat.  Results of choosing the calcium imaging option are saved in rs_aux-defaults_hlid.mat.
 %
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';

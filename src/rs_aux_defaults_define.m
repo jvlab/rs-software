@@ -1,12 +1,13 @@
-%rs_aux_defaults_define_dist
-%This script defines the defaults for auxiliary parameters.
-%It should be run once in a clean workspace, and the resulting workspace saved as rs_aux_defaults.mat.
-%It is read by rs_aux_customize and used to set defaults for many of the auxiliary inputs.
+%rs_aux_defaults_define sets the defaults for auxiliary input parameters.
 %
-%This version of the file is intended for distribution and customization.
-%Search for '[' to find typical fields to be customized
+%Run this file in a clean workspace, and save the resulting workspace in rs_aux_defaults.mat.
 %
-%Values below are appropriate for binary texture psychophysical data, and have an option to customize for hlid (calcium imaging) data.
+%The resulting file rs_aux_defaults.mat is read by `rs_aux_customize` at run-time, to set defaults for auxiliary input parameters.
+%
+%This file, rs_aux_defaults_define.m (or rs_aux_defaults_define_dist.m), is intended for distribution and customization.  If inadvertently over-written, a spare copy is in rs_aux_defaults_define_dist.m,
+% and the mat-file it creates is saved in rs_aux_defaults_dist.mat. 
+%
+%Search for '[' to find typical fields to be customized.
 %
 overall=struct;
 overall.warn_leadin='##### rs_warning: ';
