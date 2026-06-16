@@ -4,11 +4,11 @@ function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
 % This read a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
 %
 % Args:
-%   aux (struct):options structure, typically with subfields with names like opts_read, opts_disp, opts_knit, etc.
+%   aux (struct): options structure, typically with subfields with names like opts_read, opts_disp, opts_knit, etc.
 %
-%   caller (string): string, name of calling function, e.g., 'rs_get_coordsets'; may be empty
+%   caller (char): name of calling function, e.g., 'rs_get_coordsets'; may be empty
 %
-%   aux_default_filename (string): full path to the file created by `rs_aux_defaults_define`; defaults to 'rs_aux_defaults.mat'
+%   aux_default_filename (char): full path to the file created by `rs_aux_defaults_define`; defaults to 'rs_aux_defaults.mat'
 %
 % Returns:
 %   aux_out (struct): aux, with defaults filled in

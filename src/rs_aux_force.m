@@ -1,17 +1,25 @@
 function [opts_forced,def,force]=rs_aux_force(aux_name,caller,aux_force_filename,aux_default_filename)
-% [opts_forced,def,force]=rs_aux_force(aux_name,caller,aux_force_filename,aux_default_filename)
-% creates an options structure that forces a non-default options to override those in rs_aux_defaults.mat
+% [opts_forced,def,force]=rs_aux_force(aux_name,caller,aux_force_filename,aux_default_filename) sets an options structure to override user-customized defaults
+% 
+% This module is solely intended for use during benchmarking with the rs_\*test modules.  
 %
-% aux_name: name of an options structure, e.g., opts_read, opts_disp
-% caller: string, name of calling function, may be empty
-% aux_force_filename: full path to the overriding set of default auxiliary inputs, e.g., rs_aux_defaults_btc.mat
-% aux_default_filename: full path to the default auxiliary inputs, defaults to rs_aux_defaults.mat, may be omitted
+% Args:
+%   aux_name (char): name of an options structure, e.g., opts_read, opts_disp
 %
-% opts_forced: structure whose fields are the fields in which force_filename gives different values than default_filename
-% def: default auxiliary inputs
-% force: forced auxiliary inputs
+%   caller (char): name of calling function, e.g., 'rs_get_coordsets'; may be empty
 %
-%  See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE, COMPSTRUCT.
+%   aux_force_filename (char): full path to the overriding set of default auxiliary inputs
+%
+%   aux_default_filename (char): full path to the default auxiliary input file created by `rs_aux_defaults_define`; defaults to 'rs_aux_defaults.mat'
+%
+% Returns:
+%   opts_forced (struct): structure whose fields in aux_force_filename differ from those in aux_default_filename
+%   
+%   def (struct): auxiliary inputs from aux_default_filename
+%
+%   force (struct): auxiliary inputs from aux_force_filename
+%
+% See also: RS_AUX_DEFAULTS_DEFINE, RS_AUX_CUSTOMIZE.
 %
 if (nargin<=3)
     aux_default_filename='rs_aux_defaults.mat';
@@ -24,7 +32,7 @@ for ifn=1:length(fns)
     fn=fns{ifn};
     if isfield(def.(aux_name),fn) %is this in the defaults?
         if ~isequal(def.(aux_name).(fn),force.(aux_name).(fn)) %does it match
-         opts_forced.(fn)=force.(aux_name).(fn);
+            opts_forced.(fn)=force.(aux_name).(fn);
         end
     else
         opts_forced.(fn)=force.(aux_name).(fn);
