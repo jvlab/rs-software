@@ -124,7 +124,18 @@ Auxiliary inputs of `rs_findrays` set the minimum number of points needed to for
 
 ## Transformation structure
 
-`Transformation structures` specify geometric transformations, including linear transformations and several generalizations.  These are constructed by `rs_xform_specify`, `rs_geofit`, and `rs_knit_coordsets`, and can be applied to `dataset structures` by `rs_xform_apply`.
+`Transformation structures` specify geometric transformations, including linear transformations and several generalizations. The diagram below shows their relationships.
+
+![Geometric models and their relationships](./images/geometric_models.png)
+<figcaption>Geometric transformations and their grouping into model classes (pale green). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
+
+Transformations can be applied to `dataset structures` by `rs_xform_apply`.
+
+Transformations can be specified directly by the fields below, or can be constructed in several ways:
+
+* `rs_xform_specify`: Creates transformations that translate and rotate a dataset, using transformation class 'affine'.
+* `rs_knit_coordsets`: Creates transformations that align one dataset with another, using transformation class 'affine'.
+* `rs_geofit`: Creates transformations that model the transformations from one dataset into another, using transformations of the classes `procrustes`, `affine`, and `pwaffine` (`pwprojective` transformations are not currently supported). `rs_geofit` also provides statistics for model selection between nested models.  See demos??
 
 For transformations on a representational space of dimension k, a `transformation structure` has the following fields:
 

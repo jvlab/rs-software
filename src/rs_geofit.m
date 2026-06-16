@@ -131,7 +131,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - mdef.(model_name).class is the model class: 'mean','procrusetes,'affine','projective','pwaffine' (see `rs_xform_apply` ??how to hyperlink)
 %    - mdef.(model_name).nested lists the names of the nested models
 %
-% Note: Note regarding nesting
+% Note: Note regarding nesting and model selection
 %    - Nesting by model type: Some models are extensions of others. For example, the affine_offset model extends the affine_noofset model, by allowing offsets.
 %    The more general model will always provide a fit that is at least as good as the less-general model, but will have more parameters.  The if_nestbymodel option provides a way to determine
 %    whether the improvement in fit is better than would be expected by chance.

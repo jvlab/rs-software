@@ -44,7 +44,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %             - 'index': use the value in aux.opts_xform.centering_index, as the
 %             index number of the stimulus whose coordinates are to be used for centering.
 %             Caution: the index refers to the position of the stimulus in data_in.ds{k}, and stimulus order may differ across datasets. 
-%             To avoid mis-refrencing stimuli, specify by typename.
+%             To avoid mis-referencing stimuli, specify by typename.
 %             - 'value': use the coordinates in aux.opts_xform.,centering_value for centering
 %
 %         - centering_typename (char): the label of the stimulus in data_in.sas{k} to be used for centering
@@ -285,6 +285,7 @@ if aux_out.warn_bad==0
                     ts=[]; %better than struct(), which is not empty
                 end
             end %mode
+            ts.class='affine';
             xforms.ts{iset}{idim}=ts;
         end %dim_ptr
     end %each set

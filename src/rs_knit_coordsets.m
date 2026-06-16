@@ -436,6 +436,7 @@ if aux_out.warn_bad==0
                 ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
                 ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
                 ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
+                ts_pca{ip}{iset}.class='affine';
             end
         end %dptr
         aux_out.ts_pca=ts_pca;
@@ -457,6 +458,11 @@ if aux_out.warn_bad==0
         knit_stats_setup.shuff_quantiles=aux.opts_knit.shuff_quantiles;
         knit_stats_setup.nstims=nstims_all;
         %
+        for kd=1:length(ra.ts)
+            for ks=1:length(ra.ts{kd})
+                ra.ts{kd}{ks}.class='affine';
+            end
+        end
         aux_out.knit_stats=ra;
         aux_out.knit_stats_setup=knit_stats_setup;
         if aux.opts_knit.if_plot
