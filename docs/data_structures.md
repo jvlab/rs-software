@@ -146,7 +146,7 @@ For transformations on a representational space of dimension k, a `transformatio
 
     * For class='projective' (a projective transformation): p is a vector of size [k 1]
     * For class='pwaffine' (a piecewise affine transformation with ncuts cuts): c is [ncuts k], T is a 3D array of size [k k 2<sup>ncuts</sup>], acut is [ncuts 1], and vcut is [ncuts k]
-    * For class='pwprojective' (a piecewise projective transformation with ncuts cuts): the parameters in 'projective' and 'pwaffine'
+    * For class='pwprojective' (a piecewise projective transformation with ncuts cuts): the parameters in 'projective' and 'pwaffine', with p an array of size [k 2<sup>ncuts</sup>]
   
 To allow for compatibility with transformations produced by `procrustes` (a MATLAB built-in), or `procrustes_consensus`, the following alternative names are allowed: b -> scaling, T -> orthog, c -> translation
 
@@ -159,7 +159,7 @@ The transformation applied to a row vector x produces a row vector y as follows:
     * The same value of b is used for all components. 
     * For transformations created by `rs_geofit`, the pieces of the transformation are continuous where they meet at their boundaries. This is not checked.
 
-* 'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective'
+* 'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective', with p(:,ipw)
 
 Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T.  The labeling of the pieces of an affine transformation can be permuted.
 
