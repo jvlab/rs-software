@@ -71,7 +71,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
 %     and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
 %
-%     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted;model_types_def.(model).nested is a cell array of the names of the nested models tested
+%     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is a cell array of the names of the nested models tested
 %     - ref_dim (int): dimension of the input dataset (same as dim_out)
 %     - adj_dim (int): dimension of output dataset (same as dim_in)
 %     - opts_geofit (struct): options used for fitting
@@ -87,12 +87,12 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
 %     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
 %
-%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, is a `transformation structure` with fields
+%   xs (struct): the transformations fit for dim_out=dim_in, in a format compatible with `rs_xform_apply`. There is a field xs.(model_name) for each model_name specified in model_list. xs.(model_name), has fields
 %
 %     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine')
-%     - xforms (struct): xforms.ts{k}{dim_in}: the transformation to be
+%     - xforms (struct): xs.(model_name).xforms.ts{k}{dim_in}: the transformation to be
 %     applied to coordinates in data_in.ds{k}{dim_in} to fit coordinates in
-%     data_out.ds{k}{dim_out}. If there no fitting is requested for this dimension pair, then this will be empty.
+%     data_out.ds{k}{dim_in}. See `transformation structure` for furhter details. If there no fitting is requested for this dimension pair, then this will be empty.
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -336,7 +336,7 @@ for iset=1:nsets
         disp(z.warnings_fit{iset});
     end
     %
-    %format the transformations
+    %format the transformations when dim_in=dim_out
     %
     for k=1:nmodels
         model_name=z.model_list{k};

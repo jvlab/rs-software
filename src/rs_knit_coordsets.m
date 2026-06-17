@@ -141,8 +141,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
 %         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
 %         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%         - ts (cell array): ts{idim}{k} is the Procrustes transformation for record k.
-%         The transformation is [consensus]=ts.scaling*[component]*ts.orthog+ts.translation.
+%         - ts (cell array): ts{idim}{k} is the Procrustes transformation
+%         for record k. The transformation is
+%         [consensus]=ts.scaling*[component]*ts.orthog+ts.translation; see `transformation structures` for further details.
 %         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
 % Note: Note regarding recalculation of alignment
@@ -436,7 +437,6 @@ if aux_out.warn_bad==0
                 ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
                 ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
                 ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
-                ts_pca{ip}{iset}.class='affine';
             end
         end %dptr
         aux_out.ts_pca=ts_pca;
@@ -458,11 +458,6 @@ if aux_out.warn_bad==0
         knit_stats_setup.shuff_quantiles=aux.opts_knit.shuff_quantiles;
         knit_stats_setup.nstims=nstims_all;
         %
-        for kd=1:length(ra.ts)
-            for ks=1:length(ra.ts{kd})
-                ra.ts{kd}{ks}.class='affine';
-            end
-        end
         aux_out.knit_stats=ra;
         aux_out.knit_stats_setup=knit_stats_setup;
         if aux.opts_knit.if_plot

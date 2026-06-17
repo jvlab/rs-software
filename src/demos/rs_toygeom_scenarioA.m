@@ -34,7 +34,7 @@ opts_geof.if_stats=0;
 %
 rs_toygeom_demo; %create the stimuli and datasets, and fit the models
 %
-%gemoetric model fit display customizations
+%geometric model fit display customizations
 paradigms_fit_show={'Axes','Random'};
 subjs_fit_show=[1:nsubjs];
 opts_dgeo=struct;
