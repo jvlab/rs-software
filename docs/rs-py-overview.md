@@ -7,6 +7,14 @@ It is designed for experiments where participants make relative similarity judgm
 
 ## What this pipeline does
 
+```mermaid
+flowchart TD
+    A[Raw ranking data] --> B[Detailed choice file]
+    B --> C[Combined choice file]
+    C --> D[Geometric model]
+```
+
+
 The pipeline transforms raw behavioral data into a geometric representation in three steps:
 
 1. Convert ranking responses into pairwise comparisons
@@ -22,8 +30,26 @@ The final outputs are:
   - farther points → less similar 
 - Log-likelihoods of each model, describing how well distances explain behavior
 
+There are three posible entry points:
+
+- raw ranking data
+- detailed choice file
+- combined choice file
+
+Below we explain each of these entry points. 
+If you are new to `rs_py`, we recommend starting with the demos. 
+The demos use sample data included with the repository and illustrate the three stages of the pipeline:
+
+- [Demo 1: Raw Rankings → Detailed Choice File](/rs-software/rs-py-demo1/)
+- [Demo 2: Detailed Choice File → Combined Choice File](/rs-software/rs-py-demo2/)
+- [Demo 3: Combined Choice File → Geometric model](/rs-software/rs-py-demo3/)
+
+Each demo corresponds to one of the three entry points.
+
+
 This is a simplified description. For full details, see Waraich & Victor (2022) and Waraich & Victor (2024).
 The present implementation is a more user-friendly version of the code used in these studies.
+
 
 
 ## Entry Points
@@ -96,29 +122,8 @@ The demo can be run using the sample combined choice file produced in Step 2. Se
 
 
 
-## Demos
+## References
 
-If you are new to `rs_py`, we recommend starting with the demos. The demos use sample data included with the repository and illustrate the three stages of the pipeline:
-
-```mermaid
-flowchart TD
-    A[Raw ranking data] --> B[Detailed choice file]
-    B --> C[Combined choice file]
-    C --> D[Geometric model]
-```
-
-- [Demo 1: Raw Rankings → Detailed Choice File](/rs-software/rs-py-demo1/)
-- [Demo 2: Detailed Choice File → Combined Choice File](/rs-software/rs-py-demo2/)
-- [Demo 3: Combined Choice File → Geometric model](/rs-software/rs-py-demo3/)
-
-Each demo corresponds to one of the three entry points described above.
-
-
-
-
-
-
-# References
 Waraich, S. A., & Victor, J. D. (2022). A Psychophysics Paradigm for the Collection and Analysis of Similarity Judgments. Journal of Visualized Experiments, 181. https://doi.org/10.3791/63461
 
 Waraich, S. A., & Victor, J. D. (2024). The Geometry of Low- and High-Level Perceptual Spaces. Journal of Neuroscience, 44(4), e1460232023–e1460232023. https://doi.org/10.1523/jneurosci.1460-23.2023

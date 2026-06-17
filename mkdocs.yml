@@ -4,9 +4,9 @@ repo_url: https://github.com/jvlab/rs-software
 theme:
   name: material
   features:
-    - toc.integrate 
+#    - toc.integrate 
     - navigation.tabs
-    - navigation.footer
+    - navigation.tabs.sticky
 #    - navigation.sections
 
 hooks:
@@ -39,6 +39,8 @@ plugins:
                 docstring_style: google
                 
 markdown_extensions:
+  - markdown_include.include:
+      base_path: docs
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -69,6 +71,7 @@ nav:
   - Installation: installation.md
   - Creating RS from perceptual judgments (python):
     - Overview: rs-py-overview.md
+    - Installation: rs-py-installation.md
     - Demos:
       - Demo 1 - Raw Rankings → Detailed Choice File: rs-py-demo1.md
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md

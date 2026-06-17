@@ -2,7 +2,7 @@
 
 This demo converts raw ranking responses collected using the Waraich & Victor paradigm into a detailed choice file.
 
-### Run the demo
+## Run the demo
 
 From the terminal:
 
@@ -12,7 +12,7 @@ python -m src.rs_py.demos.demo_detailed_choices.py
 ```
 
 
-### Inputs
+## Inputs
 
 The demo will prompt you for the following:
 
@@ -37,7 +37,7 @@ for all prompts.
 
 
 
-### What the user sees
+## What the user sees
 
 The script will display the following prompts:
 
@@ -54,7 +54,7 @@ For metadata
 ```
 
 
-### Example terminal output
+## Example terminal output
 
 ```text
 Processing raw data...
@@ -71,7 +71,7 @@ Done.
 
 
 
-### Output file
+## Output file
 
 ```text
 animals_detailed_choices_S4.mat
@@ -79,7 +79,7 @@ animals_detailed_choices_S4.mat
 
 
 
-### Contents of the output file
+## Contents of the output file
 
 The file contains three fields:
 
@@ -89,7 +89,7 @@ response_colnames
 responses
 ```
 
-#### `metadata`
+### `metadata`
 
 Information describing the dataset:
 
@@ -102,7 +102,7 @@ judgment_type = triadic
 stim_list = [...]
 ```
 
-#### `response_colnames`
+### `response_colnames`
 
 ```text
 trial
@@ -112,7 +112,7 @@ s2
 N(D(ref, s1) > D(ref, s2))
 ```
 
-#### `responses`
+### `responses`
 
 For the sample dataset:
 

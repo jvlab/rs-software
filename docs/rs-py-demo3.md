@@ -2,7 +2,13 @@
 
 ...
 
-### Note on optimization settings
+
+
+
+
+
+
+## Note on optimization settings
 
 The fitting procedure stops when either:
 
