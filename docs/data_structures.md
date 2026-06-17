@@ -133,9 +133,9 @@ Transformations can be applied to `dataset structures` by `rs_xform_apply`.
 
 Transformations can be specified directly by the fields below, or can be constructed in several ways:
 
-* `rs_xform_specify`: Creates transformations that translate and rotate a dataset, using transformation class 'affine'.
-* `rs_knit_coordsets`: Creates transformations that align one dataset with another, using transformation class 'affine'.
-* `rs_geofit`: Creates transformations that model the transformations from one dataset into another, using transformations of the classes 'mean', `procrustes`, `affine`, `projective`, and `pwaffine` (`pwprojective` transformations are not currently supported). `rs_geofit` also provides statistics for model selection between nested models.  See demos??
+* `rs_xform_specify`: Creates transformations that translate and rotate a dataset, using model class 'affine'.
+* `rs_knit_coordsets`: Creates transformations that align one dataset with another, using model class 'affine'.
+* `rs_geofit`: Creates transformations that model the transformations from one dataset into another, using transformations of the model classes 'mean', `procrustes`, `affine`, `projective`, and `pwaffine` (fitting of `pwprojective` (piecewise projective) transformations are not currently supported). `rs_geofit` also provides statistics for model selection between nested models.  See demos??
 
 For transformations on a representational space of dimension k, a `transformation structure` has the following fields:
 
