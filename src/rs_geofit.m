@@ -67,9 +67,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 % Returns:
 %   gfs (cell array of struct): gfs{k}.gf{dim_out,dim_in} contains results for the transformations from record k of `data_in` to record k of `data_out`,
-%   for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
-%   It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
-%   and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
+%     for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
+%     It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
+%     and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
 %
 %     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted;model_types_def.(model).nested is a cell array of the names of the nested models tested
 %     - ref_dim (int): dimension of the input dataset (same as dim_out)
@@ -116,9 +116,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %        - 'pwaffine_2': piecewise affine with two cutplanes; four linear transformations, with agreement on the cuts
 %
 %    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
-%    - To determine the model class (see `transformation structure`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
+%    - To determine the model class (see `transformation structures`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
 %    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
-%    - See `transformation structure` for details on how the models are parameterized
+%    - See `transformation structures` for further details on how the models are parameterized and nesting
 %
 % Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
