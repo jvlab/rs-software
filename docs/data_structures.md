@@ -126,8 +126,8 @@ Auxiliary inputs of `rs_findrays` set the minimum number of points needed to for
 
 `Transformation structures` specify geometric transformations, including linear transformations and several generalizations. The diagram below shows their relationships.
 
-![Geometric models and their relationships](./images/geometric_models.png)
-<figcaption>Geometric transformations and their grouping into model classes (pale green). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
+![Geometric models and their relationships](./images/geometric\_models\_mean\_classes.png)
+<figcaption>Geometric transformations and their grouping into model classes (pale green and right column). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
 
 Transformations can be applied to `dataset structures` by `rs_xform_apply`.
 
