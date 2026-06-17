@@ -87,9 +87,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
 %     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
 %
-%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, has fields
+%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, is a `transformation structure` with fields
 %
-%     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
+%     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine')
 %     - xforms (struct): xforms.ts{k}{dim_in}: the transformation to be
 %     applied to coordinates in data_in.ds{k}{dim_in} to fit coordinates in
 %     data_out.ds{k}{dim_out}. If there no fitting is requested for this dimension pair, then this will be empty.

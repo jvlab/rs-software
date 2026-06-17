@@ -1,6 +1,6 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% creates a `transformation structure` based the coordinates in a 'dataset structure`
+% creates a `transformation structure` based the coordinates in a `dataset structure`
 %
 % A `transformation structure` is a cell array of geometric transformations.
 % The `transformation structures` created by this module are combinations of linear transformations and translations.
@@ -60,7 +60,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % Returns:
 %   xforms (struct):  the transformations, with fields
 %
-%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see `transformation structures` and note below regarding transformations
 %      - pipeline (structure): a structure that indicates how the transformation is specified, and can serve as the 'pipeline' field of a `set metadata structure` when the transformations are applied
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields

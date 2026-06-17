@@ -40,12 +40,12 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
 % Note: Note regarding transformations
-%   - xforms.ts{k}{idim} are the transformations to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
+%   - xforms.ts{k}{idim} is the transformation to be applied to record k in `data_in`, i.e., to the coordinates data_in.ds{k}{idim}.
 %
 %       - If length(xforms.ts{k})<length(data_in), transformations are used in cyclic order.
 %       - If any of xforms.ts{k}{idim} are missing, then the coordinates in data_in.ds{k}{idim} are passed to `data_out` unchanged.
 %
-%    - Several classes of transformations, specified by aux.opts_xforms.class, are supported.  The parameters in
+%    - Several classes of transformations, specified by aux.opts_xforms.class, are supported (see `transformation structures`).  The parameters in
 %    xforms.ts{k}{idim} have the following meaning, where output and input both have size [nstims idim], and ts=ts{k}{idim}:
 %
 %       - affine: [output(istim,:)]=ts.b * [input(istim,:)] * ts.T + ts.c;
@@ -57,7 +57,7 @@ function [data_out,aux_out]=rs_xform_apply(data_in,xforms,aux)
 %       - projective: affine parameters and also p, size [isim 1]. p=0
 %       reduces to affine.  See `transformation structures` for further details.
 %       - pwaffine (piecewise affine): b as in affine.  T has size [idim idim 2^ncuts] and c
-%       has size [2^nchuts idim], specifying the affine transformation on
+%       has size [2^ncuts idim], specifying the affine transformation on
 %       each cut. vcut has size [ncuts idim], each row is a unit vector,
 %       orthogonal to the cutplanes. acut has size [1 2^ncuts], specifying the cutpoints.
 %       See `transformation structures` for further details.
