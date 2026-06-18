@@ -29,7 +29,7 @@ def get_matlab_description(filepath):
     return "No description available."
 
 def generate_demo_list():
-	matlab_files = sorted([
+    matlab_files = sorted([
         f for f in os.listdir(DEMOS_DIR)
         if f.endswith(".m") and f != "Contents.m"
     ])
