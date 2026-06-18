@@ -55,7 +55,7 @@ OWN_DATATYPES = {
     "detailed choice file":         "data_structures/#detailed choice file",
     "detailed choice files":        "data_structures/#detailed choice file",
     "quadratic form model":         "data_structures/#quadratic form model",
-    "qudaratic form models":        "data structures/#quadratic form models",
+    "quadratic form models":        "data structures/#quadratic form models",
     # add more as needed...
 }
 

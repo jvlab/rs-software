@@ -66,8 +66,7 @@ extra_css:
   
 nav:
   - Home: index.md
-  - Installation: installation.md
-  - Creating RS from perceptual judgments (python):
+  - Creating RS from perceptual judgments:
     - Overview: rs-py-overview.md
     - Installation: rs-py-installation.md
     - Demos:
@@ -75,9 +74,11 @@ nav:
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
     - Function index: function-index-python.md 
-  - Manipulating RS (Matlab):
+  - Manipulating RS:
+    - Installation: installation.md
     - Demos (Matlab): demos.md
     - Function index: function-index.md
   - Data structures: data_structures.md
+  - Python - MATLAB/Octave: python-matlab-octave.md
 
 not_in_nav: mfiles/*

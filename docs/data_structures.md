@@ -65,12 +65,12 @@ It consists of three components:  a `coordinate structure` ('ds'), a `stimulus m
 
 Typically a `dataset structure` is created by reading one or more `coordinate files` via `rs_get_coordsets`, a single `coordinate file` via `rs_read_coorddata`, or imported from coordinate arrays with user-supplied metadata via `rs_import_coordsets`.
 
-* ## Coordinate structure
+### Coordinate structure
 
     * For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
 
 
-* ## Stimulus metadata structure
+### Stimulus metadata structure
 
     * This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
@@ -80,7 +80,7 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
         * the optional variables \*LL\* and metadata from a `coordinate file`
 
 
-* ## Set metadata structure
+### Set metadata structure
 
     * This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
 
@@ -165,7 +165,7 @@ Note that the same transformation can be expressed in many ways -- for example, 
 
 ##Domains
 
-* ## Binary texture domain
+### Binary texture domain
 
 Very rough:
 
@@ -173,7 +173,7 @@ Briefly introduce the textuers and the coordinates
 Provide pointers to literature
 
 
-* ## Animal domain
+### Animal domain
 
 Briefly introduce the animal domain
 Provide pointers to J Neurosci
@@ -181,7 +181,7 @@ Provide pointers to J Neurosci
 ![Example stimuli from the five animal domains](./images/animal_domain\_fig1\_jneuro.jpg)
 <figcaption>Stimuli from the five animal domains. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
 
-* ## MPI faces domain
+### MPI faces domain
 
 Very rough:
 
