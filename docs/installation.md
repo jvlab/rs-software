@@ -2,27 +2,28 @@
 
 Ensure that MATLAB or Octave is installed. MATLAB versions 2023 and later have been tested.
 
-Clone or download GitHub repositories from https://github.com/jvlab/rs-software and https://github.com/jvlab/perceptual_space_geometry.
-Set the path.  All directories in rs-software should have precedence over directories in perceptual_space_geometry.
+Clone or download GitHub repositories from [https://github.com/jvlab/rs-software](https://github.com/jvlab/rs-software)
+and [https://github.com/jvlab/perceptual_space_geometry](https://github.com/jvlab/perceptual_space_geometry).
+Set the path.  All directories in `rs-software` should have precedence over directories in `perceptual_space_geometry`.
 
-* If using MATLAB: add all folders to the search path except src/octave_compat from rs-software. If you have downloaded a static copy, you may delete  src/octave_compat.
+* If using MATLAB: add all folders to the search path except src/octave_compat from `rs-software`. If you have downloaded a static copy, you may delete  `src/octave_compat`.
 * If using Octave: add all folders to the search path.
 
 ## Verify the install
 
-Navigate to /rs/src, clear the workspace, set if_auto_skip=1, and run rs_auto_test.
+Navigate to `/rs_software/src`, clear the workspace, set `if_auto_skip=1`, and run `rs_auto_test`.
 
-* This will exercise several modules, produce fig and mat files, and place them in /tests; it will take several minutes.
+* This will exercise several modules, produce fig and mat files, and place them in `/tests`; it will take several minutes.
 * Early in the process, you will be asked to respond to several keyboad prompts.  If a default is supplied, then accept it (Enter key); if confirmation is requested, confirm by entering a 1.
 
-After execution, the fig files and mat files in /tests will be compared with files in /benchmarks that were downloaded from the repository.
+After execution, the fig files and mat files in `/tests` will be compared with files in `/benchmarks` that were downloaded from the repository.
 
-* Differences, in comparison to the benchmarks, will be summarized and can be inspected in the fields of r_diffs.
+* Differences, in comparison to the benchmarks, will be summarized and can be inspected in the fields of `r_diffs`.
 * Some differences may be present, as there are hardware differences in how principal components are computed.  The supplied benchmarks were generated with MATLAB 2023b on a Windows 11 desktop, 64-bit OS,  Intel(R) Xeon(R) W-2102 CPU.
 
-Copy all the fig files and mat files from /tests to /benchmarks for future use.
+Copy all the fig files and mat files from `/tests` to `/benchmarks` for future use.
 
-Clear the workspace and rerun run rs_auto_test.  No differences should be encountered, and the final output should look like this:
+Clear the workspace and rerun run `rs_auto_test`.  No differences should be encountered, and the final output should look like this:
 
 ```
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,21 +72,21 @@ total number of tests with differences:    0
 ## Customize
 
 This step enables setting of various global defaults, such as file name templates, and may be skipped or carried out at a later date.
-Edit the desired entries in rs_aux_defaults_define.m.
+Edit the desired entries in `rs_aux_defaults_define.m`.
 
-* A spare copy of the original rs_aux_defaults_define.m is in the repo as rs_aux_defaults_define_dist, but you may want to keep your own spares or versions.
-* Typical fields customized may be found by searching for '\['.
-* The value of overall.if_warn_traceback can be changed to 1 from its default of 0, to show tracebacks when warnings have been issued.
+* A spare copy of the original `rs_aux_defaults_define.m` is in the repository as `rs_aux_defaults_define_dist.m`, but you may want to keep your own spares or versions.
+* Typical fields customized may be found by searching for `'\['`.
+* The value of `overall.if_warn_traceback` can be changed to `1` from its default of `0`, to show tracebacks when warnings have been issued.
 
-When done with editing, execute rs_aux_defaults_define in a clear workspace, and then save the workspace as rs_aux_defaults.mat.
+When done with editing, execute `rs_aux_defaults_define` in a clear workspace, and then save the workspace as `rs_aux_defaults.mat`.
 
-* rs_aux_defaults.mat is used at run-time to set global defaults.
-* A spare copy created with the distributed version of original  rs_aux_defaults_define.m is in the repo as  rs_aux_defaults_std.mat.
+* `rs_aux_defaults.mat` is used at run-time to set global defaults.
+* A spare copy created with the distributed version of original  `rs_aux_defaults_define.m` is in the repo as  `rs_aux_defaults_std.mat`.
 
-Optionally, edit rs_graphic_hints.m, setting parameter values to 0 or 1 based on known graphical capabilities.
+Optionally, edit `rs_graphic_hints.m`, setting parameter values to `0` or `1` based on known graphical capabilities.
 
 Rerun the verification step.
 
-* You may instead set if_auto_skip=0 (or not set it at all; default value is 0) to skip the modules that require interactive input.
+* You may instead set `if_auto_skip=0` (or not set it at all; default value is `0`) to skip the modules that require interactive input.
 * There should be no differences encountered, other than those due to altered default values that you have customized.
 
