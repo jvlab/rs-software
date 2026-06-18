@@ -67,11 +67,11 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 % Returns:
 %   gfs (cell array of struct): gfs{k}.gf{dim_out,dim_in} contains results for the transformations from record k of `data_in` to record k of `data_out`,
-%   for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
-%   It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
-%   and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
+%     for the coordinates data_in.ds{k}{dim_in} to data_out.ds{k}{dim_out}. If there is no fitting requested for this dimension pair (see 'dimpairs_method' above), then gfs{k}.gf{dim_out,dim_in} will be empty.
+%     It contains the following fields (note that fields with 'shuff' will be absent if if_nestbymodel=0, and fields with 'shuff_nestdim_in' 
+%     and 'shuff_nestdim_out' will be absent if if_nestbydim_in or if_nestbydim_out are absent)
 %
-%     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted;model_types_def.(model).nested is a cell array of the names of the nested models tested
+%     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is a cell array of the names of the nested models tested
 %     - ref_dim (int): dimension of the input dataset (same as dim_out)
 %     - adj_dim (int): dimension of output dataset (same as dim_in)
 %     - opts_geofit (struct): options used for fitting
@@ -87,12 +87,12 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
 %     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
 %
-%   xs (struct): the transformations, in a format compatible with `rs_xform_apply`: xs.(model_name), where model_name is one of the models specified by model_list, has fields
+%   xs (struct): the transformations fit for dim_out=dim_in, in a format compatible with `rs_xform_apply`. There is a field xs.(model_name) for each model_name specified in model_list. xs.(model_name), has fields
 %
-%     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine','pwprojective')
-%     - xforms (struct): xforms.ts{k}{dim_in}: the transformation to be
+%     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine')
+%     - xforms (struct): xs.(model_name).xforms.ts{k}{dim_in}: the transformation to be
 %     applied to coordinates in data_in.ds{k}{dim_in} to fit coordinates in
-%     data_out.ds{k}{dim_out}. If there no fitting is requested for this dimension pair, then this will be empty.
+%     data_out.ds{k}{dim_in}. See `transformation structure` for furhter details. If there no fitting is requested for this dimension pair, then this will be empty.
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -116,9 +116,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %        - 'pwaffine_2': piecewise affine with two cutplanes; four linear transformations, with agreement on the cuts
 %
 %    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
-%    - To determine the model class (see `transformation structure`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
+%    - To determine the model class (see `transformation structures`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
 %    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
-%    - See `transformation structure` for details on how the models are parameterized
+%    - See `transformation structures` for further details on how the models are parameterized and nesting
 %
 % Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
@@ -131,7 +131,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - mdef.(model_name).class is the model class: 'mean','procrusetes,'affine','projective','pwaffine' (see `rs_xform_apply` ??how to hyperlink)
 %    - mdef.(model_name).nested lists the names of the nested models
 %
-% Note: Note regarding nesting
+% Note: Note regarding nesting and model selection
 %    - Nesting by model type: Some models are extensions of others. For example, the affine_offset model extends the affine_noofset model, by allowing offsets.
 %    The more general model will always provide a fit that is at least as good as the less-general model, but will have more parameters.  The if_nestbymodel option provides a way to determine
 %    whether the improvement in fit is better than would be expected by chance.
@@ -336,7 +336,7 @@ for iset=1:nsets
         disp(z.warnings_fit{iset});
     end
     %
-    %format the transformations
+    %format the transformations when dim_in=dim_out
     %
     for k=1:nmodels
         model_name=z.model_list{k};

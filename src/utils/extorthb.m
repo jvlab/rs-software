@@ -1,19 +1,17 @@
 function [basis,onb]=extorthb(cv)
-
 % [basis,onb]=extorthb(cv) extends a column vector to an orthogonal basis
 %
-% it attempts to do this in a numerically "good" way, not by simply
-% doing a Gram-Schmidt procedure
+% The extension is attempted in a numerically "good" way, not by simply doing a Gram-Schmidt procedure
 %
-% cv: a column vector
+% Args:
+%   cv (float 1-D array): a column vector
 %
-% basis: a square matrix, size(basis)=[length(cv) length(cv)]; basis(:,1)=cv
-%        basis'*basis is diagonal
-% onb: orthonormal basis, vectors thought of in columns; onb'*onb=1
+% Returns:
+%   basis: (float 2-D array): a square matrix, size(basis)=[length(cv) length(cv)]; basis(:,1)=cv, basis'*basis is diagonal
 %
-% 27May24: bug for checking small values fixed
+%   onb (float 2-D array): corresonding orthonormal basis, vectors in columns; onb'*onb=1
 %
-%   See also: GRMSCMDT, EXTORTHB_GEN.
+% See also: GRMSCMDT, EXTORTHB_GEN.
 %
 n=length(cv);
 if (n<=1) basis=cv; onb=ones(n); return; end

@@ -1,38 +1,40 @@
 function [persp,y_fit,opts_used]=persp_xform_find(x,y,opts)
-% [persp,y_fit,opts_used]=persp_xform_find(x,y,opts) finds a perspective
-% transformation from an overdetermined set of corresponding points  in an arbitrary number of dimensions
+% [persp,y_fit,opts_used]=persp_xform_find(x,y,opts) fits a projective transformation
 %
-% Method: Estimating Projective Transformation Matrix (Collineation, Homography)
-% Zhengyou Zhang
-% November 1993; Updated May 29, 2010
-% Microsoft Research Techical Report MSR-TR-2010-63
-% This uses Method 2 of the above reference, but the data are in rows
-%    Note that this is appropriate for an over-determined set
+% Args: 
+%   x (float 2-D array): array of size [npts, nd], the (row) vectors to be transformed; npts is the number of vectors to be transformed
 %
-% x: data points to be transformed, size [npts,nd], nd is number of dimensions
-% y: target data points, size [npts,nd], nd is number of dimensions
-% opts: options
-%   opts.method='fmin': use method based on fminsearch, persp_ssq_dif
-%   opts.method='oneshot': use Zhang method above (default) with padding if input and output dimensions are unequal
-%    if opts.method='oneshot' or 'best':
-%      opts.if_cycle: whether to cycle through assignments of which data point
-%      in x is treated as the 'first' point and finds the one with the best-fit 
-%      in the mean-squared sense, and opts_used.best_point indicates which point yielded
-%      the best fit.
-%   opts.method='best': both methods are used, and the results of the best method is returned.
-%      opts_used.method_best is the method used
-%      opts_used.[fmin,oneshot].[yfit,ssq] are the results of each method
-%   opts.fmin_opts: options structure for fminsearch
+%   y (float 2-D array): array of size [npts, nd], its row vectors are the to be fit by applying the transformatoin to x
 %
-% persp: matrix of size [nd+1 nd+1]
-%    persp*[x ones(npts,1)] are the homogeneous coords cooresponding to y
-% y_fit: size [npts nd], the non-homogeneous mapping of x via persp, x*persp
-% opts_used: options used
-%    opts_used.ssq: sum of squares of deviations of y_fit from y
+%   opts (struct): an options structure, may be omitted, with fields
 %
-%  01Mar26:  calls two methods as subroutines, and 'best' option chooses the best
+%     - method (char): optimization method to use, can be 'fmin','oneshot','best'; default is 'oneshot' but this is overridden to 'best' when used by rs software; see note below regarding optimization methods
+%     - if_cycle (int): relevant if  opts.method='oneshot' or 'best'; see note below regarding optimization methods
+%     - fmin_opts (struct): relevant if opts_method='fmin' or 'best; see note below regarding optimization methods
 %
-%   See also: FIND_XFORM_PROJ_TEST, REGRESS, FILLDEFAULT, PERSP_SSQDIF, PERSP_SSQDIF_FIT.
+% Returns:
+%   persp (float 2-D array): array of size [nd+1 nd+1] specifying the transformation; persp*[x ones(npts,1)] are the homogeneous coordinates cooresponding to y
+%
+%   y_fit (float 2-D array): array of size [npts nd], the fitted values, i.e., the mapping of x via persp (see `persp_apply` for further details)
+%
+%   opts_used (struct): options used, along with
+%
+%     - ssq (float): sum of squares of deviations of y_fit from y
+%     - oneshot (struct): detailed results from 'oneshot' method
+%     - fmin (struct): detailed results from 'fmin' method
+%
+% Note: Optimization methods
+%   - 'fmin': an iterative method: An initial specifier of the perspective component (c in `persp_apply`) is guessed. Based on c, 
+%   the other components of the transformation (a and b in `persp_apply`) are determined by linear regresssion,
+%   yielding a squared-error residual. The residual is then minimized by adjusting c via MATLAB's fmin, which is called with the options in opts.fmin_opts
+%   - 'oneshot': This is an implementation of method 2 of The method Z. Zhang, Estimating Projective Transformation Matrix (Collineation, Homography),
+%   Microsoft Research Techical Report MSR-TR-2010-63, November 1993;
+%   Updated May 29, 2010.  It is most apprpriate when the transformation
+%   is highly overdetermined, i.e, when there are a large number of data
+%   points. If opts.if_cycle=1 (default is 0), this cycles through assignments of which data point is treated as the first point; the one that yields the best fit is returned in opts_used.best_point. 
+%   - 'best': Methods 'fmin' and 'oneshot' are both are used, and the results of the method that yields the smallest squared-error residuals is returned
+%
+% See also: FILLDEFAULT, PERSP_SSQDIF, PERSP_SSQDIF_FIT.
 %
 if (nargin<=2) opts=struct; end
 opts=filldefault(opts,'method','oneshot');
@@ -52,7 +54,7 @@ switch opts.method
         [persp,y_fit,opts_used]=persp_xform_find_fmin(x,y,opts_used);
     case 'best'
         z=struct;
-        [z.oneshot.persp,z.oneshot.y_fit,z.oneshot.opts_used]=persp_xform_find_fmin(x,y,opts_used);
+        [z.oneshot.persp,z.oneshot.y_fit,z.oneshot.opts_used]=persp_xform_find_oneshot(x,y,opts_used);
         [z.fmin.persp,z.fmin.y_fit,z.fmin.opts_used]=persp_xform_find_fmin(x,y,opts_used);
         if z.fmin.opts_used.ssq<=z.oneshot.opts_used.ssq
             method_best='fmin';

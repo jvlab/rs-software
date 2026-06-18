@@ -1,5 +1,5 @@
 function opts_used=rs_save_mat(fullname,s,opts)
-% opts_used=rs_save_mat(fullname,s,opts) is a utility to save the fields of a structure s to a mat file.
+% opts_used=rs_save_mat(fullname,s,opts) writes the fields of a structure to a mat file
 % 
 % Args:
 %   fullname (char): file name, with path; .mat will appended if necessary

@@ -1,7 +1,7 @@
 %rs_toygeom_scenarioB: geometric transformations, with statistical analysis of nested models: procrustes, affine, projective
 %
 % Scenario B for rs_toygeom_demo: 
-% illustration of gemoetric models, focusing on nesting by model
+% illustration of geometric models, focusing on nesting by model
 %
 % Geometric model simulated: affine (3 dimensions)
 % Shows that:
@@ -34,7 +34,7 @@ opts_geof.if_stats=1;
 %
 rs_toygeom_demo; %create the stimuli and datasets, and fit the models
 %
-%gemoetric model fit display customizations
+%geometric model fit display customizations
 paradigms_fit_show={'Axes'};
 subjs_fit_show=[1:nsubjs];
 opts_dgeo=struct;

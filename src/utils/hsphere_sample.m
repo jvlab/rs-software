@@ -1,25 +1,29 @@
 function [pts,opts_used]=hsphere_sample(d,opts)
-% [pts,opts_used]=hsphere_sample(d,opts) samples a hypersphere (surface)
-% d: number of dimensions (3=ordinary sphere)
-% opts: options
-%  opts.method: 'random','axes','orthants','axes_and_orthants','fibspiral' 
-%     defaults to random
-%  opts.if_hemisphere: 0 (default) to sample whole sphere, 1 to sample only
-%     a hemisphere (first nonzero coord is > 0)
-%  opts.nsamps: number of points to sample (if random), otherwise set as follows:
-%     for axes, 2*d/(1+if_hemisphere)
-%     for orthants, 2^d/(1+if_hemisphere)
-%     for axes_and_orthants, 2*d+2^2/(1+if_hemisphere)
-%     for random, defaults to 2^d
-%     for fibspiral, defaults to 4^d
-%  opts.[opts.nangs_min,nangs_mult,mults] options for fibspiral, see fibspiral.m
+% [pts,opts_used]=hsphere_sample(d,opts) samples the surface of a hypersphere with a requested number of points
 %
-% pts: array of size [nsamps d]
-% opts_used: options used
+% Args:
+%   d (int): number of dimensions (2=circle, 3=ordinary sphere)
+%  
+%   opts (struct): options structure, with fields
 %
-% 12Dec23: fibspiral added
+%      - if_hemisphere (int): 0 to sample whole hypersphere, 1 to sample only the hemi-hypersphere in which first coordinate is >0; default is 0
 %
-%   See also:  FILLDEFAULT, INT2NARY, FIBSPIRAL.
+%      - method (char): sampling method to use, with the following options; default is 'random'
+%
+%          - 'axes': one point on each axis, yields 2\*d/(1+opts.if_hemisphere) points
+%          - 'orthants': one point in each orthant, yields 2<sup>d</sup>/(1+opts.if_hemisphere) points
+%          - 'axes_and_orthants': one point on each axis and in each orthant, combines 'axes' and 'orthants'
+%          - 'random': random
+%          - 'fibspiral': Fibonacci spiral
+%
+%      - nsamps (int): number of points to sample, ignored if method='random' or 'fibspiral'; default is 2<sup>d</sup> for 'random' and 4<sup>d</sup> for 'fibspiral' 
+%
+% Returns:
+%   pts (float 2-D array): array of size [nsamps d]; each row is a unit-length point on the hypersphere
+%
+%   opts_used (struct): options used
+%
+% See also:  FILLDEFAULT, INT2NARY, FIBSPIRAL.
 %
 if (nargin<2)
     opts=struct;

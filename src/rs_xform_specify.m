@@ -1,6 +1,6 @@
 function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % [xforms,aux_out]=rs_xform_specify(data_in,aux)
-% creates a `transformation structure` based the coordinates in a 'dataset structure`
+% creates a `transformation structure` in the affine model class based the coordinates in a `dataset structure`
 %
 % A `transformation structure` is a cell array of geometric transformations.
 % The `transformation structures` created by this module are combinations of linear transformations and translations.
@@ -44,7 +44,7 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %             - 'index': use the value in aux.opts_xform.centering_index, as the
 %             index number of the stimulus whose coordinates are to be used for centering.
 %             Caution: the index refers to the position of the stimulus in data_in.ds{k}, and stimulus order may differ across datasets. 
-%             To avoid mis-refrencing stimuli, specify by typename.
+%             To avoid mis-referencing stimuli, specify by typename.
 %             - 'value': use the coordinates in aux.opts_xform.,centering_value for centering
 %
 %         - centering_typename (char): the label of the stimulus in data_in.sas{k} to be used for centering
@@ -60,7 +60,8 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 % Returns:
 %   xforms (struct):  the transformations, with fields
 %
-%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k; see note below regarding transformations
+%      - ts (cell array): ts{k}{idim} is the transformation to be applied to the coordinates of dimension idim in record k. See note below regarding transformations
+%      - class (string): model class of the transformation; this is always 'affine'. See `transformation structures` 
 %      - pipeline (structure): a structure that indicates how the transformation is specified, and can serve as the 'pipeline' field of a `set metadata structure` when the transformations are applied
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
@@ -71,9 +72,9 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
 % Note: Note regarding transformations
-%     - The transformations specified by rs_xform_specify are combinations of translations
-%     and linear transformations.  With ts=xforms.ts{k}{idim}, and each
-%     input a row vector the transformation is
+%     - The transformations specified by `rs_xform_specify` are combinations of translations
+%     and linear transformations, and belong to the model class 'affine` described in `transformation structures`.  With ts=xforms.ts{k}{idim}, and each
+%     input a row vector, the transformation is
 %     [output]=ts.b*[input]*ts.T+ts.c, where ts.b is a scalar, ts.T is an
 %     array of size [idim,idim], [input] is an array of size [nstims,idim], and c is a row vector of length idim.
 %     - This structure is identical to the output of Matlab's procrustes.m,
@@ -82,8 +83,8 @@ function [xforms,aux_out]=rs_xform_specify(data_in,aux)
 %     - This structure is also identical to that of
 %     aux_out.knit_stats.ts{idim}{k}, where the roles of ts.b, ts.T, and ts.c are
 %     replaced by ts.scaling, ts.orthog, and ts.translation.
-%     ts_specify{k}{idim}=procrustes_compat(ts_knit{idim}{k}) can be used to convert the transformations produced by ts_knit_coordsets
-%     to the transformations produced by rs_xform_specify.
+%     ts_specify{k}{idim}=procrustes_compat(ts_knit{idim}{k}) can be used
+%     to convert the transformations produced by `ts_knit_coordsets` to the transformations produced by `rs_xform_specify`.
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_PCAOFFSET, RS_XFORM_SPECIFY_TEST, RS_XFORM_APPLY.
 %
@@ -286,6 +287,7 @@ if aux_out.warn_bad==0
                 end
             end %mode
             xforms.ts{iset}{idim}=ts;
+            xforms.class='affine';
         end %dim_ptr
     end %each set
 else

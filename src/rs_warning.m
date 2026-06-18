@@ -11,15 +11,15 @@ function opts_used=rs_warning(msg,if_bad,opts_warn)
 %      - warn_bad (int): current tally of serious warnings; default is 0
 %      - warn_leadin (char) a prefix for warnings echoed at console;
 %      default is '##### rs_warning: '; can be modified by editing `rs_aux_defaults_define`
-%      - if_warn_traceback (int): 1 to show a traceback with each warning, 0 to omit; default is 0 defaults to 0; if 1, forces if_warn to 1
+%      - if_warn_traceback (int): 1 to show a traceback with each warning, 0 to omit; default is 0; if 1, forces if_warn to 1
 %
-%  Returns:
-%    opts_used (struct): updated opts_warn structure
+% Returns:
+%   opts_used (struct): updated opts_warn structure
 %
-% Note: Note
-%    Typical usage is
-%    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux_out.if_warn)) [?how to show code?]
-%    which appends the warning message 'wmsg' to aux_out.warnings, and increments tally of aux_out.warn_bad
+% Note: Typical usage
+%   Typical usage is
+%   aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux_out.if_warn)) [?how to show code?]
+%   which appends the warning message 'wmsg' to aux_out.warnings, and increments tally of aux_out.warn_bad
 %
 if (nargin<=1)
     if_bad=1;

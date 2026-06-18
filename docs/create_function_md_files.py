@@ -33,6 +33,9 @@ for f in list_mfiles:
              "      heading_level: 1\n",
              ]
                  
+    # make sure the output directory exists before writing
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     # create md file with reference to function 
     with open(output_path, 'w') as f:
         f.writelines(lines)

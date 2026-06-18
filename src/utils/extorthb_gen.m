@@ -1,25 +1,21 @@
 function [basis,onb]=extorthb_gen(v)
-% [basis,onb]=extorthb_gen(v) extends a set of column vectors
-% to an orthogonal basis
+% [basis,onb]=extorthb_gen(v) extends a set of column vectors to an orthogonal basis
 %
-% it attempts to do this in a numerically "good" way, not by simply
-% doing a Gram-Schmidt procedure
+% The extension is attempted in a numerically "good" way, not by simply doing a Gram-Schmidt procedure
 %
-% v: an array, viewed as a set of column vectors. Assumed to be orthonormal.
+% Args:
+%   v (float 2-D array): a set of column vectors, assumed to be orthonormal.
 %
-% basis: orthonormal basis a square matrix, size(basis)=[size(v,1) size(v,1)]; 
-%        basis'*basis and basis*basis' is the identity
-%  If v is orthonormal, then basis(:,1:size(v,2))=v
-%  If v is not orthonormal, then v is in the span of the first size(v,2)
-%        columns of basis, with v(:,1) proportional to basis(:,1),
-%        v(:,k) in the span of basis(:,1:k). Coefficients are in in basis'*v,
-%        which is upper-triangular
-% onb: orthonormal basis, vectors thought of in columns; onb'*onb=1,
-%   same as basis (after 31Dec24)
+% Returns:
+%   basis (float 2-D array): basis a square matrix, size(basis)=[size(v,1) size(v,1)], basis'*basis and basis*basis' is the identity
 %
-% 31Dec24: fix documentation concerning onb, and need for v being orthonormal
+%     - If v is orthonormal, then basis(:,1:size(v,2))=v
+%     - If v is not orthonormal, then v is in the span of the first size(v,2) columns of basis, with v(:,1) proportional to basis(:,1),
+%        v(:,k) in the span of basis(:,1:k). Coefficients are in in basis'*v, which is upper-triangular
 %
-%   See also: GRMSCMDT, EXTORTHB, RANDORTHU_GEN.
+%   onb (float 2-D array): same as basis, for backwards compatibility
+%
+%  See also: GRMSCMDT, EXTORTHB.
 %
 n=size(v,1);
 m=size(v,2);

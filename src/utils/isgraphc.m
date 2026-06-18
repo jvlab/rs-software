@@ -1,24 +1,28 @@
 function [isgraph, msg, niters]=isgraphc(connect,if_fast)
+% [isgraph,msg,niters]=isgraphc(connect,if_fast) determines whether a matrix is consistent with a connected graph
 %
-% [isgraph,msg,niters]=isgraphc(connect,if_fast) determines whether a matrix
-% connect is consistent with a (possibly directed) connected graph
+% This works for directed graphs, and can also be used to compute a graph's diameter.
 %
-% connect: a matrix of 0's and 1's.  connect(i,j)=1 if there is a connection from i to j
-% if_fast:  do not use sparse matrix methods, and use squaring rather than
-%     successive multiplication -- so niters+1 is not the graph diameter
-% isgraph: 1 if connect is a symmetric graph
-%         -1 if not symmetric but otherwise OK
-%          0 if not consistent with a  graph
-% msg: reason for isgraph~=1
-% niters: number of iterations to stability (if if_fast=0)
-%   if if_fast=0, for a connected graph, niters+1 is diameter
+% Args:
+%   connect (int 2-D array): a square connectivity matrix: connect(i,j)=1 if there is a connection from node i to node j. For directed graphs, the matrix will not be symmetric.
 %
-%  2Jul2019: fixed a bug that could result in endless loops, added niters, added if_fast
+%   if_fast (int): algorithm choice, default is 0
 %
-%   See also:  ISCONNECTED, PROCRUSTES_CONSENSUS.
+%     - 0: use sparse matrix methods rather than squaring; on return, niters+1 is the graph diameter
+%     - 1: use successive squaring; on return, niters+1 is not necessarily the graph diameter
+%
+% Returns:
+%   isgraph (int): 1 if graph is connected and symmetric, -1 if connected but directed, 0 if not connected or not a graph
+%
+%   msg (int): reason for isgraph~=1
+%
+%   niters (int): number of iterations used
+%
+% See also: PROCRUSTES_CONSENSUS.
 %
 isgraph=1;
 msg=[];
+niters=[];
 if (nargin<=1)
     if_fast=0;
 end

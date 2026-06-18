@@ -34,8 +34,8 @@ OWN_DATATYPES = {
     "set metadata structures":      "data_structures/#set-metadata-structure",
     "ray structure":                "data_structures/#ray-structure",
     "ray structures":               "data_structures/#ray-structure",
-    "transformation structure":     "data_structures/#transformation-structure",
-    "transformation structures":    "data_structures/#transformation-structure",
+    "transformation structure":     "data_structures/#transformation-structures",
+    "transformation structures":    "data_structures/#transformation-structures",
     "ray structure":   	            "data_structures/#ray-structure",
     "ray structures":               "data_structures/#ray-structure",
     "stimulus coordinates":         "data_structures/#stimulus-coordinates",
@@ -46,6 +46,16 @@ OWN_DATATYPES = {
     "animal domain":                "data_structures/#animal-domain",
     "MPI faces domain":             "data_structures/#mpi-faces-domain",
     "MPI faces":                    "data_structures/#mpi-faces-domain",
+    "coordinate file":              "data_structures/#coordinate file",
+    "coordinate files":             "data_structures/#coordinate file",
+    "choice file":                  "data_structures/#choice file",
+    "choice files":                 "data_structures/#choice file",
+    "combined choice file":         "data_structures/#choice file",
+    "combined choice files":        "data_structures/#choice file",
+    "detailed choice file":         "data_structures/#detailed choice file",
+    "detailed choice files":        "data_structures/#detailed choice file",
+    "quadratic form model":         "data_structures/#quadratic form model",
+    "qudaratic form models":        "data structures/#quadratic form models",
     # add more as needed...
 }
 

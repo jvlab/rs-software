@@ -1,5 +1,5 @@
-%rs_disp_coordsets_demo_cars: 
-% demonstration of display of a coordinate dataset for an unstructured domain (no stimulus coordinates)
+%rs_disp_coordsets_demo_cars: display datasets in an unstrucured domain (no stimulus coordinates)
+%
 % run after rs_disp_coordsets_demo
 %
 % See also:  RS_DISP_COORDSETS.

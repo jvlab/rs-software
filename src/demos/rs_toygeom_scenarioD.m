@@ -1,7 +1,7 @@
 %rs_toygeom_scenarioD: geometric transformations, affine model, with statistical analysis of nesting by input dimension
 %
 % Scenario D for rs_toygeom_demo: 
-% illustration of gemoetric models, focusing on nesting by input dimension and "knitting" datasets together 
+% illustration of geometric models, focusing on nesting by input dimension and "knitting" datasets together 
 %
 % Geometric model simulated: affine (3 dimensions)
 % Shows that:
@@ -33,7 +33,7 @@ opts_geof.if_stats=1;
 %
 rs_toygeom_demo; %create the stimuli and datasets, and fit the models
 %
-%gemoetric model fit display customizations
+%geometric model fit display customizations
 subjs_fit_show=[1:nsubjs];
 opts_dgeo=struct;
 opts_dgeo.view=[-15 45];

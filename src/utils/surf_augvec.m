@@ -1,15 +1,17 @@
 function h=surf_augvec(varargin)
-% function h=surf_augvec plots a surface, even if the surface values
-% are one-dimensional
+% h=surf_augvec plots a surface, extending MATLAB's `surf` to cases inwhich the surface to be plotted has a dimension of length 1.
 % 
-% only some of Matlab's calling methods are allowed:
-% surf_augvec(x,y,z)
-% surf_augvec(x,y,z,c)
-% surf_augvec(z)
-% surf_augvec(z,c)
-% or any of the above preceded by a handle
+% Args:
+%   varargin (float array or sequence of float arrays): arguments to MATLAB's `surf` in one of the following formats
 %
-% See also:  SURF.
+%     - surf_augvec(x,y,z,c), where x and y are the independent variables as 1-D vectors, z is surface height as 2-D array, c is color as 2-D array
+%     - surf_augvec(x,y,z), as above, with c proportional to surface height
+%     - surf_augvec(z,c), as above, with x=[1:size(z,2)] and y=[1:size(z,1)]
+%     - surf_augvec(z), as above, with x=[1:size(z,2)] and y=[1:size(z,1)] and c proportional to surface height
+%     - or any of the above preceded by a handle of the axis to plot into
+% 
+% Returns:
+%   h (handle): handle to the surface
 %
 if isgraphics(varargin{1},'axes')
     h=varargin{1};

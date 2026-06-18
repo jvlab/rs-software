@@ -49,7 +49,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %        - permutes_ok (int): typically omitted; 1 to accept suggested ray permutation, 0 to keep standard order; default is 1; see note below regarding customization
 %        - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
 %
-%     - opts_qpred (struct): a structure, can be omittedwith options for `quadratic form model`, with fields
+%     - opts_qpred (struct): a structure, can be omitted, with options for `quadratic form model`, with fields
 %
 %        - qform_datafile_def (char): default name of the file with quadratic form models containing a structure r; see notes below quadratic form model and customization
 %        - qform_modeltype (int or int 1-D array): list of indexes into qform_datafile_def for choice of model, used cyclically across records as needed. 0 -> ask at console; detault is 1 see note below re customization

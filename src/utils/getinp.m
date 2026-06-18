@@ -1,13 +1,18 @@
 function vals=getinp(prompt,type,limits,default)
+% vals=getinp(prompt,type,limits,default) gets an input value or values from the console and supplies a default
 %
-% vals=getinp(prompt,type,limits,default) gets an input value from the console
+% Args: 
+%   prompt (char): a prompt string, to appear after "Enter"
 %
-% prompt: the prompt string
-% type='f','d','s' for float or integer conversion, or strings
-%  result forced to be integer if d is used
-% limits([1 2]): low and high limit, ignored for strings
-% default: default value if entry is empty
+%   type (char): 'd','f','s' for integer, float, or string input; input value is required to be an integer if 'd' is used
+%   
+%   limits (int 1-D array or float 1-D arrray): limits(1) and limits(2) are low and high limits for input; ignored and may be empty if 'type'='s'
+% 
+%   default (int 1-D array or float 1-D array): default value(s) used if console response is empty
 %
+% Returns:
+%   vals (int 1-D array, float 1-D array, or char): value(s) entered at console, or default if no value is entered
+% 
 if (nargin<=3) default=[]; end
 vals=[];
 while (isempty(vals))
