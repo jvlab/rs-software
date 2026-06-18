@@ -31,4 +31,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python
+      - run: mkdocs build
       - run: mkdocs gh-deploy --force
