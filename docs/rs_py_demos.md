@@ -33,6 +33,8 @@ The `rs_py` package is a more user-friendly version of the code used in these st
 The `rs_py` package can be used at three stages of the analysis pipeline.
 
 ### Step 1: Raw Rankings to Detailed Choice File
+> **Important:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024).
+> If your data come from a different similarity-judgment paradigm, it is often easier to start from Step 2 or Step 3 instead. See [Which entry point should I use?](#which-entry-point-should-i-use) below.
 
 Use `write_choice_file_detailed`.
 
@@ -544,6 +546,13 @@ JSON example first time around. But otherwise pydict.
 
 TEST to see if missingh options fail from None. in MATLAB. 
 
+### Which Entry Point Should I Use?
+| Your data format                                                      | Start here |
+|-----------------------------------------------------------------------|------------|
+| Raw ranking CSV files from the Waraich & Victor paradigm              | Step 1 |
+| Detailed choice file (`*_detailed_choices_*.mat`)                     | Step 2 |
+| Combined choice file (`*_combined_choices_*.mat`)                     | Step 3 |
+| Another paradigm that already produces aggregated triadic comparisons | Step 2 or Step 3 |
 
 ### Notes on Comparison Formats
 
