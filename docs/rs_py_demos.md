@@ -56,7 +56,7 @@ If you are new to the package, we recommend running the demo first using the sam
 
 ---
 
-### Step 2: Detailed Choice File to Combined Choice File
+### Step 2: Detailed Choice File to Choice File
 
 Use `write_choice_file_combined`.
 
@@ -65,7 +65,7 @@ Use `write_choice_file_combined`.
 **Output:** A combined choice file:
 
 ```text
-*_combined_choices_<subject>.mat
+*_choices_<subject>.mat
 ```
 
 This step aggregates repeated occurrences of the same comparison across trials and sessions. The resulting file contains unique comparisons along with the number of times each judgment was observed.
@@ -78,11 +78,11 @@ The demo can be run using the sample detailed choice file produced in Step 1. Se
 
 ---
 
-### Step 3: Combined Choice File to Geometric Model
+### Step 3: Choice File to Geometric Model
 
 Use `run_model_fitting`.
 
-**Input:** A combined choice file.
+**Input:** A choice file.
 
 **Output:**
 
@@ -96,7 +96,7 @@ The resulting coordinates can be interpreted as a geometric representation of th
 
 **Associated Demo:** `demo_fit_euclidean.py`
 
-The demo can be run using the sample combined choice file produced in Step 2. See the **Demos** section for details.
+The demo can be run using the sample choice file produced in Step 2 from the detailed choices. See the **Demos** section for details.
 
 ## Demos (Run Everything End-to-End)
 
@@ -106,7 +106,7 @@ Raw ranking data
         ↓
 Detailed choice file
         ↓
-Combined choice file
+Choice file
         ↓
 Geometric model
 
@@ -286,9 +286,9 @@ The output of this demo becomes the input to **Demo 2**, which aggregates repeat
 
 The output of Demo 1 becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
 
-### Demo 2: Detailed Choice File → Combined Choice File
+### Demo 2: Detailed Choice File → Choice File
 
-This demo aggregates repeated comparisons from a detailed choice file into a combined choice file.
+This demo aggregates repeated comparisons from a detailed choice file into a choice file with the judgments aggregated.
 
 #### Run the demo
 
@@ -299,12 +299,12 @@ python -m src.rs_py.demos.demo_combined_choices.py
 
 #### Inputs
 
-| Prompt                             | What the parameter is                             |
-| ---------------------------------- | ------------------------------------------------- |
-| Path to detailed choices .mat file | Output file produced by Demo 1                    |
-| Output directory                   | Directory where the combined file will be written |
-| Experiment/paradigm name           | Used when naming output files                     |
-| Subject ID                         | Used when naming output files                     |
+| Prompt                             | What the parameter is                           |
+| ---------------------------------- |-------------------------------------------------|
+| Path to detailed choices .mat file | Output file produced by Demo 1 - detailed choices |
+| Output directory                   | Directory where the choice file will be written |
+| Experiment/paradigm name           | Used when naming output files                   |
+| Subject ID                         | Used when naming output files                   |
 
 To use the sample data included with the repository, enter:
 
@@ -323,8 +323,8 @@ Combining trial wise judgments.
   Exp name:           animals
   Subject:            S4
 
-Writing combined file in three-column format (ref, s1, s2).
-Saved results to /path/to/output/animals_combined_choices_S4.mat
+Writing choice file in three-column format (ref, s1, s2).
+Saved results to /path/to/output/image_choices_S4.mat
 
 Done.
 ```
@@ -332,7 +332,7 @@ Done.
 #### Output file
 
 ```text
-animals_combined_choices_S4.mat
+image_choices_S4.mat
 ```
 
 #### Contents of the output file
@@ -551,7 +551,7 @@ TEST to see if missingh options fail from None. in MATLAB.
 |-----------------------------------------------------------------------|------------|
 | Raw ranking CSV files from the Waraich & Victor paradigm              | Step 1 |
 | Detailed choice file (`*_detailed_choices_*.mat`)                     | Step 2 |
-| Combined choice file (`*_combined_choices_*.mat`)                     | Step 3 |
+| Choice file (`*_choices_*.mat`)                                       | Step 3 |
 | Another paradigm that already produces aggregated triadic comparisons | Step 2 or Step 3 |
 
 ### Notes on Comparison Formats
