@@ -1,13 +1,13 @@
 # Function index (Python)
 
-Example of how to pull docstrings here to the documentation:
 
-## anchor_coordinates.py
 
-::: src.rs_py.utils.anchor_coordinates
+
+::: src.rs_py
     handler: python
+    options:
+      members: true
+      show_submodules: true
+      
 
-## mds_embedding.py
 
-::: src.rs_py.utils.mds_embedding
-    handler: python
