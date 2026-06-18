@@ -4,7 +4,7 @@ repo_url: https://github.com/jvlab/rs-software
 theme:
   name: material
   features:
-#    - toc.integrate 
+    - toc.integrate 
     - navigation.tabs
     - navigation.tabs.sticky
 #    - navigation.sections
