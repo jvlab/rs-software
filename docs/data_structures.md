@@ -67,32 +67,32 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
 
 ### Coordinate structure
 
-    * For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
+* For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
 
 
 ### Stimulus metadata structure
 
-    * This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
+* This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
-        * nstims: number of stimuli
-        * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
-        * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
-        * the optional variables \*LL\* and metadata from a `coordinate file`
+    * nstims: number of stimuli
+    * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
+    * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
+    * the optional variables \*LL\* and metadata from a `coordinate file`
 
 
 ### Set metadata structure
 
-    * This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
+* This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
 
-        * dim\_list: list of available dimensions in ds{irec}
-        * nstims: number of stimuli
-        * label\_long: long file name, typically full file name and path
-        * label: shortened file name, suitable for display
-        * paradigm_name: a designator such as 'cars' or 'animals'
-        * paradigm_type: overall paradigm category; may be the same as paradigm_name
-        * subj\_ID: unique subject identifier
-        * subj\_ID_short: short form of subject identifier, suitable for display
-        * pipeline: structure describing the processing stages leading to this record
+    * dim\_list: list of available dimensions in ds{irec}
+    * nstims: number of stimuli
+    * label\_long: long file name, typically full file name and path
+    * label: shortened file name, suitable for display
+    * paradigm_name: a designator such as 'cars' or 'animals'
+    * paradigm_type: overall paradigm category; may be the same as paradigm_name
+    * subj\_ID: unique subject identifier
+    * subj\_ID_short: short form of subject identifier, suitable for display
+    * pipeline: structure describing the processing stages leading to this record
 
 For an example of a `dataset structure` with one record and without `stimulus coordinates`, run the demo `rs_read_coorddata_demo_cars` and look at 'data_out'.
 For an example of a `dataset structure` with three records and with `stimulus coordinates`, run the demo `rs_read_coorddata_demo_opposites` and look at 'data_out'.
@@ -124,10 +124,7 @@ Auxiliary inputs of `rs_findrays` set the minimum number of points needed to for
 
 ## Transformation structures
 
-`Transformation structures` specify geometric transformations, including linear transformations and several generalizations. The diagram below shows their relationships.
-
-![Geometric models and their relationships](./images/geometric\_models\_mean\_classes.png)
-<figcaption>Geometric transformations and their grouping into model classes (pale green and right column). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
+`Transformation structures` specify geometric transformations, including linear transformations and several generalizations.
 
 Transformations can be applied to `dataset structures` by `rs_xform_apply`.
 
@@ -135,7 +132,12 @@ Transformations can be specified directly by the fields below, or can be constru
 
 * `rs_xform_specify`: Creates transformations that translate and rotate a dataset, using model class 'affine'.
 * `rs_knit_coordsets`: Creates transformations that align one dataset with another, using model class 'affine'.
-* `rs_geofit`: Creates transformations that model the transformations from one dataset into another, using transformations of the model classes 'mean', `procrustes`, `affine`, `projective`, and `pwaffine` (fitting of `pwprojective` (piecewise projective) transformations are not currently supported). `rs_geofit` also provides statistics for model selection between nested models.  See demos??
+* `rs_geofit`: Finds transformations that fit the relationship between one dataset and another, using transformations of the model classes 'mean', `procrustes`, `affine`, `projective`, and `pwaffine` (fitting of `pwprojective` (piecewise projective) transformations are not currently supported).
+
+The diagram below shows the available geometric transformations. Note that some transformations are special cases of others, i.e., nested within a more general transformation.  These relationships are indicated by the green arrows in the diagram. The more general transformation will always provide a fit that is at least as good as one that is nested in it, but at a cost of having more parameters.  `rs_geofit` provides statistics for model comparison and selection between such pairs of nested models.  See demos??
+
+![Geometric models and their relationships](./images/geometric\_models\_mean\_classes.png)
+<figcaption>Geometric transformations and their grouping into model classes (pale green and right column). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
 
 For transformations on a representational space of dimension k, a `transformation structure` has the following fields:
 
@@ -162,6 +164,7 @@ The transformation applied to a row vector x produces a row vector y as follows:
 * 'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective', with p(:,ipw)
 
 Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T.  The labeling of the pieces of an affine transformation can be permuted.
+
 
 ##Domains
 

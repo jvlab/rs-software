@@ -72,18 +72,18 @@ total number of tests with differences:    0
 ## Customize
 
 This step enables setting of various global defaults, such as file name templates, and may be skipped or carried out at a later date.
-Edit the desired entries in `rs_aux_defaults_define.m`.
+Edit the desired entries in `rs_aux_defaults_define`.
 
-* A spare copy of the original `rs_aux_defaults_define.m` is in the repository as `rs_aux_defaults_define_dist.m`, but you may want to keep your own spares or versions.
+* A spare copy of the original `rs_aux_defaults_define` is in the repository as `rs_aux_defaults_define_dist`, but you may want to keep your own spares or versions.
 * Typical fields customized may be found by searching for `'\['`.
 * The value of `overall.if_warn_traceback` can be changed to `1` from its default of `0`, to show tracebacks when warnings have been issued.
 
 When done with editing, execute `rs_aux_defaults_define` in a clear workspace, and then save the workspace as `rs_aux_defaults.mat`.
 
 * `rs_aux_defaults.mat` is used at run-time to set global defaults.
-* A spare copy created with the distributed version of original  `rs_aux_defaults_define.m` is in the repo as  `rs_aux_defaults_std.mat`.
+* A spare copy created with the distributed version of original  `rs_aux_defaults_define` is in the repository as  `rs_aux_defaults_std.mat`.
 
-Optionally, edit `rs_graphic_hints.m`, setting parameter values to `0` or `1` based on known graphical capabilities.
+Optionally, edit `rs_graphic_hints`, setting parameter values to `0` or `1` based on known graphical capabilities.
 
 Rerun the verification step.
 

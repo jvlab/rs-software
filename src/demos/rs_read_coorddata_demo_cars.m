@@ -1,4 +1,4 @@
-%rs_read_coorddata_demo_cars: read coordinate data and create a dattaset structure in a domain without stimulus coordinates
+%rs_read_coorddata_demo_cars: read coordinate data and create a dataset structure in a domain without stimulus coordinates
 %
 % data file: 37 stimuli, automobile names, with random coordinates for model dimensions 1,2,3, and 4
 %
