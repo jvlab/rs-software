@@ -29,10 +29,11 @@ def get_matlab_description(filepath):
     return "No description available."
 
 def generate_demo_list():
-    matlab_files = sorted([
-        f for f in os.listdir(DEMOS_DIR) if f.endswith(".m")
+	matlab_files = sorted([
+        f for f in os.listdir(DEMOS_DIR)
+        if f.endswith(".m") and f != "Contents.m"
     ])
-
+    
     lines = [
         "# Demos\n",
         "The library contains several demos that show its functionality. They are located in folder `src/demos`.\n",
