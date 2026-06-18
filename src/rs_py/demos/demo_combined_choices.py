@@ -17,7 +17,7 @@ from src.rs_py.choices.choice_file_combined import build_combine_choice_mat
 def demo_inputs():
     base_dir = Path(__file__).resolve().parent.parent
     demo_defaults = CONFIG['inputs']['combined_choice']
-    demo_defaults['input_path'] = (base_dir / "samples/choice_files/animals_detailed_choices_S4.mat").resolve()
+    demo_defaults['input_path'] = (base_dir / "samples/choice_files/image_detailed_choices_S4.mat").resolve()
     demo_defaults['output_dir'] = (base_dir / "samples/outputs").resolve()
     demo_defaults['exp_name'] = "animals"
     demo_defaults['subject'] = "S4"

@@ -24,7 +24,7 @@ def demo_inputs():
     model_defaults = CONFIG["inputs"]["model_fit"]
 
     defaults = {
-        "filepath": (base_dir / "samples/choice_files/animals_combined_choices_S4.mat").resolve(),
+        "filepath": (base_dir / "samples/choice_files/image_choices_S4.mat").resolve(),
         "exp_name": "animals",
         "subject": "S4",
         "output_dir": (base_dir / "samples/outputs").resolve(),
