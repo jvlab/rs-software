@@ -99,28 +99,25 @@ For an example of a `dataset structure` with three records and with `stimulus co
 
 ## Stimulus coordinates
 
-For some domains, there may be an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example are adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. Stimulus coordinates are a numerical array, in which the rows correspond to the stimuli (in the order of 'typenames'), and each column is a dimension.
+Some domains may be structured by an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example are adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. Stimulus coordinates are a numerical array, in which the rows correspond to the stimuli (in the order of 'typenames'), and each column is a dimension.
 
 *  For generic domains, these coordinates constitute the `type_coords` field of the `stimulus metadata structure`, and can be specified as auxiliary inputs in  `rs_get_coordsets`, `rs_read_coorddata`, or `rs_import_coordsets`.
-*  For `binary texture` data, these values are specified in the `setup metadata` and are in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.
+*  For `binary texture` domains, these values are specified in the `setup metadata` and are in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.
 
-`Stimulus coordinates` are used in several ways:
+`Stimulus coordinates` may be used to:
 
-* As a framework for visualization of representational spaces (via `rs_disp_enh_coordsets`, run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
-* To create models for representational spaces (via `rs_read_coordsets`, run `rs_read_coorddata_demo_opposites`, option 3, for an example)
+* To create a `ray structure`, to enhance visualization of representational spaces via `rs_disp_enh_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
+* To create `quadratic form models` for representational spaces via `rs_read_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
 
-## Ray structure
+### Ray structure
 
-A `ray structure` identifies simple relationships among the `stimulus coordinates`:
+When the stimulus domain is structured, a `ray structure` identifies simple relationships among the `stimulus coordinates`:
 
 * stimuli that lie on rays (points on approximate straight lines from the origin)
-* stimuli that lie on rings (ponits in a plane at approximate equal distances from the origin)
+* stimuli that lie on rings (coplanar points at approximately equal distances from the origin)
 * nearest neighbors
 
-It is created by 'rs_findrays' from the `stimulus coordinates`. The `ray structure` is used for visualizations in `rs_disp_enh_coordsets`.
-
-Auxiliary inputs of `rs_findrays` set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
-
+The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
 
 ## Transformation structures
 
@@ -154,16 +151,16 @@ To allow for compatibility with transformations produced by `procrustes` (a MATL
 
 The transformation applied to a row vector x produces a row vector y as follows:
 
-* 'affine','procrustes','mean': y=b\*xT+c  (Note, for 'procrustes', abs(det(T)) should equal 1, and for 'mean', T should equal 0.)
+* 'affine','procrustes','mean': These are linear transformations with an optional offset component, y=b\*xT+c. (Note, for 'procrustes', abs(det(T)) should equal 1, and for 'mean', T should equal 0.)
 * 'projective':  This is a projective (or perspective) transformation. An array T<sup>aug</sup> of size [k+1 k+1] is formed with b\*T in its upper left, p in its upper right, c in its lower left, and 1 in its lower right. x<sup>aug</sup> is created by adjoining a 1 to the right of x. Then y<sup>aug</sup>=x<sup>aug</sup>\*T<sup>aug</sup> is computed, and y is the first k elements of y<sup>aug</sup> divided by its last.  For p=0, this reduces to an affine transformation.
 * 'pwaffine': This is a piecewise affine transformation.  There are ncuts hyperplanes, each defined by their normal vectors given in vcut.  To determine the component of the space that x lies in, s=sign(x\*vcut<sup>T</sup>-acut) is computed. The affine transformation used ('ipw') is determined by the entries in s: s=[+1 +1 ... +1] corresponds to ipw=1, [-1 +1 ... +1] corresponds to ipw=2, [+1 -1 ... +1] corresponds to ipw=3,..., and [-1 -1 ... -1] corresponds to ipw=2<sup>ncuts</sup>. Then T(:,:,ipw) and c(ipw,:) are used to compute the transformation, as in 'affine' above.  Notes:
 
     * The same value of b is used for all components. 
-    * For transformations created by `rs_geofit`, the pieces of the transformation are continuous where they meet at their boundaries. This is not checked.
+    * For transformations created by `rs_geofit`, the pieces of the transformation are continuous where they meet at their boundaries.
 
 * 'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective', with p(:,ipw)
 
-Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T.  The labeling of the pieces of an affine transformation can be permuted.
+Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T, and the cutplanes of a piecewise transformation can be permuted.
 
 
 ##Domains
