@@ -1,6 +1,7 @@
 function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 % [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
-% fits geometrical models to the transformation between coordinates in two `dataset structures`
+% fits geometrical models to the relationship between coordinates in two
+% `dataset structures` and provides `transformation structures` that contain these models
 %
 % Args:
 %   data_in (struct): `dataset structure` that is the starting point of the transformations, with fields
@@ -87,12 +88,12 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - d_shuff_nestdim_out (float 4-D array): d_shuff_nestbydim_out(m,shuff,nest,normtype) is the normalized error for each shuffle for a model with fewer output dimensions; normtype=1  normalizes by the centroid of the shuffled data, normtype=2 normalizes by the centroid of the original data
 %     - surrogate_count_nestdim_out (int 3-D array): surrogate_count_nestdim_out(m,nest,normtype) counts the number of shuffles for which d_shuff_nestdim_out(m,shuff,nest,normtype) is less than d(m)
 %
-%   xs (struct): the transformations fit for dim_out=dim_in, in a format compatible with `rs_xform_apply`. There is a field xs.(model_name) for each model_name specified in model_list. xs.(model_name), has fields
+%   xs (struct): the transformations fit for dim_out=dim_in, as `transformation structures` compatible with `rs_xform_apply`. There is a field xs.(model_name) for each model_name specified in model_list. xs.(model_name), has fields
 %
 %     - class (char): the transformation class ('mean','procrustes','affine', 'projective','pwaffine')
 %     - xforms (struct): xs.(model_name).xforms.ts{k}{dim_in}: the transformation to be
 %     applied to coordinates in data_in.ds{k}{dim_in} to fit coordinates in
-%     data_out.ds{k}{dim_in}. See `transformation structure` for furhter details. If there no fitting is requested for this dimension pair, then this will be empty.
+%     data_out.ds{k}{dim_in}. See `transformation structure` for further details. If no fitting is requested for this dimension pair, then it will be empty.
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
