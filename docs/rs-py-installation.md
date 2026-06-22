@@ -136,5 +136,4 @@ import module. 3 modules to choose.
 
 JSON example first time around. But otherwise pydict. 
 
-TEST to see if missingh options fail from None. in MATLAB. 
-**Add a field to coords file to inlcude used params eg iterations etc.** 
+TEST to see if missingh options fail from None. in MATLAB.
