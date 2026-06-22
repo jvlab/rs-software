@@ -1,9 +1,13 @@
 site_name: "Representational spaces"
 site_url: https://jvlab.github.io/rs-software/
+repo_url: https://github.com/jvlab/rs-software
 theme:
   name: material
   features:
-    - toc.integrate 
+#    - toc.integrate 
+    - navigation.tabs
+    - navigation.tabs.sticky
+#    - navigation.sections
 
 hooks:
   - docs/hook_site_config.py
@@ -46,21 +50,34 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.blocks.caption
-
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+          
 extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
      
 extra_css:
   - css/extra.css
-     
+  
+  
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Modules: modules.md
-  - Function index: function-index.md
-  - Function index - python: function-index-python.md
-  - Demos: demos.md
+  - Creating RS from perceptual judgments (python):
+    - Overview: rs-py-overview.md
+    - Installation: rs-py-installation.md
+    - Demos:
+      - Demo 1 - Raw Rankings → Detailed Choice File: rs-py-demo1.md
+      - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
+      - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
+    - Function index: function-index-python.md 
+  - Manipulating RS (Matlab):
+    - Demos (Matlab): demos.md
+    - Function index: function-index.md
   - Data structures: data_structures.md
 
 not_in_nav: mfiles/*
