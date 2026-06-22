@@ -135,5 +135,3 @@ import module. 3 modules to choose.
 
 
 JSON example first time around. But otherwise pydict. 
-
-TEST to see if missingh options fail from None. in MATLAB.
