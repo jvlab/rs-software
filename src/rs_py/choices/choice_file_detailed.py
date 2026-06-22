@@ -44,44 +44,37 @@ def parse_click_sequence(row):
 
 def generate_comparisons(reference, clicks, trial_num):
     """
-    Enumerate all pairwise triadic distance comparisons for one trial
-    based on the observed click order of stimuli relative to a reference.
+    Generate all pairwise triadic distance comparisons for a single trial.
 
-    Given a reference stimulus and an ordered list of non-reference stimuli
-    clicked during a trial, this function generates all (n choose 2) pairwise
-    comparisons between stimulus pairs (s_i, s_j), each expressed as a
-    triadic comparison of the form:
+    Given a reference stimulus and an ordered list of non-reference stimuli,
+    generate all pairwise triadic comparisons implied by the click order.
 
-       D(reference, s2) > D(reference, s4)
+    Args:
+        reference (str):
+            Label of the reference stimulus.
+        clicks (list[str]):
+            Ordered list of non-reference stimuli in the order they were clicked.
+        trial_num (int):
+            Trial index assigned to all generated comparisons.
 
-    For each unordered pair {s_i, s_j}:
-    consider their relative order in the click sequence to determine the behavioral judgment,
-    then log the comparison using a consistent ordering of stimulus labels (s2, s4). If the
-    logged order differs from the click order, the judgment is flipped accordingly.
+    Returns:
+        - comparisons (list[dict]) - List of comparison dictionaries, one for each unordered stimulus pair.
+        Each dictionary contains:
+            - trial
+            - s1
+            - s2
+            - s3
+            - s4
+            - operator
+            - judgment
 
-    Each generated comparison dictionary contains:
-     - 'trial'    : the trial index for this comparison
-     - 's1', 's3' : the reference stimulus (appears in both pairs)
-     - 's2', 's4' : the non-reference stimuli defining the comparison
-     - 'operator': the comparison operator ('>')
-     - 'judgment': a binary indicator encoding the outcome of the comparison
+    Notes:
+        The number of generated comparisons is $n# choose 2, where $n$ is the number of comparison stimuli.
+        Each unordered stimulus pair appears exactly once per trial.
+        Canonicalization of comparison keys and stimulus-ID remapping are
+        performed by downstream processing steps.
 
-    Parameters:
-        reference : (str) Label of the reference stimulus for the trial.
-        clicks : (list of str) Ordered list of non-reference stimulus labels, in the order they were clicked during the trial.
-        trial_num : (int) Trial index to assign to all generated comparisons.
-
-    Returns
-    -------
-   - comparisons : list of dict
-        A list of comparison dictionaries, one for each unordered stimulus pair, representing
-        all triadic distance judgments for the trial.
-
-    Notes
-    -----
-     - The number of generated comparisons is "n choose 2", where n = number of comparison stimuli.
-      - Each unordered stimulus pair appears exactly once per trial.
-      - Canonicalization of comparison keys and stimulus ID remapping are handled by downstream processing steps.
+        See also: standardize_comparison_keys
     """
     comparisons = []
     for i in range(len(clicks)):
@@ -137,30 +130,27 @@ def process_subject_data(input_directory):
     provide a clean semantic representation of trial-level comparisons that
     downstream steps may further standardize or serialize.
 
-    Parameters
-    ----------
-    input_directory : str
-        Path to a directory containing one or more response CSV files for a
-        single subject. The directory may contain subdirectories; all matching
-        response files will be processed.
+    Args:
+        input_directory (str):
+            Path to a directory containing one or more response CSV files for a
+            single subject. The directory may contain subdirectories; all matching
+            response files will be processed.
 
-    Returns
-    -------
-    all_comparisons : list of dict
-        A flat list of comparison dictionaries. Each dictionary corresponds
-        to a single triadic comparison and contains at least the keys:
-        'trial', 's1', 's2', 'operator', 's3', 's4', and 'judgment'.
-    stimuli : set
-        A set containing the labels of all stimuli encountered across all processed trials, including reference and non-reference stimuli.
 
-    Notes
-    -----
-    - Trial numbering starts at 1 and increases sequentially across all files
-      and rows; no session boundaries are inferred or enforced.
-    - The interpretation of click order and judgment semantics is delegated
-      to `generate_comparisons`.
-    - CSV files are read using UTF-8 with BOM (utf-8-sig) encoding to match
-      experimental data exports.
+    Returns:
+        all_comparisons (list[dict]):
+            A flat list of comparison dictionaries. Each dictionary corresponds to a single triadic comparison and contains at least the keys:
+            `trial`, `s1`, `s2`, `operator`, `s3`, `s4`, and `judgment`.
+        stimuli (set):
+            Labels of all stimuli encountered across all processed trials, including reference and non-reference stimuli.
+
+    Note:
+       -  Trial numbering starts at 1 and increases sequentially across all files and rows; no session boundaries are inferred or enforced.
+       - The interpretation of click order and judgment semantics is dealt with in `generate_comparisons`.
+       - CSV files are read using UTF-8 with BOM (utf-8-sig) encoding to match experimental data exports.
+
+    See also:
+        generate_comparisons
     """
     all_comparisons = []
     stimuli = set()
