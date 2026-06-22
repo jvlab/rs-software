@@ -9,11 +9,10 @@ It is designed for experiments where participants make relative similarity judgm
 
 ```mermaid
 flowchart TD
-    A[Raw ranking data] --> B[Detailed choice file]
-    B --> C[Combined choice file]
+    A[Raw ranking data] --> B[Detailed choices file]
+    B --> C[Choices file]
     C --> D[Geometric model]
 ```
-
 
 The pipeline transforms raw behavioral data into a geometric representation in three steps:
 
@@ -34,15 +33,15 @@ There are three posible entry points:
 
 - raw ranking data
 - detailed choice file
-- combined choice file
+- choice file
 
 Below we explain each of these entry points. 
 If you are new to `rs_py`, we recommend starting with the demos. 
 The demos use sample data included with the repository and illustrate the three stages of the pipeline:
 
 - [Demo 1: Raw Rankings → Detailed Choice File](/rs-software/rs-py-demo1/)
-- [Demo 2: Detailed Choice File → Combined Choice File](/rs-software/rs-py-demo2/)
-- [Demo 3: Combined Choice File → Geometric model](/rs-software/rs-py-demo3/)
+- [Demo 2: Detailed Choice File → Choice File](/rs-software/rs-py-demo2/)
+- [Demo 3: Choice File → Geometric model](/rs-software/rs-py-demo3/)
 
 Each demo corresponds to one of the three entry points.
 
@@ -57,6 +56,8 @@ The present implementation is a more user-friendly version of the code used in t
 The `rs_py` package can be used at three stages of the analysis pipeline.
 
 ### Step 1: Raw Rankings to Detailed Choice File
+> **Important:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024).
+> If your data come from a different similarity-judgment paradigm, it is often easier to start from Step 2 or Step 3 instead. See [Which entry point should I use?](#which-entry-point-should-i-use) below.
 
 Use `write_choice_file_detailed`.
 
@@ -78,16 +79,16 @@ If you are new to the package, we recommend running the demo first using the sam
 
 ---
 
-### Step 2: Detailed Choice File to Combined Choice File
+### Step 2: Detailed Choice File to Choice File
 
 Use `write_choice_file_combined`.
 
 **Input:** A detailed choice file.
 
-**Output:** A combined choice file:
+**Output:** A choice file:
 
 ```text
-*_combined_choices_<subject>.mat
+*_choices_<subject>.mat
 ```
 
 This step aggregates repeated occurrences of the same comparison across trials and sessions. The resulting file contains unique comparisons along with the number of times each judgment was observed.
@@ -100,11 +101,11 @@ The demo can be run using the sample detailed choice file produced in Step 1. Se
 
 ---
 
-### Step 3: Combined Choice File to Geometric Model
+### Step 3: Choice File to Geometric Model
 
 Use `run_model_fitting`.
 
-**Input:** A combined choice file.
+**Input:** A choice file with judgments combined across repetitions.
 
 **Output:**
 
@@ -118,8 +119,15 @@ The resulting coordinates can be interpreted as a geometric representation of th
 
 **Associated Demo:** `demo_fit_euclidean.py`
 
-The demo can be run using the sample combined choice file produced in Step 2. See the **Demos** section for details.
+The demo can be run using the sample choice file produced in Step 2. See the **Demos** section for details.
 
+### Which Entry Point Should I Use?
+| Your data format                                                      | Start here |
+|-----------------------------------------------------------------------|------------|
+| Raw ranking CSV files from the Waraich & Victor paradigm              | Step 1 |
+| Detailed choice file (`*_detailed_choices_*.mat`)                     | Step 2 |
+| Choice file (`*_choices_*.mat`)                                       | Step 3 |
+| Another paradigm that already produces aggregated triadic comparisons | Step 2 or Step 3 |
 
 
 ## References

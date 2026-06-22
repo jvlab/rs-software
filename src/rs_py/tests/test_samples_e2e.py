@@ -89,7 +89,7 @@ class TestE2EUsingSamples(unittest.TestCase):
             repo,
             "samples",
             "choice_files",
-            "animals_detailed_choices_S4.mat",
+            "image_detailed_choices_S4.mat",
         )
         self.assertTrue(os.path.isfile(input_mat_path), f"Missing sample file: {input_mat_path}")
 

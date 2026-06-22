@@ -165,6 +165,10 @@ within the same file.
 The output of this demo becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
 
 
+## Next step
+
+The output of Demo 1 becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
+
 
 ## Notes on Comparison Formats
 
@@ -203,11 +207,4 @@ This contains the same information, but represents the judgment as a comparison 
 ### Which should I choose?
 
 For most users, we recommend choosing `triadic.` Choose `tetradic` only if your downstream analysis expects comparisons between stimulus pairs or you need compatibility with another tetradic dataset.
-
-
-
-
-## Next step
-
-The output of Demo 1 becomes the input to **Demo 2**, which aggregates repeated occurrences of the same comparison across trials and sessions.
 
