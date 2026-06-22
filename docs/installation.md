@@ -90,3 +90,67 @@ Rerun the verification step.
 * You may instead set `if_auto_skip=0` (or not set it at all; default value is `0`) to skip the modules that require interactive input.
 * There should be no differences encountered, other than those due to altered default values that you have customized.
 
+
+## Setting up your environment for `rs_py`
+The above steps are sufficient if you only intend to use the **Tools for Manipulating Representational Spaces**, which are written in MATLAB. 
+
+If you would also like to make use of the **Tools for creating representational spaces from perceptual judgments**, which are contained in `rs_py` and written in Python, 
+then please also complete the following steps. 
+
+### 1. Create a virtual environment
+
+We recommend using a virtual environment when working with the scripts in `rs_py`.
+Throughout this guide we use **conda**, but other tools such as `venv` can be used instead. 
+You may also install the required dependencies into your global Python environment, although this is generally not recommended.
+
+If you do not already have conda installed, see the official documentation [here](https://docs.conda.io/projects/conda/en/latest/index.html):
+
+Create a conda environment with Python 3.10 or higher:
+```commandline
+conda create -n rs_env python=3.10
+```
+
+### 2. Install dependencies using pip
+While in your new conda environment, type the following in your terminal to install required packages:
+```commandline
+pip install numpy scipy pandas
+```
+
+### 3. Get path to environment
+Verify that the environment was created and note the path to it, by typing the following in the terminal:
+```commandline
+conda env list
+```
+You may see output resembling the following. Copy the path you see for the `rs_env` environment as it will be used when setting up MATLAB.
+```commandline
+# conda environments:
+#
+# * -> active
+# + -> frozen
+                         /Users/suniyya/fsl
+base                     /Users/suniyya/miniconda3
+rs_env           *   /Users/suniyya/miniconda3/envs/rs_env
+```
+
+Before you call a script from `rs_py` (see [Entry Points](rs-software/rs-py-overview/#entry-points) to get started), just activate this environment as follows:
+
+```commandline
+conda activate rs_env
+```
+If you do not intend to run `rs_py` scripts from MATLAB, you may skip the next step.
+
+
+### 4. Set up MATLAB environment
+We assume MATLAB R2024a or R2024b is being used. Other versions may also work with Python 3.10, but compatibility should be verified by the user. If you are able to complete this step, then there is no compatibility issue. 
+
+1. Open MATLAB. 
+2. Navigate to the `rs-software` folder and make sure `src` has been added to the path.
+3. In the MATLAB console, set the python environment by entering the path to your own conda environment from the previous step, as follows: 
+
+```matlab
+pyenv(Version='/Users/suniyya/miniconda3/envs/rs_env');
+```
+Ensure you replace the above path with what you copied in the previous step. 
+
+Now, you should be able to import python modules and run them. See [Running python inside MATLAB](rs-software/python-matlab-octave/#running-python-inside-matlab) for details. 
+
