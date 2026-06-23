@@ -44,6 +44,7 @@ OWN_DATATYPES = {
     "binary texture":               "data_structures/#binary-texture-domain",
     "binary textures":              "data_structures/#binary-texture-domain",
     "animal domain":                "data_structures/#animal-domain",
+    "animal domains":               "data_structures/#animal-domain",
     "MPI faces domain":             "data_structures/#mpi-faces-domain",
     "MPI faces":                    "data_structures/#mpi-faces-domain",
     "coordinate file":              "data_structures/#coordinate file",
