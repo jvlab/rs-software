@@ -182,7 +182,7 @@ Together, these ten statistics determine the probability of all 2x2 blocks of ch
 ![Binary texture coordinates](./images/btc\_sliders.png)
 <figcaption>The ten binary texture coordinates and their code letters. Adapted from Victor, J.D., Thengone, D.J., Rizvi, S.M., and Conte, M.M. (2015) A perceptual space of local image statistics.  Vision Research 117, 117-135.</figcaption>
 
-Stimuli are named according to the values of the specified coordinates, using the above code letters, followed by 'p' for positive or 'm' for negative, followed by four digits indicating the coordinate magnitude. 'rand' indicates the random texture.  Examples, along with samples of the corresponding textures, are shown below.  
+Stimuli are named according to the values of the specified coordinates, using the above single-letter codes, followed by 'p' for positive or 'm' for negative, followed by four digits indicating the coordinate magnitude. 'rand' indicates the random texture.  Examples, along with samples of the corresponding textures, are shown below.  
 
 ![Sample of texture bp0900](./images/bp0900_000.png)<figcaption>A sample of texture bp0900, i.e., $\beta$<sub>-</sub>=+0.9</figcaption>
 
@@ -215,7 +215,7 @@ Each of these animals can be rendered in any of five ways, to create five paradi
 
 #### MPI faces domain
 
-This domain corresponds to the stimuli in Ebner, N. C., Riediger, M., \& Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.
+This domain corresponds to the stimuli in Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.
 
 #### Color Textures
 
