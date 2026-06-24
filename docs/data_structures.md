@@ -88,8 +88,9 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
     * nstims: number of stimuli
     * label\_long: long file name, typically full file name and path
     * label: shortened file name, suitable for display
-    * paradigm_name: a designator such as 'cars' or 'animals'
-    * paradigm_type: overall paradigm category; may be the same as paradigm_name
+    * type: typically 'data', alternatively 'qform' for a `quadratic form model`
+    * paradigm\_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the `binary texture domain` and 'animals' for the `animal domain`
+    * paradigm\_name: can be the same as paradigm\_type or used to designate a subset or rendering within paradigm\_type 
     * subj\_ID: unique subject identifier
     * subj\_ID_short: short form of subject identifier, suitable for display
     * pipeline: structure describing the processing stages leading to this record
@@ -211,6 +212,8 @@ Stimuli are named according to the values of the specified coordinates, using th
 
 Stimulus coordinates are 10-element vectors, in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.  In the  `btc_specoords` field, the un-specified coordinates are indicated as NaN.  In the  `btc_augcoords` field, these NaN values are replaced by the coordinate values determined by maximum entropy. Algorithms for generating these textures and further details may be found in  [Victor and Conte (2012)](http://www.opticsinfobase.org/josaa/viewmedia.cfm?uri=josaa-29-7-1313&seq=0).
 
+In `dataset structures` that hold representational space coordinates for this domain, the `set metadata structure` field 'paradigm_type' is 'btc' and 'paradigm_name' indicates the coordinates that are explored in the stimulus set.
+
 Demos: ??
  
 ### Animal domain
@@ -218,6 +221,8 @@ Demos: ??
 The animal domain is a set of 37 common animals, introduced in [Waraich, S.A., and Victor, J.D. (2022) A psychophysics paradigm for the collection and analysis of similarity judgments. J. Vis. Exp. (181), e63461, doi:10.3791/63461 (2022)](https://dx.doi.org/10.3791/63461) and used in [Waraich, S.A., and Victor, J.D. (2024) The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023](https://www.jneurosci.org/content/44/4/e1460232023).
 
 Each of these animals can be rendered in any of five ways, to create five paradigms, varying in the extent to which the original animal is recognizable.  Paradigm names are  'texture','intermediate_texture','intermediate_object','image','word' (the 'texture' rendering is fully texturized and unrecognizable; the 'image' paradigm is the original image, in 'word', the image is replaced by the name of the animal).  Examples are shown below.
+
+In `dataset structures` that hold representational space coordinates for this domain, the `set metadata structure` field 'paradigm_type' is 'animals' and 'paradigm_name' indicates the rendering.
 
 ![Example stimuli from the five paradigms of the animal domain](./images/animal_domain\_fig1\_jneuro.jpg)
 <figcaption>Stimuli from the five paradigms of the animal domain. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
@@ -236,12 +241,15 @@ This is a generic unstructured domain.
 
 Demos: `rs_read_coorddata_demo_cars` to read a `dataset structure`; `rs_disp_coordsets_demo_cars` to display the representational space
 
+In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.
+
 #### Opposites
 
 This is a generic structured domain with `stimulus coordinates`.
 
 Demos: `rs_read_coorddata_demo_opposites` to read a `dataset structure` and also implement a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space
 
+In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'.
 
 ## Setup metadata
 
