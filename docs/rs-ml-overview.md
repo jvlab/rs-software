@@ -1,4 +1,4 @@
-This component of the package provides for visualization, manipulation, and modeling of representational spaces.
+This component of the package provides for visualization of representational spaces, manipulating them, and modeling relationships between them.
 
 * Visualization: Plots of 2- and 3-dimensional representational spaces, and of 2- and 3-dimensional projections of higher-dimensional spaces, with many options for combined plots of multiple datasets.
 
@@ -7,10 +7,14 @@ This component of the package provides for visualization, manipulation, and mode
 
 * Manipulation: Combining and transforming representational spaces 
 
-    * Finding a consensus across multiple datasets, and merging partially overlapping datasets: `rs_knit_coordsets`
-    * Applying linear and nonlinear transformations: `rs_xform_apply`, `rs_xform_specify`
+    * Merging partially overlapping datasets: `rs_knit_coordsets`
+    * Principal components analysis: `rs_xform_specify`
+    * Applying linear and nonlinear transformations: `rs_xform_apply`
 
-* Modeling relationships between representational spaces `rs_geofit`
+* Modeling relationships between representational spaces
+
+    * Finding a consensus across multiple datasets: `rs_knit_coordsets`
+    * Fitting linear and nonlinear geometric transformations to the relationship between two representational spaces: `rs_geofit`
 
 * Utilities
 
