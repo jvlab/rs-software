@@ -124,7 +124,7 @@ The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be
 
 A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic vorm) with elements q<sub>i,j</sub>.  
 
-In the quadratic form model, the distance D between stimuli X=x<sub>i</sub> and Y=y<sub>i</sub> is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
+In the quadratic form model, the distance D between stimuli X (a row vector with N elements x<sub>i</sub>) and Y (a row vector with N elements y<sub>i</sub>) is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
 
 To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in samples/bwtextures/btc_allraysfixedb\_\*.mat; these contain many additional fields that are not required.
 
