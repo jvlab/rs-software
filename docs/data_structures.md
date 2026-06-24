@@ -112,13 +112,24 @@ Some domains may be structured by an a priori set of coordinates for the stimuli
 
 ### Ray structure
 
-When the stimulus domain is structured, a `ray structure` identifies simple relationships among the `stimulus coordinates`:
+When the stimulus domain is structured with `stimulus coordinates`, a `ray structure` identifies simple relationships among the stimuli:
 
 * stimuli that lie on rays (points on approximate straight lines from the origin)
 * stimuli that lie on rings (coplanar points at approximately equal distances from the origin)
 * nearest neighbors
 
 The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
+
+### Quadratic form model
+
+A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic vorm) with elements q<sub>i,j</sub>.  
+
+In the quadratic form model, the distance D between stimuli X=x<sub>i</sub> and Y=y<sub>i</sub> is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
+
+To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in samples/bwtextures/btc_allraysfixedb\_\*.mat; these contain many additional fields that are not required.
+
+This will generate a record in a `dataset structure` whose `coordinate structure` 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.
+
 
 ## Transformation structures
 
@@ -236,15 +247,5 @@ Demos: `rs_read_coorddata_demo_opposites` to read a `dataset structure` and also
 
 for Binary texture domain
 or if configured
-
-## Quadratic form model
-
-A quadratic form model is a model for a representational space based on a priori `stimulus coordinates` and a quadratic metric.  For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix with elements q<sub>i,j</sub>.  
-
-In the quadratic form model, the distance D between stimuli X=x<sub>i</sub> and Y=y<sub>i</sub> is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
-
-To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process.  
-
-This will generate a record in a `dataset structure` whose `coordinate structure` 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.
 
 
