@@ -7,7 +7,7 @@ This component of the package provides for visualization of representational spa
 
 * Manipulation: Combining and transforming representational spaces 
 
-    * Merging partially overlapping datasets: `rs_knit_coordsets`
+    * Merging representational spaces with partially overlapping elements: `rs_knit_coordsets`
     * Principal components analysis: `rs_xform_specify`
     * Applying linear and nonlinear transformations: `rs_xform_apply`
 
