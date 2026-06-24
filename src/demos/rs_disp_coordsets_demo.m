@@ -13,13 +13,18 @@
 %
 %  See also:  RS_GET_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS.
 %
+%section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
+if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
+auxs_force=struct;
+opts_needed={'opts_read','opts_rays','opts_qpred','opts_disp'};
+for k=1:length(opts_needed)
+    auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
+end
 filenames={...
     './samples/animals/image_coords_S3',... %example 1: animal experiment image domain, Warich and Victor, J. Neurosci. 2024
     './samples/bwtextures/bgca3pt_coords_BL_sess01_10',...; %example 2: binary texture experiment, Victor and Conte, VSS 2025
     './samples/bwtextures/bgca3pt_coords_BL_sess01_10',...; %example 3: binary texture experiment, Victor and Conte, VSS 2025, quadratic form model
-    './samples/faces/faces_mpi_en2_fc_coords_MC_sess01_10',...; %example 4: MPI faces dataset, Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351
-    './samples/material/mater-orig-bw_coords_MC_sess01_10',...; %example 5: materials preliminary data
-    './samples/color/irgb_test25distrib_coords_XX_sess01_10'}; %example 6: color textures, simulated data
+    './samples/faces/faces_mpi_en2_fc_coords_MC_sess01_10'}; %example 4: MPI faces dataset, Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351
 nex=length(filenames);
 %
 aux_in=cell(1,nex);
@@ -33,8 +38,8 @@ aux_out_enh=cell(1,nex);
 for iex=1:nex
     disp('************** ');
     disp(sprintf(' example %2.0f',iex));
-    aux_in{iex}=struct;
-    aux_in{iex}.opts_read=setfields(struct(),{'input_type','if_auto','if_log'},{1,1,1}); %input type 1=data, if_auto=1: non-interactive, if_log=1 to log
+    aux_in{iex}=auxs_force;
+    aux_in{iex}.opts_read=setfields(aux_in{iex}.opts_read,{'input_type','if_auto','if_log'},{1,1,1}); %input type 1=data, if_auto=1: non-interactive, if_log=1 to log
     aux_in{iex}.nsets=1;
     if_enh=0;
     paradigm_type_assert=[];
@@ -56,10 +61,6 @@ for iex=1:nex
             opts_disp{iex}.data_label_interpreter='none';
             opts_disp{iex}.legend_interpreter='none';
             opts_disp_enh{iex}.if_points=0;
-        case 5 %materials
-            typename_prefix='mater-orig-bw-orig-';
-        case 6 %color
-            typename_prefix='random_';
     end
     %read the coordinates and metadata
     [data_read{iex},aux_read{iex}]=rs_get_coordsets(filenames{iex},aux_in{iex});
