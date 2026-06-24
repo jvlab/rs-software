@@ -46,7 +46,7 @@ The key operations performed are
 * Modeling transformations between representational spaces: affine, projective, piecewise affine (`rs_geofit`)
 * Statistics related to these operations
 
-The main outputs are coordinate sets and the associated metadata, geometric models of transformations, and graphics. 
+The main outputs are coordinate sets and the associated metadata, geometric models of transformations, graphics, and statistics. 
 
 Key demos are ??
 
