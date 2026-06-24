@@ -108,7 +108,7 @@ Some domains may be structured by an a priori set of coordinates for the stimuli
 `Stimulus coordinates` may be used to:
 
 * To create a `ray structure`, to enhance visualization of representational spaces via `rs_disp_enh_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
-* To create `quadratic form models` for representational spaces via `rs_read_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
+* To create `quadratic form models` for representational spaces via `rs_get_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
 
 ### Ray structure
 
@@ -120,7 +120,7 @@ When the stimulus domain is structured with `stimulus coordinates`, a `ray struc
 
 The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
 
-### Quadratic form model
+### Quadratic form models
 
 A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic vorm) with elements q<sub>i,j</sub>.  
 
