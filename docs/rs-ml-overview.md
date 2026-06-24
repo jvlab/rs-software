@@ -1,12 +1,9 @@
-## Overview
-
 This component of the package provides for visualization, manipulation, and modeling of representational spaces.
-
 
 * Visualization: Plots of 2- and 3-dimensional representational spaces, and of 2- and 3-dimensional projections of higher-dimensional spaces, with many options for combined plots of multiple datasets.
 
     * Basic visualizations: `rs_disp_coordsets`
-    * Visualizations for representational spaces whose domains are structured by `stimulus coordinates`: `rs_disp_coordsets_enh`: 
+    * Visualizations for representational spaces whose domains are structured by `stimulus coordinates`: `rs_disp_enh_coordsets`
 
 * Manipulation: Combining and transforming representational spaces 
 
