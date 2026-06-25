@@ -54,7 +54,7 @@ function [rgb,symb,cvecs,aux_out]=rs_typenames2colors(typenames,aux)
 %
 %   cvecs (float 2-D array): decoded coordinates, with each row corresponding to an element of typnames, and consisting of length(coord_lets) coordinate values, with NaN if coordinate is not found
 %
-%   aux_out: auxiliary outputs and parameter values used
+%   aux_out (struct): auxiliary outputs and parameter values used, with field
 %
 %     - opts_tn2c (struct): aux.opts_tn2c, with defaults filled in
 %

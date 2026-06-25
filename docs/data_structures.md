@@ -88,8 +88,9 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
     * nstims: number of stimuli
     * label\_long: long file name, typically full file name and path
     * label: shortened file name, suitable for display
-    * paradigm_name: a designator such as 'cars' or 'animals'
-    * paradigm_type: overall paradigm category; may be the same as paradigm_name
+    * type: typically 'data', alternatively 'qform' for a `quadratic form model`
+    * paradigm\_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the `binary texture domain` and 'animals' for the `animal domain`
+    * paradigm\_name: can be the same as paradigm\_type or used to designate a subset or rendering within paradigm\_type 
     * subj\_ID: unique subject identifier
     * subj\_ID_short: short form of subject identifier, suitable for display
     * pipeline: structure describing the processing stages leading to this record
@@ -99,25 +100,37 @@ For an example of a `dataset structure` with three records and with `stimulus co
 
 ## Stimulus coordinates
 
-Some domains may be structured by an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example are adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. Stimulus coordinates are a numerical array, in which the rows correspond to the stimuli (in the order of 'typenames'), and each column is a dimension.
+Some domains may be structured by an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example is the domain of adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. To use stimulus coordinates, specify them as a numerical array in the 'stimulus metadata structure`.  The rows of the array correspond to the stimuli  (in the order of 'sas{irec}.typenames'), and each column is a dimension.
 
-*  For generic domains, these coordinates constitute the `type_coords` field of the `stimulus metadata structure`, and can be specified as auxiliary inputs in  `rs_get_coordsets`, `rs_read_coorddata`, or `rs_import_coordsets`.
-*  For `binary texture` domains, these values are specified in the `setup metadata` and are in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.
+*  For generic domains, stimulus coordinates are in the `type_coords` field of the `stimulus metadata structure`.  They can be set directly or specified at the time of reading or importing via auxiliary inputs in  `rs_get_coordsets`, `rs_read_coorddata`, or `rs_import_coordsets`.
+*  For `binary texture` and `MPI faces` domains, these values are specified in the `setup metadata` and are in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`, with priority given to `btc_augcoords` if both are specified.
+*  In either case, stimulus coordinates are applied to each record of the 'dataset structure', so they need to need to be listed in each record of the `stimulus metadata structure`, i.e., in 'sas{irec}.type_coords', or 'sas{irec}.btc_augcoords'.
 
 `Stimulus coordinates` may be used to:
 
 * To create a `ray structure`, to enhance visualization of representational spaces via `rs_disp_enh_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
-* To create `quadratic form models` for representational spaces via `rs_read_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
+* To create `quadratic form models` for representational spaces via `rs_get_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
 
 ### Ray structure
 
-When the stimulus domain is structured, a `ray structure` identifies simple relationships among the `stimulus coordinates`:
+When the stimulus domain is structured with `stimulus coordinates`, a `ray structure` identifies simple relationships among the stimuli:
 
 * stimuli that lie on rays (points on approximate straight lines from the origin)
 * stimuli that lie on rings (coplanar points at approximately equal distances from the origin)
 * nearest neighbors
 
 The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
+
+### Quadratic form models
+
+A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic vorm) with elements q<sub>i,j</sub>.  
+
+In the quadratic form model, the distance D between stimuli X (a row vector with N elements x<sub>i</sub>) and Y (a row vector with N elements y<sub>i</sub>) is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
+
+To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in samples/bwtextures/btc_allraysfixedb\_\*.mat; these contain many additional fields that are not required.
+
+This will generate a record in a `dataset structure` whose `coordinate structure` 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.
+
 
 ## Transformation structures
 
@@ -167,35 +180,109 @@ Note that the same transformation can be expressed in many ways -- for example, 
 
 ### Binary texture domain
 
-Very rough:
+The binary texture domain is a structured domain of synthetic visual textures, introduced in  [Victor and Conte (2012) Local image statistics: maximum-entropy constructions and perceptual salience. Journal of the Optical Society of America A, 29, 1313-1345](http://www.opticsinfobase.org/josaa/viewmedia.cfm?uri=josaa-29-7-1313&seq=0). References illustrating their use in psychophysical, neurophysiological, and computational studies are [here](http://www-users.med.cornell.edu/~jdvicto/jdvpubsi.html).
 
-Briefly introduce the textuers and the coordinates
-Provide pointers to literature
+Textures consist of black and white checks, whose arrangements are specified by ten local image statistics.  The statistics are grouped by order:
 
+* $\gamma$, the first-order statistic, which specifies the overall fraction of white vs. black checks
+* $\beta$, four second-order statistics, which specify the probability that a check matches its neighbor horizontally or vertically, or along the diagonals
+* $\theta$, four third-order statistics, which specify the probability that there is an even vs. odd number of white checks in triangular clusters
+* $alpha$, the fourth-order statistic, which specifies the probability that there is an even vs. odd number of white checks in 2x2 square clusters
 
+Together, these ten statistics determine the probability of all 2x2 blocks of checks, and the textures they generate are maximum-entropy subject to those constraints. Each of these statistics range from -1 to 1, and when all ten are zero, the resulting texture is random.  
+
+![Binary texture coordinates](./images/btc\_sliders.png)
+<figcaption>The ten binary texture coordinates and their code letters. Adapted from Victor, J.D., Thengone, D.J., Rizvi, S.M., and Conte, M.M. (2015) A perceptual space of local image statistics.  Vision Research 117, 117-135.</figcaption>
+
+Stimuli are named according to the values of the specified coordinates, using the above single-letter codes, followed by 'p' for positive or 'm' for negative, followed by four digits indicating the coordinate magnitude. 'rand' indicates the random texture.  Examples, along with samples of the corresponding textures, are shown below.  
+
+![Sample of texture bp0900](./images/bp0900_000.png)<figcaption>A sample of texture bp0900</figcaption>, i.e., $\beta$<sub>-</sub>=+0.9
+
+![Sample of texture cm0450](./images/cm0450_000.png)<figcaption>A sample of texture cm0450</figcaption>, i.e., $\beta$<sub>|</sub>=-0.45
+
+![Sample of texture bp0900cm0450](./images/bp0900cm0450_000.png)<figcaption>A sample of texture bp0900cm0450</figcaption>, i.e., $\beta$<sub>-</sub>=+0.9 and  $\beta$<sub>|</sub>=-0.45
+
+![Sample of texture dp0600](./images/dp0600_000.png)<figcaption>A sample of texture dp0600</figcaption>, i.e., $\beta$<sub>\</sub>=+0.6
+
+![Sample of texture ap1000](./images/ap1000_000.png)<figcaption>A sample of texture ap1000</figcaption>, i.e., $\alpha$=+1.0
+
+![Sample of texture am0667](./images/am0667_000.png)<figcaption>A sample of texture am0667</figcaption>, i.e., $\alpha$=-0.667
+
+![Sample of texture rand](./images/rand_000.png)<figcaption>A sample of texture rand</figcaption>, i.e., the random binary texture
+
+Stimulus coordinates are 10-element vectors, in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.  In the  `btc_specoords` field, the un-specified coordinates are indicated as NaN.  In the  `btc_augcoords` field, these NaN values are replaced by the coordinate values determined by maximum entropy. Algorithms for generating these textures and further details may be found in  [Victor and Conte (2012)](http://www.opticsinfobase.org/josaa/viewmedia.cfm?uri=josaa-29-7-1313&seq=0).
+
+In `dataset structures` that hold representational space coordinates for this domain
+
+* the `stimulus metadata structure` field elements 'typenames{k}' are given by the above strings, e.g., 'bp0900'
+* the `stimulus metadata structure` fields 'btc_specoords' and 'btc_augcoords' hold the stimulus coordinates described above
+* the `set metadata structure` field 'paradigm_type' is 'btc' and 'paradigm_name' indicates the coordinates that are explored in the stimulus set.
+
+Sample `coordinate files` and `setup metadata` files can be found in samples_/bwtextures.
+
+Demos: ??
+ 
 ### Animal domain
 
-Briefly introduce the animal domain
-Provide pointers to J Neurosci
+The animal domain is an unstructured domain of 37 common animals, introduced in [Waraich, S.A., and Victor, J.D. (2022) A psychophysics paradigm for the collection and analysis of similarity judgments. J. Vis. Exp. (181), e63461, doi:10.3791/63461 (2022)](https://dx.doi.org/10.3791/63461) and used in [Waraich, S.A., and Victor, J.D. (2024) The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023](https://www.jneurosci.org/content/44/4/e1460232023).
 
-![Example stimuli from the five animal domains](./images/animal_domain\_fig1\_jneuro.jpg)
-<figcaption>Stimuli from the five animal domains. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
+Each of these animals can be rendered in any of five ways, to create five paradigms, varying in the extent to which the original animal is recognizable.  Paradigm names are  'texture','intermediate_texture','intermediate_object','image','word' (the 'texture' rendering is fully texturized and unrecognizable; the 'image' paradigm is the original image, in 'word', the image is replaced by the name of the animal).  Examples are shown below.
 
-### MPI faces domain
+In `dataset structures` that hold representational space coordinates for this domain
 
-Very rough:
+* the `stimulus metadata structure` field elements 'typenames{k}' are the names of the animals, e.g., 'dog'
+* the `set metadata structure` field 'paradigm_type' is 'animals' and 'paradigm_name' indicates the rendering.
 
-Introduce the coordinates
+Several sample `coordinate files` can be found in samples_/animals.  There is no `setup metadata`.
 
-%Ebner, N. C., Riediger, M., \& Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men:
-% Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351.
+![Example stimuli from the five paradigms of the animal domain](./images/animal_domain\_fig1\_jneuro.jpg)
+<figcaption>Stimuli from the five paradigms of the animal domain. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
 
-...
+###Other example domains
+
+#### MPI faces domain
+
+This is a structured domain that corresponds to the stimuli in [Ebner, N. C., Riediger, M., & Lindenberger, U. (2010). FACES—A database of facial expressions in young, middle-aged, and older women and men: Development and validation. Behavior Research Methods, 42, 351-362. doi:10.3758/BRM.42.1.351](https://link.springer.com/article/10.3758/BRM.42.1.351).
+
+The faces in this dataset vary according to individual identity, age range, gender, emotional expression, and database set.  These are encoded into the names of the jpeg files in the database and the `stimulus coordinates`
+as follows, using the file '132\_y\_f\_n\_b.jpg' as an example
+
+* age range ('y': young, 'm': middle-age, 'o': old; 'y' in '132\_y\_f\_n\_b.jpg') encoded as 1, 2, or 3 in btc_specoords(:,1)
+* gender ('f': female, 'm': male; 'f' in '132\_y\_f\_n\_b.jpg') encoded as 1 or 2 in btc_specoords(:,2)
+* database set ('a' or 'b'; 'b' in '132\_y\_f\_n\_b.jpg') encoded as 0.2 or 0.4 in btc_specoords(:,3)
+* emotional expression ('n': neutral, 'a': angry, 's': sad, 'd': disgust, 'f': fear, 'h': happy; 'n' in '132\_y\_f\_n\_b.jpg`) encoded as a one-hot in btc_specoords(:,4:9)
+* identity ('132' in '132\_y\_f\_n\_b.jpg') encoded as a one-hot in btc_specoords(:,10:end)
+
+In `dataset structures` that hold representational space coordinates for this domain
+
+* the `stimulus metadata structure` field elements 'typenames{k}' are strings corresponding to the JPEG file name in the above database, e.g., '132\_y\_f\_n\_b'
+* the `stimulus metadata structure` field 'btc_specoords' holds the stimulus coordinates described above
+* the `set metadata structure` field 'paradigm_type' is 'faces' and 'paradigm_name' is free text that indicates the selection of stimuli, with final characters 'bw' for gray-level and 'fc' for full-color
+
+A sample `coordinate file` and `setup metadata` file can be found in samples_/faces.
+
+#### Cars
+
+This is a generic unstructured domain.
+
+Demos: `rs_read_coorddata_demo_cars` to read a `dataset structure`; `rs_disp_coordsets_demo_cars` to display the representational space
+
+In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.
+
+#### Opposites
+
+This is a generic structured domain with `stimulus coordinates`.
+
+Demos: `rs_read_coorddata_demo_opposites` to read a `dataset structure` and also implement a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space
+
+In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'.
 
 ## Setup metadata
 
-for Binary texture domain
-or if configured
+for `binary texture` and `MPI faces` domains, or if configured 
 
-## Quadratic form model
+Mention embedded setup
 
+The setup metadata file names are determined by appending ?? to the paradigm name, which by convention is the portionof the `coordinate file` name up to the string '\_coords' 
+
+test_embedded_setup_coords.mat in samples

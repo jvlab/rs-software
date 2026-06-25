@@ -75,9 +75,10 @@ nav:
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
     - Function index: function-index-python.md 
   - Manipulating RS:
-    - Installation: installation.md
-    - Demos (Matlab): demos.md
-    - Function index: function-index.md
+    - Overview: rs-ml-overview.md
+    - Installation: rs-ml-installation.md
+    - Demos (MATLAB): demos.md
+    - Function index: function-index-matlab.md
   - Data structures: data_structures.md
   - Python - MATLAB/Octave: python-matlab-octave.md
 

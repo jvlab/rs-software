@@ -19,7 +19,7 @@ function depth_max=rs_showpipeline(pipeline,opts)
 %      defaults to {'opts','file_list'}; other fields that could be added are 'sets','sets_combined'
 %
 % Returns:
-%   depth_max: maximum depth reached (cannot exceed opts.depth_limit)
+%   depth_max (int): maximum depth reached (cannot exceed opts.depth_limit)
 %
 %  See also:  PSG_SHOWPIPELINE.
 %
