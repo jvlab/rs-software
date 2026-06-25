@@ -219,8 +219,6 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `set metadata structure` field 'paradigm_type' is 'btc' and 'paradigm_name' indicates the coordinates that are explored in the stimulus set.
 
 Sample `coordinate files` and `setup metadata` files can be found in samples_/bwtextures.
-
-Demos: ??
  
 ### Animal domain
 
@@ -265,21 +263,33 @@ A sample `coordinate file` and `setup metadata` file can be found in samples_/fa
 
 This is a generic unstructured domain.
 
-Demos: `rs_read_coorddata_demo_cars` to read a `dataset structure`; `rs_disp_coordsets_demo_cars` to display the representational space
+Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space
 
 In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.
 
 #### Opposites
 
-This is a generic structured domain with `stimulus coordinates`.
+This is a generic structured domain with `stimulus coordinates`, defined by opts_read.type_coords 
 
-Demos: `rs_read_coorddata_demo_opposites` to read a `dataset structure` and also implement a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space
+Demos: `rs_read_coorddata_demo_opposites` to create `dataset structures` from `coordinate files` and from a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space.
+
+This demo also shows how to specify the `stimulus coordinates` (see 'opposite_coords').
 
 In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'.
 
 ## Setup metadata
 
-for `binary texture` and `MPI faces` domains, or if configured 
+A setup file can be used to hold metadata that determines `stimulus coordinates`. 
+
+The default distribution package, with rs_aux_defaults_define_dist.m, is configured so that NO setup files are used. (Demos involving setup files will still work, since they use `rs_aux_force` to override with options from rs_aux_defaults_define_btc.mat, created by rs_aux_default_define_pvt.m).
+
+To make use of setup files, edit rs_aux_defaults_define.m to set generic.opts_read.need_setup_file=1.  With this setting (which is the setting in rs_aux_default_define_pvt.m), the domains that use setup files are determined as follows (logic in `psg_coorddata_parsename`):  
+
+*  The domain name is extracted from the `coordinate file` name, as the string preceding '_coords'.  Then:
+*  If the domain name is one of 'faces_mpi', 'irgb', 'mater', then a setup file is used. (This takes care of the `faces_mpi` domain).
+*  If not, but the domain name is generic.opts_read.type_class_aux, then NO setup file is used. This is distributed as empty ([]) and may be edited during installation or specified dynamically when invoking `rs_get_coordsets` or `rs_read_coorddata` by setting aux.opts_read.type_class_aux.
+*  If not, but the domain name is in a specific list, then NO setup file is used.  The list defaults to generic.opts_read.domain_list_def, distributed as {'cars','tools','dwellings'}. It may be edited during installation or specified dynamically when invoking `rs_get_coordsets` or `rs_read_coorddata` by setting aux.opts_read.domain_list_def. See for example `rs_read_coorddata_demo_cars` and `rs_read_coorddata_demo_opposites`, which ensure that NO setup file is used.
+*  Otherwise, a setup file IS used (this takes care of the `binary texture` domain, in which `coordinate file` names may begin with a variety of strings).
 
 Mention embedded setup
 
