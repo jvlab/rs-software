@@ -136,7 +136,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - set_tags (char or cell array of char): the 'tags' field applied to the plot of each record, for selecting which records appear in legend, default is  'set 1', etc.
 %         - if_box (int): 1 to include the bounding box in a 3d plot, 0 to omit; default is 1
 %         - if_grid (int): 1 to include the grid, 0 to omit; default is 1
-%         - if_finalize (int): 1 to apply view, legend, labels, 0 to omit; default is 1
+%         - if_finalize (int): 1 to apply view, legend, labels, and perpendiculars, 0 to omit; default is 1
 %
 %        - if_warn (int): 1 to display warnings related to plot configurations, 0 to suppress; default is 1
 %
