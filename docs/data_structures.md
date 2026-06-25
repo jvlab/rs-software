@@ -277,7 +277,7 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `stimulus metadata structure` field 'btc_specoords' holds the stimulus coordinates described above
 * the `set metadata structure` field 'paradigm_type' is 'faces' and 'paradigm_name' is free text that indicates the selection of stimuli, with final characters 'bw' for gray-level and 'fc' for full-color
 
-A sample `coordinate file` and `setup metadata` file can be found in samples_/faces.
+A sample `coordinate file` and `setup metadata` file can be found in samples/faces.
 
 ## Setup metadata
 
