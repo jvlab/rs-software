@@ -21,11 +21,11 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %          - if_gui (int): 1 to use graphical interface to get files if file names are not supplied; 0 to use text prompt; default is 0
 %          - if_log (int): 1 to log progress, 0 to omit; default is 1
 %          - data_fullname_def (char): default file name to write, used as a prompt if if_gui=0 if fullname is not provided; default is
-%          './samples/bgca3pt_coords_QFM_sess01_01.mat'; default can be changed by  editing the line containing
-%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it 
-%          once, and saving the workspace as rs_aux_defaults.mat.
+%          '[path and file name for the default coordinate dataset file to write].mat'; default can be changed by  editing the line containing
+%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
 %          - if_uselocal (int): should be set to 0 (default); 1 (intended for maintenance only) overrides options set by `rs_aux_defaults_define` by defaults in `psg_localopts.m` 
 %
+% Returns:
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings
