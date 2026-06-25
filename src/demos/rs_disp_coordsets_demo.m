@@ -9,6 +9,7 @@
 %
 %  - custom labeling of datasets based on subject ID
 %  - custom interpreter for stimuus labels and legend
+%  - plotting dropped perpendicular
 %  - basic plots of rays
 %
 %  See also:  RS_GET_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS.
@@ -47,6 +48,8 @@ for iex=1:nex
     opts_disp{iex}=struct;
     opts_disp_enh{iex}=struct;
     switch iex %handle exceptions
+        case 1 %animals
+            opts_disp{iex}.perp_data_dims=[0 0 1]; %show perpendicular 
         case 2 % binary textures, data
             if_enh=1; %also do enhanced plot
             opts_disp_enh{iex}.if_points=0;
