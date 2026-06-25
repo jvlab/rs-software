@@ -1,4 +1,4 @@
-# File formats, data structures, and other key elements
+# Data structures, file formats, and other key elements
 
 ## Detailed choice file
 
@@ -236,7 +236,27 @@ Several sample `coordinate files` can be found in samples_/animals.  There is no
 ![Example stimuli from the five paradigms of the animal domain](./images/animal_domain\_fig1\_jneuro.jpg)
 <figcaption>Stimuli from the five paradigms of the animal domain. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
 
-###Other example domains
+###Example domains
+
+#### Cars
+
+This is a demonstration of a generic unstructured domain.
+
+Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space.
+
+In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.  Note that the coordinates in the sample `coordinate file` (in demos/cars_coords_\*.mat) re random.
+
+#### Opposites
+
+This is a demonstration of a generic structured domain (with `stimulus coordinates`).
+
+Demos: `rs_read_coorddata_demo_opposites` to create `dataset structures` from `coordinate files` and from a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space.
+
+This demo also shows how to specify the `stimulus coordinates` via  opts_read.type_coords (see 'opposite_coords' in `rs_read_coorddata_demo_opposites`).
+
+In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'. The coordinates in the sample `coordinate files` (in demos/opposites_coords_\*.mat) are randomly jittered around the `stimulus coordinates`, then randomly rotated.
+
+
 
 #### MPI faces domain
 
@@ -258,24 +278,6 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `set metadata structure` field 'paradigm_type' is 'faces' and 'paradigm_name' is free text that indicates the selection of stimuli, with final characters 'bw' for gray-level and 'fc' for full-color
 
 A sample `coordinate file` and `setup metadata` file can be found in samples_/faces.
-
-#### Cars
-
-This is a generic unstructured domain.
-
-Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space.
-
-In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.
-
-#### Opposites
-
-This is a generic structured domain with `stimulus coordinates`, defined by opts_read.type_coords 
-
-Demos: `rs_read_coorddata_demo_opposites` to create `dataset structures` from `coordinate files` and from a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space.
-
-This demo also shows how to specify the `stimulus coordinates` (see 'opposite_coords' in `rs_read_coorddata_demo_opposites`).
-
-In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'.
 
 ## Setup metadata
 
