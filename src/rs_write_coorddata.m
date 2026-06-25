@@ -16,7 +16,7 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %     - opts_write (struct): , with fields
 %
 %          - set_no (int): record number to write; default is 1
-%          - if_embed (int): 1 to embed the `setup metadata` in the output file, 0 to omit; see note below re setup metadata.
+%          - if_embed (int): 1 to embed the `setup metadata` in the output file, 0 to omit; see note below re setup metadata; default is 1.
 %          - ui_prompt (char): User interface prompt, default ia ,'Select a coordinate file to write'
 %          - if_gui (int): 1 to use graphical interface to get files if file names are not supplied; 0 to use text prompt; default is 0
 %          - if_log (int): 1 to log progress, 0 to omit; default is 1

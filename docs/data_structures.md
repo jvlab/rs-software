@@ -263,7 +263,7 @@ A sample `coordinate file` and `setup metadata` file can be found in samples_/fa
 
 This is a generic unstructured domain.
 
-Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space
+Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space.
 
 In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.
 
@@ -273,13 +273,20 @@ This is a generic structured domain with `stimulus coordinates`, defined by opts
 
 Demos: `rs_read_coorddata_demo_opposites` to create `dataset structures` from `coordinate files` and from a `quadratic form model`; `rs_disp_coordsets_demo_opposites` to display the representational space.
 
-This demo also shows how to specify the `stimulus coordinates` (see 'opposite_coords').
+This demo also shows how to specify the `stimulus coordinates` (see 'opposite_coords' in `rs_read_coorddata_demo_opposites`).
 
 In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'.
 
 ## Setup metadata
 
-A setup file can be used to hold metadata that determines `stimulus coordinates`. 
+A setup file can be used to hold metadata that determines `stimulus coordinates`.  This is intended primarily for the 'binary texture' domain demos, and for users who want to carry out or reproduce studies in this domain.
+For general use of rs-software, it is recommended NOT to use setup files, and instead to specify `stimulus coordinates` directly,  (see 'opposite_coords' in `rs_read_coorddata_demo_opposites`).  
+
+Setup files contain the following fields in a variable 's', and may contain others:
+
+* nstims: the number of stimuli
+* typenames: a cell array containing stimulus labels
+* for 'binary texture' domains, btc_augcoords and btc_specoords, arrays with nstims rows, to specify the stimulus coordinates
 
 The default distribution package, with rs_aux_defaults_define_dist.m, is configured so that NO setup files are used. (Demos involving setup files will still work, since they use `rs_aux_force` to override with options from rs_aux_defaults_define_btc.mat, created by rs_aux_default_define_pvt.m).
 
@@ -291,8 +298,6 @@ To make use of setup files, edit rs_aux_defaults_define.m to set generic.opts_re
 *  If not, but the domain name is in a specific list, then NO setup file is used.  The list defaults to generic.opts_read.domain_list_def, distributed as {'cars','tools','dwellings'}. It may be edited during installation or specified dynamically when invoking `rs_get_coordsets` or `rs_read_coorddata` by setting aux.opts_read.domain_list_def. See for example `rs_read_coorddata_demo_cars` and `rs_read_coorddata_demo_opposites`, which ensure that NO setup file is used.
 *  Otherwise, a setup file IS used (this takes care of the `binary texture` domain, in which `coordinate file` names may begin with a variety of strings).
 
-Mention embedded setup
+The name of the setup file is determine dfrom the domain name, as extracted above, followed by the string in generic.opts_read.setup_suffix, which is distributed as '[S]'.  The setup file is assumed to be in the same path as the `coordinate file`.
 
-The setup metadata file names are determined by appending ?? to the paradigm name, which by convention is the portionof the `coordinate file` name up to the string '\_coords' 
-
-test_embedded_setup_coords.mat in samples
+When a `coordinate file` is written by `rs_write_coorddata`, the default (which can be overridden with opts_write.if_embed=0) is to write the setup metadata into the variable `setup`.  When a `coordinate file` with embedded setup data is read, the `setup file` is not used.
