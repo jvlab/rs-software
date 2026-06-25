@@ -41,7 +41,7 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %    `rs_get_coordsets`, and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets` and `rs_knit_coordsets`
 %    - if_embed=1 embeds the metadata in the written file, so that the setup file no longer needs to be read. 
 % 
-% See also:  RS_AUX_CUSTOMIZE, RS_WRITE_COORDDATA.
+% See also:  RS_AUX_CUSTOMIZE.
 %
 if (nargin<=2)
     aux=struct;
