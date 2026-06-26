@@ -9,7 +9,7 @@
 %
 %  - custom labeling of datasets based on subject ID
 %  - custom interpreter for stimuus labels and legend
-%  - plotting dropped perpendicular
+%  - plotting dropped perpendiculars
 %  - basic plots of rays
 %
 %  See also:  RS_GET_COORDSETS, RS_DISP_COORDSETS, RS_DISP_ENH_COORDSETS.
@@ -50,10 +50,15 @@ for iex=1:nex
     switch iex %handle exceptions
         case 1 %animals
             opts_disp{iex}.perp_data_dims=[0 0 1]; %show perpendicular 
+            opts_disp{iex}.perp_data_usemarkers=0; %no markers
         case 2 % binary textures, data
+            opts_disp{iex}.dim_select=4;
+            opts_disp{iex}.if_legend=-1;
+            opts_disp{iex}.coord_group_method='keepone';
+            opts_disp{iex}.perp_data_dims=[0 0 1 -1]; %show perpendiculars
             if_enh=1; %also do enhanced plot
             opts_disp_enh{iex}.if_points=0;
-        case 3 % binary textures, quadratic model
+        case 3 % binary textures, quadratic model,
             aux_in{iex}.opts_read.input_type=2; %model
             if_enh=1; %also do enhanced plot
             paradigm_type_assert='btc';
@@ -61,6 +66,9 @@ for iex=1:nex
         case 4 %faces
             if_enh=1;
             aux_in{iex}.opts_rays.ray_minpts=1; %single points can define a ray
+            opts_disp{iex}.perp_data_dims=[0 1 0]; %show perpendiculars
+            opts_disp{iex}.perp_data_usemarkers=0; %no markers
+            opts_disp{iex}.perp_data_linewidths=2;
             opts_disp{iex}.data_label_interpreter='none';
             opts_disp{iex}.legend_interpreter='none';
             opts_disp_enh{iex}.if_points=0;
@@ -80,6 +88,10 @@ for iex=1:nex
     aux_out{iex}=rs_disp_coordsets(data_read{iex},setfield(struct,'opts_disp',opts_disp{iex})); %create the plot
     %enhanced plot
     if if_enh
+        if isfield(opts_disp{iex},'perp_data_dims') %plot without dropped perps
+            opts_disp_use=rmfield(opts_disp{iex},'perp_data_dims');
+            aux_out_enh_noperp{iex}=rs_disp_enh_coordsets(data_read{iex},setfields(struct,{'opts_disp','opts_disp_enh'},{opts_disp_use,opts_disp_enh{iex}}),aux_read{iex}.rayss{1});
+        end
         aux_out_enh{iex}=rs_disp_enh_coordsets(data_read{iex},setfields(struct,{'opts_disp','opts_disp_enh'},{opts_disp{iex},opts_disp_enh{iex}}),aux_read{iex}.rayss{1});
     end
 end
