@@ -16,7 +16,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %   groupings (struct):  structure specifying assignment of records to groups, and, optionally, tags to restrict shuffling
 %     
-%     - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps.  All groups must have at least one record.
+%     - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to the number of groups (ngps);  All groups must have at least one record.
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
@@ -73,8 +73,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %     - groupings (struct): grouping information
 %
-%         - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps.  All groups must have at least one record.
 %         - ngps (int): number of groups
+%         - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps
 %         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
 %         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
 %         - nsets_gp_max (int): maximum size of a group
