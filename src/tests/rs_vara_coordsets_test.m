@@ -35,6 +35,7 @@ data_aligns=cell(1,ntests);
 aux_aligns=cell(1,ntests);
 opts_used=cell(1,ntests);
 %
+groupings=cell(1,ntests);
 vara_stats=cell(1,ntests);
 %
 test_descs{1}='btc, 6 std and 5 br judgments, exhaustive shuffles, reduced';
@@ -54,6 +55,8 @@ auxs{1}=auxs_force;
 aux_ins{1}=auxs_force;
 aux_ins{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{1}.nsets=11;
+groupings{1}.gps=[];
+%
 % Enter datasets for group 1 (range: 1 to 11):[1 2 8 9 10 11]
 % Enter 11 tags (range: 1 to 11):[1 2 1 2 3 4 5 6 5 3 4]
 % Enter 1 to reduce exhaustive shuffles by considering groups of same size (and tag counts) to be equivalent (range: 0 to 1):1
@@ -75,7 +78,7 @@ for itest=1:ntests
         [data_aligns{itest},aux_aligns{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
         %
         auxs{itest}.opts_vara.if_log=1;
-        [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_aligns{itest},auxs{itest});
+        [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_aligns{itest},groupings{itest},auxs{itest});
         if aux_outs{itest}.opts_vara.if_plot
             set(gcf,'Name',sprintf('scenario %1.0f',itest));
         end

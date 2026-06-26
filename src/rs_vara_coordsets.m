@@ -15,6 +15,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - sets (cell array): `set metadata structure`, sets{k} is the response metadata for the kth record
 %
 %   groupings (struct):  structure specifying assignment of records to groups, and, optionally, tags to restrict shuffling
+%     
+%     - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps.  All groups must have at least one record.
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
@@ -271,6 +273,7 @@ check=rs_check_coordsets(data_in,aux.opts_check);
 %
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
+%
 % %
 % % replot mode
 % %
@@ -282,21 +285,42 @@ aux_out.warn_bad=check.warn_bad;
 %     aux_out.fig_handle=psg_knit_stats_plot(aux.knit_stats,knit_stats_setup_use);
 %     return
 % end
-% %
-% nsets=check.nsets;
-% nstims_each=check.nstims_each;
-% dim_list_each=check.dim_list_each;
-% dim_list_union=check.dim_list_union;
-% dim_list_inter=check.dim_list_inter;
-% typenames_each=check.typenames_each;
-% typenames_union=check.typenames_union;
-% typenames_inter=check.typenames_inter;
-% %
-% if min(nstims_each)~=max(nstims_each)
-%     disp('cannot proceed');
-%     disp(aux_out.warnings);
-%     return
-% end
+% 
+nsets=check.nsets;
+nstims_each=check.nstims_each;
+dim_list_each=check.dim_list_each;
+dim_list_union=check.dim_list_union;
+dim_list_inter=check.dim_list_inter;
+typenames_each=check.typenames_each;
+typenames_union=check.typenames_union;
+typenames_inter=check.typenames_inter;
+%
+if min(nstims_each)~=max(nstims_each)
+    disp('cannot proceed');
+    disp(aux_out.warnings);
+    return
+end
+%
+%group information
+%
+gps=groupings.gps;
+if length(gps)~=nsets
+    wmsg=sprintf('group assignment list length (%2.0f) does not match number of records (%2.0f)',length(gps),nsets);
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+%%function [ngps,gps,gp_list,nsets_gp,nsets_gp_max]=psg_getgps(sets,ngps_req)
+% [ngps,gps,gp_list,nsets_gp,nsets_gp_max]=psg_getgps(sets,ngps_req) is a utility to partition a list of datasets into groups
+%
+% sets: cell array, sets{iset}.label has the dataset label, typically derived from a file name
+% ngps_req: number of groups requested (may be omitted)
+%
+% ngps: number of groups (equal to ngps_req, if supplied
+% gps: array of length length(sets), with group assignment
+% gp_list: cell array of size ngps, gp_list{k} points to the sets that are in group k
+% nsets_gp: array of length ngps, nsets_gp(k)=length(gp_list{k})
+% nsets_gp_max: maximum of nsets_gp
+
+
 % %
 % %inspect input data to see where data are missing
 % %note that a NaN can indicate that stimulus was present and response
@@ -522,6 +546,7 @@ if aux_out.warn_bad==0
 %     aux_out.components.sets=data_in.sets;
 %
 else
+     aux_out.opts_vara=aux.opts_vara;
      disp('cannot proceed');
      disp(aux_out.warnings);
 end
