@@ -69,7 +69,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
-%   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
+%   vara_stats(struct): statistics and analysis parameters
 %
 %   aux_out (struct): auxiliary outputs and parameter values used
 %
