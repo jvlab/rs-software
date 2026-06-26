@@ -189,7 +189,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
 % Note: Note regarding replotting a previous analysis
-%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
+%     - To replot a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
 %     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
 %     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
 %     the previous calculation with the following modifications allowed in fields of knit_stats_setup:
