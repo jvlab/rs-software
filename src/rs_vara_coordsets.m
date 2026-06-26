@@ -75,8 +75,15 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
+%     - groupings (struct): grouping information
 %
-%     - opts_knit (struct): aux.opts_knit, with defaults filled in
+%         - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps.  All groups must have at least one record.
+%         - ngps (int): number of groups
+%         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
+%         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
+%         - nsets_gp_max (int): maximum size of a group
+%
+%     - opts_vara (struct): aux.opts_vara, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_pca (struct): aux.opts_pca, with defaults filled in
@@ -264,6 +271,7 @@ aux=rs_aux_customize(aux,'rs_vara_coordsets');
 %
 vara_stats=struct;
 aux_out=struct;
+groupings_used=groupings;
 %
 set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
@@ -303,24 +311,29 @@ end
 %
 %group information
 %
-gps=groupings.gps;
-if length(gps)~=nsets
-    wmsg=sprintf('group assignment list length (%2.0f) does not match number of records (%2.0f)',length(gps),nsets);
+if length(groupings.gps)~=nsets
+    wmsg=sprintf('group assignment list length (%2.0f) does not match number of records (%2.0f)',length(groupings.gps),nsets);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
-%%function [ngps,gps,gp_list,nsets_gp,nsets_gp_max]=psg_getgps(sets,ngps_req)
-% [ngps,gps,gp_list,nsets_gp,nsets_gp_max]=psg_getgps(sets,ngps_req) is a utility to partition a list of datasets into groups
+if any(~ismember(groupings.gps,[1:nsets]))
+    wmsg=sprintf('group assignment list has elements not in [1:%2.0f]',nsets);
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+groupings.ngps=max(groupings.gps);
+groupings.gp_list=cell(1,groupings.ngps);
+groupings.nsets_gp=zeros(1,groupings.ngps);
+for igp=1:groupings.ngps
+    groupings.gp_list{igp}=find(groupings.gps==igp);
+    groupings.nsets_gp(igp)=length(groupings.gp_list{igp});
+end
+groupings.nsets_gp_max=max(groupings.nsets_gp);
+if any(groupings.nsets_gp==0)
+    wmsg=sprintf('at least one group has no records');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
 %
-% sets: cell array, sets{iset}.label has the dataset label, typically derived from a file name
-% ngps_req: number of groups requested (may be omitted)
+%tag information
 %
-% ngps: number of groups (equal to ngps_req, if supplied
-% gps: array of length length(sets), with group assignment
-% gp_list: cell array of size ngps, gp_list{k} points to the sets that are in group k
-% nsets_gp: array of length ngps, nsets_gp(k)=length(gp_list{k})
-% nsets_gp_max: maximum of nsets_gp
-
-
 % %
 % %inspect input data to see where data are missing
 % %note that a NaN can indicate that stimulus was present and response
@@ -545,8 +558,10 @@ if aux_out.warn_bad==0
 %     aux_out.components.sas=data_align.sas;
 %     aux_out.components.sets=data_in.sets;
 %
+    aux_out.groupings=groupings;
 else
      aux_out.opts_vara=aux.opts_vara;
+     aux_out.groupings=groupings;
      disp('cannot proceed');
      disp(aux_out.warnings);
 end
