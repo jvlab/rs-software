@@ -51,7 +51,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%         - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
+%         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
@@ -71,10 +71,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 % Returns:
 %   vara_stats(struct): statistics and analysis parameters
 %
-%   aux_out (struct): auxiliary outputs and parameter values used
-%
-%     - warnings (char): warnings generated during consistency check
-%     - warn_bad (int): number of warnings that prevent further processing
 %     - groupings (struct): grouping information
 %
 %         - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps.  All groups must have at least one record.
@@ -82,6 +78,11 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
 %         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
 %         - nsets_gp_max (int): maximum size of a group
+%
+%   aux_out (struct): auxiliary outputs and parameter values used
+%
+%     - warnings (char): warnings generated during consistency check
+%     - warn_bad (int): number of warnings that prevent further processing
 %
 %     - opts_vara (struct): aux.opts_vara, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
@@ -271,7 +272,6 @@ aux=rs_aux_customize(aux,'rs_vara_coordsets');
 %
 vara_stats=struct;
 aux_out=struct;
-groupings_used=groupings;
 %
 set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
 %
@@ -558,10 +558,10 @@ if aux_out.warn_bad==0
 %     aux_out.components.sas=data_align.sas;
 %     aux_out.components.sets=data_in.sets;
 %
-    aux_out.groupings=groupings;
+     var_stats.groupings=groupings;
 else
      aux_out.opts_vara=aux.opts_vara;
-     aux_out.groupings=groupings;
+     var_stats.groupings=groupings;
      disp('cannot proceed');
      disp(aux_out.warnings);
 end
