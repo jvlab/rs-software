@@ -122,9 +122,10 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - set_offsets_coordchoices (int or char or cell array of char): if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset; can be 'first','last','all', or a subset of [1:dim_select]; can also be a cell array of subsets
 %
 %         - **Formatting: perpendiculars from points to walls**
-%         - perp_data_dims (int or int 1-D array): 1 to drop perpendiculars along that dimension, 0 to omit; default is 0; cycled through if necessary
-%         - perp_data_linestyles (char or cell array of char): line styles assigned to connections within each record, default is '-' (solid); cycled through if necessary
-%         - perp_data_linewidths (int 1-D array): line widths for connections within each record; default is 1
+%         - perp_data_dims (int or int 1-D array): 1 to drop perpendiculars along that dimension,-1 for perpendicular to top, 0 to omit; default is 0; cycled through if necessary
+%         - perp_data_linestyles (char or cell array of char): line styles for perpendiculars for each record, or 'use_data' to use the style specified by 'connect_data_linestyles' for connecting data points; default is '-' (solid); cycled through if necessary
+%         - perp_data_linewidths (int 1-D array): line widths for perpendiculars for each record; default is 1
+%         - perp_data_usemarkers (int): 1 to use markers from original data at foot of perpendicular, 0 for no markers; default is 1
 %
 %         - **Formatting: legend, box, grid**
 %
@@ -175,6 +176,7 @@ trunc_pad={'set_offsets','set_offsets_margin_amount','set_offsets_margin_fractio
 coords_together_allowed=[2 3]; %how many coords can be plotted together -eventually could include >=4
 coords_together_default=[2 3]; %how many coords are plotted together by default
 xyzlim={'XLim','YLim','ZLim'};
+datapoint_tag='*datapoint*'; %string to identify data points
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -258,6 +260,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'connect_sets_colors',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'perp_data_dims',0);
 aux.opts_disp=filldefault(aux.opts_disp,'perp_data_linestyles','-');
 aux.opts_disp=filldefault(aux.opts_disp,'perp_data_linewidths',1);
+aux.opts_disp=filldefault(aux.opts_disp,'perp_data_usemarkers',1);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'if_box',1);
 aux.opts_disp=filldefault(aux.opts_disp,'if_grid',1);
@@ -573,13 +576,6 @@ if aux_out.warn_bad==0
     connect_set_styles.linestyles=x.connect_sets_linestyles;
     connect_set_styles.linewidths=x.connect_sets_linewidths;
     %
-    perp_data_styles=struct;
-    perp_data_styles.colors=x.set_colors;
-    perp_data_styles.markers={'none'};
-    perp_data_styles.markersizes=8;
-    perp_data_styles.linestyles=x.perp_data_linestyles;
-    perp_data_styles.linewidths=x.perp_data_linewidths;
-    %
     if isempty(x.fig_handle)
         x.fig_handle=figure;
     else
@@ -610,7 +606,7 @@ if aux_out.warn_bad==0
             %
             [hline,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z,k,set_styles);
             disp_msgs=strvcat(disp_msgs,opts_plotstyle_used.msgs);
-            set(hline,'Tag',x.set_tags{1+mod(k-1,length(x.set_tags))});
+            set(hline,'Tag',cat(2,x.set_tags{1+mod(k-1,length(x.set_tags))},' ',datapoint_tag)); %so that we can use it to drop perpendiculars when finalized
             set(hline,'DisplayName',x.set_labels{1+mod(k-1,length(x.set_labels))});
             %connect requested points
             if ~isempty(x.connect_data_chains)
@@ -738,21 +734,41 @@ if aux_out.warn_bad==0
                         set(gca,xyzlim{ic},x.axis_range_list(1+mod(x.coord_groups(igp,ic)-1,size(x.axis_range_list,1)),:));
                     end
             end
-            %perpendiculars:  need to be plotted after axis range is established
+            %perpendiculars: need to be plotted after axis range is established
             if (x.coord_group_size==3)
                 for ic=1:x.coord_group_size
                     if_perp=x.perp_data_dims(1+mod(cg(ic)-1,length(x.perp_data_dims)));
                     axis_lims=get(gca,xyzlim{ic});
-                    if if_perp
-                        for isetptr=1:length(x.set_select)
-                            [z,z_all,k]=rs_disp_coordsets_tuples(data_in,isetptr,x,igp); %get the 2- or 3-tuple of data points coords isetptr, including offset
-                            zp=z;
-                            zp(:,ic)=axis_lims(1);
-                            for iperp=1:size(z,1) %plot the perpendicular for each point
-                                z_to_perp=[z(iperp,:);zp(iperp,:)];
-                                [hperp,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z_to_perp,k,perp_data_styles);
-                            end %each point
-                        end %isetptr
+                    if if_perp~=0
+                        hc=get(gca,'Children'); %look for data points via tags
+                        z_foot=axis_lims((3-if_perp)/2); %foot of perp is min if if_perp=1, max if if_perp=-1
+                        for ichild=1:length(hc)
+                            if contains(hc(ichild).Tag,datapoint_tag)
+                                xyz_data=[hc(ichild).XData;hc(ichild).YData;hc(ichild).ZData]';
+                                %
+                                perp_data_style=struct;
+                                perp_data_style.linewidths=x.perp_data_linewidths;
+                                %color taken from data
+                                perp_data_style.colors={hc(ichild).Color};
+                                %marker optionally used
+                                perp_data_style.markersizes=hc(ichild).MarkerSize;
+                                if x.perp_data_usemarkers
+                                    perp_data_style.markers={hc(ichild).Marker};
+                                else
+                                    perp_data_style.markers={'none'};
+                                end
+                                if strcmp(x.perp_data_linestyles{1},'use_data')
+                                    perp_data_style.linestyles={hc(ichild).LineStyle};
+                                else
+                                    perp_data_style.linestyles=x.perp_data_linestyles;
+                                end
+                                for iperp=1:size(xyz_data,1)
+                                    z_to_perp=repmat(xyz_data(iperp,:),2,1);
+                                    z_to_perp(2,ic)=z_foot;
+                                    [hperp,plotstyle_used,opts_plotstyle_used]=rs_disp_doplot(z_to_perp,k,perp_data_style);
+                                end %each point
+                            end %each line with data
+                        end
                     end %if_perp
                 end %coordinate
             end
