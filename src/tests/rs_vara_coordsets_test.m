@@ -12,7 +12,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=1;
+ntests=4;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -38,7 +38,7 @@ opts_used=cell(1,ntests);
 groupings=cell(1,ntests);
 vara_stats=cell(1,ntests);
 %
-test_descs{1}='btc, 6 std and 5 br judgments, exhaustive shuffles, reduced';
+test_descs{1}='btc, 6 std and 5 br judgments, exhaustive shuffles, tagged';
 filenames_examples{1}={...
     './samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat',...
     './samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat',...
@@ -56,15 +56,31 @@ aux_ins{1}=auxs_force;
 aux_ins{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{1}.nsets=11;
 groupings{1}.gps=[1 1 2 2 2 2 2 1 1 1 1];
+groupings{1}.tags=[1 2 1 2 3 4 5 6 5 3 4];
 %
-% Enter datasets for group 1 (range: 1 to 11):[1 2 8 9 10 11]
-% Enter 11 tags (range: 1 to 11):[1 2 1 2 3 4 5 6 5 3 4]
-% Enter 1 to reduce exhaustive shuffles by considering groups of same size (and tag counts) to be equivalent (range: 0 to 1):1
-% list (reduced) will have         32 shuffles; max allowed for exhaustive list:    1000000
-% Enter 1 for exhaustive shuffles, 0 for random (range: 0 to 1):1
-%  created    32 shuffles for  11 datasets
-% 
-% 
+test_descs{3}='btc, 6 std and 5 br judgments, random shuffles, tagged';
+filenames_examples{2}=filenames_examples{1};
+auxs{2}=auxs_force;
+aux_ins{2}=aux_ins{1};
+groupings{2}=groupings{1};
+auxs{2}.opts_vara.nshuffs=10;
+auxs{2}.opts_vara.if_exhaust=0;
+%
+test_descs{3}='btc, 6 std and 5 br judgments, exhaustive, untagged';
+filenames_examples{3}=filenames_examples{1};
+auxs{3}=auxs_force;
+aux_ins{3}=aux_ins{1};
+groupings{3}=rmfield(groupings{1},'tags');
+auxs{3}.opts_vara.if_exhaust=1;
+%
+test_descs{4}='btc, 6 std and 5 br judgments, attempt exhaustive but limit reached, untagged';
+filenames_examples{4}=filenames_examples{1};
+auxs{4}=auxs_force;
+aux_ins{4}=aux_ins{1};
+groupings{4}=rmfield(groupings{1},'tags');
+auxs{4}.opts_vara.if_exhaust=1;
+auxs{4}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
+auxs{4}.opts_vara.nshuffs=30;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
@@ -74,7 +90,7 @@ for itest=1:ntests
         aux_ins{itest}.opts_read.if_log=0;
         [data_reads{itest},aux_reads{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
         %
-        auxs{itest}.opts_align.if_log=1;
+        auxs{itest}.opts_align.if_log=0;
         [data_aligns{itest},aux_aligns{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
         %
         auxs{itest}.opts_vara.if_log=1;

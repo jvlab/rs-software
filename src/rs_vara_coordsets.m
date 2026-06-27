@@ -17,10 +17,11 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %   groupings (struct):  structure specifying assignment of records to groups, and, optionally, tags to restrict shuffling
 %     
 %     - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to the number of groups (ngps);  All groups must have at least one record.
+%     - tags (int 1-D array): tags(k) is the tag assigned to record k.  If non-empty, shuffles will only swap a record with a record of the same tag.  Defaults to empty ([]),  
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_knit (struct): options for knitting and consistency checking, with fields
+%     - opts_vara (struct): options for knitting and consistency checking, with fields
 %
 %         - **Transformations**
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
@@ -31,17 +32,19 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %         - **Statistics**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 1
+%         - nshuffs (int): number of shuffles requested; less will be made if if_exhaust=1 and number needed for exhaustive list is grater than nshuffs_exhaust_max; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - if_exhaust (int): 1 to attempt to use exhaustive set of shuffles, otherwise will use nshuffs random shuffles if number required is > nshuffs_nax; default is if_stats
+%         - nshuffs_max (int): maximum number shuffles that can be generated; use random shuffles if more than this number are required; defaul is 10^4
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
-%         - nshuffs (int): ???? number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
 %         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
-%
+% 
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
 %         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
 %         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
-%         - **Replotting**
+%         - **Replotting ??**
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
@@ -78,6 +81,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
 %         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
 %         - nsets_gp_max (int): maximum size of a group
+%         - tage (int 1-D array): tags(k) is the tag for record k
 %
 %   aux_out (struct): auxiliary outputs and parameter values used
 %
@@ -226,6 +230,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %   ?? PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
 %   ?? PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
+%   ?? MULTI_SHUFF_GROUPS
 %
 if (nargin<=2)
     aux=struct;
@@ -239,7 +244,7 @@ aux.opts_vara=filldefault(aux.opts_vara,'allow_reflection',1);
 aux.opts_vara=filldefault(aux.opts_vara,'allow_offset',1);
 aux.opts_vara=filldefault(aux.opts_vara,'allow_scale',0);
 aux.opts_vara=filldefault(aux.opts_vara,'if_normscale',aux.opts_vara.allow_scale);
-aux.opts_vara=filldefault(aux.opts_vara,'if_stats',0);
+aux.opts_vara=filldefault(aux.opts_vara,'if_stats',1);
 aux.opts_vara=filldefault(aux.opts_vara,'if_plot',aux.opts_vara.if_stats);
 aux.opts_vara=filldefault(aux.opts_vara,'if_pca',0);
 aux.opts_vara=filldefault(aux.opts_vara,'max_niters',1000);
@@ -249,16 +254,17 @@ aux.opts_vara=filldefault(aux.opts_vara,'keep_details',0);
 aux.opts_vara=filldefault(aux.opts_vara,'pcon_initial_guess',[]);
 aux.opts_vara=filldefault(aux.opts_vara,'pcon_alignment',aux.opts_vara.pcon_initial_guess);
 aux.opts_vara=filldefault(aux.opts_vara,'if_frozen',1);
-%
-aux=filldefault(aux,'opts_check',struct);
-aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
-%
 if aux.opts_vara.if_stats
     aux.opts_vara=filldefault(aux.opts_vara,'nshuffs',500);
 else
     aux.opts_vara=filldefault(aux.opts_vara,'nshuffs',0);
 end
+aux.opts_vara=filldefault(aux.opts_vara,'if_exhaust',1);
 aux.opts_vara=filldefault(aux.opts_vara,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
+aux.opts_vara=filldefault(aux.opts_vara,'nshuffs_max',10^4);
+%
+aux=filldefault(aux,'opts_check',struct);
+aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -309,7 +315,7 @@ if min(nstims_each)~=max(nstims_each)
     return
 end
 %
-%group information
+%check group information
 %
 if length(groupings.gps)~=nsets
     wmsg=sprintf('group assignment list length (%2.0f) does not match number of records (%2.0f)',length(groupings.gps),nsets);
@@ -332,8 +338,72 @@ if any(groupings.nsets_gp==0)
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
-%tag information
+%check tag information
 %
+groupings=filldefault(groupings,'tags',[]);
+if ~isempty(groupings.tags)
+    if length(groupings.tags)~=nsets
+        wmsg=sprintf('tag list length (%2.0f) does not match number of records (%2.0f)',length(groupings.tags),nsets);
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+    if any(~ismember(groupings.tags,[1:max(groupings.tags)]))
+        wmsg=sprintf('tag list has non-integer or non-positive values');
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+end
+%
+%show setup
+%
+if aux.opts_vara.if_log
+    disp(' ');
+    disp('variance analysis');
+    for iset=1:nsets
+        if ~isempty(groupings.tags)
+            disp(sprintf('dataset %2.0f (group %2.0f, tag %2.0f): %s',iset,groupings.gps(iset),groupings.tags(iset),data_in.sets{iset}.label));
+        else
+            disp(sprintf('dataset %2.0f (group %2.0f): %s',iset,groupings.gps(iset),data_in.sets{iset}.label));
+        end
+    end
+end
+%
+%set up random number generator
+%
+if_frozen=aux.opts_vara.if_frozen;
+if (if_frozen~=0) 
+    rng('default');
+    if (if_frozen<0)
+        rand(1,abs(if_frozen));
+    end
+else
+    rng('shuffle');
+end
+%
+%create shuffle list via multi_shuff_groups
+%
+if aux.opts_vara.nshuffs>0
+    opts_multi=struct();
+    opts_multi.if_log=0;
+    opts_multi.if_exhaust=aux.opts_vara.if_exhaust;
+    opts_multi.if_ask=0; %non-interactive
+    opts_multi.if_reduce=1; %shuffles that differ only by group order are not included
+    opts_multi.if_justcount=0; %don't just count
+    opts_multi.if_nowarn=1;
+    opts_multi.nshuffs=min(aux.opts_vara.nshuffs,aux.opts_vara.nshuffs_max);
+    opts_multi.exhaust_raw_max=aux.opts_vara.nshuffs_max;
+    opts_multi.exhaust_reduced_max=aux.opts_vara.nshuffs_max;
+    opts_multi.nshuffs_max=aux.opts_vara.nshuffs_max;
+    opts_multi.tags=groupings.tags;
+    %
+    [shuffs,gp_info,opts_multi_used]=multi_shuff_groups(groupings.gps,opts_multi);
+    vara_stats.opts_multi_used=opts_multi_used;
+    vara_stats.shuffs=shuffs;
+    vara_stats.nshuffs_used=size(shuffs,1);
+    if aux.opts_vara.if_log
+        disp(sprintf('shuffles made:  %6.0f, requested:%6.0f',vara_stats.nshuffs_used,aux.opts_vara.nshuffs));
+        disp(sprintf('exhautive mode used: %1.0f, requested:     %1.0f',opts_multi_used.if_exhaust,aux.opts_vara.if_exhaust));
+    end
+end
+
 % %
 % %inspect input data to see where data are missing
 % %note that a NaN can indicate that stimulus was present and response
@@ -558,10 +628,10 @@ if aux_out.warn_bad==0
 %     aux_out.components.sas=data_align.sas;
 %     aux_out.components.sets=data_in.sets;
 %
-     var_stats.groupings=groupings;
+     vara_stats.groupings=groupings;
 else
      aux_out.opts_vara=aux.opts_vara;
-     var_stats.groupings=groupings;
+     vara_stats.groupings=groupings;
      disp('cannot proceed');
      disp(aux_out.warnings);
 end
