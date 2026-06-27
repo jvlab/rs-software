@@ -1,25 +1,23 @@
 function [shuffs,gp_info,opts_used]=multi_shuff_groups(gps,opts)
 % [shuffs,gp_info,opts_used]=multi_shuff_groups(gps,opts) creates lists of shuffles between groups, that optionally:
-%   * is exhaustive
-%   * preserve an auxiliary tag
-%   * if exhaustive, is optionally reduced by symmetry so that groups of the same size, and that contain the same number
-%     of items for each tag, are considered identical.  That is, for every set of groups that have the same 
-%     number of items with each tag, the groups are ordered in order of the lowest-occurring element within each group.
-%     Note that groups that have the same size but differ in the number of elements that they contain of each tag
-%     are considered different.  For example, if gps=[1 1 1 2 2 2] and tags=[1 1 2 2 2 1], then items [1 2 6] can be permuted (tag=1), and independently
-%     items [3 4 5] can be permuted (tag=2), but even though both groups have 3 elements, the first group is distinguished since it has two elements
-%     with a tag of 1. But if gps=[1 1 1 2 2 2] and tags=[1 1 2 1 1 2], then there are 6 rearrangements of items [1 2 4 5], and 2 rearrangeents of items [3 6],
-%     but the 12=6*2 shuffles are reduced by a factor of two since the first and second groups both have the same complements of each tag.
-% 
-% Implementation of auxiliary tags relies on recursion, but recursion only one step deep
+%   
+% Optionally, the shuffles can be forced to preserve an auxiliary tag (so that only elements with the same tag are exchanged).
 %
-% gps: a row vector of length n, that indicates the assignment of each
-%   element to [1:ngps].  Not all of [1:ngps] must be present.
-% opts: options
-%  if_log: 1 to log, defaults to 0
-%  if_ask: 1 to ask if_reduce, if_exhaust, nshuffs, defaults to 0; -1: ask only about if_exhaust and nshuffs
-%  if_exhaust: 1 to do exhaustive list, defaults to 0 (for random list)
-%  if_reduce: 1 to reduce by symmetrizing, defaults to 0, ignored if if_exhaust=0
+% Optionally, the list of shuffles can be exhaustive.
+% 
+% Optionally, if exhaustive, the list of shuffles can be reduced by symmetry so that shuffles that differ only by the order of the groups are not considered different.
+% 
+% The algorithmn for auxiliary tags relies on recursion, but recursion only one step deep.
+%
+% Args: 
+%   gps (int 1-D array): a row vector of length n, that indicates the assignment of each element to [1:ngps].  Not all of [1:ngps] must be present.
+%
+%   opts (struct): structure, may be omitted, with fields
+%
+%      - if_log (int): 1 to log; default is 0
+%      - if_ask (int): 1 to ask if_reduce, if_exhaust, nshuffs, -1: ask only about if_exhaust and nshuffs; default is 0
+%      - if_exhaust (int): 1 to attempt to do exhaustive list, 0 for random shuffles; defaults is 0
+%      - if_reduce (int): 1 to reduce by symmetrizing, defaults is 0; ignored if if_exhaust=0
 %  if_justcount: just count up number of shuffles, do not create them, defaults to 0
 %  if_nowarn: 1 to suppress warnings, defaults to 0
 %  if_sortrows: 1 to sort shuffle list by rows, defaults to 0
@@ -42,10 +40,16 @@ function [shuffs,gp_info,opts_used]=multi_shuff_groups(gps,opts)
 %   gp_info.tags{itag}: gp_info for subsets with each tag.
 % opts_used: options used
 % 
-% 24Mar25: add if_ask=-1
+% Note: Reduction by symmetry
+%     - If if_reduce=1, then groups of the same size, and that contain the same number of items for each tag, are considered identical and not separatelyh listed.
+%     - That is, for every set of groups that have the same  number of items with each tag, the groups are ordered in order of the lowest-occurring element within each group.
+%     - Groups that have the same size but differ in the number of elements that they contain of each tag
+%       are considered different.  For example, if gps=[1 1 1 2 2 2] and tags=[1 1 2 2 2 1], then items [1 2 6] can be permuted (tag=1), and independently
+%       items [3 4 5] can be permuted (tag=2), but even though both groups have 3 elements, the first group is distinguished since it has two elements
+%       with a tag of 1. But if gps=[1 1 1 2 2 2] and tags=[1 1 2 1 1 2], then there are 6 rearrangements of items [1 2 4 5], and 2 rearrangements of items [3 6],
+%       for a total of 12=6*2 shuffles into two groups of 3.  However, with if_reduce=1, these are reduced by a factor of two since the first and second groups both have the same complements of each tag.
 %
-%  See also:  NCHOOSEK, FILLDEFAULT, MULTI_SHUFF_ENUM, MULTI_SHUFF_GROUPS_TEST, PSG_ALIGN_VARA_DEMO, MULTI_SHUFF_MIXENT,
-%   HLID_GEOM_TRANSFORM_STATS, MULTI_BOOT_GROUPS, PSG_ALIGN_VARA_DEMO.
+%  See also:  NCHOOSEK, MULTI_SHUFF_ENUM.
 %
 if nargin<2
     opts=struct;

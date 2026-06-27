@@ -1,57 +1,49 @@
 function [a,opts_used]=multi_shuff_enum(counts,opts)
-% [a,opts_used]=multi_shuff_enum(counts,opts) creates an array whose rows are all the ways
-% of ordering counts(1) 1's, counts(2) 2's, etc.
+% [a,opts_used]=multi_shuff_enum(counts,opts) enumnerates all the ways of ordering counts(1) 1's, counts(2) 2's, etc.
 % 
-% counts may only have non-negative integer entries
-% opts: if_log: 1 to log (defaults to 0)
-%       level: set to 0, used to track the recursion level
-%       if_reduce: set to 1 to reduce by symmetry if any of counts are identical
+% The algorithm is recursive.
 %
-% a: a list of the shuffles, each row contains 
-% opts_used: options used.
-% 
-% for unvectorized version without options see multi_shuff_enum_novec.m
+% Args: 
+%   counts (int 1-D array): how many 1's, 2's, 3's, etc.  Only non-negative integer entries
 %
-% dim(a,1) is sum(counts)!/prod(counts(k)!)/r, a multinomial coefficient
-% possibly divided by r, if if_reduce=1, where r is a product of the factorials
-% of the multiplicities of the counts.
-% E.g., if counts=[2 3 3 2 2 2], then there are 4 counts=2, and 2 counts=3,
-%  so r=4!*2!
+%   opts (struct): structure, may be omitted, with fields
 %
-%tic;[q,ou]=multi_shuff_enum([2 3 3 2 2 2],setfields(struct(),{'if_log','if_reduce'},{0 1}));toc
-% Elapsed time is 11.579968 seconds.
-% size(q,1)
-% 3153150
-%tic;[q,ou]=multi_shuff_enum([2 3 3 2 2 2],setfields(struct(),{'if_log','if_reduce'},{0 0}));toc
-% Elapsed time is 452.634737 seconds.
-% size(q,1)
-% 151351200
-% size(q,1)/3153150 48
+%      - if_log (int): 1 to log; default is 0
+%      - level (int): tracks recursion level; default is 0
+%      - if_reduce: 1 to reduce by symmetry if any of counts are identical; 0 to omit; default is 0
+%
+% Returns:
+%   a (int 2-D array): a list of the shuffles, each row contains counts(1) 1's, counts(2) 2's, etc
+%
+%   opts_used (struct): options used
 % 
-% tic;q=multi_shuff_enum([2 2 2 2 2 2]);toc,size(q),factorial(12)/2^6,
-% Elapsed time is 1.530700 seconds.
-%      7484400          12
-%      7484400
-% tic;qnv=multi_shuff_enum_novec([3 3 3 3]);toc,size(q),factorial(12)/6^4
-% Elapsed time is 0.605726 seconds.
-%       369600          12
-%       369600
-% max(abs(q(:)-qnv(:)))
-%    0
-% tic;q=multi_shuff_enum([2 2 2 2 2]);toc,size(q),factorial(10)/2^5,
-% Elapsed time is 0.099007 seconds.
-%       113400          10
-%       113400
-% tic;q=multi_shuff_enum([1 1 1 1 1 1 1]);toc,size(q),factorial(7)
-% Elapsed time is 0.004967 seconds.
-%         5040           7
-%         5040
-% tic;q=multi_shuff_enum([3 3 3 3]);toc,size(q),factorial(12)/6^4
-% Elapsed time is 0.082875 seconds.
-%       369600          12
-%       369600
+% Note: Multiplicities
+%   The number of rows in a, dim(a,1) is sum(counts)!/prod(counts(k)!)/r, a multinomial coefficient
+%   possibly divided by r, if if_reduce=1, where r is a product of the factorials of the multiplicities of the counts.
+%   E.g., if counts=[2 3 3 2 2 2], then there are 4 tokens with counts of 2, and 2 tokens with counts=3, so r=4!*2!
+%
+% ```
+% counts=[2 3 3 2 2 2];
+% tic;[q,ou]=multi_shuff_enum(counts,setfields(struct(),{'if_log','if_reduce'},{0 1}));toc
+% Elapsed time is 4.552206 seconds.
+% size(q)
+% ans =
+%      3153150          14
+% factorial(sum(counts))/prod(factorial(counts))/24/2
+% ans =
+%      3153150
+% q([1:500000:size(q,1)],:)
+% ans =
+%      1     1     2     2     2     3     3     3     4     4     5     5     6     6
+%      2     1     2     4     3     5     1     3     2     5     6     3     4     6
+%      2     2     3     1     4     5     3     4     3     6     1     5     6     2
+%      1     4     2     3     1     4     2     5     6     2     3     6     3     5
+%      2     1     4     2     4     5     2     6     5     3     3     6     1     3
+%      1     4     5     2     3     3     6     4     2     2     6     1     3     5
+%      1     4     5     2     6     2     1     5     4     3     3     6     2     3
+% ```
 % 
-%  See also:  NCHOOSEK, FILLDEFAULT, MULTI_SHUFF_ENUM_NOVEC.
+%  See also:  NCHOOSEK.
 %
 if nargin<2
     opts=struct;
