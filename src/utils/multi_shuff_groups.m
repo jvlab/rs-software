@@ -38,7 +38,7 @@ function [shuffs,gp_info,opts_used]=multi_shuff_groups(gps,opts)
 %       - nsets_gp (int 1-D array): number of datasets in each group, in order of gps_unique
 %       - exhaust_raw (int): number of shuffles if exhaustive, prior to reduction by symmetry
 %       - exhaust_reduced (int): number of shuffles if exhaustive, after reduction by symmetry
-%       - tags: cell array: gp_info for subsets with each tag
+%       - tags (cell array of struct): structure with field 'tag' indicating the tag numnber, and field 'gp_info' with gp_info for the tag
 %
 %   opts_used (struct): opts, with defaults filled in
 % 
