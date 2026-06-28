@@ -18,27 +18,29 @@ function [shuffs,gp_info,opts_used]=multi_shuff_groups(gps,opts)
 %      - if_ask (int): 1 to ask if_reduce, if_exhaust, nshuffs, -1: ask only about if_exhaust and nshuffs; default is 0
 %      - if_exhaust (int): 1 to attempt to do exhaustive list, 0 for random shuffles; defaults is 0
 %      - if_reduce (int): 1 to reduce by symmetrizing, defaults is 0; ignored if if_exhaust=0
-%  if_justcount: just count up number of shuffles, do not create them, defaults to 0
-%  if_nowarn: 1 to suppress warnings, defaults to 0
-%  if_sortrows: 1 to sort shuffle list by rows, defaults to 0
-%  nshuffs: number of shuffles, defaults to 1000
-%  exhaust_raw_max: maximum number for exhaustive list, before reduction (defaults to 10^9)
-%  exhaust_reduced_max: maximum number for exhuastive list, after reduction (defaults to 10^6)
-%  nshuffs_max: maximum number of shuffles, defaults to min(exhaust_raw_max,exhaust_reduced_max)
-%  tags: array of size [1:n], containing values [1:ntags].
-%   shuffles will only exchange values with the same tags.
-%   If empty or all values equal, this is ignored.  Not all of [1:ntags] need be represented.
+%      - if_justcount (int): 1 to count number of shuffles but not compute them; 0 also computes; defaults is 0
+%      - if_nowarn (int): 1 to suppress warnings; defaults is 0
+%      - if_sortrows (int): 1 to sort shuffle list by rows; default is 0
+%      - nshuffs (int): number of shuffles if random shuffles are used, default is 1000
+%      - exhaust_raw_max (int): maximum number of shuffles if exhaustive list is requested, before reduction by symmetry; defaults is 10^9
+%      - exhaust_reduced_max (int): maximum number of shuffles if exhaustive list is requeted, after reduction by symmetry; default is 10^6
+%      - nshuffs_max (int): maximum number of shuffles if exhaustive list is requete3d, default is min(exhaust_raw_max,exhaust_reduced_max)
+%      - tags (int 1-D array): row vector of length n, containing values [1:ntags]; shuffles will only exchange values with the same tags. Ignored if empty or all values equal. Not all of [1:ntags] need be represented. Defaults to ones(1,n)
 %
-% shuffs: the shuffles; each row is a perm of [1:n], and shuffles(is,:) goes into gps(:)
-% gp_info: group information
-%   gp_info.ngps: number of groups
-%   gp_info.gps_unique: unique group numbers, in order
-%   gp_info.gp_list: cell(1,ngps); which elements in each group, in order of gps_unique
-%   gp_info.nsets_gp: (1,ngps); number of datasets in each group, in order of gps_unique
-%   gp_info.exhaust_raw: number of shuffles if exhaustive, prior to reduction
-%   gp_info.exhaust_reduced: number of shuffles if exhaustive, if reduced
-%   gp_info.tags{itag}: gp_info for subsets with each tag.
-% opts_used: options used
+% Returns:
+%   shuffs (int 2-D array): the shuffles; each row is a permutation of [1:n]
+%
+%   gp_info (struct): group information, with fields
+%
+%       - ngps (int): number of groups
+%       - gps_unique (int 1-D array): unique group numbers, in order
+%       - gp_list (cell array): gp_list{igp} which elements in each group, with igp a pointer into gps_unique
+%       - nsets_gp (int 1-D array): number of datasets in each group, in order of gps_unique
+%       - exhaust_raw (int): number of shuffles if exhaustive, prior to reduction by symmetry
+%       - exhaust_reduced (int): number of shuffles if exhaustive, after reduction by symmetry
+%       - tags: cell array: gp_info for subsets with each tag
+%
+%   opts_used (struct): opts, with defaults filled in
 % 
 % Note: Reduction by symmetry
 %     - If if_reduce=1, then groups of the same size, and that contain the same number of items for each tag, are considered identical and not separatelyh listed.
