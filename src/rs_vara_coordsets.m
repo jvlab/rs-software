@@ -45,8 +45,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
 %         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
-%         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
-%         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_aug (int): number of dimensions to add for consensus datasets; default is 0; see note below regarding Procrustes consensus algorithm
+%         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
 %         - **Replotting ??**
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
@@ -451,8 +451,7 @@ end
 %
 %set up dimension defaults
 %
-dim_list_all=dim_list_inter;
-aux.opts_vara=filldefault(aux.opts_vara,'dim_max_in',max(dim_list_all));
+aux.opts_vara=filldefault(aux.opts_vara,'dim_max_in',max(dim_list_inter));
 aux.opts_vara=filldefault(aux.opts_vara,'dim_list_in',[1:aux.opts_vara.dim_max_in]);
 aux.opts_vara=filldefault(aux.opts_vara,'dim_aug',0);
 aux.opts_vara=filldefault(aux.opts_vara,'dim_list_out',aux.opts_vara.dim_aug+aux.opts_vara.dim_list_in);
@@ -486,56 +485,100 @@ else
 end
 %
 %reformat for consensus calculations
-pcon_dim_max_in=max(dim_list_all);
+%
+pcon_dim_max_in=max(dim_list_inter);
+pcon_dim_max_out=max(aux.opts_vara.dim_list_out);
 z=cell(pcon_dim_max_in,1);
 for ip=1:pcon_dim_max_in
-    z{ip}=zeros(nstims,ip,nsets);
-    for iset=1:nsets
-        z{ip}(:,:,iset)=data_align.ds{iset}{ip}(:,[1:ip]); %only include data up to pcon_dim_use
-        z{ip}(aux_align.opts_align.which_common(:,iset)==0,:,iset)=NaN; % pad with NaN's if no data
+    if ismember(ip,dim_list_inter)
+        z{ip}=zeros(nstims,ip,nsets);
+        for iset=1:nsets
+            z{ip}(:,:,iset)=data_align.ds{iset}{ip}(:,[1:ip]); %only include data up to pcon_dim_use
+            z{ip}(aux_align.opts_align.which_common(:,iset)==0,:,iset)=NaN; % pad with NaN's if no data
+        end
     end
 end
 %
-%overlaps indicates same stimulus (from ovlp_array) and also
-%that the coordinates are not NaN's
+%overlaps indicates same stimulus (from ovlp_array) and also that the coordinates are not NaN's
 coords_isnan=reshape(isnan(z{1}),[nstims,nsets]);
 opts_pcon.overlaps=aux_align.ovlp_array.*(1-coords_isnan);
 if aux.opts_vara.if_log
     disp(sprintf('number of overlapping stimuli in component removed because coordinates are NaN'));
     disp(sum(coords_isnan.*aux_align.ovlp_array,1));
-    disp('overlap matrix from stimulus matches')
+    disp('overlap matrix from stimulus matches, without regard as to whether stimulus coordinates coordinates are NaN')
     disp(aux_align.ovlp_array'*aux_align.ovlp_array);
-    disp(sprintf('overlapping coords in component datasets with values of NaN that are removed from overlaps'));
+    disp('overlap matrix from stimulus matches, but excluding stimuli for which coordinates that are NaN')
     disp(opts_pcon.overlaps'*opts_pcon.overlaps);
 end
 %
 %define results structures
-
 %
+results=struct;
+consensus=cell(pcon_dim_max_out,1); %d1: dimnension
+znew=cell(pcon_dim_max_out,1);
+ts=cell(pcon_dim_max_out,1);
+details=cell(pcon_dim_max_out,1);
+opts_pcon_used=cell(pcon_dim_max_out,1);
+%
+nshuffs=aux.opts_vara.nshuffs;
+nsets_gp_max=groupings.nsets_gp_max;
+ngps=groupings.ngps;
+%
+%these are vector distances, taking all coordinates into account
+%note that the "allow scale" coordinate in psg_align_vara_demo is omitted,
+%
+rmsdev_setwise=zeros(pcon_dim_max_out,nsets); %d1: dimension, d2: set
+rmsdev_stmwise=zeros(pcon_dim_max_out,nstims); %d1: dimension, d2: stim
+rmsdev_overall=zeros(pcon_dim_max_out,1); %rms distance, across all datasets and stimuli
+%
+rmsdev_setwise_gp=zeros(pcon_dim_max_out,nsets_gp_max,ngps); %d1: dimension, d2: set (within group), d3: gp
+rmsdev_stmwise_gp=zeros(pcon_dim_max_out,nstims,1,ngps); %d1: dimension, d2: stim, d3: gp
+rmsdev_overall_gp=zeros(pcon_dim_max_out,1,ngps); %d1: dimension, d2: dummy, d3: gp
+%
+counts_setwise=zeros(1,nsets);
+counts_stmwise=zeros(1,nstims);
+counts_overall=zeros(1);
+%
+counts_setwise_gp=zeros(1,nsets_gp_max,ngps);
+counts_stmwise_gp=zeros(1,nstims,ngps);
+counts_overall_gp=zeros(1,1,ngps);
+%
+%for setwise and stmwise, use NaN so that missing data won't affect averages
+rmsdev_setwise_gp_shuff=NaN(pcon_dim_max_out,nsets_gp_max,ngps,nshuffs); %d1: dimension, d2: set, d3: gp, d4: shuffle
+rmsdev_stmwise_gp_shuff=NaN(pcon_dim_max_out,nstims,ngps,nshuffs); %d1: dimension, d2: stim, d3: gp, d4: shuffle
+rmsdev_overall_gp_shuff=zeros(pcon_dim_max_out,1,ngps,nshuffs); %d1: dimension, d3: gp, d4: shuffle
+%
+%rms variance available in original data
+rmsavail_setwise=zeros(pcon_dim_max_out,nsets);
+rmsavail_stmwise=zeros(pcon_dim_max_out,nstims);
+rmsavail_overall=zeros(pcon_dim_max_out,1);
+for ip=1:pcon_dim_max_out
+    sqs=sum(z{ip}.^2,2);
+    rmsavail_setwise(ip,:)=reshape(sqrt(mean(sqs,1,'omitnan')),[1 nsets]);
+    rmsavail_stmwise(ip,:)=reshape(sqrt(mean(sqs,3,'omitnan')),[1 nstims]);
+    rmsavail_overall(ip,:)=sqrt(mean(sqs(:),'omitnan'));
+end
+%
+aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0 %     %process
     %
-    stims_nan_align=cell(1,nsets);
-    stims_each_align=zeros(1,nsets);
-    for iset=1:nsets
-        nstims_each_align(iset)=data_align.sas{iset}.nstims;
-        stims_nan_align{iset}=find(isnan(data_align.ds{iset}{1}));
-        if aux.opts_vara.if_log
-            disp(sprintf('set %2.0f: %2.0f stimuli (%2.0f are NaN), label: %s',iset,nstims_each_align(iset),length(stims_nan_align{iset}),data_align.sets{iset}.label))
-        end
-    end
+    for ip=1:pcon_dim_max_out
+        if ismember(ip,dim_list_inter)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%        
+        
+        end %dim is available in all datasets
+    end %ip
     aux_out.opts_vara=aux.opts_vara;
-%     aux_out.opts_pcon=opts_pcon_used;
+    aux_out.opts_pcon=opts_pcon_used;
     aux_out.opts_pca=aux.opts_pca;
-%    aux_out.opts_align=opts_align_used;
-%     %
-%
-     vara_stats.groupings=groupings;
-else
-     aux_out.opts_vara=aux.opts_vara;
-     vara_stats.groupings=groupings;
-     disp('cannot proceed');
-     disp(aux_out.warnings);
+    aux_out.opts_align=aux_align.opts_align;
+    vara_stats.groupings=groupings;
+else %cannot process
+    aux_out.opts_vara=aux.opts_vara;
+    vara_stats.groupings=groupings;
+    disp('cannot proceed');
+    disp(aux_out.warnings);
 end
 return
 end
