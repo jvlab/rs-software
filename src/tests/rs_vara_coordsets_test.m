@@ -1,4 +1,4 @@
-% rs_vara_coordsets_test: test rs_vara_coordsets (and rs_align_coordsets)
+% rs_vara_coordsets_test: test rs_vara_coordsets
 %
 %  See also:  RS_VARA_COORDSETS, RS_BENCHMARK_COMPARE, RS_SAVE_MAT.
 %
@@ -7,12 +7,12 @@ rs_module='vara_coordsets';
 %section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
 if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
 auxs_force=struct;
-opts_needed={'opts_read','opts_rays','opts_check','opts_align','opts_import','opts_qpred','opts_vara'};
+opts_needed={'opts_read','opts_rays','opts_check','opts_import','opts_qpred','opts_vara'};
 for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=4;
+ntests=5;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -31,8 +31,6 @@ signflips=cell(1,ntests);
 aux_ins=cell(1,ntests);
 data_reads=cell(1,ntests);
 aux_reads=cell(1,ntests);
-data_aligns=cell(1,ntests);
-aux_aligns=cell(1,ntests);
 opts_used=cell(1,ntests);
 %
 groupings=cell(1,ntests);
@@ -82,6 +80,20 @@ auxs{4}.opts_vara.if_exhaust=1;
 auxs{4}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
 auxs{4}.opts_vara.nshuffs=30;
 %
+%
+test_descs{5}='btc, 6 std and 5 br judgments, user-supplied permutations';
+filenames_examples{5}=filenames_examples{1};
+auxs{5}=auxs_force;
+aux_ins{5}=aux_ins{1};
+groupings{5}=rmfield(groupings{1},'tags');
+auxs{5}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
+auxs{5}.opts_vara.nshuffs=30;
+rng('default');
+auxs{5}.opts_vara.shuffs_supplied=zeros(auxs{5}.opts_vara.nshuffs,aux_ins{5}.nsets);
+for ishuff=1:auxs{5}.opts_vara.nshuffs
+    auxs{5}.opts_vara.shuffs_supplied(ishuff,:)=randperm(aux_ins{5}.nsets);
+end
+%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
@@ -90,11 +102,8 @@ for itest=1:ntests
         aux_ins{itest}.opts_read.if_log=0;
         [data_reads{itest},aux_reads{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
         %
-        auxs{itest}.opts_align.if_log=0;
-        [data_aligns{itest},aux_aligns{itest}]=rs_align_coordsets(data_reads{itest},auxs{itest});
-        %
         auxs{itest}.opts_vara.if_log=1;
-        [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_aligns{itest},groupings{itest},auxs{itest});
+        [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_reads{itest},groupings{itest},auxs{itest});
         if aux_outs{itest}.opts_vara.if_plot
             set(gcf,'Name',sprintf('scenario %1.0f',itest));
         end
@@ -140,10 +149,6 @@ for itest=1:ntests
             if ~isempty(aux_reads{itest}.warnings)
                 disp('warnings encountered during reading:')
                 disp(aux_reads{itest}.warnings)
-            end
-            if ~isempty(aux_aligns{itest}.warnings)
-                disp('warnings encountered during alignment:')
-                disp(aux_aligns{itest}.warnings)
             end
         end
         if ~isempty(aux_outs{itest}.warnings)

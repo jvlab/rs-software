@@ -20,28 +20,37 @@ function [a,opts_used]=multi_shuff_enum(counts,opts)
 % Note: Multiplicities
 %   The number of rows in a, dim(a,1) is sum(counts)!/prod(counts(k)!)/r, a multinomial coefficient
 %   possibly divided by r, if if_reduce=1, where r is a product of the factorials of the multiplicities of the counts.
-%   E.g., if counts=[2 3 3 2 2 2], then there are 4 tokens with counts of 2, and 2 tokens with counts=3, so r=4!*2!
+%   For example, with counts=[2 3 3 2 2 2], there are 4 tokens that appear twice (1,4,5, and 6), and 2 tokens that appear three times (2 and 3), so r=4!*2!
 %
-% ```
-% counts=[2 3 3 2 2 2];
-% tic;[q,ou]=multi_shuff_enum(counts,setfields(struct(),{'if_log','if_reduce'},{0 1}));toc
-% Elapsed time is 4.552206 seconds.
-% size(q)
-% ans =
-%      3153150          14
-% factorial(sum(counts))/prod(factorial(counts))/24/2
-% ans =
-%      3153150
-% q([1:500000:size(q,1)],:)
-% ans =
-%      1     1     2     2     2     3     3     3     4     4     5     5     6     6
-%      2     1     2     4     3     5     1     3     2     5     6     3     4     6
-%      2     2     3     1     4     5     3     4     3     6     1     5     6     2
-%      1     4     2     3     1     4     2     5     6     2     3     6     3     5
-%      2     1     4     2     4     5     2     6     5     3     3     6     1     3
-%      1     4     5     2     3     3     6     4     2     2     6     1     3     5
-%      1     4     5     2     6     2     1     5     4     3     3     6     2     3
-% ```
+%   counts=[2 3 3 2 2 2];
+%
+%   tic;[q,ou]=multi_shuff_enum(counts,setfields(struct(),{'if_log','if_reduce'},{0 1}));toc
+%
+%   Elapsed time is 4.552206 seconds.
+%
+%   disp(size(q))
+%
+%   3153150 14
+%
+%   disp(factorial(sum(counts))/prod(factorial(counts))/24/2)
+%
+%   3153150
+%
+%   disp(q([1:500000:size(q,1)],:))
+%
+%   1     1     2     2     2     3     3     3     4     4     5     5     6     6
+%
+%   2     1     2     4     3     5     1     3     2     5     6     3     4     6
+%
+%   2     2     3     1     4     5     3     4     3     6     1     5     6     2
+%
+%   1     4     2     3     1     4     2     5     6     2     3     6     3     5
+%
+%   2     1     4     2     4     5     2     6     5     3     3     6     1     3
+%
+%   1     4     5     2     3     3     6     4     2     2     6     1     3     5
+%
+%   1     4     5     2     6     2     1     5     4     3     3     6     2     3
 % 
 %  See also:  NCHOOSEK.
 %

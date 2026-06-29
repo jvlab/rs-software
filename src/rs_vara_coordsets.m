@@ -30,10 +30,12 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
-%         - **Statistics**
+%         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 1
-%         - nshuffs (int): number of shuffles requested; less will be made if if_exhaust=1 and number needed for exhaustive list is grater than nshuffs_exhaust_max; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
 %         - if_exhaust (int): 1 to attempt to use exhaustive set of shuffles, otherwise will use nshuffs random shuffles if number required is > nshuffs_nax; default is if_stats
+%         - nshuffs (int): number of shuffles requested; less will be made if if_exhaust=1 and number needed for exhaustive list is grater than nshuffs_exhaust_max; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - shuffs_supplied (int 2-D array): user-supplied shuffles to be used; default is empty ([]), in which case nshuffs random shuffles or exhaustive shuffles (depending on if_exhaust) will be
+%         generated. If non-empty, shuffs_supplied(ishuff,irec) will be the record number to be used in place of original record irec in shuffle ishuff.  It is If non-empty, it is checked to be sure that each row is a permutation, but it is not checked for consistency with groupings.
 %         - nshuffs_max (int): maximum number shuffles that can be generated; use random shuffles if more than this number are required; defaul is 10^4
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
@@ -259,6 +261,7 @@ if aux.opts_vara.if_stats
 else
     aux.opts_vara=filldefault(aux.opts_vara,'nshuffs',0);
 end
+aux.opts_vara=filldefault(aux.opts_vara,'shuffs_supplied',[]);
 aux.opts_vara=filldefault(aux.opts_vara,'if_exhaust',1);
 aux.opts_vara=filldefault(aux.opts_vara,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
 aux.opts_vara=filldefault(aux.opts_vara,'nshuffs_max',10^4);
@@ -378,31 +381,60 @@ else
     rng('shuffle');
 end
 %
-%create shuffle list via multi_shuff_groups
+%create shuffle list via multi_shuff_groups or use supplied shuffles
 %
 if aux.opts_vara.nshuffs>0
-    opts_multi=struct();
-    opts_multi.if_log=0;
-    opts_multi.if_exhaust=aux.opts_vara.if_exhaust;
-    opts_multi.if_ask=0; %non-interactive
-    opts_multi.if_reduce=1; %shuffles that differ only by group order are not included
-    opts_multi.if_justcount=0; %don't just count
-    opts_multi.if_nowarn=1;
-    opts_multi.nshuffs=min(aux.opts_vara.nshuffs,aux.opts_vara.nshuffs_max);
-    opts_multi.exhaust_raw_max=aux.opts_vara.nshuffs_max;
-    opts_multi.exhaust_reduced_max=aux.opts_vara.nshuffs_max;
-    opts_multi.nshuffs_max=aux.opts_vara.nshuffs_max;
-    opts_multi.tags=groupings.tags;
-    %
-    [shuffs,gp_info,opts_multi_used]=multi_shuff_groups(groupings.gps,opts_multi);
-    vara_stats.opts_multi_used=opts_multi_used;
-    vara_stats.shuffs=shuffs;
-    vara_stats.nshuffs_used=size(shuffs,1);
-    if aux.opts_vara.if_log
-        disp(sprintf('shuffles made:  %6.0f, requested:%6.0f',vara_stats.nshuffs_used,aux.opts_vara.nshuffs));
-        disp(sprintf('exhautive mode used: %1.0f, requested:     %1.0f',opts_multi_used.if_exhaust,aux.opts_vara.if_exhaust));
+    if isempty(aux.opts_vara.shuffs_supplied)
+        opts_multi=struct();
+        opts_multi.if_log=0;
+        opts_multi.if_exhaust=aux.opts_vara.if_exhaust;
+        opts_multi.if_ask=0; %non-interactive
+        opts_multi.if_reduce=1; %shuffles that differ only by group order are not included
+        opts_multi.if_justcount=0; %don't just count
+        opts_multi.if_nowarn=1;
+        opts_multi.nshuffs=min(aux.opts_vara.nshuffs,aux.opts_vara.nshuffs_max);
+        opts_multi.exhaust_raw_max=aux.opts_vara.nshuffs_max;
+        opts_multi.exhaust_reduced_max=aux.opts_vara.nshuffs_max;
+        opts_multi.nshuffs_max=aux.opts_vara.nshuffs_max;
+        opts_multi.tags=groupings.tags;
+        %
+        [shuffs,gp_info,opts_multi_used]=multi_shuff_groups(groupings.gps,opts_multi);
+        if aux.opts_vara.if_log
+            disp(sprintf('shuffles made:  %6.0f, requested:%6.0f',size(shuffs,1),aux.opts_vara.nshuffs));
+            disp(sprintf('exhautive mode used: %1.0f, requested:     %1.0f',opts_multi_used.if_exhaust,aux.opts_vara.if_exhaust));
+        end
+    else %user-supplied shuffles
+        shuffs=aux.opts_vara.shuffs_supplied;
+        opts_multi_used=struct();
+        if  size(shuffs,1)~=aux.opts_vara.nshuffs
+            wmsg=sprintf('number of supplied shuffles (%6.0f) does not match number of shuffles requested (%6.0f)',size(shuffs,1),aux.opts_vara.nshuffs);
+            aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+        end
+        if  size(shuffs,2)~=nsets
+            wmsg=sprintf('number of elements in supplied shuffles (%6.0f) does not match number of records (%6.0f)',size(shuffs,2),nsets);
+            aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+        end
+        no_perm=0;
+        for ishuff=1:size(shuffs,1)
+            if any(sort(shuffs(ishuff,:))~=[1:size(shuffs,2)])
+                no_perm=no_perm+1;
+            end
+        end
+        if no_perm>0
+            wmsg=sprintf('supplied shuffles are illegal: %3.0f fail to be permutations of the number of records',no_perm);
+            aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+        end
+        if aux.opts_vara.if_log
+            disp(sprintf('shuffles supplied:  %6.0f, requested:%6.0f',size(shuffs,1),aux.opts_vara.nshuffs));
+        end
     end
+else
+    shuffs=[];
+    opts_multi_used=struct;
 end
+vara_stats.shuffs=shuffs;
+vara_stats.opts_multi_used=opts_multi_used;
+vara_stats.nshuffs_used=size(shuffs,1);
 
 % %
 % %inspect input data to see where data are missing
