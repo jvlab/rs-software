@@ -425,7 +425,9 @@ aux2.opts_align.if_log=aux.opts_vara.if_log;
 %check consistency of data files
 %
 check=rs_check_coordsets(data_align,aux.opts_check);
-aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
+if ~isempty(check.warnings)
+    aux_out.warnings=strvcat(aux_out.warnings,check.warnings); %kludge since strvcat([],[])='', but we want [] if both warnings are empty
+end
 aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
 %
 nstims_each=check.nstims_each;
@@ -447,6 +449,69 @@ if aux.opts_vara.if_log
     disp(sprintf('total stimuli: %3.0f',nstims));
 end
 %
+%set up dimension defaults
+%
+dim_list_all=dim_list_inter;
+aux.opts_vara=filldefault(aux.opts_vara,'dim_max_in',max(dim_list_all));
+aux.opts_vara=filldefault(aux.opts_vara,'dim_list_in',[1:aux.opts_vara.dim_max_in]);
+aux.opts_vara=filldefault(aux.opts_vara,'dim_aug',0);
+aux.opts_vara=filldefault(aux.opts_vara,'dim_list_out',aux.opts_vara.dim_aug+aux.opts_vara.dim_list_in);
+if length(aux.opts_vara.dim_list_in)~=length(aux.opts_vara.dim_list_out)
+    wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+else
+    if_aug=any(aux.opts_vara.dim_list_out>aux.opts_vara.dim_list_in);
+    aux.opts_vara=filldefault(aux.opts_vara,'if_initpca_rot',1-if_aug);
+end
+%
+if ischar(aux.opts_vara.pcon_init_method)
+    if strcmp(aux.opts_vara.pcon_init_method,'specify')
+        aux.opts_vara.initialize_set=0; %opts_vara.pcon_initial_guess and opts_vara.pcon_alignment will be used
+    else
+        wmsg='initialization method not recognized; default used';
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        aux.opts_vara.pcon_init_method=0;
+        aux.opts_vara.initialize_set='pca';
+    end
+else
+    if aux.opts_vara.pcon_init_method>0
+        aux.opts_vara.initialize_set=aux.opts_vara.pcon_init_method;
+    elseif aux.opts_vara.pcon_init_method==0
+        aux.opts_vara.initialize_set='pca';
+    elseif aux.opts_vara.pcon_init_method==-1
+        aux.opts_vara.initialize_set='pca_center';
+    else
+        aux.opts_vara.initialize_set='pca_nocenter';
+    end
+end
+%
+%reformat for consensus calculations
+pcon_dim_max_in=max(dim_list_all);
+z=cell(pcon_dim_max_in,1);
+for ip=1:pcon_dim_max_in
+    z{ip}=zeros(nstims,ip,nsets);
+    for iset=1:nsets
+        z{ip}(:,:,iset)=data_align.ds{iset}{ip}(:,[1:ip]); %only include data up to pcon_dim_use
+        z{ip}(aux_align.opts_align.which_common(:,iset)==0,:,iset)=NaN; % pad with NaN's if no data
+    end
+end
+%
+%overlaps indicates same stimulus (from ovlp_array) and also
+%that the coordinates are not NaN's
+coords_isnan=reshape(isnan(z{1}),[nstims,nsets]);
+opts_pcon.overlaps=aux_align.ovlp_array.*(1-coords_isnan);
+if aux.opts_vara.if_log
+    disp(sprintf('number of overlapping stimuli in component removed because coordinates are NaN'));
+    disp(sum(coords_isnan.*aux_align.ovlp_array,1));
+    disp('overlap matrix from stimulus matches')
+    disp(aux_align.ovlp_array'*aux_align.ovlp_array);
+    disp(sprintf('overlapping coords in component datasets with values of NaN that are removed from overlaps'));
+    disp(opts_pcon.overlaps'*opts_pcon.overlaps);
+end
+%
+%define results structures
+
+%
 if aux_out.warn_bad==0 %     %process
     %
     stims_nan_align=cell(1,nsets);
@@ -458,13 +523,6 @@ if aux_out.warn_bad==0 %     %process
             disp(sprintf('set %2.0f: %2.0f stimuli (%2.0f are NaN), label: %s',iset,nstims_each_align(iset),length(stims_nan_align{iset}),data_align.sets{iset}.label))
         end
     end
-    if aux.opts_vara.if_log
-        disp('overlap matrix')
-        disp(aux_align.ovlp_array'*aux_align.ovlp_array);
-    end
-
-
-
 
     aux_out.opts_vara=aux.opts_vara;
 %     aux_out.opts_pcon=opts_pcon_used;
