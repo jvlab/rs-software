@@ -12,7 +12,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=5;
+ntests=6;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -80,7 +80,6 @@ auxs{4}.opts_vara.if_exhaust=1;
 auxs{4}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
 auxs{4}.opts_vara.nshuffs=30;
 %
-%
 test_descs{5}='btc, 6 std and 5 br judgments, user-supplied permutations';
 filenames_examples{5}=filenames_examples{1};
 auxs{5}=auxs_force;
@@ -93,6 +92,23 @@ auxs{5}.opts_vara.shuffs_supplied=zeros(auxs{5}.opts_vara.nshuffs,aux_ins{5}.nse
 for ishuff=1:auxs{5}.opts_vara.nshuffs
     auxs{5}.opts_vara.shuffs_supplied(ishuff,:)=randperm(aux_ins{5}.nsets);
 end
+%
+test_descs{6}='btc, 6 std and 5 br judgments, exhaustive shuffles, tagged, group 1 has partial non-overlaps';
+filenames_examples{6}={...
+    './samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat',...
+    './samples/bwtextures/bdce3pt_coords_NF_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_SN-br_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_NF-br_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_MC-br_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_ZK-br_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_SAW_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_ZK_sess01_10.mat',...
+    './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
+    './samples/bwtextures/bdce3pt_coords_MC_sess01_10.mat'};
+auxs{6}=auxs{1};
+aux_ins{6}=aux_ins{1};
+groupings{6}=groupings{1};
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

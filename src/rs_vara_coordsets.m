@@ -7,6 +7,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 % Note that in contrast to `rs_knit_coordsets`, in which shuffling permutes the coordinates of the stimuli within a record, here the shuffling permutes the records across groups.
 %
+% Also in contrast to `rs_knit_coordsets`, there is no attempt made to combine all of the records into a consensus.
+%
 % Args:
 %   data_in (struct): `dataset structure` to be processed, with fields
 %
@@ -67,8 +69,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
-%     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
-%     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
+%     - opts_align (struct): options for alignment of data, typically omitted
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
@@ -95,8 +96,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_pca (struct): aux.opts_pca, with defaults filled in
 %     - opts_align (struct): aux.opts_align, with defaults filled in
-%     - opts_rays (cell array with one element): opts_rays{1} is a structure which contains the options used for creating rays in data_out
-%     - rayss (cell array with one element): rayss{1} is the `ray structure` for data_out; see note below regarding rays
 %     - coords_havedata (int 2-D array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of `data_in`, 0 otherwise
 %     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of `data_in` after transformation to the consensus; all stimuli in
 %     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
@@ -163,12 +162,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         [consensus]=ts.scaling*[component]*ts.orthog+ts.translation; see `transformation structures` for further details.
 %         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
-% Note: Note regarding recalculation of alignment
-%     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of `data_in`, and to 
-%     place them in the same order. By default, this is carried out in rs_knit_coordsets by a call to rs_align_coordsets, using options aux.align_opts.
-%     This recalculation can be avoided by supplying aux_out from a
-%     previous call to rs_align_coordsets, as follows: aux.sa_pooled=aux_out.sa_pooled, aux.data_align=aux_out.data_out
-%
 % Note: ?? Note regarding Procrustes consensus algorithm
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
@@ -222,14 +215,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
 %
-% Note: ??Note regarding rays
-%     - The `ray structure` describes relationships among the simulus coordinates: 
-%     `rays`, i.e., sets of stimuli that lie along an axis or a ray from the origin,
-%     `rings`, stimuli that lie at an approximately equal distance from the origin, and nearest neighbors.
-%     It is only created if there is a valid set of stimulus coordinates.  
-%
 % See also:
-%   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
+%   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS
 %   ?? PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
 %   ?? PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %   ?? MULTI_SHUFF_GROUPS
@@ -273,23 +260,16 @@ aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
 aux.opts_pca=filldefault(aux.opts_pca,'nd_max',Inf);
 %
-aux=filldefault(aux,'opts_rays',struct);
-%
 aux=filldefault(aux,'opts_align',struct);
 %
 aux=rs_aux_customize(aux,'rs_vara_coordsets');
 %
 vara_stats=struct;
 aux_out=struct;
+aux_out.warnings=[];
+aux_out.warn_bad=0;
 %
 set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
-%
-%check consistency and get available stimuli, dimensions, typenames
-%
-check=rs_check_coordsets(data_in,aux.opts_check);
-%
-aux_out.warnings=check.warnings;
-aux_out.warn_bad=check.warn_bad;
 %
 % %
 % % replot mode
@@ -303,23 +283,10 @@ aux_out.warn_bad=check.warn_bad;
 %     return
 % end
 % 
-nsets=check.nsets;
-nstims_each=check.nstims_each;
-dim_list_each=check.dim_list_each;
-dim_list_union=check.dim_list_union;
-dim_list_inter=check.dim_list_inter;
-typenames_each=check.typenames_each;
-typenames_union=check.typenames_union;
-typenames_inter=check.typenames_inter;
-%
-if min(nstims_each)~=max(nstims_each)
-    disp('cannot proceed');
-    disp(aux_out.warnings);
-    return
-end
 %
 %check group information
 %
+nsets=length(data_in.sets);
 if length(groupings.gps)~=nsets
     wmsg=sprintf('group assignment list length (%2.0f) does not match number of records (%2.0f)',length(groupings.gps),nsets);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
@@ -435,230 +402,75 @@ end
 vara_stats.shuffs=shuffs;
 vara_stats.opts_multi_used=opts_multi_used;
 vara_stats.nshuffs_used=size(shuffs,1);
+%
+% tally missing stimuli in input datasets and align according to all stimuli
+%
+nstims_each=zeros(1,nsets);
+stims_nan=cell(1,nsets);
+if aux.opts_vara.if_log
+    disp('before alignment of stimuli')
+end
+for iset=1:nsets
+    nstims_each(iset)=data_in.sas{iset}.nstims;
+    stims_nan{iset}=find(isnan(data_in.ds{iset}{1}));
+    disp(sprintf('set %2.0f: %2.0f stimuli (%2.0f are NaN), label: %s',iset,nstims_each(iset),length(stims_nan{iset}),data_in.sets{iset}.label))
+end
+%
+%align and check consistency
+%
+aux2=aux;
+aux2.opts_align.if_log=aux.opts_vara.if_log;
+[data_align,aux_align]=rs_align_coordsets(data_in,aux2);
+%
+%check consistency of data files
+%
+check=rs_check_coordsets(data_align,aux.opts_check);
+aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
+aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
+%
+nstims_each=check.nstims_each;
+dim_list_each=check.dim_list_each;
+dim_list_union=check.dim_list_union;
+dim_list_inter=check.dim_list_inter;
+typenames_each=check.typenames_each;
+typenames_union=check.typenames_union;
+typenames_inter=check.typenames_inter;
+%
+if min(nstims_each)~=max(nstims_each)
+    disp('cannot proceed');
+    disp(aux_out.warnings);
+    return
+end
+nstims=min(nstims_each);
+if aux.opts_vara.if_log
+    disp('after alignment of stimuli')
+    disp(sprintf('total stimuli: %3.0f',nstims));
+end
+%
+if aux_out.warn_bad==0 %     %process
+    %
+    stims_nan_align=cell(1,nsets);
+    stims_each_align=zeros(1,nsets);
+    for iset=1:nsets
+        nstims_each_align(iset)=data_align.sas{iset}.nstims;
+        stims_nan_align{iset}=find(isnan(data_align.ds{iset}{1}));
+        if aux.opts_vara.if_log
+            disp(sprintf('set %2.0f: %2.0f stimuli (%2.0f are NaN), label: %s',iset,nstims_each_align(iset),length(stims_nan_align{iset}),data_align.sets{iset}.label))
+        end
+    end
+    if aux.opts_vara.if_log
+        disp('overlap matrix')
+        disp(aux_align.ovlp_array'*aux_align.ovlp_array);
+    end
 
-% %
-% %inspect input data to see where data are missing
-% %note that a NaN can indicate that stimulus was present and response
-% %was missing, OR, that the stimulus was not presented
-% %
-% nstims_all=min(nstims_each);
-% coords_isnan=zeros(nstims_all,nsets);
-% for iset=1:nsets
-%     for kd=dim_list_each{iset}
-%         coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimension, it's missing
-%     end
-%     if aux.opts_knit.if_log
-%         disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
-%     end
-% end
-% aux_out.coords_havedata=1-coords_isnan;
-% if aux.opts_knit.if_log
-%     disp('data table')
-%     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
-% end
-% if any(all(coords_isnan,2))
-%     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
-% end
-% %
-% %if aux.sa_pooled is present, use it, otherwise, re create
-% if (isfield(aux,'sa_pooled') & isfield(aux,'data_align'))
-%     if (aux.opts_knit.if_log)
-%         disp('sa_pooled and data_align are supplied.');
-%     end
-%     sa_pooled=aux.sa_pooled;
-%     data_align=aux.data_align;
-%     opts_align_used=aux.opts_align;
-% else
-%     if (aux.opts_knit.if_log)
-%         disp('sa_pooled and data_align will be created.');
-%     end
-%     %redo the alignment, but first remove the nans in the aligned file; this would confuse if realigned
-%     [sets_nonan,ds_nonan,sas_nonan]=psg_remnan_coordsets(data_in.sets,data_in.ds,data_in.sas,[],setfield(struct,'if_log',aux.opts_knit.if_log));
-%     data_in_nonan=struct;
-%     data_in_nonan.ds=ds_nonan;
-%     data_in_nonan.sas=sas_nonan;
-%     data_in_nonan.sets=sets_nonan;
-%     aux2=aux;
-%     aux2.opts_align.if_log=aux.opts_knit.if_log;
-%     [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux2);
-%     sa_pooled=aux_align.sa_pooled;
-%     opts_align_used=aux_align.opts_align;
-% end
-% if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
-%     wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
-%     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
-%     disp('discrepancies')
-%     disp(setdiff(typenames_union,sa_pooled.typenames));
-% end
-% %
-% %set up dimension defaults
-% %
-% dim_list_all=dim_list_inter;
-% aux.opts_knit=filldefault(aux.opts_knit,'dim_max_in',max(dim_list_all));
-% aux.opts_knit=filldefault(aux.opts_knit,'dim_list_in',[1:aux.opts_knit.dim_max_in]);
-% aux.opts_knit=filldefault(aux.opts_knit,'dim_aug',0);
-% aux.opts_knit=filldefault(aux.opts_knit,'dim_list_out',aux.opts_knit.dim_aug+aux.opts_knit.dim_list_in);
-% if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
-%     wmsg=sprintf('dim_list_in and dim_list_out have different lengths');
-%     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
-% else
-%     if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
-%     aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
-% end
-% aux_out.opts_check=aux.opts_check;
-if aux_out.warn_bad==0
-%     %process
-%     typenames_all=typenames_inter;
-%     dim_list_in=aux.opts_knit.dim_list_in;
-%     dim_list_out=aux.opts_knit.dim_list_out;
-%     %
-%     if aux.opts_knit.if_log
-%         disp(sprintf('knitting %3.0f stimuli across %3.0f datasets, dimensions %s',nstims_all,nsets,sprintf(' %2.0f',dim_list_in))); 
-%         disp(sprintf('  allow reflection: %1.0f, allow offset: %1.0f, allow scale: %1.0f, normalize scale: %1.0f, rotate to pcs: %1.0f',...
-%             aux.opts_knit.allow_reflection,aux.opts_knit.allow_offset,aux.opts_knit.allow_scale,aux.opts_knit.if_normscale,aux.opts_knit.if_pca));
-%     end
-%     if aux.opts_knit.if_pca
-%         c2p_string='-pc';
-%     else
-%         c2p_string='';
-%     end
-%     if ischar(aux.opts_knit.pcon_init_method)
-%         if strcmp(aux.opts_knit.pcon_init_method,'specify')
-%             aux.opts_knit.initialize_set=0; %opts_knit.pcon_initial_guess and opts_knit.pcon_alignment will be used
-%         else
-%             wmsg='initialization method not recognized; default used';
-%             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
-%             aux.opts_knit.pcon_init_method=0;
-%             aux.opts_knit.initialize_set='pca';
-%         end
-%     else
-%         if aux.opts_knit.pcon_init_method>0
-%             aux.opts_knit.initialize_set=aux.opts_knit.pcon_init_method;
-%         elseif aux.opts_knit.pcon_init_method==0
-%             aux.opts_knit.initialize_set='pca';
-%         elseif aux.opts_knit.pcon_init_method==-1
-%             aux.opts_knit.initialize_set='pca_center';
-%         else
-%             aux.opts_knit.initialize_set='pca_nocenter';
-%         end
-%     end
-%     %
-%     %do a consensus on each model-dimension separately
-%     %
-%     opts_pcon=aux.opts_knit;
-%     [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
-%     if ~isempty(warnings)
-%         wmsg=strvcat(wmsg,warnings);
-%         warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
-%         for k=1:size(warnings,1)
-%             disp(cat(2,warn_leadin,warnings(k,:)));
-%         end
-%     end
-%     ds_knitted=ra.ds_knitted;
-%     ds_components=ra.ds_components;
-%     opts_pcon_used=ra.opts_pcon_eachdim'; %make a column for consistency 
-%     details=details'; %make a column for consistency
-%     %
-%     %implement PCA rotation if requested:  note that this is applied both
-%     %to consensus and components in output, but not in knit_stats.components
-%     %
-%     if aux.opts_knit.if_pca
-%         ts_pca=cell(1,max(dim_list_in));
-%         for dptr=1:length(dim_list_out)
-%             ip=dim_list_in(dptr);
-%             ip_out=dim_list_out(dptr);
-%             knitted_centroid=mean(ds_knitted{ip_out},1,'omitnan');
-%             [ds_knitted{ip_out},recon_coords,var_ex,var_tot,coord_maxdiff,opts_used_pca]=psg_pcaoffset(ds_knitted{ip_out},knitted_centroid,aux.opts_pca);
-%     %        qu=opts_used_pca.qu;
-%     %        qs=opts_used_pca.qs;
-%             v=opts_used_pca.qv;
-%     %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
-%             for iset=1:nsets
-%                 consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip_out},1,'omitnan'),nstims_all,1);
-%                 ds_components{iset}{1,ip_out}=consensus_centroid_rep+(ds_components{iset}{1,ip_out}-consensus_centroid_rep)*v(1:ip_out,:);
-%                 %determine transformation to consensus followed by pca
-%                 ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
-%                 ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
-%                 ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
-%             end
-%         end %dptr
-%         aux_out.ts_pca=ts_pca;
-%     end
-%     %
-%     %if statistics, keep them
-%     %
-%     if aux.opts_knit.if_stats
-%         knit_stats_setup.nsets=nsets;
-%         knit_stats_setup.dim_list_in_max=max(dim_list_in);
-%         knit_stats_setup.dim_list_in=dim_list_in;
-%         knit_stats_setup.dim_list_out=dim_list_out;
-%         knit_stats_setup.dataset_labels=cell(1,nsets);
-%         for iset=1:nsets
-%             knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
-%         end
-%         knit_stats_setup.stimulus_labels=typenames_all;
-%         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;
-%         knit_stats_setup.shuff_quantiles=aux.opts_knit.shuff_quantiles;
-%         knit_stats_setup.nstims=nstims_all;
-%         %
-%         aux_out.knit_stats=ra;
-%         aux_out.knit_stats_setup=knit_stats_setup;
-%         if aux.opts_knit.if_plot
-%             knit_stats_setup_use=aux_out.knit_stats_setup;
-%             if isfield(knit_stats_setup_use,'fig_handle')
-%                 knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle; %psg_knit_stats_plot expects figure handle in figh
-%             end
-%             aux_out.fig_handle=psg_knit_stats_plot(aux_out.knit_stats,knit_stats_setup_use);
-%         end
-%     end
-%     sas_knitted=sa_pooled;
-%     %
-%     %knitted set structure
-%     sets_knitted=struct;
-%     sets_knitted.nstims=nstims_all;
-%     sets_knitted.dim_list=dim_list_out;
-%     for ifn=1:length(set_knit_strings)
-%         fn=set_knit_strings{ifn};
-%         sets_knitted.(fn)=''; % was []
-%         for iset=1:nsets
-%             if isfield(data_in.sets{iset},fn)
-%                 sets_knitted.(fn)=cat(2,sets_knitted.(fn),char(data_in.sets{iset}.(fn)),'+');
-%             end
-%         end
-%         if length(sets_knitted.(fn))>1
-%             sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
-%         end
-%     end
-%     pipeline_opts=struct;
-%     pipeline_opts.opts_knit=aux.opts_knit;
-%     pipeline_opts.opts_pcon=opts_pcon_used;
-%     sets_knitted.pipeline=psg_coord_pipe_util('knit',pipeline_opts,[],[],data_in.sets);
-%     %find rays
-%     [rays,wmsg,opts_rays_used]=rs_findrays(sas_knitted,sets_knitted.label,aux.opts_rays);
-%     if ~isempty(wmsg)
-%         aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
-%     end
-%     %
-%     %dim list and pipeline for component sets
-%     for iset=1:nsets
-%         data_in.sets{iset}.dim_list=dim_list_out;
-%         data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);       
-%     end
-%     data_out.ds{1}=ds_knitted;
-%     data_out.sas{1}=sas_knitted;
-%     data_out.sets{1}=sets_knitted;
-%     data_out.sets{1}.type=data_in.sets{1}.type;
-%     %
-%     aux_out.rayss{1}=rays;
-%     aux_out.opts_rays{1}=opts_rays_used;
-     aux_out.opts_vara=aux.opts_vara;
+
+
+
+    aux_out.opts_vara=aux.opts_vara;
 %     aux_out.opts_pcon=opts_pcon_used;
-     aux_out.opts_pca=aux.opts_pca;
-%     aux_out.opts_align=opts_align_used;
+    aux_out.opts_pca=aux.opts_pca;
+%    aux_out.opts_align=opts_align_used;
 %     %
-%     aux_out.components.ds=ds_components;
-%     aux_out.components.sas=data_align.sas;
-%     aux_out.components.sets=data_in.sets;
 %
      vara_stats.groupings=groupings;
 else
