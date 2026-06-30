@@ -365,7 +365,7 @@ end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
     %process
-    typenames_all=typenames_inter;
+    typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     dim_list_in=aux.opts_knit.dim_list_in;
     dim_list_out=aux.opts_knit.dim_list_out;
     %

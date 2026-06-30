@@ -528,6 +528,7 @@ end
 %
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0 %     %process
+    typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     %
     for ip=1:pcon_dim_max_out
         if ismember(ip,dim_list_inter)
@@ -639,6 +640,33 @@ if aux_out.warn_bad==0 %     %process
         vara_stats.rmsdev_overall_gp_shuff=rmsdev_overall_gp_shuff;
         vara_stats.rmsdev_grpwise_shuff=sqrt(sum(rmsdev_overall_gp_shuff.^2.*repmat(reshape(nsets_gp(:),[1 1 ngps 1]),[pcon_dim_max_out,1,1,nshuffs]),3)/nsets);
     end
+    %
+    %plot?
+    %
+    if aux.opts_vara.if_stats
+        vara_stats_setup.nsets=nsets;
+        vara_stats_setup.dim_list_in_max=max(aux.opts_vara.dim_list_in);
+        vara_stats_setup.dim_list_in=aux.opts_vara.dim_list_in;
+        vara_stats_setup.dim_list_out=aux.opts_vara.dim_list_out;
+        vara_stats_setup.dataset_labels=cell(1,nsets);
+        for iset=1:nsets
+            vara_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+        end
+        vara_stats_setup.stimulus_labels=typenames_all;
+        vara_stats_setup.nshuffs=aux.opts_vara.nshuffs;
+        vara_stats_setup.shuff_quantiles=aux.opts_vara.shuff_quantiles;
+        vara_stats_setup.nstims=nstims;
+        %
+        aux_out.vara_stats_setup=vara_stats_setup;
+        if aux.opts_vara.if_plot
+            vara_stats_setup_use=aux_out.vara_stats_setup;
+            if isfield(vara_stats_setup_use,'fig_handle')
+                vara_stats_setup_use.figh=vara_stats_setup_use.fig_handle; %psg_vara_stats_plot expects figure handle in figh
+            end
+            aux_out.fig_handle=psg_vara_stats_plot(vara_stats,vara_stats_setup_use);
+        end
+    end
+    %
     aux_out.opts_vara=aux.opts_vara;
     aux_out.opts_pcon=opts_pcon_used;
     aux_out.opts_pca=aux.opts_pca;
