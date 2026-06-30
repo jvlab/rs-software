@@ -12,7 +12,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=7;
+ntests=8;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -49,42 +49,43 @@ filenames_examples{1}={...
     './samples/bwtextures/bgca3pt_coords_ZK_sess01_10.mat',...
     './samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat',...
     './samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat'};
-auxs{1}=auxs_force;
 aux_ins{1}=auxs_force;
 aux_ins{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 aux_ins{1}.nsets=11;
+auxs{1}=auxs_force;
+auxs{1}.opts_vara.dim_max_in=4;
+auxs{1}.opts_vara.max_niters=50; %fewer iterations for Procrustes consensus
 groupings{1}.gps=[1 1 2 2 2 2 2 1 1 1 1];
 groupings{1}.tags=[1 2 1 2 3 4 5 6 5 3 4];
 %
 test_descs{3}='btc, 6 std and 5 br judgments, random shuffles, tagged';
 filenames_examples{2}=filenames_examples{1};
-auxs{2}=auxs{1};
 aux_ins{2}=aux_ins{1};
-groupings{2}=groupings{1};
+auxs{2}=auxs{1};
 auxs{2}.opts_vara.nshuffs=10;
 auxs{2}.opts_vara.if_exhaust=0;
+groupings{2}=groupings{1};
 %
 test_descs{3}='btc, 6 std and 5 br judgments, exhaustive, untagged';
 filenames_examples{3}=filenames_examples{1};
-auxs{3}=auxs{1};
 aux_ins{3}=aux_ins{1};
-groupings{3}=rmfield(groupings{1},'tags');
+auxs{3}=auxs{1};
 auxs{3}.opts_vara.if_exhaust=1;
+groupings{3}=rmfield(groupings{1},'tags');
 %
 test_descs{4}='btc, 6 std and 5 br judgments, attempt exhaustive but limit reached, untagged';
 filenames_examples{4}=filenames_examples{1};
-auxs{4}=auxs{1};
 aux_ins{4}=aux_ins{1};
-groupings{4}=rmfield(groupings{1},'tags');
+auxs{4}=auxs{1};
 auxs{4}.opts_vara.if_exhaust=1;
 auxs{4}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
 auxs{4}.opts_vara.nshuffs=30;
+groupings{4}=rmfield(groupings{1},'tags');
 %
 test_descs{5}='btc, 6 std and 5 br judgments, user-supplied permutations';
 filenames_examples{5}=filenames_examples{1};
-auxs{5}=auxs{1};
 aux_ins{5}=aux_ins{1};
-groupings{5}=rmfield(groupings{1},'tags');
+auxs{5}=auxs{1};
 auxs{5}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
 auxs{5}.opts_vara.nshuffs=30;
 rng('default');
@@ -92,8 +93,9 @@ auxs{5}.opts_vara.shuffs_supplied=zeros(auxs{5}.opts_vara.nshuffs,aux_ins{5}.nse
 for ishuff=1:auxs{5}.opts_vara.nshuffs
     auxs{5}.opts_vara.shuffs_supplied(ishuff,:)=randperm(aux_ins{5}.nsets);
 end
+groupings{5}=groupings{1};
 %
-test_descs{6}='btc, 6 std and 5 br judgments, exhaustive shuffles, tagged, group 1 has partial non-overlaps';
+test_descs{6}='btc, 6 std and 5 br judgments, exhaustive shuffles, tagged, group 1 has partial overlaps';
 filenames_examples{6}={...
     './samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat',...
     './samples/bwtextures/bdce3pt_coords_NF_sess01_10.mat',...
@@ -110,12 +112,22 @@ auxs{6}=auxs{1};
 aux_ins{6}=aux_ins{1};
 groupings{6}=groupings{1};
 %
-test_descs{7}='btc, 6 std and 5 br judgments, group ` has partial overlaps, no shuffles';
+test_descs{7}='btc, 6 std and 5 br judgments, group 1 has partial overlaps, no shuffles';
 filenames_examples{7}=filenames_examples{6};
-auxs{7}=auxs{1};
 aux_ins{7}=aux_ins{1};
-groupings{7}=rmfield(groupings{1},'tags');
+auxs{7}=auxs{1};
 auxs{7}.opts_vara.nshuffs=0;
+groupings{7}=groupings{1};
+%
+%
+test_descs{8}='btc, 6 std and 5 br judgments, group 1 has partial overlaps, shuffles, dim_aug=1; dim_list used';
+filenames_examples{8}=filenames_examples{6};
+aux_ins{8}=aux_ins{1};
+auxs{8}=auxs{1};
+auxs{8}.opts_vara=rmfield(auxs{8}.opts_vara,'dim_max_in');
+auxs{8}.opts_vara.dim_list_in=[2 3 5];
+auxs{8}.opts_vara.dim_aug=1;
+groupings{8}=groupings{1};
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

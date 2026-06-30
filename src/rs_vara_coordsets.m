@@ -58,7 +58,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
@@ -97,29 +96,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_pca (struct): aux.opts_pca, with defaults filled in
 %     - opts_align (struct): aux.opts_align, with defaults filled in
-%     - coords_havedata (int 2-D array): coords_havedata(s,k)=1 if the stimulus data_out.sets{:}.typenames{s} is present and not NaN in record k of `data_in`, 0 otherwise
-%     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of `data_in` after transformation to the consensus; all stimuli in
-%     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
-%     - knit_stats (struct): statistics of knitting; see notes below regarding statistics and replotting a previous analysis
-%     - knit_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
-%
-%         - nsets (int): number of records in `data_in`
-%         - nstims (int): number of stimuli
-%         - dataset_labels (cell array of char): dataset labels, from data_in.sets{:}.label
-%         - stimulus_labels (cell array of char): stimulus labels, from data_out.sas{1}.typenames
-%
-%     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
-%     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
-%     The transformation is
-%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
-%     - details (cell array of struct): details{idim} contains details of
-%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
-%
-%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus
-%         - rms_change (float 1-D array): rms_change(m) is the rms change of the consensus coordinates from the previous iteration
-%         - consensus (float 3-D array): consensus(istim,:,m) are the current consensus coordinates 
-%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
-%         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
 % Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -127,7 +103,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
-% Note: Note regarding statistics and plots
+% Note: Note regarding statistics and plots ??? to be revised???
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus
 %     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
 %
@@ -150,20 +126,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
 %         nshuffs=0, then the shuffled values will not be plotted
 %         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
-%
-%     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
-%     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.
-%
-%         - opts_pcon (struct): supplied options for Procrustes consensus algorithm
-%         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
-%         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
-%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%         - ts (cell array): ts{idim}{k} is the Procrustes transformation
-%         for record k. The transformation is
-%         [consensus]=ts.scaling*[component]*ts.orthog+ts.translation; see `transformation structures` for further details.
-%         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     
-% Note: ?? Note regarding Procrustes consensus algorithm
+% Note: ?? Note regarding Procrustes consensus algorithm  ???can be an Include with rs_knit_consensus
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
 %     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
@@ -199,7 +163,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
-% Note: ??Note regarding replotting a previous analysis
+% Note: ??Note regarding replotting a previous analysis ??? to be revised
 %     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
 %     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
 %     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
@@ -371,6 +335,7 @@ if aux.opts_vara.nshuffs>0
             disp(sprintf('shuffles made:  %6.0f, requested:%6.0f',size(shuffs,1),aux.opts_vara.nshuffs));
             disp(sprintf('exhautive mode used: %1.0f, requested:     %1.0f',opts_multi_used.if_exhaust,aux.opts_vara.if_exhaust));
         end
+        aux.opts_vara.if_exhaust=opts_multi_used.if_exhaust;
     else %user-supplied shuffles
         shuffs=aux.opts_vara.shuffs_supplied;
         opts_multi_used=struct();
@@ -403,6 +368,8 @@ end
 vara_stats.shuffs=shuffs;
 vara_stats.nshuffs=size(shuffs,1);
 vara_stats.opts_multi_used=opts_multi_used;
+aux.opts_vara.nshuffs=vara_stats.nshuffs;
+%
 %
 % tally missing stimuli in input datasets and align according to all stimuli
 %
@@ -590,8 +557,53 @@ if aux_out.warn_bad==0 %     %process
                 else
                     perm_use=shuffs(ishuff,:);
                 end
-            end %shuffle
-            zs=z{ip}(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
+                zs=z{ip}(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
+                for igp=1:ngps
+                    zg=zeros(nstims,ip,nsets_gp(igp));
+                    for iset_ptr=1:nsets_gp(igp)
+                        iset=groupings.gp_list{igp}(iset_ptr); %a dataset in this group
+                        zg(:,:,iset_ptr)=zs(:,:,iset); %the (shuffled) datasets in this group
+                    end %iset_ptr
+                    stims_gp=find(~all(any(isnan(zg),2),3)); %if some coord is NaN in all of the datasets
+                    zg=zg(stims_gp,:,:); %keep only the stimuli that have data
+                    %now form a consensus from each group
+                    overlaps_gp=1-reshape(any(isnan(zg),2),[length(stims_gp),nsets_gp(igp)]); %overlaps within group
+                    [consensus_gp,znew_gp,ts_gp,details_gp]=procrustes_consensus(zg,setfield(opts_pcon,'overlaps',overlaps_gp));
+                    r=sqrt(sum(details_gp.rms_dev(:,end).^2));
+                    %
+                    sqdevs_gp=sum((znew_gp-repmat(consensus_gp,[1 1 nsets_gp(igp)])).^2,2); %squared deviation of group consensus from rotated component
+                    rms_setwise_gp=reshape(sqrt(mean(sqdevs_gp,1,'omitnan')),[1 nsets_gp(igp)]);
+                    rms_stmwise_gp=reshape(sqrt(mean(sqdevs_gp,3,'omitnan')),[1 length(stims_gp)]);
+                    rms_overall_gp=sqrt(mean(sqdevs_gp(:),'omitnan'));
+                    %
+                    if (ishuff==0)
+                        rmsdev_setwise_gp(ip,[1:nsets_gp(igp)],igp)=rms_setwise_gp;
+                        counts_setwise_gp(1,[1:nsets_gp(igp)],igp)=squeeze(sum(~isnan(sqdevs_gp),1))';
+                        %rms deviation across each stimulus, summed over coords, normalized by the number of sets that include the stimulus
+                        rmsdev_stmwise_gp(ip,stims_gp,igp)=rms_stmwise_gp;
+                        counts_stmwise_gp(1,stims_gp,igp)=(sum(~isnan(sqdevs_gp),3))';
+                        %rms deviation across all stimuli and coords
+                        rmsdev_overall_gp(ip,1,igp)=rms_overall_gp;
+                        counts_overall_gp(1,1,igp)=sum(~isnan(sqdevs_gp(:)));
+                        %
+                        else
+                        rmsdev_setwise_gp(ip,[1:nsets_gp(igp)],igp,ishuff)=rms_setwise_gp;
+                        rmsdev_stmwise_gp(ip,stims_gp,igp)=rms_stmwise_gp;
+                        rmsdev_overall_gp_shuff(ip,1,igp,ishuff)=rms_overall_gp;
+                    end
+                    if aux.opts_vara.if_log
+                        if ishuff==0
+                            disp(sprintf('  grp %2.0f: %3.0f datasets, %3.0f of %3.0f stimuli, Procrustes consensus iterations: %4.0f, final total rms dev per coordinate: %8.5f',...
+                                igp,nsets_gp(igp),length(stims_gp),nstims,length(details_gp.rms_change),r));
+                        end
+                        if (ishuff==nshuffs) & (ishuff>0)
+                            disp(sprintf('  grp %2.0f: total rms vec distance in data %8.5f; in %5.0f shuffles, range: [%8.5f %8.5f]',...
+                                igp,rmsdev_overall_gp(ip,1,igp),nshuffs,...
+                                min(rmsdev_overall_gp_shuff(ip,1,igp,:),[],4),max(rmsdev_overall_gp_shuff(ip,1,igp,:),[],4)));
+                        end
+                    end %if_log
+                end %igp
+            end %ishuff
         end %dim is available in all datasets
     end %ip
     vara_stats.groupings=groupings;
