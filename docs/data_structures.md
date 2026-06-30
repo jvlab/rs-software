@@ -5,7 +5,7 @@
 A `detailed choice file` is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment.  Each line of the file corresponds to a single judgment.
 It contains three variables: 'stim\_list', 'responses', and 'responses_colnames'.  'stim\_list' is a character array in which each row is a unique stimulus label.
 
-File names should contain the string '\_detailed\_choices\_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
+File names should contain the string `_detailed_choices_`, preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
 
 * triadic comparisons
 
@@ -14,13 +14,13 @@ File names should contain the string '\_detailed\_choices\_', preceded by a desi
     * Column 5 of 'responses' is 1 if s1 is judged more dis-similar to the reference than s2, and 0 otherwise
     * 'responses_colnames' are text strings that label these columns
 
-See rs_py/samples/choice_files/\*\_detailed_choices\_S\*.mat for examples.
+See `rs_py/samples/choice_files/*_detailed_choices_S*.mat` for examples.
 
 ## Choice file
 
 A `choice file` (also called a `combined choice file`) is a .mat file that contains a set of similarity comparisons, typically collected in a psychophysical experiment. In contrast to a `detailed choice file`, judgments from repeated presentations of the same stimuli are combined.  The file contains three variables: 'stim\_list', 'responses', and 'responses_colnames'.  'stim\_list' is a character array in which each row is a unique stimulus label.
 
-File names should contain the string '\_choices\_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
+File names should contain the string `_choices_`, preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
 
 Two options are available for 'responses' and 'responses_colnames':
 
@@ -38,11 +38,11 @@ Two options are available for 'responses' and 'responses_colnames':
     * Column 6 of 'responses' is the number of times the tetrad is presented
     * 'responses_colnames' are text strings that label these columns
 
-See samples/animals/image\_choices\_S\*.mat or samples/bwtextures/bgca3pt\_choices\_\*\_sess01\_10.mat for examples of triadic comparisons, and see samples/bwtextures/bgca3pt\_choices\_\*-gp\_sess01\_20.mat for examples of tetradic comparisons.
+See `samples/animals/image_choices_S*.mat` or `samples/bwtextures/bgca3pt_choices_*_sess01_10.mat` for examples of triadic comparisons, and see `samples/bwtextures/bgca3pt_choices_*-gp_sess01_20.mat` for examples of tetradic comparisons.
 
 ## Coordinate file
 
-A `coordinate file` is a .mat file that contains sets of coordinates for the elements of a representational space. It contains a variable 'stim\_labels', a character array in which each row is a unique stimulus label. This corresponds to the `stim\_list` variable in a `choice file`, but the stimuli need not be listed in the same order. A `coordinate file` also contains one or more variables with names such as 'dim1', 'dim2', ..., 'dim10'. 'dim[k]' specifies the k-dimensional representational space:  each row corresponds to a stimulus in `stim\_labels`; the k columns are the k coordinate values.
+A `coordinate file` is a .mat file that contains sets of coordinates for the elements of a representational space. It contains a variable 'stim\_labels', a character array in which each row is a unique stimulus label. This corresponds to the 'stim\_list' variable in a `choice file`, but the stimuli need not be listed in the same order. A `coordinate file` also contains one or more variables with names such as 'dim1', 'dim2', ..., 'dim10'. 'dim[k]' specifies the k-dimensional representational space:  each row corresponds to a stimulus in `stim\_labels`; the k columns are the k coordinate values.
 
 File names should contain the string '\_coords\_', preceded by a designation of the domain or paradigm, and followed by an identifier for the subject or data source.
 
@@ -54,46 +54,52 @@ Optional variables (produced by the modeling of choice data by this package but 
 * biasEstimate: overfitting bias estimate
 * metadata: summary of the above description
 
-See samples/animals/image\_coords\_S\*.mat for examples that contain these optional variables, and samples/bwtextures/bgca3pt\_cooords\_\*\_sess01\_10.mat for examples that do not.
+See `samples/animals/image_coords_S*.mat` for examples that contain these optional variables, and `samples/bwtextures/bgca3pt_cooords_*_sess01_10.mat` for examples that do not.
 
 
 ## Dataset structure
 
 A `dataset structure` is a container for representational spaces to be analyzed in parallel -- for example, determining a consensus between them via `rs_knit_coordsets`, visualizing them via `rs_disp_coordsets`, or transforming them via `rs_xform_apply`. 
 
-It consists of three components:  a `coordinate structure` ('ds'), a `stimulus metadata structure` ('sas'), and a `set metadata structure` ('sets'), each of which is a MATLAB cell array with the same number of records.  A single record contains the coordinates and metadata for a representational space models of one or more dimensions, all derived from a common dataset.
+It consists of three components: 
+
+- a `coordinate structure` ('ds'), 
+- a `stimulus metadata structure` ('sas'), and 
+- a `set metadata structure` ('sets')
+
+each of which is a MATLAB cell array with the same number of records.  A single record contains the coordinates and metadata for a representational space models of one or more dimensions, all derived from a common dataset.
 
 Typically a `dataset structure` is created by reading one or more `coordinate files` via `rs_get_coordsets`, a single `coordinate file` via `rs_read_coorddata`, or imported from coordinate arrays with user-supplied metadata via `rs_import_coordsets`.
 
 ### Coordinate structure
 
-* For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
+For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
 
 
 ### Stimulus metadata structure
 
-* This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
+This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
-    * nstims: number of stimuli
-    * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
-    * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
-    * the optional variables \*LL\* and metadata from a `coordinate file`
+ * nstims: number of stimuli
+* typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
+* type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
+* the optional variables \*LL\* and metadata from a `coordinate file`
 
 
 ### Set metadata structure
 
-* This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
+This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
 
-    * dim\_list: list of available dimensions in ds{irec}
-    * nstims: number of stimuli
-    * label\_long: long file name, typically full file name and path
-    * label: shortened file name, suitable for display
-    * type: typically 'data', alternatively 'qform' for a `quadratic form model`
-    * paradigm\_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the `binary texture domain` and 'animals' for the `animal domain`
-    * paradigm\_name: can be the same as paradigm\_type or used to designate a subset or rendering within paradigm\_type 
-    * subj\_ID: unique subject identifier
-    * subj\_ID_short: short form of subject identifier, suitable for display
-    * pipeline: structure describing the processing stages leading to this record
+* dim\_list: list of available dimensions in ds{irec}
+* nstims: number of stimuli
+* label\_long: long file name, typically full file name and path
+* label: shortened file name, suitable for display
+* type: typically 'data', alternatively 'qform' for a `quadratic form model`
+* paradigm\_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the `binary texture domain` and 'animals' for the `animal domain`
+* paradigm\_name: can be the same as paradigm\_type or used to designate a subset or rendering within paradigm\_type 
+* subj\_ID: unique subject identifier
+* subj\_ID_short: short form of subject identifier, suitable for display
+* pipeline: structure describing the processing stages leading to this record
 
 For an example of a `dataset structure` with one record and without `stimulus coordinates`, run the demo `rs_read_coorddata_demo_cars` and look at 'data_out'.
 For an example of a `dataset structure` with three records and with `stimulus coordinates`, run the demo `rs_read_coorddata_demo_opposites` and look at 'data_out'.
@@ -123,11 +129,11 @@ The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be
 
 ### Quadratic form models
 
-A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic vorm) with elements q<sub>i,j</sub>.  
+A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic form) with elements q<sub>i,j</sub>.  
 
 In the quadratic form model, the distance D between stimuli X (a row vector with N elements x<sub>i</sub>) and Y (a row vector with N elements y<sub>i</sub>) is given by D<sup>2</sup>=XQY<sup>T</sup>=$\Sigma$q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)
 
-To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in samples/bwtextures/btc_allraysfixedb\_\*.mat; these contain many additional fields that are not required.
+To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in `samples/bwtextures/btc_allraysfixedb_*.mat`; these contain many additional fields that are not required.
 
 This will generate a record in a `dataset structure` whose `coordinate structure` 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.
 
@@ -218,7 +224,7 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `stimulus metadata structure` fields 'btc_specoords' and 'btc_augcoords' hold the stimulus coordinates described above
 * the `set metadata structure` field 'paradigm_type' is 'btc' and 'paradigm_name' indicates the coordinates that are explored in the stimulus set.
 
-Sample `coordinate files` and `setup metadata` files can be found in samples_/bwtextures.
+Sample `coordinate files` and `setup metadata` files can be found in `samples/bwtextures`.
  
 ### Animal domain
 
@@ -231,12 +237,12 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `stimulus metadata structure` field elements 'typenames{k}' are the names of the animals, e.g., 'dog'
 * the `set metadata structure` field 'paradigm_type' is 'animals' and 'paradigm_name' indicates the rendering.
 
-Several sample `coordinate files` can be found in samples_/animals.  There is no `setup metadata`.
+Several sample `coordinate files` can be found in `samples/animals`.  There is no `setup metadata`.
 
 ![Example stimuli from the five paradigms of the animal domain](./images/animal_domain\_fig1\_jneuro.jpg)
 <figcaption>Stimuli from the five paradigms of the animal domain. From Waraich and Victor (2024), The geometry of low- and high-level perceptual spaces. J. Neurosci. 44(4):e1460232023.</figcaption>
 
-###Example domains
+### Example domains
 
 #### Cars
 
@@ -244,7 +250,7 @@ This is a demonstration of a generic unstructured domain.
 
 Demos: `rs_read_coorddata_demo_cars` to create a `dataset structure` from a `coordinate file`; `rs_disp_coordsets_demo_cars` to display the representational space.
 
-In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.  Note that the coordinates in the sample `coordinate file` (in demos/cars_coords_\*.mat) re random.
+In the `dataset structures` created by this demo, `set metadata structure` field 'paradigm_type' is 'transport' and 'paradigm_name' is 'cars'.  Note that the coordinates in the sample `coordinate file` (in `demos/cars_coords_*.mat`) are random.
 
 #### Opposites
 
@@ -254,7 +260,7 @@ Demos: `rs_read_coorddata_demo_opposites` to create `dataset structures` from `c
 
 This demo also shows how to specify the `stimulus coordinates` via  opts_read.type_coords (see 'opposite_coords' in `rs_read_coorddata_demo_opposites`).
 
-In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'. The coordinates in the sample `coordinate files` (in demos/opposites_coords_\*.mat) are randomly jittered around the `stimulus coordinates`, then randomly rotated.
+In the `dataset structures` created by this demo, `set metadata structure` fields 'paradigm_type' and 'paradigm_name' are both 'opposites'. The coordinates in the sample `coordinate files` (in `demos/opposites_coords_*.mat`) are randomly jittered around the `stimulus coordinates`, then randomly rotated.
 
 
 
@@ -277,7 +283,7 @@ In `dataset structures` that hold representational space coordinates for this do
 * the `stimulus metadata structure` field 'btc_specoords' holds the stimulus coordinates described above
 * the `set metadata structure` field 'paradigm_type' is 'faces' and 'paradigm_name' is free text that indicates the selection of stimuli, with final characters 'bw' for gray-level and 'fc' for full-color
 
-A sample `coordinate file` and `setup metadata` file can be found in samples/faces.
+A sample `coordinate file` and `setup metadata` file can be found in `samples/faces`.
 
 ## Setup metadata
 
@@ -292,7 +298,7 @@ Setup files contain the following fields in a variable 's', and may contain othe
 
 The default distribution package, with rs_aux_defaults_define_dist.m, is configured so that NO setup files are used. (Demos involving setup files will still work, since they use `rs_aux_force` to override with options from rs_aux_defaults_define_btc.mat, created by rs_aux_default_define_pvt.m).
 
-To make use of setup files, edit rs_aux_defaults_define.m to set generic.opts_read.need_setup_file=1.  With this setting (which is the setting in rs_aux_default_define_pvt.m), the domains that use setup files are determined as follows (logic in `psg_coorddata_parsename`):  
+To make use of setup files, edit `rs_aux_defaults_define.m` to set `generic.opts_read.need_setup_file=1`.  With this setting (which is the setting in `rs_aux_default_define_pvt.m`), the domains that use setup files are determined as follows (logic in `psg_coorddata_parsename`):  
 
 *  The domain name is extracted from the `coordinate file` name, as the string preceding '_coords'.  Then:
 *  If the domain name is one of 'faces_mpi', 'irgb', 'mater', then a setup file is used. (This takes care of the `faces_mpi` domain).
@@ -300,6 +306,6 @@ To make use of setup files, edit rs_aux_defaults_define.m to set generic.opts_re
 *  If not, but the domain name is in a specific list, then NO setup file is used.  The list defaults to generic.opts_read.domain_list_def, distributed as {'cars','tools','dwellings'}. It may be edited during installation or specified dynamically when invoking `rs_get_coordsets` or `rs_read_coorddata` by setting aux.opts_read.domain_list_def. See for example `rs_read_coorddata_demo_cars` and `rs_read_coorddata_demo_opposites`, which ensure that NO setup file is used.
 *  Otherwise, a setup file IS used (this takes care of the `binary texture` domain, in which `coordinate file` names may begin with a variety of strings).
 
-The name of the setup file is determine dfrom the domain name, as extracted above, followed by the string in generic.opts_read.setup_suffix, which is distributed as '[S]'.  The setup file is assumed to be in the same path as the `coordinate file`.
+The name of the setup file is determine from the domain name, as extracted above, followed by the string in generic.opts_read.setup_suffix, which is distributed as '[S]'.  The setup file is assumed to be in the same path as the `coordinate file`.
 
 When a `coordinate file` is written by `rs_write_coorddata`, the default (which can be overridden with opts_write.if_embed=0) is to write the setup metadata into the variable `setup`.  When a `coordinate file` with embedded setup data is read, the `setup file` is not used.
