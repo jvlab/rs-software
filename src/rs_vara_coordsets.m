@@ -618,6 +618,8 @@ if aux_out.warn_bad==0 %     %process
     vara_stats.rmsdev_setwise_gp=rmsdev_setwise_gp;
     vara_stats.rmsdev_stmwise_gp=rmsdev_stmwise_gp;
     vara_stats.rmsdev_overall_gp=rmsdev_overall_gp;
+    % sum of within-gp rms dev explained weighted by number of sets within each group
+    vara_stats.rmsdev_grpwise=sqrt(sum(rmsdev_overall_gp.^2.*repmat(reshape(nsets_gp(:),[1 1 ngps]),[pcon_dim_max_out,1,1]),3)/nsets);
     %
     vara_stats.counts_desc='d1: 1, d2: nsets or nstims';
     vara_stats.counts_setwise=counts_setwise;
@@ -644,6 +646,7 @@ if aux_out.warn_bad==0 %     %process
     %plot?
     %
     if aux.opts_vara.if_stats
+        vara_stats_setup.opts_vara=aux.opts_vara;
         vara_stats_setup.nsets=nsets;
         vara_stats_setup.dim_list_in_max=max(aux.opts_vara.dim_list_in);
         vara_stats_setup.dim_list_in=aux.opts_vara.dim_list_in;
