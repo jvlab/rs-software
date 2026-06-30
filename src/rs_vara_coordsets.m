@@ -69,6 +69,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
+%
 %     - opts_align (struct): options for alignment of data, typically omitted
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
@@ -255,6 +256,8 @@ aux.opts_vara=filldefault(aux.opts_vara,'nshuffs_max',10^4);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
+%
+aux=filldefault(aux,'opts_pcon',struct);
 %
 aux=filldefault(aux,'opts_pca',struct);
 aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
@@ -516,7 +519,7 @@ consensus=cell(pcon_dim_max_out,1); %d1: dimnension
 znew=cell(pcon_dim_max_out,1);
 opts_pcon_used=cell(pcon_dim_max_out,1);
 %
-nshuffs=aux.opts_vara.nshuffs;
+nshuffs=vara_stats.nshuffs;
 nsets_gp=groupings.nsets_gp;
 nsets_gp_max=groupings.nsets_gp_max;
 ngps=groupings.ngps;
@@ -561,13 +564,34 @@ if aux_out.warn_bad==0 %     %process
     %
     for ip=1:pcon_dim_max_out
         if ismember(ip,dim_list_inter)
+            opts_pcon=aux.opts_vara;
             %find global consensus (independent of shuffle)
-            [consensus{ip},znew{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},opts_pcon);
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%        
-        
+            [consensus{ip},znew{ip},ts,details,opts_pcon_used{ip}]=procrustes_consensus(z{ip},opts_pcon);
+            if aux.opts_vara.if_log
+                disp(sprintf(' creating global Procrustes consensus for dim %2.0f based on component datasets, iterations: %4.0f, final total rms dev per coordinate: %8.5f',...
+                    ip,length(details.rms_change),sqrt(sum(details.rms_dev(:,end).^2))));               
+            end
+            sqdevs=sum((znew{ip}-repmat(consensus{ip},[1 1 nsets])).^2,2); %squared deviation of consensus from rotated component
+            %rms deviation across each dataset, summed over coords, normalized by the number of stimuli in each dataset
+            rmsdev_setwise(ip,:)=reshape(sqrt(mean(sqdevs,1,'omitnan')),[1 nsets]);
+            counts_setwise=squeeze(sum(~isnan(sqdevs),1))';
+            %rms deviation across each stimulus, summed over coords, normalized by the number of sets that include the stimulus
+            rmsdev_stmwise(ip,:)=reshape(sqrt(mean(sqdevs,3,'omitnan')),[1 nstims]);
+            counts_stmwise=(sum(~isnan(sqdevs),3))';
+            %rms deviation across all stimuli and coords
+            rmsdev_overall(ip,1)=sqrt(mean(sqdevs(:),'omitnan'));
+            counts_overall=sum(~isnan(sqdevs(:)));
+            %
+            %do shuffles, shuffle 0 = unshuffled
+            %
+            for ishuff=0:nshuffs
+                if (ishuff==0)
+                    perm_use=[1:nsets];
+                else
+                    perm_use=shuffs(ishuff,:);
+                end
+            end %shuffle
+            zs=z{ip}(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
         end %dim is available in all datasets
     end %ip
     vara_stats.groupings=groupings;
