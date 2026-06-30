@@ -12,7 +12,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=6;
+ntests=7;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -58,7 +58,7 @@ groupings{1}.tags=[1 2 1 2 3 4 5 6 5 3 4];
 %
 test_descs{3}='btc, 6 std and 5 br judgments, random shuffles, tagged';
 filenames_examples{2}=filenames_examples{1};
-auxs{2}=auxs_force;
+auxs{2}=auxs{1};
 aux_ins{2}=aux_ins{1};
 groupings{2}=groupings{1};
 auxs{2}.opts_vara.nshuffs=10;
@@ -66,14 +66,14 @@ auxs{2}.opts_vara.if_exhaust=0;
 %
 test_descs{3}='btc, 6 std and 5 br judgments, exhaustive, untagged';
 filenames_examples{3}=filenames_examples{1};
-auxs{3}=auxs_force;
+auxs{3}=auxs{1};
 aux_ins{3}=aux_ins{1};
 groupings{3}=rmfield(groupings{1},'tags');
 auxs{3}.opts_vara.if_exhaust=1;
 %
 test_descs{4}='btc, 6 std and 5 br judgments, attempt exhaustive but limit reached, untagged';
 filenames_examples{4}=filenames_examples{1};
-auxs{4}=auxs_force;
+auxs{4}=auxs{1};
 aux_ins{4}=aux_ins{1};
 groupings{4}=rmfield(groupings{1},'tags');
 auxs{4}.opts_vara.if_exhaust=1;
@@ -82,7 +82,7 @@ auxs{4}.opts_vara.nshuffs=30;
 %
 test_descs{5}='btc, 6 std and 5 br judgments, user-supplied permutations';
 filenames_examples{5}=filenames_examples{1};
-auxs{5}=auxs_force;
+auxs{5}=auxs{1};
 aux_ins{5}=aux_ins{1};
 groupings{5}=rmfield(groupings{1},'tags');
 auxs{5}.opts_vara.nshuffs_max=50; %limit for exhaustive shuffles
@@ -110,6 +110,13 @@ auxs{6}=auxs{1};
 aux_ins{6}=aux_ins{1};
 groupings{6}=groupings{1};
 %
+test_descs{7}='btc, 6 std and 5 br judgments, group ` has partial overlaps, no shuffles';
+filenames_examples{7}=filenames_examples{6};
+auxs{7}=auxs{1};
+aux_ins{7}=aux_ins{1};
+groupings{7}=rmfield(groupings{1},'tags');
+auxs{7}.opts_vara.nshuffs=0;
+%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
@@ -118,7 +125,6 @@ for itest=1:ntests
         aux_ins{itest}.opts_read.if_log=0;
         [data_reads{itest},aux_reads{itest}]=rs_get_coordsets(filenames_examples{itest},aux_ins{itest});
         %
-        auxs{itest}.opts_vara.if_log=1;
         [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_reads{itest},groupings{itest},auxs{itest});
         if aux_outs{itest}.opts_vara.if_plot
             set(gcf,'Name',sprintf('scenario %1.0f',itest));

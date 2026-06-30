@@ -7,7 +7,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 % Note that in contrast to `rs_knit_coordsets`, in which shuffling permutes the coordinates of the stimuli within a record, here the shuffling permutes the records across groups.
 %
-% Also in contrast to `rs_knit_coordsets`, there is no attempt made to combine all of the records into a consensus.
+% Global consensus and consensus of groups are not returned; these can be computed with `rs_knit_coordsets`.
 %
 % Args:
 %   data_in (struct): `dataset structure` to be processed, with fields
@@ -269,8 +269,6 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-set_knit_strings={'paradigm_name','subj_id','subj_id_short','extra','label_long','label'}; %fields to be concatenated in knitted metadata
-%
 % %
 % % replot mode
 % %
@@ -400,8 +398,8 @@ else
     opts_multi_used=struct;
 end
 vara_stats.shuffs=shuffs;
+vara_stats.nshuffs=size(shuffs,1);
 vara_stats.opts_multi_used=opts_multi_used;
-vara_stats.nshuffs_used=size(shuffs,1);
 %
 % tally missing stimuli in input datasets and align according to all stimuli
 %
@@ -516,11 +514,10 @@ end
 results=struct;
 consensus=cell(pcon_dim_max_out,1); %d1: dimnension
 znew=cell(pcon_dim_max_out,1);
-ts=cell(pcon_dim_max_out,1);
-details=cell(pcon_dim_max_out,1);
 opts_pcon_used=cell(pcon_dim_max_out,1);
 %
 nshuffs=aux.opts_vara.nshuffs;
+nsets_gp=groupings.nsets_gp;
 nsets_gp_max=groupings.nsets_gp_max;
 ngps=groupings.ngps;
 %
@@ -532,7 +529,7 @@ rmsdev_stmwise=zeros(pcon_dim_max_out,nstims); %d1: dimension, d2: stim
 rmsdev_overall=zeros(pcon_dim_max_out,1); %rms distance, across all datasets and stimuli
 %
 rmsdev_setwise_gp=zeros(pcon_dim_max_out,nsets_gp_max,ngps); %d1: dimension, d2: set (within group), d3: gp
-rmsdev_stmwise_gp=zeros(pcon_dim_max_out,nstims,1,ngps); %d1: dimension, d2: stim, d3: gp
+rmsdev_stmwise_gp=zeros(pcon_dim_max_out,nstims,ngps); %d1: dimension, d2: stim, d3: gp
 rmsdev_overall_gp=zeros(pcon_dim_max_out,1,ngps); %d1: dimension, d2: dummy, d3: gp
 %
 counts_setwise=zeros(1,nsets);
@@ -564,16 +561,53 @@ if aux_out.warn_bad==0 %     %process
     %
     for ip=1:pcon_dim_max_out
         if ismember(ip,dim_list_inter)
+            %find global consensus (independent of shuffle)
+            [consensus{ip},znew{ip},opts_pcon_used{ip}]=procrustes_consensus(z{ip},opts_pcon);
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%        
         
         end %dim is available in all datasets
     end %ip
+    vara_stats.groupings=groupings;
+    %
+    vara_stats.rmsdev_desc='d1: dimension, d2: nsets or nstims';
+    vara_stats.rmsdev_setwise=rmsdev_setwise;
+    vara_stats.rmsdev_stmwise=rmsdev_stmwise;
+    vara_stats.rmsdev_overall=rmsdev_overall;
+    %
+    vara_stats.rmsdev_gp_desc='d1: dimension, d2: nsets or nstims, d3: group';
+    vara_stats.rmsdev_setwise_gp=rmsdev_setwise_gp;
+    vara_stats.rmsdev_stmwise_gp=rmsdev_stmwise_gp;
+    vara_stats.rmsdev_overall_gp=rmsdev_overall_gp;
+    %
+    vara_stats.counts_desc='d1: 1, d2: nsets or nstims';
+    vara_stats.counts_setwise=counts_setwise;
+    vara_stats.counts_stmwise=counts_stmwise;
+    vara_stats.counts_overall=counts_overall;
+    %
+    vara_stats.counts_gp_desc='d1: 1, d2: nsets or nstims, d3: group';
+    vara_stats.counts_setwise_gp=counts_setwise_gp;
+    vara_stats.counts_stmwise_gp=counts_stmwise_gp;
+    vara_stats.counts_overall_gp=counts_overall_gp;
+    %
+    vara_stats.rmsavail_setwise=rmsavail_setwise;
+    vara_stats.rmsavail_stmwise=rmsavail_stmwise;
+    vara_stats.rmsavail_overall=rmsavail_overall;
+    %
+    if (nshuffs>0)
+        vara_stats.rmsdev_gp_shuff_desc='d1: dimension, d2: nsets or nstims, d3: group, d4: shuffle';
+        vara_stats.rmsdev_setwise_gp_shuff=rmsdev_setwise_gp_shuff;
+        vara_stats.rmsdev_stmwise_gp_shuff=rmsdev_stmwise_gp_shuff;
+        vara_stats.rmsdev_overall_gp_shuff=rmsdev_overall_gp_shuff;
+        vara_stats.rmsdev_grpwise_shuff=sqrt(sum(rmsdev_overall_gp_shuff.^2.*repmat(reshape(nsets_gp(:),[1 1 ngps 1]),[pcon_dim_max_out,1,1,nshuffs]),3)/nsets);
+    end
     aux_out.opts_vara=aux.opts_vara;
     aux_out.opts_pcon=opts_pcon_used;
     aux_out.opts_pca=aux.opts_pca;
     aux_out.opts_align=aux_align.opts_align;
-    vara_stats.groupings=groupings;
+    %
 else %cannot process
     aux_out.opts_vara=aux.opts_vara;
     vara_stats.groupings=groupings;
