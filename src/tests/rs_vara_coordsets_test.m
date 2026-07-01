@@ -12,7 +12,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=8;
+ntests=9;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -119,7 +119,6 @@ auxs{7}=auxs{1};
 auxs{7}.opts_vara.nshuffs=0;
 groupings{7}=groupings{1};
 %
-%
 test_descs{8}='btc, 6 std and 5 br judgments, group 1 has partial overlaps, shuffles, dim_aug=1; dim_list used';
 filenames_examples{8}=filenames_examples{6};
 aux_ins{8}=aux_ins{1};
@@ -129,6 +128,9 @@ auxs{8}.opts_vara.dim_list_in=[2 3 5];
 auxs{8}.opts_vara.dim_aug=1;
 groupings{8}=groupings{1};
 %
+test_descs{9}='replot'
+auxs{9}=auxs{8};
+groupings{9}=groupings{8};
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
@@ -143,17 +145,16 @@ for itest=1:ntests
         end
     %
     else
-        % %replot, two rows, different quantiles
-        % auxs{itest}.knit_stats=aux_outs{itest-1}.knit_stats;
-        % auxs{itest}.knit_stats_setup=aux_outs{itest-1}.knit_stats_setup;
-        % auxs{itest}.knit_stats_setup.fig_handle=figure;
-        % set(gcf,'NumberTitle','off');
-        % set(gcf,'Position',[100 100 1400 750]);
-        % set(gcf,'Name','replot');
-        % auxs{itest}.knit_stats_setup.dataset_labels={'set A','set B'};
-        % auxs{itest}.knit_stats_setup.nrows=2;
-        % auxs{itest}.knit_stats_setup.row=1;
-        % [data_outs{itest},aux_outs{itest}]=rs_knit_coordsets(data_aligns{itest-1},auxs{itest});
+        %replot, two rows, different quantiles
+        auxs{itest}.vara_stats=vara_stats{itest-1};
+        auxs{itest}.vara_stats_setup=aux_outs{itest-1}.vara_stats_setup;
+        auxs{itest}.vara_stats_setup.fig_handle=figure;
+        set(gcf,'NumberTitle','off');
+        set(gcf,'Position',[100 100 1400 750]);
+        set(gcf,'Name','replot');
+        auxs{itest}.vara_stats_setup.nrows=2;
+        auxs{itest}.vara_stats_setup.row=1;
+        [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_reads{itest-1},groupings{itest-1},auxs{itest});
         % auxs{itest}.knit_stats_setup.shuff_quantiles=[0.1 0.9];
         % auxs{itest}.knit_stats_setup.row=2;
         % [data_outs{itest},aux_outs{itest}]=rs_knit_coordsets(data_aligns{itest-1},auxs{itest});

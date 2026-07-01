@@ -238,18 +238,16 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-% %
-% % replot mode
-% %
-% if isfield(aux,'knit_stats') & isfield(aux,'knit_stats_setup')
-%     knit_stats_setup_use=aux.knit_stats_setup;
-%     if isfield(knit_stats_setup_use,'fig_handle') %psg_knit_stats_plot expects figure handle in figh
-%         knit_stats_setup_use.figh=knit_stats_setup_use.fig_handle;
-%     end
-%     aux_out.fig_handle=psg_knit_stats_plot(aux.knit_stats,knit_stats_setup_use);
-%     return
-% end
-% 
+% replot mode
+%
+if isfield(aux,'vara_stats') & isfield(aux,'vara_stats_setup')
+    vara_stats_setup_use=aux.vara_stats_setup;
+    if isfield(vara_stats_setup_use,'fig_handle') %psg_vara_stats_plot expects figure handle in figh
+        vara_stats_setup_use.figh=vara_stats_setup_use.fig_handle;
+    end
+    aux_out.fig_handle=psg_vara_stats_plot(aux.vara_stats,vara_stats_setup_use);
+    return
+end
 %
 %check group information
 %
