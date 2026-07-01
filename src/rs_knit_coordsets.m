@@ -38,7 +38,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
-%         - **Replotting**
+%         - **Plotting and replotting**
+%         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
@@ -235,6 +236,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
+aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -451,7 +453,12 @@ if aux_out.warn_bad==0
         knit_stats_setup.dim_list_out=dim_list_out;
         knit_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
-            knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+            ds_label=data_in.sets{iset}.label;
+            if aux.opts_knit.if_remove_path_label
+                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
+                ds_label=strrep(ds_label,'.mat','');
+            end
+            knit_stats_setup.dataset_labels{iset}=ds_label;
         end
         knit_stats_setup.stimulus_labels=typenames_all;
         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;

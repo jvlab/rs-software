@@ -48,9 +48,10 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - dim_aug (int): number of dimensions to add for consensus datasets; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
 %
-%         - **Replotting ??**
-%         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
-%         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
+%         - **Plotting and replotting** ??
+%         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
+%         - vara_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
+%         - vara_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
 %         - **Logging and optimization**
 %         - if_log (int): 1 to log progress, 0 to suppress; default is 1
@@ -208,6 +209,7 @@ aux.opts_vara=filldefault(aux.opts_vara,'keep_details',0);
 aux.opts_vara=filldefault(aux.opts_vara,'pcon_initial_guess',[]);
 aux.opts_vara=filldefault(aux.opts_vara,'pcon_alignment',aux.opts_vara.pcon_initial_guess);
 aux.opts_vara=filldefault(aux.opts_vara,'if_frozen',1);
+aux.opts_vara=filldefault(aux.opts_vara,'if_remove_path_label',1);
 if aux.opts_vara.if_stats
     aux.opts_vara=filldefault(aux.opts_vara,'nshuffs',500);
 else
@@ -653,7 +655,12 @@ if aux_out.warn_bad==0 %     %process
         vara_stats_setup.dim_list_out=aux.opts_vara.dim_list_out;
         vara_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
-            vara_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+            ds_label=data_in.sets{iset}.label;
+            if aux.opts_vara.if_remove_path_label
+                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
+                ds_label=strrep(ds_label,'.mat','');
+            end
+            vara_stats_setup.dataset_labels{iset}=ds_label;
         end
         vara_stats_setup.stimulus_labels=typenames_all;
         vara_stats_setup.nshuffs=aux.opts_vara.nshuffs;
