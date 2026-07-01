@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Remove the folder-level docstring from mkdocstrings-matlab output.
-This docstring comes from "Contents.m", which in our case is unwanted
-as it does not render well and it is supposed to be read only by MATLAB.
+Remove the folder-level docstring from mkdocstrings-matlab output
+for the "Function Index" page.
+The file "Contents.m" gets by default parsed as a first level doctring,
+which in our case is unwanted as it does not render well. This file is
+supposed to be read only by MATLAB. We cannot remove the file because
+it is necessary for mkdocsstrings-matlab to work. So, instead, 
+we post-process the HTML after rendering, removing the correspoding 
+section from the HTML.
 
 
-mkdocstrings-matlab special-cases Contents.m as the folder-level docstring
-source. It is rendered inside each folder object's ``doc-contents`` block, as
-the prose nodes that appear *before* the nested ``doc-children`` block which
-holds the actual function members. The ``filters`` and ``members`` options do
-not suppress it.
+The file is rendered inside ``doc-contents`` block, *before* the nested 
+``doc-children`` block which holds the actual function members. 
 
 Structure produced by the plugin:
 
@@ -23,21 +25,10 @@ Structure produced by the plugin:
       </div>
     </div>
 
-This hook removes the folder docstring: the content of each folder's
-``doc-contents`` block that appears before its nested ``doc-children`` block.
+This hook removes the content of each folder's ``doc-contents`` block
+that appears before its nested ``doc-children`` block.
 All function members and their own docstrings are preserved.
 
-Implementation note
--------------------
-This uses only the Python standard library (``html.parser``), so it adds no
-extra dependency. ``html.parser`` is an event-based (SAX-style) parser, so the
-hook tracks tag nesting depth by hand to know precisely which region to drop:
-
-  - "folder" region: inside a <div class="doc doc-object doc-folder">.
-  - "contents" region: inside that folder's direct-child doc-contents div.
-  - The docstring is everything in the contents region emitted before the
-    doc-children div opens. That span is suppressed; everything else is copied
-    through verbatim.
 """
 from html.parser import HTMLParser
 
@@ -55,7 +46,7 @@ def _is_div(tag):
 
 
 class _FolderDocstringStripper(HTMLParser):
-    """Copy HTML through verbatim, dropping folder-level docstrings.
+    """Copy HTML verbatim, dropping folder-level docstrings.
 
     State machine
     -------------
