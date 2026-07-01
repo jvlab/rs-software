@@ -164,11 +164,11 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
-% Note: ??Note regarding replotting a previous analysis ??? to be revised
-%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
-%     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
-%     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
-%     the previous calculation with the following modifications allowed in fields of knit_stats_setup:
+% Note: Note regarding replotting a previous analysis ??? to be revised
+%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` and `groupings` should be equal to that used in the previous calculation.
+%     aux.vara_stats should be equal to vara_stats from the previous calculation
+%     aux.vara_stats_setup should be equal to aux_out.vara_stats_setup from
+%     the previous calculation with the following modifications allowed in fields of vara_stats_setup:
 %
 %         - dataset_labels (cell array of char): dataset labels; default is data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labbels; default is data_out.sas{1}.typenames
@@ -179,7 +179,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %     -  No further calculations are done
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
-%     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
+%     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale.
 %
 % See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS

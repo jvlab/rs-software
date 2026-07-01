@@ -155,9 +155,9 @@ for itest=1:ntests
         auxs{itest}.vara_stats_setup.nrows=2;
         auxs{itest}.vara_stats_setup.row=1;
         [vara_stats{itest},aux_outs{itest}]=rs_vara_coordsets(data_reads{itest-1},groupings{itest-1},auxs{itest});
-        % auxs{itest}.knit_stats_setup.shuff_quantiles=[0.1 0.9];
-        % auxs{itest}.knit_stats_setup.row=2;
-        % [data_outs{itest},aux_outs{itest}]=rs_knit_coordsets(data_aligns{itest-1},auxs{itest});
+        auxs{itest}.vara_stats_setup.shuff_quantiles=[0.1 0.9];
+        auxs{itest}.vara_stats_setup.row=2;
+        [data_outs{itest},aux_outs{itest}]=rs_vara_coordsets(data_reads{itest-1},groupings{itest-1},auxs{itest});
     end
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
 end
