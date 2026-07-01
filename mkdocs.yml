@@ -14,7 +14,9 @@ hooks:
   - docs/hooks.py
   - docs/hook_ignore.py
   - docs/hook_format_nested_args.py
+  - docs/hook_strip_contents_docstring.py
   - docs/hook_collapse_details.py
+  
 
 watch:
   - src
