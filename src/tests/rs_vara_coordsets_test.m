@@ -12,7 +12,10 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=9;
+ntests=12;
+if ~exist('test_list')
+    test_list=[1:ntests];
+end
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -128,12 +131,38 @@ auxs{8}.opts_vara.dim_list_in=[2 3 5];
 auxs{8}.opts_vara.dim_aug=1;
 groupings{8}=groupings{1};
 %
-test_descs{9}='replot'
+test_descs{9}='replot';
 auxs{9}=auxs{8};
 groupings{9}=groupings{8};
+%
+test_descs{10}='btc, 6 std and 5 br judgments, group 1 has partial overlaps, shuffles, dim_list_in and dim_list_out used';
+filenames_examples{10}=filenames_examples{8};
+aux_ins{10}=aux_ins{1};
+auxs{10}=auxs{1};
+auxs{10}.opts_vara.allowscale=1;
+auxs{10}.opts_vara=rmfield(auxs{10}.opts_vara,'dim_max_in');
+auxs{10}.opts_vara.dim_list_in=[1 3 5];
+auxs{10}.opts_vara.dim_list_out=[2 3 5];
+groupings{10}=groupings{1};
+%
+test_descs{11}='like prev but with allowscale=1, if_normscale=1';
+filenames_examples{11}=filenames_examples{10};
+aux_ins{11}=aux_ins{10};
+auxs{11}=auxs{10};
+auxs{11}.opts_vara.allow_scale=1;
+groupings{11}=groupings{10};
+%
+test_descs{12}='like prev but with allowscale=1, if_normscale=0';
+filenames_examples{12}=filenames_examples{10};
+aux_ins{12}=aux_ins{10};
+auxs{12}=auxs{10};
+auxs{12}.opts_vara.allow_scale=1;
+auxs{12}.opts_vara.if_normscale=0;
+groupings{12}=groupings{10};
+%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
-for itest=1:ntests
+for itest=test_list
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     if ~(strcmp(test_descs{itest},'replot'))
         aux_ins{itest}.opts_read.if_log=0;
@@ -167,7 +196,7 @@ else
     getinp('1 when ready to close and compare','d',[1 1],1);
 end
 close all;
-for itest=1:ntests
+for itest=test_list
     s=struct;
     s.vara_stats=vara_stats{itest};
     s.aux_out=aux_outs{itest};
@@ -176,7 +205,7 @@ end
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 %
-for itest=1:ntests
+for itest=test_list
     if ~isempty(vara_stats{itest})
         disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
         [ifdif{itest},opts_used{itest}]=rs_benchmark_compare(fns{itest},setfield(struct,'signflips',signflips{itest}));

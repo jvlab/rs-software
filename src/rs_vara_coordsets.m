@@ -530,14 +530,21 @@ aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0 %     %process
     typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     %
-    for ip=1:pcon_dim_max_out
-        if ismember(ip,dim_list_inter)
+    for ip_ptr=1:length(aux.opts_vara.dim_list_in)
+        ip_in=aux.opts_vara.dim_list_in(ip_ptr);
+        if ismember(ip_in,dim_list_inter)
+            ip=aux.opts_vara.dim_list_out(ip_ptr); %find corresponding output dimension
+            %now pad if necessary
+            z_aug=z{ip_in};
+            if ip_in<ip
+                z_aug=cat(2,z_aug,zeros(nstims,ip-ip_in,nsets));
+            end
             opts_pcon=aux.opts_vara;
             %find global consensus (independent of shuffle)
-            [consensus{ip},znew{ip},ts,details,opts_pcon_used{ip}]=procrustes_consensus(z{ip},opts_pcon);
+            [consensus{ip},znew{ip},ts,details,opts_pcon_used{ip}]=procrustes_consensus(z_aug,opts_pcon);
             if aux.opts_vara.if_log
-                disp(sprintf(' creating global Procrustes consensus for dim %2.0f based on component datasets, iterations: %4.0f, final total rms dev per coordinate: %8.5f',...
-                    ip,length(details.rms_change),sqrt(sum(details.rms_dev(:,end).^2))));               
+                disp(sprintf(' creating global Procrustes consensus for dim %2.0f based on datasets of dim %2.0f, iterations: %4.0f, final total rms dev per coordinate: %8.5f',...
+                    ip,ip_in,length(details.rms_change),sqrt(sum(details.rms_dev(:,end).^2))));               
             end
             sqdevs=sum((znew{ip}-repmat(consensus{ip},[1 1 nsets])).^2,2); %squared deviation of consensus from rotated component
             %rms deviation across each dataset, summed over coords, normalized by the number of stimuli in each dataset
@@ -558,7 +565,7 @@ if aux_out.warn_bad==0 %     %process
                 else
                     perm_use=shuffs(ishuff,:);
                 end
-                zs=z{ip}(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
+                zs=z_aug(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
                 for igp=1:ngps
                     zg=zeros(nstims,ip,nsets_gp(igp));
                     for iset_ptr=1:nsets_gp(igp)
