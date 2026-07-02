@@ -95,6 +95,13 @@ rs_module_aug=cat(2,rs_module,sprintf('%1.0f',testset));
 r.(rs_module_aug).ifdif=ifdif;
 r.(rs_module_aug).aux_outs=aux_outs;
 %
+%variance analysis
+clear ifdif
+rs_vara_coordsets_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).vara_stats=vara_stats;
+r.(rs_module).aux_outs=aux_outs;
+%
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 disp('results of comparisons with benchmarks')
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
