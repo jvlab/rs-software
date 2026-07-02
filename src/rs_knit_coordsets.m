@@ -26,11 +26,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
-%         - **Statistics**
+%         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
-%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
-%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
@@ -39,6 +37,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
 %         - **Plotting and replotting**
+%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
+%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
@@ -165,17 +165,17 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - There are several choices for initialization and alignment.
 %
-%         - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
+%         - For most purposes, the default initialization method (pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
 %         These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
 %         For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
-%         not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
+%         not. The default for if_initpca_rot is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
 %         The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
 %         is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
 %         -  Alternatively, pcon_init_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
 %         -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
 %         initial guess, and pcon_alignment{idim}, which defaults to
 %         pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
-%         To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%         To control whether the same random number seed is used on each run, use if_frozen (default is 1, which uses the same random numbers on each run).
 %         - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
 %         matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
 %         - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on

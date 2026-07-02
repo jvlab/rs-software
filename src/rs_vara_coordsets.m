@@ -23,7 +23,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_vara (struct): options for knitting and consistency checking, with fields
+%     - opts_vara (struct): options for the variance analysis, with fields
 %
 %         - **Transformations**
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
@@ -33,13 +33,10 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 1
-%         - if_exhaust (int): 1 to attempt to use exhaustive set of shuffles, otherwise will use nshuffs random shuffles if number required is > nshuffs_nax; default is if_stats
-%         - nshuffs (int): number of shuffles requested; less will be made if if_exhaust=1 and number needed for exhaustive list is grater than nshuffs_exhaust_max; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
-%         - shuffs_supplied (int 2-D array): user-supplied shuffles to be used; default is empty ([]), in which case nshuffs random shuffles or exhaustive shuffles (depending on if_exhaust) will be
-%         generated. If non-empty, shuffs_supplied(ishuff,irec) will be the record number to be used in place of original record irec in shuffle ishuff.  It is If non-empty, it is checked to be sure that each row is a permutation, but it is not checked for consistency with groupings.
-%         - nshuffs_max (int): maximum number shuffles that can be generated; use random shuffles if more than this number are required; defaul is 10^4
-%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
-%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
+%         - if_exhaust (int): 1 to attempt to use exhaustive set of shuffles, otherwise will use nshuffs random shuffles if number required is > nshuffs_nax; default is 1
+%         - nshuffs (int): number of shuffles to use; fewer will be made if if_exhaust=1 and number needed for exhaustive list is less than nshuffs_exhaust_max; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - shuffs_supplied (int 2-D array): if nonempty, user-supplied shuffles to be used; if empty, shuffles will be created according to if_exhaust and nshuffs; default is empty ([])
+%         - nshuffs_max (int): maximum number shuffles that can be generated; if if_exhaust=1 and number of exhaustive shuffles exceeds this value, random shuffles will be used instead; default is 10^4
 % 
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
@@ -48,6 +45,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
 %         - **Plotting and replotting** ??
+%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
+%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
 %         - vara_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - vara_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
@@ -66,8 +65,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
-%
-%     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
 %
 %     - opts_align (struct): options for alignment of data, typically omitted
 %
@@ -90,18 +87,20 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
-%
 %     - opts_vara (struct): aux.opts_vara, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
-%     - opts_pca (struct): aux.opts_pca, with defaults filled in
 %     - opts_align (struct): aux.opts_align, with defaults filled in
+%     - vara_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
+%
+%         - nsets (int): number of records in `data_in`
+%         - nstims (int): number of stimuli
+%         - dataset_labels (cell array of char): dataset labels, from data_in.sets{:}.label
+%         - stimulus_labels (cell array of char): stimulus labels, from data_out.sas{1}.typenames
+%     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %
 % Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
-%     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
-%     data_out.sets{1}.pipeline.type='knit'.
-%     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % Note: Note regarding statistics and plots ??? to be revised???
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus
@@ -127,7 +126,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         nshuffs=0, then the shuffled values will not be plotted
 %         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
 %     
-% Note: ?? Note regarding Procrustes consensus algorithm  ???can be an Include with rs_knit_consensus
+% Note: ?? Note regarding Procrustes consensus algorithm  ???can be an Include with rs_knit_coordsets
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
 %     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
@@ -139,17 +138,17 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - There are several choices for initialization and alignment.
 %
-%         - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
+%         - For most purposes, the default initialization method (pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
 %         These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
 %         For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
-%         not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
+%         not. The default for if_initpca_rot is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
 %         The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
 %         is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
 %         -  Alternatively, pcon_init_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
 %         -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
 %         initial guess, and pcon_alignment{idim}, which defaults to
 %         pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
-%         To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%         To control whether the same random number seed is used on each run, use if_frozen (default is 1, which uses the same random numbers on each run).
 %         - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
 %         matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
 %         - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
@@ -181,10 +180,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale.
 %
 % See also:
-%   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS
-%   ?? PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%   ?? PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
-%   ?? MULTI_SHUFF_GROUPS
+%   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, MULTI_SHUFF_GROUPS.
 %
 if (nargin<=2)
     aux=struct;
@@ -222,10 +218,6 @@ aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux=filldefault(aux,'opts_pcon',struct);
-%
-aux=filldefault(aux,'opts_pca',struct);
-aux.opts_pca=filldefault(aux.opts_pca,'if_log',0);
-aux.opts_pca=filldefault(aux.opts_pca,'nd_max',Inf);
 %
 aux=filldefault(aux,'opts_align',struct);
 %
@@ -695,7 +687,6 @@ if aux_out.warn_bad==0 %     %process
     %
     aux_out.opts_vara=aux.opts_vara;
     aux_out.opts_pcon=opts_pcon_used;
-    aux_out.opts_pca=aux.opts_pca;
     aux_out.opts_align=aux_align.opts_align;
     %
 else %cannot process
