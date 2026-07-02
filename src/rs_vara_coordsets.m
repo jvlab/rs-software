@@ -30,7 +30,6 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
 %         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
-%         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 1
@@ -44,9 +43,9 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 % 
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
-%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
+%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
 %         - dim_aug (int): number of dimensions to add for consensus datasets; default is 0; see note below regarding Procrustes consensus algorithm
-%         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
 %         - **Plotting and replotting** ??
 %         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
@@ -201,7 +200,6 @@ aux.opts_vara=filldefault(aux.opts_vara,'allow_scale',0);
 aux.opts_vara=filldefault(aux.opts_vara,'if_normscale',aux.opts_vara.allow_scale);
 aux.opts_vara=filldefault(aux.opts_vara,'if_stats',1);
 aux.opts_vara=filldefault(aux.opts_vara,'if_plot',aux.opts_vara.if_stats);
-aux.opts_vara=filldefault(aux.opts_vara,'if_pca',0);
 aux.opts_vara=filldefault(aux.opts_vara,'max_niters',1000);
 aux.opts_vara=filldefault(aux.opts_vara,'max_rmstol',10^-5);
 aux.opts_vara=filldefault(aux.opts_vara,'pcon_init_method',0);
@@ -429,6 +427,19 @@ if length(aux.opts_vara.dim_list_in)~=length(aux.opts_vara.dim_list_out)
 else
     if_aug=any(aux.opts_vara.dim_list_out>aux.opts_vara.dim_list_in);
     aux.opts_vara=filldefault(aux.opts_vara,'if_initpca_rot',1-if_aug);
+    %
+    if any(aux.opts_vara.dim_list_out<aux.opts_vara.dim_list_in)
+        wmsg=sprintf('dim_list_in values cannot be more than dim_list_out values');
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+end
+if length(aux.opts_vara.dim_list_in)~=length(unique(aux.opts_vara.dim_list_in))
+    wmsg=sprintf('dim_list_in values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+if length(aux.opts_vara.dim_list_out)~=length(unique(aux.opts_vara.dim_list_out))
+    wmsg=sprintf('dim_list_out values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
 if ischar(aux.opts_vara.pcon_init_method)
@@ -530,21 +541,21 @@ aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0 %     %process
     typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     %
-    for ip_ptr=1:length(aux.opts_vara.dim_list_in)
-        ip_in=aux.opts_vara.dim_list_in(ip_ptr);
-        if ismember(ip_in,dim_list_inter)
-            ip=aux.opts_vara.dim_list_out(ip_ptr); %find corresponding output dimension
+    for dptr=1:length(aux.opts_vara.dim_list_in)
+        ip=aux.opts_vara.dim_list_in(dptr);
+        if ismember(ip,dim_list_inter)
+            dim_out=aux.opts_vara.dim_list_out(dptr); %find corresponding output dimension
             %now pad if necessary
-            z_aug=z{ip_in};
-            if ip_in<ip
-                z_aug=cat(2,z_aug,zeros(nstims,ip-ip_in,nsets));
+            z_aug=z{ip};
+            if ip<dim_out
+                z_aug=cat(2,z_aug,zeros(nstims,dim_out-ip,nsets));
             end
             opts_pcon=aux.opts_vara;
             %find global consensus (independent of shuffle)
             [consensus{ip},znew{ip},ts,details,opts_pcon_used{ip}]=procrustes_consensus(z_aug,opts_pcon);
             if aux.opts_vara.if_log
                 disp(sprintf(' creating global Procrustes consensus for dim %2.0f based on datasets of dim %2.0f, iterations: %4.0f, final total rms dev per coordinate: %8.5f',...
-                    ip,ip_in,length(details.rms_change),sqrt(sum(details.rms_dev(:,end).^2))));               
+                    dim_out,ip,length(details.rms_change),sqrt(sum(details.rms_dev(:,end).^2))));               
             end
             sqdevs=sum((znew{ip}-repmat(consensus{ip},[1 1 nsets])).^2,2); %squared deviation of consensus from rotated component
             %rms deviation across each dataset, summed over coords, normalized by the number of stimuli in each dataset
@@ -567,7 +578,7 @@ if aux_out.warn_bad==0 %     %process
                 end
                 zs=z_aug(:,:,perm_use); %the datasets in permuted order, with NaN's where stimuli are missing
                 for igp=1:ngps
-                    zg=zeros(nstims,ip,nsets_gp(igp));
+                    zg=zeros(nstims,dim_out,nsets_gp(igp));
                     for iset_ptr=1:nsets_gp(igp)
                         iset=groupings.gp_list{igp}(iset_ptr); %a dataset in this group
                         zg(:,:,iset_ptr)=zs(:,:,iset); %the (shuffled) datasets in this group

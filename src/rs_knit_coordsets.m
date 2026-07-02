@@ -34,9 +34,9 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
-%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
-%         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
-%         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
+%         - dim_aug (int): number of dimensions to add for knitted datasets in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
+%         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
 %         - **Plotting and replotting**
 %         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
@@ -363,6 +363,19 @@ if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
 else
     if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
     aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
+    %
+    if any(aux.opts_knit.dim_list_out<aux.opts_knit.dim_list_in)
+        wmsg=sprintf('dim_list_in values cannot be more than dim_list_out values');
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+end
+if length(aux.opts_knit.dim_list_in)~=length(unique(aux.opts_knit.dim_list_in))
+    wmsg=sprintf('dim_list_in values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+if length(aux.opts_knit.dim_list_out)~=length(unique(aux.opts_knit.dim_list_out))
+    wmsg=sprintf('dim_list_out values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
