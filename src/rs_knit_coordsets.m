@@ -34,11 +34,12 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
-%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
-%         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
-%         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
+%         - dim_aug (int): number of dimensions to add for knitted datasets in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
+%         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
-%         - **Replotting**
+%         - **Plotting and replotting**
+%         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
@@ -48,7 +49,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%         - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
+%         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
@@ -59,7 +60,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
-%     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
+%     - opts_align (struct): options for alignment of data, typically omitted; see note below regarding recalculation of alignment
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
@@ -235,6 +236,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
+aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -361,11 +363,24 @@ if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
 else
     if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
     aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
+    %
+    if any(aux.opts_knit.dim_list_out<aux.opts_knit.dim_list_in)
+        wmsg=sprintf('dim_list_in values cannot be more than dim_list_out values');
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+end
+if length(aux.opts_knit.dim_list_in)~=length(unique(aux.opts_knit.dim_list_in))
+    wmsg=sprintf('dim_list_in values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+if length(aux.opts_knit.dim_list_out)~=length(unique(aux.opts_knit.dim_list_out))
+    wmsg=sprintf('dim_list_out values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
     %process
-    typenames_all=typenames_inter;
+    typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     dim_list_in=aux.opts_knit.dim_list_in;
     dim_list_out=aux.opts_knit.dim_list_out;
     %
@@ -451,7 +466,12 @@ if aux_out.warn_bad==0
         knit_stats_setup.dim_list_out=dim_list_out;
         knit_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
-            knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+            ds_label=data_in.sets{iset}.label;
+            if aux.opts_knit.if_remove_path_label
+                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
+                ds_label=strrep(ds_label,'.mat','');
+            end
+            knit_stats_setup.dataset_labels{iset}=ds_label;
         end
         knit_stats_setup.stimulus_labels=typenames_all;
         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;
