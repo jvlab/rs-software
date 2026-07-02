@@ -30,4 +30,13 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python
+      - name: Build demo capture specs
+        run: python docs/build_demo_specs.py
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v3
+      - name: Capture demo output and figures
+        uses: matlab-actions/run-command@v3
+        timeout-minutes: 20
+        with:
+          command: addpath('capture/matlab'); run_all('build/capture')
       - run: mkdocs build

@@ -37,6 +37,12 @@ from urllib.parse import urlparse
 import hook_site_config as site_config
 from function_links import FUNCTION_LINKS
 from matlab_to_markdown import parse_matlab_to_markdown
+from demo_capture import load_manifest
+
+# Where the MATLAB capture step writes its per-demo manifests. When a manifest
+# is absent (for example a local build with no MATLAB run), the demo renders
+# code only.
+CAPTURE_DIR = Path("build", "capture")
 
 scripts = ["docs/create_function_md_files.py",
            "docs/list_demos.py"]
@@ -234,9 +240,12 @@ def parse_all_demos_to_markdown():
         
         # reads source code file as text
         matlab_code = input_path.read_text(encoding="utf-8")
-        
-        # parse
-        markdown = parse_matlab_to_markdown(matlab_code, FUNCTION_REGISTRY)
+
+        # load captured console output and figures for this demo, if present
+        manifest = load_manifest(CAPTURE_DIR / f"{input_path.stem}.manifest.json")
+
+        # parse, splicing in the captured output and figures
+        markdown = parse_matlab_to_markdown(matlab_code, FUNCTION_REGISTRY, manifest)
         
         # make sure the output directory exists before writing
         output_path.parent.mkdir(parents=True, exist_ok=True)

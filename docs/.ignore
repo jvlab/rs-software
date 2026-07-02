@@ -3,4 +3,5 @@
 mfiles/*
 mfiles/demos/*
 demos.md
-
+# generated demo figures, ignored from the file watcher for the same reason
+images/demos/*
