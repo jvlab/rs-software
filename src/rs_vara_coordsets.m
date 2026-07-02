@@ -72,17 +72,8 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
-%   vara_stats(struct): statistics and analysis parameters, ???TBD
-%
-%     - groupings (struct): grouping information
-%
-%         - ngps (int): number of groups
-%         - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps
-%         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
-%         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
-%         - nsets_gp_max (int): maximum size of a group
-%         - tags (int 1-D array): tags(k) is the tag for record k
-%
+%   vara_stats(struct): statistics and analysis parameters, detailed in note below regarding statistics and plots
+% 
 %   aux_out (struct): auxiliary outputs and parameter values used
 %
 %     - warnings (char): warnings generated during consistency check
@@ -103,13 +94,53 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 % Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %
-% Note: Note regarding statistics and plots ??? to be revised???
-%     - If aux.opts_knit.if_stats=1, variance explained by the consensus
-%     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
+% Note: Note regarding statistics and plots
+%     - If aux.opts_vara.if_stats=1, statistics regarding variances between individual sets and within-group consensus, and between individual sets and the global consensus, are returned in vara_stats, along with analysis parameters
+%     - vara_stats is a structujre with the following fields (fields names ending with _shuff will be omitted if nshuffs=0):
+%         - groupings (struct): grouping information
 %
-%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the root-mean-squared deviation across all records and stimuli
-%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): root-mean-squared deviation within record k, across stimuli
-%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rood-mean-squared deviation within stimulus istim, across records
+%             - ngps (int): number of groups
+%             - gps (int 1-D array): gps(k) is the group assignment of record k, an integer from 1 to ngps
+%             - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
+%             - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
+%             - nsets_gp_max (int): maximum size of a group
+%             - tags (int 1-D array): tags(k) is the tag for record k
+%
+%
+%                   shuffs: [32×11 double]
+%                    nshuffs: 32
+%            opts_multi_used: [1×1 struct] 00 see multi_shuff_groups for
+%            details
+% (from run of test, test_list=8)
+%               shuffs: [32×11 double]
+%                 nshuffs: 32
+%         opts_multi_used: [1×1 struct]
+%               groupings: [1×1 struct]
+%             rmsdev_desc: 'd1: dimension, d2: nsets or nstims'
+%          rmsdev_setwise: [6×11 double]
+%          rmsdev_stmwise: [6×37 double]
+%          rmsdev_overall: [6×1 double]
+%          rmsdev_gp_desc: 'd1: dimension, d2: nsets or nstims, d3: group'
+%       rmsdev_setwise_gp: [6×6×2×32 double]
+%       rmsdev_stmwise_gp: [6×37×2 double]
+%       rmsdev_overall_gp: [6×1×2 double]
+%          rmsdev_grpwise: [6×1 double]
+%             counts_desc: 'd1: 1, d2: nsets or nstims'
+%          counts_setwise: [25 25 25 25 25 25 25 25 25 25 25]
+%          counts_stmwise: [9 9 9 9 9 9 11 11 11 11 11 11 11 11 11 11 11 11 2 2 2 2 2 2 2 2 2 2 2 2 9 9 9 9 9 9 11]
+%          counts_overall: 275
+%          counts_gp_desc: 'd1: 1, d2: nsets or nstims, d3: group'
+%       counts_setwise_gp: [1×6×2 double]
+%       counts_stmwise_gp: [1×37×2 double]
+%       counts_overall_gp: [1×1×2 double]
+%        rmsavail_setwise: [6×11 double]
+%        rmsavail_stmwise: [6×37 double]
+%        rmsavail_overall: [6×1 double]
+%    rmsdev_gp_shuff_desc: 'd1: dimension, d2: nsets or nstims, d3: group, d4: shuffle'
+% rmsdev_setwise_gp_shuff: [6×6×2×32 double]
+% rmsdev_stmwise_gp_shuff: [6×37×2×32 double]
+% rmsdev_overall_gp_shuff: [6×1×2×32 double]
+%    rmsdev_grpwise_shuff: [6×1×1×32 double]
 %
 %     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
@@ -127,7 +158,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         nshuffs=0, then the shuffled values will not be plotted
 %         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
 %     
-% Note: ?? Note regarding Procrustes consensus algorithm  ???can be an Include with rs_knit_coordsets
+% Note: Note regarding Procrustes consensus algorithm
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
 %     scaled (if allow_scale=1), and reflected (if allow_reflection=1). These transformations are carried out for separately for each set dimension
 %     for which coordinates are present in all of the records, i.e., for which data_in.ds{k}{idim} exists for all k.
@@ -163,11 +194,14 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
-% Note: Note regarding replotting a previous analysis ??? to be revised
-%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` and `groupings` should be equal to that used in the previous calculation.
-%     aux.vara_stats should be equal to vara_stats from the previous calculation
-%     aux.vara_stats_setup should be equal to aux_out.vara_stats_setup from
-%     the previous calculation with the following modifications allowed in fields of vara_stats_setup:
+% Note: Note regarding replotting a previous analysis
+%     - To replot a previous calculation with additional customization or to make a composite figure, proceed as follows:
+%
+%          - `data_in` and `groupings` should be equal to that used in the previous calculation.
+%          - aux.vara_stats should be equal to vara_stats from the previous calculation
+%          - aux.vara_stats_setup should be equal to aux_out.vara_stats_setup from the previous calculation
+%
+%     - The following modifications are allowed in fields of vara_stats_setup:
 %
 %         - dataset_labels (cell array of char): dataset labels; default is data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labbels; default is data_out.sas{1}.typenames
@@ -177,7 +211,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - nrows (int): number of rows in the figure; default is row
 %
 %     -  No further calculations are done
-%     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
+%     -  On return, vara_stats will be empty and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale.
 %
 %  See also:

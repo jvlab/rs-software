@@ -112,8 +112,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % Note: Note regarding statistics and plots
-%     - If aux.opts_knit.if_stats=1, variance explained by the consensus
-%     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
+%     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
 %
 %         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the root-mean-squared deviation across all records and stimuli
 %         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): root-mean-squared deviation within record k, across stimuli
@@ -190,10 +189,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
 % Note: Note regarding replotting a previous analysis
-%     - To replot a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
-%     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
-%     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
-%     the previous calculation with the following modifications allowed in fields of knit_stats_setup:
+%     - To replot a previous calculation with additional customization or to make a composite figure, proceed as follows:
+%
+%          - `data_in` should be equal to that used in the previous calculation.
+%          - aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
+%          - aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from the previous calculation
+%
+%     - The following modifications are allowed in fields of knit_stats_setup:
 %
 %         - dataset_labels (cell array of char): dataset labels; default is data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labbels; default is data_out.sas{1}.typenames
