@@ -72,7 +72,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
-%   vara_stats(struct): statistics and analysis parameters
+%   vara_stats(struct): statistics and analysis parameters, ???TBD
 %
 %     - groupings (struct): grouping information
 %
@@ -81,7 +81,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - gp_list (cell array): gp_list{igp} are the indices of the records in group igp
 %         - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
 %         - nsets_gp_max (int): maximum size of a group
-%         - tage (int 1-D array): tags(k) is the tag for record k
+%         - tags (int 1-D array): tags(k) is the tag for record k
 %
 %   aux_out (struct): auxiliary outputs and parameter values used
 %
@@ -91,12 +91,13 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_align (struct): aux.opts_align, with defaults filled in
-%     - vara_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
+%     - vara_stats_setup (struct): parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
 %
 %         - nsets (int): number of records in `data_in`
 %         - nstims (int): number of stimuli
 %         - dataset_labels (cell array of char): dataset labels, from data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labels, from data_out.sas{1}.typenames
+%
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %
 % Note: General notes
@@ -179,7 +180,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale.
 %
-% See also:
+%  See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, MULTI_SHUFF_GROUPS.
 %
 if (nargin<=2)
