@@ -45,7 +45,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %         - dim_aug (int): number of dimensions to add for consensus datasets; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions for consensus datasets, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
-%         - **Plotting and replotting** ??
+%         - **Plotting and replotting**
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
 %         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
@@ -82,7 +82,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array of struct): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_align (struct): aux.opts_align, with defaults filled in
-%     - vara_stats_setup (struct): parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
+%     - vara_stats_setup (struct): parameters extracted from aux.opts_vara, along with the additional fields below; see note below regarding replotting a previous analysis
 %
 %         - nsets (int): number of records in `data_in`
 %         - nstims (int): number of stimuli
@@ -123,7 +123,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     - If aux_out.vara_stats.nshuffs>0, then a parallel computation is done after random shuffles of the stimulus labels within each record, and the results are returned in rmsdev_[overall|setwise|stimwise]_gp_shuff and rmsdev_grpwise_shuff.
 %     For the shuffled quantities, the first three dimensions are the same as for the unshuffled quantities; and dimension 4 (length: nshuffs) is which shuffle.
 %     The latter is the key quantity: rmsdev_grpwise_shuff(:,1,1,ishuff), to be compared with the unshuffled values, rmsdev_grpwise, indicates whether the data are more clusted into groups than would be expected by chance.
-%     - To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%     - To control whether the same random number seed is used on each run, use aux.opts_vara.if_frozen (default is 1).
 %     - if aux.opts_vara.if_plot=1 (default if if_stats=1), then a figure is created, with three panels:
 %
 %         - a heatmap of rmsdev_setwise as a function of dimension
@@ -662,7 +662,7 @@ if aux_out.warn_bad==0 %     %process
         vara_stats.rmsdev_grpwise_shuff=sqrt(sum(rmsdev_overall_gp_shuff.^2.*repmat(reshape(nsets_gp(:),[1 1 ngps 1]),[pcon_dim_max_out,1,1,nshuffs]),3)/nsets);
     end
     %
-    %plot?
+    %plot if requested
     %
     if aux.opts_vara.if_stats
         vara_stats_setup.opts_vara=aux.opts_vara;
