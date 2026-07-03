@@ -112,27 +112,25 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % Note: Note regarding statistics and plots
-%     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
+%     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields (rmsd=root-mean-squared deviation):
 %
-%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the root-mean-squared deviation across all records and stimuli
-%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): root-mean-squared deviation within record k, across stimuli
-%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rood-mean-squared deviation within stimulus istim, across records
+%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the rmsd across all records and stimuli
+%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): rmsd within record k, across stimuli
+%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rmsd within stimulus istim, across records
 %
-%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
+%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rmsd (from zero) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
-%     and the results are returned in
-%     rmsdev_[overall|setwise|stimwise]_shuff.
-%     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
+%     and the results are returned in rmsdev_[overall|setwise|stimwise]_shuff.
+%     - For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
 %     always 1; dimension 4 (length: nshuffs) is which shuffle; dimension 5 (length: 2) is the mode: 1 for last coordinate only shuffled, 2 for all coordinates shuffled.
 %     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
-%         - a heatmap of rmsdev_setwise
-%         - a heatmap of rmsdev_stmwise
-%         - a comparison of rmsdev_overall (black) to quantiles of
-%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
-%         nshuffs=0, then the shuffled values will not be plotted
-%         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
+%         - a heatmap of rmsdev_setwise as a function of dimension
+%         - a heatmap of rmsdev_stmwise as a function of dimension
+%         - a comparison of the unexplained portion of rmsdev_overall (black) to quantiles of
+%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red). Quantiles are specified by shuff_quantiles; if nshuffs=0, shuffled values will not be plotted
+%         - a comparison of the explained rmsd, parallel to the above, with available rmsd in blue
 %
 %     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
 %     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.

@@ -91,6 +91,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %
+%
 % Note: General notes
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %
@@ -105,46 +106,31 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %             - nsets_gp (int 1-D array): nsets_gp(igp) is the number of records in group igp
 %             - nsets_gp_max (int): maximum size of a group
 %             - tags (int 1-D array): tags(k) is the tag for record k
-%             - opts_multi_used (struct): options used for generating shuffles, see `multi_shuff_groups` for details
-%             - rmsdev_setwise (float 2-D array): rmsdev_setwise(ip,irec) is the rmsd of coordinates in record irec from the global consensus based on data_in.ds{:}{ip}, across all stimuli
-%             - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(ip,istm) is the rmsd of coordinates for stimulus istm from the global consensus based on data_in.ds{:}{ip}, across all records
-%             - rmsdev_overall (float 2-D array): rmsdev_overall(ip,1) is the rmsd of coordinates from the global consensus based on data_in.ds{:}{ip}, across all records and stimuli
-%             - rmsdev_setwise_gp (float 3-D array): rmsdev_setwise_gp(ip,irec,igp) is the rmsd of coordinates in record irec from its within-group consensus, based on data_in.ds{:}{ip}, across all stimuli
-%             - rmsdev_stmwise_gp (float 3-D array): rmsdev_stmwise_gp(ip,istm,igp) is the rmsd of coordinates for stimulus istm from its within-group consensus, based on data_in.ds{:}{ip}, across all records
-%             - rmsdev_overall_gp (float 3-D array): rmsdev_overall_gp(ip,1,igp) is the rmsd of coordinates from the within-group consensus, based on data_in.ds{:}{ip}, across all records and stimuli
-%             counts_desc: 'd1: 1, d2: nsets or nstims'
-%          counts_setwise: [25 25 25 25 25 25 25 25 25 25 25]
-%          counts_stmwise: [9 9 9 9 9 9 11 11 11 11 11 11 11 11 11 11 11 11 2 2 2 2 2 2 2 2 2 2 2 2 9 9 9 9 9 9 11]
-%          counts_overall: 275
-%          counts_gp_desc: 'd1: 1, d2: nsets or nstims, d3: group'
-%       counts_setwise_gp: [1×6×2 double]
-%       counts_stmwise_gp: [1×37×2 double]
-%       counts_overall_gp: [1×1×2 double]
-%        rmsavail_setwise: [6×11 double]
-%        rmsavail_stmwise: [6×37 double]
-%        rmsavail_overall: [6×1 double]
-%    rmsdev_gp_shuff_desc: 'd1: dimension, d2: nsets or nstims, d3: group, d4: shuffle'
-% rmsdev_setwise_gp_shuff: [6×6×2×32 double]
-% rmsdev_stmwise_gp_shuff: [6×37×2×32 double]
-% rmsdev_overall_gp_shuff: [6×1×2×32 double]
-%    rmsdev_grpwise_shuff: [6×1×1×32 double]
-% [above from test 8 of rs_vara_coordsets_test]
 %
-%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
-%     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
-%     and the results are returned in
-%     rmsdev_[overall|setwise|stimwise]_shuff.
-%     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
-%     always 1; dimension 4 (length: nshuffs) is which shuffle; dimension 5 (length: 2) is the mode: 1 for last coordinate only shuffled, 2 for all coordinates shuffled.
-%     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
-%     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
+%         - nshuffs (int): number of shuffles used
+%         - shuffs (int 2-D array): shuffles used; shuffs(ishuff,k) is the record used in place of original record k on shuffle ishuff
+%         - opts_multi_used (struct): options used for generating shuffles, see `multi_shuff_groups` for details
+%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(ip,irec) is the rmsd of coordinates in record irec from the global consensus based on data_in.ds{:}{ip}, across all stimuli
+%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(ip,istm) is the rmsd of coordinates for stimulus istm from the global consensus based on data_in.ds{:}{ip}, across all records
+%         - rmsdev_overall (float 2-D array): rmsdev_overall(ip,1) is the rmsd of coordinates from the global consensus based on data_in.ds{:}{ip}, across all records and stimuli
+%         - rmsdev_setwise_gp (float 3-D array): rmsdev_setwise_gp(ip,irec,igp) is the rmsd of coordinates in group igp in record irec from its within-group consensus, based on data_in.ds{:}{ip}, across all stimuli
+%         - rmsdev_stmwise_gp (float 3-D array): rmsdev_stmwise_gp(ip,istm,igp) is the rmsd of coordinates in group igp for stimulus istm from its within-group consensus, based on data_in.ds{:}{ip}, across all records
+%         - rmsdev_overall_gp (float 3-D array): rmsdev_overall_gp(ip,1,igp) is the rmsd of coordinates in group igp from the within-group consensus, based on data_in.ds{:}{ip}, across all records and stimuli
+%         - rmsdev_grpwise (float 3-D array): rmsdev_grpwise(ip,1,1) is the rmsd of coordinates from the within-group consensus, across all records and stimuli, averaged over all groups
 %
-%         - a heatmap of rmsdev_setwise
-%         - a heatmap of rmsdev_stmwise
-%         - a comparison of rmsdev_overall (black) to quantiles of
-%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
-%         nshuffs=0, then the shuffled values will not be plotted
-%         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
+%     - The counts for each of these calculations are counts_[overall|setwise|stmwise] and counts_gp_[overall|setwise|stmwise], with first array coordinate fixed at 1 (since dimension does not matter)
+%     - The available rmsd (from zero) is given by rmsavail_[overall|setwise|stmwise].
+%     - If aux_out.vara_stats.nshuffs>0, then a parallel computation is done after random shuffles of the stimulus labels within each record, and the results are returned in rmsdev_[overall|setwise|stimwise]_gp_shuff and rmsdev_grpwise_shuff.
+%     For the shuffled quantities, the first three dimensions are the same as for the unshuffled quantities; and dimension 4 (length: nshuffs) is which shuffle.
+%     The latter is the key quantity: rmsdev_grpwise_shuff(:,1,1,ishuff), to be compared with the unshuffled values, rmsdev_grpwise, indicates whether the data are more clusted into groups than would be expected by chance.
+%     - To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%     - if aux.opts_vara.if_plot=1 (default if if_stats=1), then a figure is created, with three panels:
+%
+%         - a heatmap of rmsdev_setwise as a function of dimension
+%         - a heatmap of rmsdev_setwise_gp as a function of dimension
+%         - a comparison of the rmsd from the group consensus (rmsdev_grpwise, black), overall available rmsd (blue), and quantiles (rmsdev_grpwise_shuff, red) of the rmsd from the group consensus in the shuffled data
+%         (quantiles are specified by shuff_quantiles; if nshuffs=0, shuffled values will not be plotted)
+%
 %     
 % Note: Note regarding Procrustes consensus algorithm
 %     - To find a consensus set of coordinates, the coordinates in each record of `data_in` are rotated, and optionally translated (if allow_offset=1),
@@ -202,7 +188,7 @@ function [vara_stats,aux_out]=rs_vara_coordsets(data_in,groupings,aux)
 %     -  On return, vara_stats will be empty and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale.
 %
-%  See also:
+% See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, MULTI_SHUFF_GROUPS.
 %
 if (nargin<=2)
