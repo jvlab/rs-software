@@ -9,7 +9,7 @@ First are MATLAB function defined and their links to official MATLAB documentati
 @author: G. Aguilar - Feb 2026
 """
 
-# Manually maintained MATLAB builtins → MathWorks documentation URLs
+# Manually maintained MATLAB builtins and help documents → MathWorks documentation URLs
 MATLAB_BUILTINS = {
    "procrustes":   "https://mathworks.com/help/stats/procrustes.html",
    "graph":        "https://mathworks.com/help/matlab/ref/graph.html",
@@ -18,7 +18,22 @@ MATLAB_BUILTINS = {
    "struct":       "https://mathworks.com/help/matlab/ref/struct.html",
    "cell":         "https://mathworks.com/help/matlab/ref/cell.html",
    "cell array":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array of char":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array of struct":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array with one element":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "char":         "https://mathworks.com/help/matlab/ref/char.html",
    "int":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 1-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 2-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 3-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 4-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 5-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "float":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 1-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 2-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 3-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 4-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 5-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
     # add more as needed...
 }
 

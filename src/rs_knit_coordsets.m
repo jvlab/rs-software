@@ -29,6 +29,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
@@ -52,8 +54,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -76,7 +76,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_knit (struct): aux.opts_knit, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
-%     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
+%     - opts_pcon (cell array of struct): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_pca (struct): aux.opts_pca, with defaults filled in
 %     - opts_align (struct): aux.opts_align, with defaults filled in
 %     - opts_rays (cell array with one element): opts_rays{1} is a structure which contains the options used for creating rays in data_out
