@@ -63,24 +63,20 @@ A `dataset structure` is a container for representational spaces to be analyzed 
 
 It consists of three components: 
 
-- a `coordinate structure` ('ds'), 
 - a `stimulus metadata structure` ('sas'), and 
 - a `set metadata structure` ('sets')
+- a `coordinate structure` ('ds'), 
 
 each of which is a MATLAB cell array with the same number of records.  A single record contains the coordinates and metadata for a representational space models of one or more dimensions, all derived from a common dataset.
 
 Typically a `dataset structure` is created by reading one or more `coordinate files` via `rs_get_coordsets`, a single `coordinate file` via `rs_read_coorddata`, or imported from coordinate arrays with user-supplied metadata via `rs_import_coordsets`.
-
-### Coordinate structure
-
-For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
 
 
 ### Stimulus metadata structure
 
 This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
- * nstims: number of stimuli
+* nstims: number of stimuli
 * typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
 * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
 * the optional variables \*LL\* and metadata from a `coordinate file`
@@ -88,13 +84,13 @@ This contains the metadata that defines the stimulus set, and, optionally, data 
 
 ### Set metadata structure
 
-This contains dataset origin.  For each record, 'sets{irec}' has the following fields:
+This describe the source of the dataset. For each record, 'sets{irec}' has the following fields:
 
 * dim\_list: list of available dimensions in ds{irec}
 * nstims: number of stimuli
 * label\_long: long file name, typically full file name and path
 * label: shortened file name, suitable for display
-* type: typically 'data', alternatively 'qform' for a `quadratic form model`
+* type: typically 'data'
 * paradigm\_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the `binary texture domain` and 'animals' for the `animal domain`
 * paradigm\_name: can be the same as paradigm\_type or used to designate a subset or rendering within paradigm\_type 
 * subj\_ID: unique subject identifier
@@ -103,6 +99,13 @@ This contains dataset origin.  For each record, 'sets{irec}' has the following f
 
 For an example of a `dataset structure` with one record and without `stimulus coordinates`, run the demo `rs_read_coorddata_demo_cars` and look at 'data_out'.
 For an example of a `dataset structure` with three records and with `stimulus coordinates`, run the demo `rs_read_coorddata_demo_opposites` and look at 'data_out'.
+
+
+### Coordinate structure
+
+For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the `coordinate file`. d{irec}{k} may be empty ('[]') if no model is available. 
+
+
 
 ## Stimulus coordinates
 
@@ -117,7 +120,7 @@ Some domains may be structured by an a priori set of coordinates for the stimuli
 * To create a `ray structure`, to enhance visualization of representational spaces via `rs_disp_enh_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, then `rs_disp_coordsets_demo_opposites`)
 * To create `quadratic form models` for representational spaces via `rs_get_coordsets` (demo: run `rs_read_coorddata_demo_opposites`, option 3)
 
-### Ray structure
+## Ray structure
 
 When the stimulus domain is structured with `stimulus coordinates`, a `ray structure` identifies simple relationships among the stimuli:
 
@@ -127,7 +130,7 @@ When the stimulus domain is structured with `stimulus coordinates`, a `ray struc
 
 The `ray structure` is created by `rs_findrays`, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. 
 
-### Quadratic form models
+## Quadratic form models
 
 A quadratic form model is a model applicable to a domain with `stimulus coordinates`. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic form) with elements q<sub>i,j</sub>.  
 
@@ -136,6 +139,9 @@ In the quadratic form model, the distance D between stimuli X (a row vector with
 To create representational spaces from a quadratic form model and a set of `stimulus coordinates`, use `rs_get_coordsets` with input_type=2 to generate a `dataset structure`. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and `rs_read_coorddata_demo_opposites`, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in `samples/bwtextures/btc_allraysfixedb_*.mat`; these contain many additional fields that are not required.
 
 This will generate a record in a `dataset structure` whose `coordinate structure` 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.
+
+
+For a dataset that used a quadratic form model the `type` field of the `set metadata structure` is set to `qform`.
 
 
 ## Transformation structures
