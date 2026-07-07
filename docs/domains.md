@@ -18,19 +18,44 @@ Together, these ten statistics determine the probability of all 2x2 blocks of ch
 
 Stimuli are named according to the values of the specified coordinates, using the above single-letter codes, followed by 'p' for positive or 'm' for negative, followed by four digits indicating the coordinate magnitude. 'rand' indicates the random texture.  Examples, along with samples of the corresponding textures, are shown below.  
 
-![Sample of texture bp0900](./images/bp0900_000.png)<figcaption>A sample of texture bp0900</figcaption>, i.e., $\beta$<sub>-</sub>=+0.9
+<div class="texture-grid" markdown>
 
-![Sample of texture cm0450](./images/cm0450_000.png)<figcaption>A sample of texture cm0450</figcaption>, i.e., $\beta$<sub>|</sub>=-0.45
+<figure markdown="span">
+![Sample of texture bp0900](./images/bp0900_000.png)
+<figcaption markdown="span">A sample of texture bp0900, i.e., $\beta$<sub>-</sub>=+0.9</figcaption>
+</figure>
 
-![Sample of texture bp0900cm0450](./images/bp0900cm0450_000.png)<figcaption>A sample of texture bp0900cm0450</figcaption>, i.e., $\beta$<sub>-</sub>=+0.9 and  $\beta$<sub>|</sub>=-0.45
+<figure markdown="span">
+![Sample of texture cm0450](./images/cm0450_000.png)
+<figcaption markdown="span">A sample of texture cm0450, i.e., $\beta$<sub>|</sub>=-0.45</figcaption>
+</figure>
 
-![Sample of texture dp0600](./images/dp0600_000.png)<figcaption>A sample of texture dp0600</figcaption>, i.e., $\beta$<sub>\</sub>=+0.6
+<figure markdown="span">
+![Sample of texture bp0900cm0450](./images/bp0900cm0450_000.png)
+<figcaption markdown="span">A sample of texture bp0900cm0450, i.e., $\beta$<sub>-</sub>=+0.9 and $\beta$<sub>|</sub>=-0.45</figcaption>
+</figure>
 
-![Sample of texture ap1000](./images/ap1000_000.png)<figcaption>A sample of texture ap1000</figcaption>, i.e., $\alpha$=+1.0
+<figure markdown="span">
+![Sample of texture dp0600](./images/dp0600_000.png)
+<figcaption markdown="span">A sample of texture dp0600, i.e., $\beta$<sub>\</sub>=+0.6</figcaption>
+</figure>
 
-![Sample of texture am0667](./images/am0667_000.png)<figcaption>A sample of texture am0667</figcaption>, i.e., $\alpha$=-0.667
+<figure markdown="span">
+![Sample of texture ap1000](./images/ap1000_000.png)
+<figcaption markdown="span">A sample of texture ap1000, i.e., $\alpha$=+1.0</figcaption>
+</figure>
 
-![Sample of texture rand](./images/rand_000.png)<figcaption>A sample of texture rand</figcaption>, i.e., the random binary texture
+<figure markdown="span">
+![Sample of texture am0667](./images/am0667_000.png)
+<figcaption markdown="span">A sample of texture am0667, i.e., $\alpha$=-0.667</figcaption>
+</figure>
+
+<figure markdown="span">
+![Sample of texture rand](./images/rand_000.png)
+<figcaption markdown="span">A sample of texture rand, i.e., the random binary texture</figcaption>
+</figure>
+
+</div>
 
 Stimulus coordinates are 10-element vectors, in the `btc_specoords` and `btc_augcoords` fields of the `stimulus metadata structure`.  In the  `btc_specoords` field, the un-specified coordinates are indicated as NaN.  In the  `btc_augcoords` field, these NaN values are replaced by the coordinate values determined by maximum entropy. Algorithms for generating these textures and further details may be found in  [Victor and Conte (2012)](http://www.opticsinfobase.org/josaa/viewmedia.cfm?uri=josaa-29-7-1313&seq=0).
 
