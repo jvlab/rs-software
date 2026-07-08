@@ -1,12 +1,17 @@
 """
-Given a Euclidean fit, obtained from ordinary gradient descent that explains the psychophysical judgments, add curvature
-(negative curvature to make the space more hyperbolic) and see if the fit improves.
-This entails projecting Euclidean points onto the top sheet of a two sheet hyperboloid, using the Loid geometry as the
-geometry of the space. Distances between points on the hyperbolid are then taken in a way inspired by/ adapted from Tabaghi
-et al's paper, "Hyperbolic Distance Matrices." Once distances are obtained, LL can be calculated.
-A parameter, lambda controls how close to the hyperboloid center, the points are projected. When lambda approaches 0,
-the distances approach Euclidean distances, so a positive lambda yielding a better LL is evidence for curvature in the
-space - IF you can account for the added benefit provided simply by adding 1 more parameter.
+Add curvature to a Euclidean fit and test whether the fit improves.
+
+This module takes a Euclidean embedding that already explains psychophysical
+judgments, maps the points onto the top sheet of a two-sheet hyperboloid using
+Loid geometry, and then computes pairwise hyperbolic distances. The resulting
+distances can be used to evaluate whether adding negative curvature improves
+log-likelihood relative to the Euclidean model.
+
+The mapping is controlled by a curvature parameter, which determines how close
+the projected points lie to the hyperboloid center. When the curvature
+parameter approaches 0, the geometry approaches Euclidean space, so improved
+fit at positive curvature provides evidence for curvature in the space, after
+accounting for the extra parameter.
 """
 
 import logging
@@ -17,12 +22,17 @@ LOG = logging.getLogger(__name__)
 
 
 def loid_map(X, degree_curvature):
-    """ Map points in Euclidean space to points on the hyperboloid using a mapping to the Loid space.
-    @param degree_curvature: the aforementioned lambda parameter, 0 if distances are Euclidean.
-    @param X: d by n matrix with n points of dimension d in Rd (real numbers, d dim)
-    @return Y: d+1 by n matrix with n points projected onto the hyperboloid of dimension d, which is embedded in
-    d+1-dimensional space
-    apply L(lambda.x)
+    """
+        Map Euclidean points onto the top sheet of a two-sheet hyperboloid.
+
+        Args:
+            X (numpy.ndarray): Array of shape (d, n), with n points in d Euclidean
+                dimensions.
+            degree_curvature (float): Curvature parameter controlling how strongly
+                the points are projected toward hyperbolic geometry.
+
+        Returns:
+            numpy.ndarray: Array of shape (d + 1, n) containing the projected points on the hyperboloid.
     """
     # retain coordinates of X but add a 0-th coordinate which is a function of the d-dimensional coordinate values
     d, n = X.shape
@@ -33,28 +43,42 @@ def loid_map(X, degree_curvature):
     return Y
 
 
-def loid_to_poincare_map(X):
-    # NEED TO TEST
-    """ Map points in Loid hyperboiloid to points on the Poincare disk.
-    @param X: d+1 by n matrix with n points of dimension d in Rd (real numbers, d dim)
-    @return Y: d by n matrix with n points projected onto the hyperboloid of dimension d, which is embedded in
-    d+1-dimensional space
-    """
-    # retain coordinates of X but add a 0-th coordinate which is a function of the d-dimensional coordinate values
-    d, n = X.shape
-    Y = np.zeros((d-1, n))
-    for p in range(n):
-        Y[:, p] = (1/(1+X[0, p])) * X[1:, p]
-    return Y
+# def loid_to_poincare_map(X):
+#     # NEED TO TEST
+#     """
+#         Map points from the Loid hyperboloid to the Poincaré disk.
+#
+#         Args:
+#             X (numpy.ndarray): Array of shape (d + 1, n), with n points on the
+#                 hyperboloid.
+#
+#         Returns:
+#             numpy.ndarray: Array of shape (d, n) containing the corresponding
+#             Poincaré disk coordinates.
+#     """
+#     # retain coordinates of X but add a 0-th coordinate which is a function of the d-dimensional coordinate values
+#     d, n = X.shape
+#     Y = np.zeros((d-1, n))
+#     for p in range(n):
+#         Y[:, p] = (1/(1+X[0, p])) * X[1:, p]
+#     return Y
 
 
 def hyperbolic_distances(X, curvature):
     """
-    Computes the hyperblic distance between points ON the hyperboloid.
-    Assumes the points passed in are not off the hyperboloid - already projected!
-    @param curvature: 0 when distances supposedly like Euclidean, hyperbolic when > 0
-    @param X: d-by-n matrix of coordinates for points on a hyperboloid Ld
-    @return: cosh-1(-[X, X]) = an n-by-n matrix of pairwise distance matrix for all points X
+    Compute pairwise hyperbolic distances between points on the hyperboloid.
+
+    Args:
+        X (numpy.ndarray): Array of shape (d + 1, n) containing points already
+            projected onto the hyperboloid.
+        curvature (float): Positive curvature parameter used to scale the
+            resulting distances.
+
+    Returns:
+        numpy.ndarray: Pairwise hyperbolic distance matrix for the points in X.
+
+    Notes:
+        Distances are computed as $arccosh(-[X, X])$.
     """
     # test entries along the diagonal should equal 1
     # test all entries should be less than or equal to -1 or what notes say
