@@ -16,16 +16,16 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %     - opts_write (struct): , with fields
 %
 %          - set_no (int): record number to write; default is 1
-%          - if_embed (int): 1 to embed the `setup metadata` in the output file, 0 to omit; see note below re setup metadata.
+%          - if_embed (int): 1 to embed the `setup metadata` in the output file, 0 to omit; see note below re setup metadata; default is 1.
 %          - ui_prompt (char): User interface prompt, default ia ,'Select a coordinate file to write'
 %          - if_gui (int): 1 to use graphical interface to get files if file names are not supplied; 0 to use text prompt; default is 0
 %          - if_log (int): 1 to log progress, 0 to omit; default is 1
 %          - data_fullname_def (char): default file name to write, used as a prompt if if_gui=0 if fullname is not provided; default is
-%          './samples/bgca3pt_coords_QFM_sess01_01.mat'; default can be changed by  editing the line containing
-%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it 
-%          once, and saving the workspace as rs_aux_defaults.mat.
+%          '[path and file name for the default coordinate dataset file to write].mat'; default can be changed by  editing the line containing
+%          generic.opts_write.coord_data_fullname_write_def in `rs_aux_defaults_define`, running it  once, and saving the workspace as rs_aux_defaults.mat.
 %          - if_uselocal (int): should be set to 0 (default); 1 (intended for maintenance only) overrides options set by `rs_aux_defaults_define` by defaults in `psg_localopts.m` 
 %
+% Returns:
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings
@@ -41,7 +41,7 @@ function aux_out=rs_write_coorddata(fullname,data_in,aux)
 %    `rs_get_coordsets`, and kept in data_in{k}.sas; it is also updated by `rs_align_coordsets` and `rs_knit_coordsets`
 %    - if_embed=1 embeds the metadata in the written file, so that the setup file no longer needs to be read. 
 % 
-% See also:  RS_AUX_CUSTOMIZE, RS_WRITE_COORDDATA.
+% See also:  RS_AUX_CUSTOMIZE.
 %
 if (nargin<=2)
     aux=struct;

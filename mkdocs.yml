@@ -14,7 +14,9 @@ hooks:
   - docs/hooks.py
   - docs/hook_ignore.py
   - docs/hook_format_nested_args.py
+  - docs/hook_strip_contents_docstring.py
   - docs/hook_collapse_details.py
+  
 
 watch:
   - src
@@ -75,10 +77,14 @@ nav:
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
     - Function index: function-index-python.md 
   - Manipulating RS:
-    - Installation: installation.md
-    - Demos (Matlab): demos.md
-    - Function index: function-index.md
-  - Data structures: data_structures.md
+    - Overview: rs-ml-overview.md
+    - Installation: rs-ml-installation.md
+    - Demos (MATLAB): demos.md
+    - Function index: function-index-matlab.md
+  - File formats, data structures, and domains: 
+    - File formats: file-formats.md
+    - Data structures: data_structures.md
+    - Domains: domains.md
   - Python - MATLAB/Octave: python-matlab-octave.md
 
 not_in_nav: mfiles/*

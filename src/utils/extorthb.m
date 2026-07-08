@@ -7,7 +7,7 @@ function [basis,onb]=extorthb(cv)
 %   cv (float 1-D array): a column vector
 %
 % Returns:
-%   basis: (float 2-D array): a square matrix, size(basis)=[length(cv) length(cv)]; basis(:,1)=cv, basis'*basis is diagonal
+%   basis (float 2-D array): a square matrix, size(basis)=[length(cv) length(cv)]; basis(:,1)=cv, basis'*basis is diagonal
 %
 %   onb (float 2-D array): corresonding orthonormal basis, vectors in columns; onb'*onb=1
 %

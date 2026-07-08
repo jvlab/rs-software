@@ -2,13 +2,13 @@
 
 ## 
 
-## Overview
+## Introduction
 
 This software package is a set of tools to construct and analyze representational spaces.
 
 A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to dis-similarity. Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
 
-The package has two components that may be used together or independently. One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source.
+The package has two components that may be used together or independently. One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. Each of the two components of the package has its own set of installation instructions, demos and samples.
 
 As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel.
 
@@ -46,7 +46,7 @@ The key operations performed are
 * Modeling transformations between representational spaces: affine, projective, piecewise affine (`rs_geofit`)
 * Statistics related to these operations
 
-The main outputs are coordinate sets and the associated metadata, geometric models of transformations, and graphics. 
+The main outputs are coordinate sets and the associated metadata, geometric models of transformations, graphics, and statistics. 
 
 Key demos are ??
 

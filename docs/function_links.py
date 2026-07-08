@@ -9,7 +9,7 @@ First are MATLAB function defined and their links to official MATLAB documentati
 @author: G. Aguilar - Feb 2026
 """
 
-# Manually maintained MATLAB builtins → MathWorks documentation URLs
+# Manually maintained MATLAB builtins and help documents → MathWorks documentation URLs
 MATLAB_BUILTINS = {
    "procrustes":   "https://mathworks.com/help/stats/procrustes.html",
    "graph":        "https://mathworks.com/help/matlab/ref/graph.html",
@@ -18,7 +18,22 @@ MATLAB_BUILTINS = {
    "struct":       "https://mathworks.com/help/matlab/ref/struct.html",
    "cell":         "https://mathworks.com/help/matlab/ref/cell.html",
    "cell array":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array of char":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array of struct":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "cell array with one element":   "https://mathworks.com/help/matlab/ref/cell.html",
+   "char":         "https://mathworks.com/help/matlab/ref/char.html",
    "int":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 1-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 2-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 3-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 4-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "int 5-D array":          "https://www.mathworks.com/help/matlab/matlab_prog/integers.html",
+   "float":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 1-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 2-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 3-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 4-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
+   "float 5-D array":         "https://mathworks.com/help/matlab/ref/isfloat.html",
     # add more as needed...
 }
 
@@ -39,23 +54,24 @@ OWN_DATATYPES = {
     "ray structure":   	            "data_structures/#ray-structure",
     "ray structures":               "data_structures/#ray-structure",
     "stimulus coordinates":         "data_structures/#stimulus-coordinates",
-    "setup metadata":	            "data structures/#setup-metadata",
-    "binary texture domain":        "data_structures/#binary-texture-domain",
-    "binary texture":               "data_structures/#binary-texture-domain",
-    "binary textures":              "data_structures/#binary-texture-domain",
-    "animal domain":                "data_structures/#animal-domain",
-    "MPI faces domain":             "data_structures/#mpi-faces-domain",
-    "MPI faces":                    "data_structures/#mpi-faces-domain",
-    "coordinate file":              "data_structures/#coordinate file",
-    "coordinate files":             "data_structures/#coordinate file",
-    "choice file":                  "data_structures/#choice file",
-    "choice files":                 "data_structures/#choice file",
-    "combined choice file":         "data_structures/#choice file",
-    "combined choice files":        "data_structures/#choice file",
-    "detailed choice file":         "data_structures/#detailed choice file",
-    "detailed choice files":        "data_structures/#detailed choice file",
-    "quadratic form model":         "data_structures/#quadratic form model",
-    "quadratic form models":        "data structures/#quadratic form models",
+    "setup metadata":	            "file-formats/#setup-metadata",
+    "binary texture domain":        "domains/#binary-texture-domain",
+    "binary texture":               "domains/#binary-texture-domain",
+    "binary textures":              "domains/#binary-texture-domain",
+    "animal domain":                "domains/#animal-domain",
+    "animal domains":               "domains/#animal-domain",
+    "MPI faces domain":             "domains/#mpi-faces-domain",
+    "MPI faces":                    "domains/#mpi-faces-domain",
+    "coordinate file":              "file-formats/#coordinate-file",
+    "coordinate files":             "file-formats/#coordinate-file",
+    "choice file":                  "file-formats/#choice-file",
+    "choice files":                 "file-formats/#choice-file",
+    "combined choice file":         "file-formats/#choice-file",
+    "combined choice files":        "file-formats/#choice-file",
+    "detailed choice file":         "file-formats/#detailed-choice-file",
+    "detailed choice files":        "file-formats/#detailed-choice-file",
+    "quadratic form model":         "data_structures/#quadratic-form-models",
+    "quadratic form models":        "data_structures/#quadratic-form-models",
     # add more as needed...
 }
 

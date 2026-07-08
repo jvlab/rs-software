@@ -26,19 +26,22 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
-%         - **Statistics**
+%         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
-%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
-%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
+%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
-%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds; default is [1:dim_max_in]
-%         - dim_aug (int): number of additional dimensions in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
-%         - dim_list_out (int 1-D array): list of dimensions to create in data_out.ds; if specified, must have same length as dim_list_in; default is [1:dim_list_in]+dim_aug
+%         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
+%         - dim_aug (int): number of dimensions to add for knitted datasets in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
+%         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
 %
-%         - **Replotting**
+%         - **Plotting and replotting**
+%         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
+%         - shuff_quantiles (float 1-D array): quantiles to plot; default is [0.01 0.05 0.5 0.95 0.99]
+%         - if_remove_path_label (int): 1 to remove path from filename when used as a label (in data_in.sets{:}.label), 0 does not; default is 1
 %         - knit_stats (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %         - knit_stats_setup (struct): include to replot a previous analysis, otherwise omit; see note below regarding replotting
 %
@@ -48,18 +51,16 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
-%         - keep_details (int): 1 to return details of Procrustes consensus mimimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
+%         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
-%     - opts_align (struct): options for alignment of data, typically; see note below regarding recalculation of alignment
+%     - opts_align (struct): options for alignment of data, typically omitted; see note below regarding recalculation of alignment
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
@@ -68,14 +69,14 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % Returns:
 %   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
 %
-%   aux_out: auxiliary outputs and parameter values used
+%   aux_out (struct): auxiliary outputs and parameter values used
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
 %
 %     - opts_knit (struct): aux.opts_knit, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
-%     - opts_pcon (cell array): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
+%     - opts_pcon (cell array of struct): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
 %     - opts_pca (struct): aux.opts_pca, with defaults filled in
 %     - opts_align (struct): aux.opts_align, with defaults filled in
 %     - opts_rays (cell array with one element): opts_rays{1} is a structure which contains the options used for creating rays in data_out
@@ -111,28 +112,25 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %
 % Note: Note regarding statistics and plots
-%     - If aux.opts_knit.if_stats=1, variance explained by the consensus
-%     coordinates are calculated and returned in aux_out.knit_stats, in the following fields:
+%     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields (rmsd=root-mean-squared deviation):
 %
-%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the root-mean-squared deviation across all records and stimuli
-%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): root-mean-squared deviation within record k, across stimuli
-%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rood-mean-squared deviation within stimulus istim, across records
+%         - rmsdev_overall (float 1-D array): rmsdev_overall(idim) is the rmsd across all records and stimuli
+%         - rmsdev_setwise (float 2-D array): rmsdev_setwise(idim,k): rmsd within record k, across stimuli
+%         - rmsdev_stmwise (float 2-D array): rmsdev_stmwise(idim,istim): rmsd within stimulus istim, across records
 %
-%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rms deviation (from the centroid) is given by rmsavail_[overall|setwise|stimwise].
+%     - The counts for each of these calculations are counts_[overall|setwise|stmwise], and the available rmsd (from zero) is given by rmsavail_[overall|setwise|stimwise].
 %     - If aux.opts_knit.nshuffs>0 (default is 500), then a parallel computation is done after random shuffles of the stimulus labels within each record,
-%     and the results are returned in
-%     rmsdev_[overall|setwise|stimwise]_shuff.
-%     For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
+%     and the results are returned in rmsdev_[overall|setwise|stimwise]_shuff.
+%     - For the shuffled quantities, the first two dimensions are the same as the unshuffled quantities; dimension 3 is
 %     always 1; dimension 4 (length: nshuffs) is which shuffle; dimension 5 (length: 2) is the mode: 1 for last coordinate only shuffled, 2 for all coordinates shuffled.
 %     To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
 %     - if aux.opts_knit.if_plot=1 (default if if_stats=1), then a figure is created, with four panels:
 %
-%         - a heatmap of rmsdev_setwise
-%         - a heatmap of rmsdev_stmwise
-%         - a comparison of rmsdev_overall (black) to quantiles of
-%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red); quantiles are specified by shuff_quantiles; if
-%         nshuffs=0, then the shuffled values will not be plotted
-%         - a comparison of the explained rms deviation, parallel to the above, with avilable rms deviation in blue
+%         - a heatmap of rmsdev_setwise as a function of dimension
+%         - a heatmap of rmsdev_stmwise as a function of dimension
+%         - a comparison of the unexplained portion of rmsdev_overall (black) to quantiles of
+%         rmsdev_overall_shuff (mode 1: magenta, mode 2: red). Quantiles are specified by shuff_quantiles; if nshuffs=0, shuffled values will not be plotted
+%         - a comparison of the explained rmsd, parallel to the above, with available rmsd in blue
 %
 %     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
 %     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.
@@ -164,17 +162,17 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     or the rms change of the guess is less than max_rmstol (default=10^-5)
 %     - There are several choices for initialization and alignment.
 %
-%         - For most purposes, the default initialization method (aux.opts_knit.pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
+%         - For most purposes, the default initialization method (pcon_init_method=0) can be used, which uses the principal components of all the stimulus coordinates in all of the records.
 %         These can be optionally forced to be centered (pcon_init_method=-1) or not (pcon_init_method=-2); if unspecified (default), centering is determined by allow_offset.
 %         For these choices, if_initpca_rot=1 rotates the initial guess to match the data, or
-%         not. The default for if_init_pca is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
+%         not. The default for if_initpca_rot is 1 unless any of dim_list_out>dim_list_in, in which case it is 0.
 %         The heuristic for not rotating if dim_list_out>dim_list_in, i.e., two or more sets of coordinates are to be knit together to construct a coordinate set with a greater number of dimensions,
 %         is that without rotation, the principal components reflect projections of the coordinates that are present in any of the records.
 %         -  Alternatively, pcon_init_method=r, r>0, specifies that the coordinates in data_in{r}{idim} are used.
 %         -  If pcon_init_method='specify', then pcon_initial_guess{idim} is an array of size [npts ids] for the
 %         initial guess, and pcon_alignment{idim}, which defaults to
 %         pcon_initial_guess, is used for the alignment at the end of each iteration.  pcon_initial_guess and pcon_alignment may be omitted, in which case random values are used.
-%         To control whether the same random number seed is used on each run, use aux.opts_knit.if_frozen (default is 1).
+%         To control whether the same random number seed is used on each run, use if_frozen (default is 1, which uses the same random numbers on each run).
 %         - The solution is only unique up to rotation (and translation and reflection, if these components are allowed).  The ambiguity is resolved by
 %         matching the consensus solution to the initial guess (or, pcon_alignment{idim} if separately supplied with pcon_init_method=0), as described above.
 %         - Under some circumstances (e.g., several solutions that are nearly equally good), the solution found by the algorithm may depend on
@@ -189,10 +187,13 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
 % 
 % Note: Note regarding replotting a previous analysis
-%     - To replot a a previous calculation with additional customizatior to make a composite figure, `data_in` should be equal to that used in the previous calculation.
-%     aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
-%     aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from
-%     the previous calculation with the following modifications allowed in fields of knit_stats_setup:
+%     - To replot a previous calculation with additional customization or to make a composite figure, proceed as follows:
+%
+%          - `data_in` should be equal to that used in the previous calculation.
+%          - aux.knit_stats should be equal to aux_out.knit_stats from the previous calculation
+%          - aux.knit_stats_setup should be equal to aux_out.knit_stats_setup from the previous calculation
+%
+%     - The following modifications are allowed in fields of knit_stats_setup:
 %
 %         - dataset_labels (cell array of char): dataset labels; default is data_in.sets{:}.label
 %         - stimulus_labels (cell array of char): stimulus labbels; default is data_out.sas{1}.typenames
@@ -235,6 +236,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'keep_details',0);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
+aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -361,11 +363,24 @@ if length(aux.opts_knit.dim_list_in)~=length(aux.opts_knit.dim_list_out)
 else
     if_aug=any(aux.opts_knit.dim_list_out>aux.opts_knit.dim_list_in);
     aux.opts_knit=filldefault(aux.opts_knit,'if_initpca_rot',1-if_aug);
+    %
+    if any(aux.opts_knit.dim_list_out<aux.opts_knit.dim_list_in)
+        wmsg=sprintf('dim_list_in values cannot be more than dim_list_out values');
+        aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+    end
+end
+if length(aux.opts_knit.dim_list_in)~=length(unique(aux.opts_knit.dim_list_in))
+    wmsg=sprintf('dim_list_in values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+end
+if length(aux.opts_knit.dim_list_out)~=length(unique(aux.opts_knit.dim_list_out))
+    wmsg=sprintf('dim_list_out values are not unique');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
     %process
-    typenames_all=typenames_inter;
+    typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     dim_list_in=aux.opts_knit.dim_list_in;
     dim_list_out=aux.opts_knit.dim_list_out;
     %
@@ -451,7 +466,12 @@ if aux_out.warn_bad==0
         knit_stats_setup.dim_list_out=dim_list_out;
         knit_stats_setup.dataset_labels=cell(1,nsets);
         for iset=1:nsets
-            knit_stats_setup.dataset_labels{iset}=data_in.sets{iset}.label;
+            ds_label=data_in.sets{iset}.label;
+            if aux.opts_knit.if_remove_path_label
+                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
+                ds_label=strrep(ds_label,'.mat','');
+            end
+            knit_stats_setup.dataset_labels{iset}=ds_label;
         end
         knit_stats_setup.stimulus_labels=typenames_all;
         knit_stats_setup.nshuffs=aux.opts_knit.nshuffs;

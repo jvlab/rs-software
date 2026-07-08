@@ -94,6 +94,31 @@ def _scan_directory(directory: Path, root: Path):
             _register_matlab_file(entry, root)
 
 
+def matlab_identifier(relative_path: Path) -> str:
+    """
+    Compute the dotted MATLAB identifier for a source file, given its path
+    relative to a source root.
+
+    Only path parts beginning with "+" or "@" become namespace components, with
+    the leading marker stripped. Plain folder parts are dropped.
+
+    Args:
+        relative_path (Path): path of the .m file relative to the source root,
+            for example Path("utils/grmscmdt.m"), Path("rs_geofit.m"), or
+            Path("+pkg/foo.m").
+
+    Returns:
+        str: the dotted identifier, for example "grmscmdt", "rs_geofit", or
+        "pkg.foo".
+    """
+    namespace_parts = []
+    for part in relative_path.parts[:-1]:
+        if part.startswith(("+", "@")):
+            namespace_parts.append(part[1:])
+    namespace_parts.append(relative_path.stem)
+    return ".".join(namespace_parts)
+
+
 def _register_matlab_file(filepath: Path, root: Path):
     stem = filepath.stem
 
@@ -101,16 +126,7 @@ def _register_matlab_file(filepath: Path, root: Path):
     if stem.lower() in ("contents", "readme"):
         return
 
-    relative = filepath.relative_to(root)
-    identifier_parts = []
-    for part in list(relative.parts)[:-1]:
-        if part.startswith(("+", "@")):
-            identifier_parts.append(part[1:])
-        else:
-            identifier_parts.append(part)
-    identifier_parts.append(stem)
-
-    full_id = ".".join(identifier_parts)
+    full_id = matlab_identifier(filepath.relative_to(root))
     FUNCTION_REGISTRY[stem.lower()] = full_id
     FUNCTION_REGISTRY[full_id.lower()] = full_id
 
@@ -163,7 +179,7 @@ def _make_link(name: str) -> str:
     # Your own functions take priority
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index/#{full_id}"
+        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
         return f'<a href="{url}">{full_id}</a>'
 
     # Fall back to MATLAB builtin
@@ -198,7 +214,7 @@ def _replace_code_tag(match: re.Match) -> str:
     lower = name.lower()
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index/#{full_id}"
+        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
         return f'<a href="{url}"><code>{name}</code></a>'
     return match.group(0)   # leave unchanged
     

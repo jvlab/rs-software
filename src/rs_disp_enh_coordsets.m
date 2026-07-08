@@ -48,7 +48,7 @@ function aux_out=rs_disp_enh_coordsets(data_in,aux,rays)
 %   rays (struct): a `ray structure`, ordinarily created by `rs_findrays`. If empty or omitted the enhanced graphical elements will not be displayed.
 %
 % Returns:
-%   aux_out: auxiliary outputs and parameter values used
+%   aux_out (struct): auxiliary outputs and parameter values used
 %
 %     - opts_disp (struct): aux.opts_disp, with defaults and overrides filled in
 %     - opts_disp_enh (struct): aux.opts_disp_enh, with defaults filled in

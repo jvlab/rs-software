@@ -15,7 +15,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=5;
+ntests=6;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -57,6 +57,12 @@ filenames_examples{5}={};
 auxs{5}=auxs_force;
 auxs{5}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log','if_gui'},{1,0,1,0});
 auxs{5}.nsets=1;
+%
+test_descs{6}='non-interactive reading one faces file';
+filenames_examples{6}={'./samples/faces/faces_mpi_en2_fc_coords_MC_sess01_10'};
+auxs{6}=auxs_force;
+auxs{6}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
+auxs{6}.nsets=1;
 %
 if if_auto_skip==0
     disp('Suggest ''enter'' to accept the default for interactive responses.');
