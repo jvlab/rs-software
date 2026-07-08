@@ -1,37 +1,33 @@
 """
-This file holds methods that can draw a given number of samples from a Euclidean space
-of a given number of dimensions.
+Sample points from Euclidean spaces of configurable dimension.
 
-Sampling Strategy:
-Points sampled will always lie on the surface of some n-dimensional 'sphere', equidistant
-from the origin. Vectors are sampled from a surface of an n-dimensional Gaussian, to choose
-a direction away from the origin, then are given a magnitude.
-
-Parameters:
-@ num_stimuli:  number of points/ stimuli
-@ num_dim: dimension of the space from which to draw points
-@ magnitude: magnitude of each of the points
+This module provides utilities for drawing stimulus locations in an
+n-dimensional Euclidean space. Points can be sampled from the surface of a
+sphere, from a Gaussian distribution, or uniformly from inside a sphere.
 """
 import numpy as np
 
 
 class EuclideanSpace:
-    """This class is a geometry of n-dimensional Euclidean Space."""
+    """Represent an n-dimensional Euclidean space for sampling points."""
 
     def __init__(self, num_dim):
+        """
+            Set the dimensionality of the space.
+            Args:
+                num_dim (int): Number of dimensions in the Euclidean space. """
         # NOTE: "Sampling strategy fails for space with less than 2 dimensions."
         self.dimensions = num_dim
 
     def sample_space(self, magnitude, method="spherical_shell"):
-        """ Sample a vector from the surface of a multidimensional
-        standard normal distribution - approximate 'sphere' of a
-        given radius (magnitude) UNLESS DIM = 1
-        :param magnitude
-        :param method - by  default  this is surface of a Gaussian
-                        other methods added recently  (3/24/2021) include full Gaussian and uniform sampling
-                        another change (4/22/2021) updated uniform to only sample from inside a sphere. otherwise
-                        there tend to a lot more points in the corners as dimension increases.
-        :return vector: 1d numpy array
+        """
+            Sample one point from the space.
+            Args:
+                magnitude (float): Target magnitude or scale of the sample.
+                method (str): Sampling method. Options are `spherical_shell`, `gaussian`, and `uniform`.
+
+            Returns:
+                numpy.ndarray or float: A sampled point. For `spherical_shell`, returns a scalar when `dimensions == 1`.
         """
         if method == "spherical_shell":
             if self.dimensions == 1:
@@ -58,10 +54,14 @@ class EuclideanSpace:
             return sample
 
     def get_samples(self, num_stimuli, magnitude=1, method="spherical_shell"):
-        """ Returns a list of n dimensional points given by arrays
-        :param num_stimuli: int
-        :param method - to change sampling method
-        :param magnitude: L2 norm of each vector
-        :return vectors: list of 1d numpy arrays
+        """
+            Sample multiple points from the space.
+            Args:
+                num_stimuli (int): Number of points to sample.
+                magnitude (float): Target magnitude or scale of each sample.
+                method (str): Sampling method. Options are `spherical_shell`, `gaussian`, and `uniform`.
+
+            Returns:
+                numpy.ndarray: Array of sampled points, one per stimulus.
         """
         return np.array([self.sample_space(magnitude, method) for _ in range(num_stimuli)])

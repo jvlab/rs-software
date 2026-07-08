@@ -7,27 +7,29 @@
     preceding utilities, which emit one row per comparison per trial, this module
     collapses across trials to produce a summary of unique comparisons.
 
-    The script:
-      1. Takes as input a detailed choices file in which the same comparison
-         (defined by two pairs of stimulus IDs) may appear multiple times.
-      2. Groups comparisons that are identical under canonicalization
-         (standardized stimulus ordering).
-      3. Tallies how many times each unique comparison appears, stored in a new
-         column `N(comparisons)`.
-      4. Sums judgments across occurrences of each comparison, yielding the total
-         number of times the first stimulus pair was judged more dissimilar than
-         the second.
-      5. Drops all trial-level information; the `trial` field is not retained.
+    The script does the following:
 
-    The resulting file is intended for downstream modeling and inference methods
-    that operate on aggregated choice counts rather than individual trials, such as
-    distance-based embedding and psychophysical scaling approaches
-    (e.g., Waraich and Victor, 2022; 2024).
+    1. Takes as input a detailed choices file in which the same comparison
+       (defined by two pairs of stimulus IDs) may appear multiple times.
+    2. Groups comparisons that are identical under canonicalization
+       (standardized stimulus ordering).
+    3. Tallies how many times each unique comparison appears, stored in a new
+       column `N(comparisons)`.
+    4. Sums judgments across occurrences of each comparison, yielding the total
+       number of times the first stimulus pair was judged more dissimilar than
+       the second.
+    5. Drops all trial-level information; the `trial` field is not retained.
 
-    Notes
-    -----
-    - Assumes comparisons have already been standardized and, if applicable,
-      stimulus labels replaced with numeric IDs.
+    Notes:
+    The resulting file is intended for downstream modeling and inference
+    methods that operate on aggregated choice counts rather than individual
+    trials, such as distance-based embedding and psychophysical scaling
+    approaches (e.g., Waraich and Victor, 2022; 2024).
+
+    ```
+    This assumes comparisons have already been standardized and, if
+    applicable, stimulus labels replaced with numeric IDs.
+    ```
 """
 
 import os
@@ -37,7 +39,24 @@ from scipy.io import savemat, loadmat
 
 def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name, subject):
     """
-        Combine judgments across repeated traidic or tetradic comparisons across all trials
+        Combine judgments across repeated triadic or tetradic comparisons.
+
+        This function loads a .mat file containing trial-level comparison judgments,
+        aggregates repeated comparisons by summing the judgment counts, and records how
+        many times each unique comparison was repeated. The result is saved as a new
+        combined .mat file in the specified output directory.
+
+        Args:
+            input_mat_path (str): Path to the input .mat file containing the fields responses,
+            response_colnames, and metadata.
+            output_dir (str): Directory where the combined .mat file will be saved.
+            exp_name (str): Experiment name used to build the output filename.
+            subject (str): Subject identifier used to build the output filename.
+
+        Returns:
+            None:
+            Saves a .mat file named {exp_name}_combined_choices_{subject}.mat in output_dir.
+            Prints the full output path after saving.
     """
     data = loadmat(input_mat_path, squeeze_me=True)
 
@@ -94,6 +113,27 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
 
 
 def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject):
+    """
+        Combine judgments across repeated tetradic comparisons.
+
+        This function loads a `.mat` file containing trial-level comparison judgments,
+        aggregates repeated comparisons by summing the judgment counts, and records how
+        many times each unique comparison was repeated. The result is saved as a new
+        combined `.mat` file in the specified output directory.
+
+        Args:
+            input_mat_path (str): Path to the input `.mat` file containing the fields
+            `responses`, `response_colnames`, and `metadata`.
+            output_dir (str): Directory where the combined `.mat` file will be saved.
+            exp_name (str): Experiment name used to build the output filename.
+            subject (str): Subject identifier used to build the output filename.
+
+        Returns:
+            None:
+            Saves a `.mat` file named `{exp_name}_combined_choices_{subject}.mat` in `output_dir`
+             and prints the full output path after saving.
+    """
+
     data = loadmat(input_mat_path, squeeze_me=True)
 
     responses = data['responses']
@@ -156,7 +196,31 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
 
 def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
     """
-        Combine judgments across repeated traidic or tetradic comparisons across all trials
+        Combine repeated triadic or tetradic comparison judgments.
+
+        This function inspects the response column names in the input `.mat` file to
+        determine whether the file contains triadic comparisons (`ref`, `s1`, `s2`) or
+        tetradic comparisons (`s1`, `s2`, `s3`, `s4`). It then dispatches to the
+        appropriate aggregation function to combine repeated judgments and save the
+        resulting `.mat` file.
+
+        Args:
+            input_mat_path (str): Path to the input `.mat` file containing the fields
+            `responses`, `response_colnames`, and `metadata`.
+            output_dir (str): Directory where the combined `.mat` file will be saved.
+            exp_name (str): Experiment name used to build the output filename.
+            subject (str): Subject identifier used to build the output filename.
+
+        Returns:
+            None:
+            Calls the appropriate aggregation function and writes the combined
+            `.mat` file to `output_dir`.
+
+        See Also:
+            build_combine_choice_mat_triadic_format: Aggregates triadic comparison
+            responses.
+            build_combined_mat_tetradic_format: Aggregates tetradic comparison
+            responses.
     """
     data = loadmat(input_mat_path, squeeze_me=True)
     colnames = [name.strip() for name in data['response_colnames']]
