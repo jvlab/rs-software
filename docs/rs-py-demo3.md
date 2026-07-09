@@ -188,7 +188,7 @@ stim_list               # names of stimuli in the order they appear in dim1, dim
 
 #### Next step
 
-The output of this demo can be used for modules for [manipulating representational spaces](rs-software/rs-ml-overview) in the rs-software/src.
+The output of this demo can be used for modules for [manipulating representational spaces](/rs-software/rs-ml-overview/) in the rs-software/src.
 
 ### Note on optimization settings
 
