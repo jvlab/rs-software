@@ -90,9 +90,9 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
     rms_dists_by_dim = {}
     for d in model_dimensions:
         # enter coordinates for each model dimension
-        points = points[d]
-        data["dim{}".format(d)] = points
-        distances = pdist(points)
+        points_curr = points[d]
+        data["dim{}".format(d)] = points_curr
+        distances = pdist(points_curr)
         rms_dists_by_dim[d] = np.sqrt(np.mean([d ** 2 for d in distances]))
 
     data['rawLLs'] = []  # enter raw log-likelihoods
