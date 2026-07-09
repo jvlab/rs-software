@@ -25,7 +25,7 @@ def demo_inputs():
 
     defaults = {
         "filepath": (base_dir / "samples/choice_files/image_choices_S4.mat").resolve(),
-        "exp_name": "animals",
+        "exp_name": "image",
         "subject": "S4",
         "output_dir": (base_dir / "samples/outputs").resolve(),
         "sigma": model_defaults['sigma'],
@@ -54,18 +54,25 @@ if __name__ == '__main__':
     LOG = logging.getLogger(__name__)
 
     # enter path to subject data (json file)
-    FILEPATH = input("Path to the combined choices file for a participant: ")
-    EXP = input("Experiment name: ")
-    SUBJECT = input("Subject name or ID: ")
-    OUTDIR = input("Output directory : ")
+    FILEPATH = input("Path to the combined choices file for a participant:\n>> ")
+    EXP = input("Experiment name:\n>> ")
+    SUBJECT = input("Subject name or ID:\n>> ")
+    OUTDIR = input("Output directory :\n>> ")
     print("The following arguments are optional. ")
-    MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list: ")
-    SIGMA = input("\tEnter a noise level to model error in comparing distances: ")
-    FILTER_TRIALS = input("\tEnter the maximum number of triadic judgments to use. Enter 0 to use all data.")
-    MAX_ITER = input("\tEnter the maximum number of iterations before returning the final model: ")
-    LEARN_RATE = input("\tEnter learning rate to use for minimization: ")
-    TOLERANCE = input("\tEnter acceptable tolerance for difference between iterations (stopping criterion): ")
-    MINIM = input("\tEnter minimization algorithm (opts: nelder-mead, gradient-descent): ")
+    MODEL_DIMENSIONS = input("\tEnter the dimensionality of models to fit in a comma separated list.\n"
+                             "\tDefault: [1, 2, 3, 4, 5]\n>>")
+    SIGMA = input("\tEnter a noise level to model error in comparing distances:\n"
+                  "\tDefault: 1\n>>")
+    FILTER_TRIALS = input("\tEnter the maximum number of triadic judgments to use. Enter 0 to use all data:\n"
+                          "\tDefault: 'uses all\n>>'")
+    MAX_ITER = input("\tEnter the maximum number of iterations before returning the final model:\n"
+                     "\tDefault: 50000\n>>")
+    LEARN_RATE = input("\tEnter learning rate to use for minimization:\n"
+                       "\tDefault: 0.05\n>>")
+    TOLERANCE = input("\tEnter acceptable tolerance for difference between iterations (stopping criterion):\n"
+                      "\tDefault: 1e-6\n>>")
+    MINIM = input("\tEnter minimization algorithm (opts: nelder-mead, gradient-descent)\n"
+                  "\tDefault: gradient-descent\n>>")
 
     CONFIG = demo_inputs()
     # fill in defaults if missing arguments - for demo provide defaults for required args.

@@ -9,6 +9,8 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
+    #TODO Needs to be fixed and modularized
+
     # NOTE: ########################################
     # Values of lambda and mu are hard-coded inside run function
     # scripts was lambda^2 and mu^2 = 1/R^2 according to definition of Gaussian scripts...

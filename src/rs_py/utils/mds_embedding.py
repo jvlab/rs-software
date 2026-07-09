@@ -87,6 +87,6 @@ def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9, seed=None):
         np.random.seed(seed)
     distance_matrix = format_distances(heuristic_distances(judgments, repeats))
     LOG.info('#################  Running MDS')
-    coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon)
+    coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon, n_init=8)
     return coordinates, stress
 
