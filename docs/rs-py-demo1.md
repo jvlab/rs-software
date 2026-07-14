@@ -85,7 +85,7 @@ The file contains three fields:
 
 ```text
 metadata
-response_colnames
+responses_colnames
 responses
 ```
 
@@ -102,7 +102,7 @@ judgment_type = triadic
 stim_list = [...]
 ```
 
-### `response_colnames`
+### `responses_colnames`
 
 ```text
 trial

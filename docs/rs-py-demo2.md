@@ -53,13 +53,13 @@ The file contains:
 
 ```text
 metadata
-response_colnames
+responses_colnames
 responses
 ```
 
 The metadata field is carried over from Demo 1.
 
-##### response_colnames
+##### responses_colnames
 
 ```text
 ref
