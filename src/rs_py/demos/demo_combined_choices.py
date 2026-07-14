@@ -19,7 +19,7 @@ def demo_inputs():
     demo_defaults = CONFIG['inputs']['combined_choice']
     demo_defaults['input_path'] = (base_dir / "samples/choice_files/image_detailed_choices_S4.mat").resolve()
     demo_defaults['output_dir'] = (base_dir / "samples/outputs").resolve()
-    demo_defaults['exp_name'] = "animals"
+    demo_defaults['exp_name'] = "image"
     demo_defaults['subject'] = "S4"
     # Creates the folder if missing; does nothing if it already exists
     demo_defaults["output_dir"].mkdir(parents=True, exist_ok=True)
