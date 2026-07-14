@@ -66,6 +66,8 @@ def judgments_to_arrays(judgments_dict, repeats):
 
 
 def matlab_stim_list_to_pylist(stim_list):
+    # this is only for when stim_list is a field in metadata <- not for when stim_list
+    # is at the top-level as in bwtexture files
     # turn the nested MATLAB-loaded object into one string
     s = str(stim_list[0][0])
     # extract the quoted stimulus names
@@ -78,10 +80,16 @@ def read_combined_choices(filepath):
     # input path to combined choice file
     matfile = loadmat(filepath)
     responses = matfile["responses"]
-    metadata = matfile["metadata"]
-    stim_list = matlab_stim_list_to_pylist(metadata['stim_list'])
+    if "metadata" in matfile:
+        metadata = matfile["metadata"]
+        stim_list = matlab_stim_list_to_pylist(metadata['stim_list'])
+    elif "stim_list" in matfile:
+        metadata = {"stim_list": list(matfile["stim_list"])}
+        stim_list = metadata["stim_list"]
+    else:
+        metadata = {"stim_list": []}
 
-    colnames = [str(x).strip() for x in matfile["response_colnames"].ravel()]
+    colnames = [str(x).strip() for x in matfile["responses_colnames"].ravel()]
     col_idx = {name: i for i, name in enumerate(colnames)}
 
     pairwise_responses = {}

@@ -244,7 +244,7 @@ if __name__ == '__main__':
                               ), index=False)
 
     # write combined file with coords and lls
-    stimuli = metadata['stim_list'].squeeze().item()
+    stimuli = stim_list
     lls_by_dim['best'] = ll_best
     lls_by_dim['random'] = ll_random
 

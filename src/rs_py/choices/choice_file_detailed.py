@@ -392,7 +392,7 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
 
     results = {
         'metadata': metadata,
-        'response_colnames': responses_col_names,
+        'responses_colnames': responses_col_names,
         'responses': responses
     }
 

@@ -185,7 +185,7 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
 
     combined_choices = {
         'metadata': metadata,
-        'response_colnames': comb_response_colnames,
+        'responses_colnames': comb_response_colnames,
         'responses': comb_responses
     }
     output_path = os.path.join(output_dir, f"{exp_name}_combined_choices_{subject}.mat")
