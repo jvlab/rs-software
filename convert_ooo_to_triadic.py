@@ -3,12 +3,17 @@ convert_ooo_to_triadic.py — Convert odd-one-out choice data to standard triadi
 
 Odd-one-out paradigm: subject sees three stimuli (A, B, C) and picks the most different one.
 
-Conversion logic (from JV):
-    If A is chosen as odd one out from (A, B, C):
-        distance(A, B) > distance(B, C)   →  ref=B, s1=C is closer, s2=A is farther
-        distance(A, C) > distance(B, C)   →  ref=C, s1=B is closer, s2=A is farther
+Conversion logic (from JV, corrected Jul 27 2026):
+    If X is chosen as odd one out from (X, Y, Z):
+        dist(Y, X) > dist(Y, Z)  →  ref=Y, s1=Z chosen (Z closer to Y than X)
+        dist(Z, X) > dist(Z, Y)  →  ref=Z, s1=Y chosen (Y closer to Z than X)
 
-    So each odd-one-out judgment generates two triadic choice entries.
+    So each individual odd-one-out judgment generates exactly two triadic choice entries.
+    X never appears as a reference — it is always the losing stimulus.
+
+    Note: each row in the input file contains counts across multiple trials (N total per row).
+    Each outcome (s1 odd, s2 odd, s3 odd) with count > 0 generates its own 2 triadic entries,
+    resulting in up to 6 unique triadic keys per row.
 
 Input .mat format (6 columns):
     s1, s2, s3              — stimulus indices (1-indexed)
