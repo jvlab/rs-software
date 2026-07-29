@@ -117,7 +117,7 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
                         "  based on the RMS distance: sigma\n\n"
                         "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
                         "--------------------------------------------------------------------------")
-    data['stim_list'] = np.array(stim_labels)
+    data['stim_labels'] = np.array(stim_labels)
     # ---- save ----
     outpath = os.path.join(outdir, f"{exp}_coords_{subject}.mat")
     savemat(outpath, data)

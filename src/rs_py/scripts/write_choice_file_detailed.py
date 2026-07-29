@@ -4,7 +4,6 @@ To demo the script choice_file_detailed.py
 from __future__ import annotations
 
 import os
-import json
 from copy import deepcopy
 
 
@@ -18,18 +17,18 @@ def options_default():
     opt_defaults = deepcopy(CONFIG["inputs"]["detailed_choice"])
 
     opt_defaults["metadata"] = {
-        "exp_name": "unknown",
-        "subject": "unknown",
+        "exp_name": "",
+        "subject": "",
         "stim_list": [],
-        "num_sessions": None,
-        "num_trials": None,
-        "total_judgments": None,
+        "num_sessions": "",
+        "num_trials": "",
+        "total_judgments": "",
         "judgment_type": "triadic"
     }
     return opt_defaults
 
 
-def merge_with_defaults(user_params: dict | None) -> dict:
+def merge_with_defaults(user_params):
     defaults = options_default()
     params = deepcopy(defaults)
 
@@ -51,36 +50,40 @@ def merge_with_defaults(user_params: dict | None) -> dict:
     return params
 
 
-def validate_required(params: dict):
+def validate_required(params):
     missing = [k for k in REQUIRED_KEYS if k not in params or params[k] in (None, "", [])]
     if missing:
         raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
 
-def normalize_params(user_params) -> dict:
+def run(user_params):
     """
-    Accept:
-      - None
-      - dict
-      - JSON string
+    Run the detailed choice-file builder on a set of user parameters.
+
+    Args:
+        user_params: Dictionary of parameters used to build the detailed choice
+        file.
+            Required keys:
+                - input_path: Path to the input directory containing raw data.
+                - output_dir: Path to the directory where outputs should be saved.
+            Optional key:
+                - metadata: Dictionary with optional fields such as:
+                - exp_name: Experiment name.
+                - subject: Subject identifier.
+                - stim_list: List of stimuli.
+                - num_sessions: Number of sessions.
+                - num_trials: Number of trials.
+                - total_judgments: Total number of judgments.
+                - judgment_type: Type of judgment task, default is "triadic".
+
+    Returns:
+        None
+
+    Raises:
+    - ValueError: If a required parameter is missing or empty.
+    - TypeError: If metadata is provided but is not a dictionary.
+    - FileNotFoundError: If input_path does not exist.
     """
-    if user_params is None:
-        return {}
-
-    if isinstance(user_params, dict):
-        return user_params
-
-    if isinstance(user_params, str):
-        user_params = user_params.strip()
-        if not user_params:
-            return {}
-        return json.loads(user_params)
-
-    raise TypeError("user_params must be a dict, JSON string, or None")
-
-
-def run(user_params: dict | None = None):
-    user_params = normalize_params(user_params)
     params = merge_with_defaults(user_params)
     validate_required(params)
 
