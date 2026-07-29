@@ -1,137 +1,23 @@
-# Creating RS from perceptual judgments (python)
+For combined choice files, include either:
 
-This pipeline processes similarity judgments from behavioral experiments and fits geometric models to those judgments.
+* `responses_colnames`
+* `responses`
+* `stim_list`
 
-It is designed for experiments where participants make relative similarity judgments, such as:
-> "Is stimulus A more similar to B or to C?"
+or:
 
-## What this pipeline does
+* `responses_colnames`
+* `responses`
+* `metadata`, with `stim_list` inside `metadata`
 
-```mermaid
-flowchart TD
-    A[Raw ranking data] --> B[Detailed choices file]
-    B --> C[Choices file]
-    C --> D[Geometric model]
-```
+`stim_list` must be stored so that each stimulus is one complete string. Use a string array or a cell array of character vectors. Do not save `stim_list` as a padded character matrix, because Python may read each entry as individual characters instead of a full string.
+This also holds for `responses_colnames.`
 
-The pipeline transforms raw behavioral data into a geometric representation in three steps:
-
-1. Convert ranking responses into pairwise comparisons
-2. Aggregate those comparisons into choice probabilities
-3. Fit a model where distances between stimuli explain those probabilities
-
-> rank judgments &rarr; pairwise comparisons &rarr; choice probabilities &rarr; geometric models 
-
-The final outputs are:
-
-- A geometric model of the perceptual space, i.e., coordinates for each stimulus 
-  - closer points → more similar 
-  - farther points → less similar 
-- Log-likelihoods of each model, describing how well distances explain behavior
-
-There are three posible entry points:
-
-- raw ranking data
-- detailed choice file
-- choice file
-
-Below we explain each of these entry points. 
-If you are new to `rs_py`, we recommend starting with the demos. 
-The demos use sample data included with the repository and illustrate the three stages of the pipeline:
-
-- [Demo 1: Raw Rankings → Detailed Choice File](/rs-software/rs-py-demo1/)
-- [Demo 2: Detailed Choice File → Choice File](/rs-software/rs-py-demo2/)
-- [Demo 3: Choice File → Geometric model](/rs-software/rs-py-demo3/)
-
-Each demo corresponds to one of the three entry points.
+If `stim_list` is empty, modeling will fail. It is a required field, and is needed to write a final output file. 
 
 
-This is a simplified description. For full details, see Waraich & Victor (2022) and Waraich & Victor (2024).
-The present implementation is a more user-friendly version of the code used in these studies.
+Choices files have stim_list, 
+Coords files has stim_labels  -> explain what this means and what it corresponds to. Basically what the order is
+so one knows why it's important.
 
 
-
-## Entry Points
-
-The `rs_py` package can be used at three stages of the analysis pipeline.
-
-### Step 1: Raw Rankings to Detailed Choice File
-> **Important:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024).
-> If your data come from a different similarity-judgment paradigm, it is often easier to start from Step 2 or Step 3 instead. See [Which entry point should I use?](#which-entry-point-should-i-use) below.
-
-Use `write_choice_file_detailed`.
-
-**Input:** Raw ranking data (CSV files) collected using the Waraich & Victor paradigm.
-
-**Output:** A detailed choice file: 
-
-```text
-*_detailed_choices_<subject>.mat
-```
-
-This file contains trial-by-trial similarity judgments. Each row corresponds to a single comparison made during a trial, along with metadata describing the experiment.
-
-**Associated Demo:** `demo_detailed_choices.py`
-
-If you are new to the package, we recommend running the demo first using the sample data included with the repository. See the **Demos** section for a complete walkthrough.
-
-**Note:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024). If your data come from a different paradigm, you should typically start at Step 2 or Step 3 instead.
-
----
-
-### Step 2: Detailed Choice File to Choice File
-
-Use `write_choice_file_combined`.
-
-**Input:** A detailed choice file.
-
-**Output:** A choice file:
-
-```text
-*_choices_<subject>.mat
-```
-
-This step aggregates repeated occurrences of the same comparison across trials and sessions. The resulting file contains unique comparisons along with the number of times each judgment was observed.
-
-Think of this as converting trial-by-trial data into summary statistics that are ready for model fitting.
-
-**Associated Demo:** `demo_combined_choices.py`
-
-The demo can be run using the sample detailed choice file produced in Step 1. See the **Demos** section for details.
-
----
-
-### Step 3: Choice File to Geometric Model
-
-Use `run_model_fitting`.
-
-**Input:** A choice file with judgments combined across repetitions.
-
-**Output:**
-
-* Stimulus coordinates
-* Model likelihoods
-* A summary `.mat` file containing model results
-
-This step fits geometric models that explain the observed similarity judgments. The model searches for coordinates such that distances between points best account for the observed choice probabilities.
-
-The resulting coordinates can be interpreted as a geometric representation of the perceptual space underlying the behavioral data.
-
-**Associated Demo:** `demo_fit_euclidean.py`
-
-The demo can be run using the sample choice file produced in Step 2. See the **Demos** section for details.
-
-### Which Entry Point Should I Use?
-| Your data format                                                      | Start here |
-|-----------------------------------------------------------------------|------------|
-| Raw ranking CSV files from the Waraich & Victor paradigm              | Step 1 |
-| Detailed choice file (`*_detailed_choices_*.mat`)                     | Step 2 |
-| Choice file (`*_choices_*.mat`)                                       | Step 3 |
-| Another paradigm that already produces aggregated triadic comparisons | Step 2 or Step 3 |
-
-
-## References
-
-Waraich, S. A., & Victor, J. D. (2022). A Psychophysics Paradigm for the Collection and Analysis of Similarity Judgments. Journal of Visualized Experiments, 181. https://doi.org/10.3791/63461
-
-Waraich, S. A., & Victor, J. D. (2024). The Geometry of Low- and High-Level Perceptual Spaces. Journal of Neuroscience, 44(4), e1460232023–e1460232023. https://doi.org/10.1523/jneurosci.1460-23.2023
