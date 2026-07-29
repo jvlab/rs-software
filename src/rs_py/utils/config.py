@@ -12,19 +12,28 @@ CONFIG = {
     'inputs': {
         'detailed_choice': {
             'input_path': None,                  # required
-            'output_dir': None                   # required
+            'output_dir': None,                  # required
+            'metadata': {
+                'exp_name': '',
+                'subject': '',
+                'stim_list': [],
+                'num_sessions': '',
+                'num_trials': '',
+                'total_judgments': '',
+                'judgment_type': ''
+            }
         },
         'combined_choice': {
             'input_path': None,                  # required
             'output_dir': None,                  # required
             'metadata': {
-                'exp_name': 'unknown',
-                'subject': 'unknown',
+                'exp_name': '',
+                'subject': '',
                 'stim_list': [],
-                'num_sessions': 'unknown',
-                'num_trials': None,
-                'total_judgments': None,
-                'judgment_type': 'triadic'
+                'num_sessions': '',
+                'num_trials': '',
+                'total_judgments': '',
+                'judgment_type': ''
             }
         },
         'model_fit': {
