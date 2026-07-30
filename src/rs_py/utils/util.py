@@ -77,6 +77,22 @@ def matlab_stim_list_to_pylist(stim_list):
 
 
 def read_combined_choices(filepath):
+    """
+    Read a combined choice .mat file and return aggregated pairwise judgments.
+
+    Args:
+        filepath (str):
+            Path to the combined choice file.
+
+    Returns:
+        tuple:
+            pairwise_responses, pairwise_num_repeats, metadata, stim_list
+
+            - pairwise_responses (dict): summed judgment counts for each comparison
+            - pairwise_num_repeats (dict): number of repeats for each comparison
+            - metadata (dict): file metadata, including `stim_list` if available
+            - stim_list (list): stimulus labels, if present
+    """
     # input path to combined choice file
     matfile = loadmat(filepath)
     responses = matfile["responses"]

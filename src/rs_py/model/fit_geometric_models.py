@@ -1,19 +1,5 @@
-""" Here I call the modules in the euclidean geometry folder and create a random data set,
-with or without noise.
-
-# Comparing models using likelihoods #####################################################
-# create a set of stimuli from a Euclidean space
-# use them to simulate a pairs of pairs experiment with some noise added to compare and dist
-# take a 100 random trials from the experiment and get subject judgments
-# using different geometry probabilities:
-# - calculate the likelihood of observing these responses
-# - plot the box plot of likelihood values for null geometry - 0.5 prob, Euclidean geometry (erf)
-#   and 'best geometry'
-##########################################################################################
-"""
-
 import logging
-from numpy import mean, ones, sqrt
+from numpy import mean, ones
 from scipy.spatial import procrustes
 from scipy import optimize
 from ..utils.minimize import gradient_descent
@@ -28,18 +14,30 @@ LOG = logging.getLogger(__name__)
 
 def points_of_best_fit(judgments, number_repeats, args, start_points=None):
     """
-    Given judgments, number of stimuli and dimensions of space,
-    find the lowest likelihood points that give that fit
-    :param judgments: {'i,j>k,l' : 4, ...}
-    :param args: includes n_dim, num_stimuli, no_noise, sigmas
-    :param start_points: optional arg, can use to start minimization at ground truth or other location
-    :param minimization: gradient-descent (new improvement) or nelder-mead
-    :return: optimal (points (x), minimum negative log-likelihood (y))
-    @param minimization:
-    @param start_points:
-    @param args:
-    @param judgments:
-    @param number_repeats:
+    Fit Euclidean coordinates to the observed judgments.
+
+    Args:
+        judgments (dict):
+            Pairwise comparison judgments
+        number_repeats (dict):
+            Number of repeats for each comparison key in `judgments`.
+        args (dict):
+            Model settings. Must include:
+            - `n_dim`: embedding dimension
+            - `num_stimuli`: number of stimuli
+            - `sigma`: noise scale
+            - `tolerance`: stopping tolerance for optimization
+            - `minimization`: optimization method, either `gradient-descent`
+              or `nelder-mead`
+        start_points (array-like, optional):
+            Initial coordinates for optimization. If not provided, MDS-derived
+            starting points are used.
+
+    Returns:
+        tuple:
+            (coordinates, solution_ll)
+            - coordinates: fitted Euclidean coordinates
+            - solution_ll: negative log-likelihood of the fitted solution
     """
 
     def cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
@@ -103,14 +101,28 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
 
 def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=None):
     """
-    Given judgments, number of stimuli and dimensions of space,
-    find the lowest likelihood points that give that fit
-    :param judgments: {'i,j>k,l' : 4, ...}
-    :param args: includes n_dim, num_stimuli, no_noise, sigmas
-    :param start_points: optional arg, can use to start minimization at ground truth or other location
-    :return: optimal (points (x), minimum negative log-likelihood (y))
-    """
+        Fit hyperbolic coordinates to the observed judgments.
 
+        Args:
+            judgments (dict):
+                Pairwise comparison judgments.
+            number_repeats (dict):
+                Number of repeats for each comparison key in `judgments`.
+            args (dict):
+                Model settings. Must include:
+                - `n_dim`: embedding dimension
+                - `num_stimuli`: number of stimuli
+                - `sigma`: noise scale
+            start_points (array-like, optional):
+                Initial coordinates for optimization. If not provided, MDS-derived
+                starting points are used.
+
+        Returns:
+            tuple:
+                (coordinates, solution_ll)
+                - coordinates: fitted hyperbolic coordinates
+                - solution_ll: negative log-likelihood of the fitted solution
+    """
     def hyperbolic_cost(stimulus_params, pair_a, pair_b, counts, repeats, parameters):
         curvature = args['scripts']
         vectors = ac.params_to_points(stimulus_params, parameters['num_stimuli'], parameters['n_dim'])
@@ -158,16 +170,28 @@ def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=
 
 def spherical_points_of_best_fit(judgments, number_repeats, args, start_points=None):
     """
-    Given judgments, number of stimuli and dimensions of space,
-    find the lowest likelihood points that give that fit
-    :param judgments: {'i,j>k,l' : 4, ...}
-    :param args: includes n_dim, num_stimuli, no_noise, sigmas
-    :param start_points: optional arg, can use to start minimization at ground truth or other location
-    :return: optimal (points (x), minimum negative log-likelihood (y))
-    @param start_points:
-    @param args:
-    @param judgments:
-    @param number_repeats:
+    Fit spherical coordinates to the observed judgments.
+
+    Args:
+        judgments (dict):
+            Pairwise comparison judgments
+        number_repeats (dict):
+            Number of repeats for each comparison key in `judgments`.
+        args (dict):
+            Model settings. Must include at least:
+            - `n_dim`: embedding dimension
+            - `num_stimuli`: number of stimuli
+            - `sigma`: noise scale
+        start_points (array-like, optional):
+            Initial coordinates for optimization. If not provided, MDS-derived
+            starting points are used.
+
+    Returns:
+        tuple:
+            (coordinates, solution_ll)
+            - coordinates: fitted spherical coordinates
+            - solution_ll: negative log-likelihood of the fitted solution
+
     """
     # for debugging
     fmin_costs = []
