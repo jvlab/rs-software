@@ -73,14 +73,16 @@ def ooo_to_triadic(ooo_path, out_path=None):
                 continue
 
             # entry 1: ref=near1, s1=near2 (chosen), s2=odd (not chosen)
+            # repeats = n_odd because only trials where this stimulus was odd
+            # contribute to this specific triadic comparison
             key1 = ((near1, near2), (near1, odd))
             triadic_chosen[key1]  += n_odd
-            triadic_repeats[key1] += n_total
+            triadic_repeats[key1] += n_odd
 
             # entry 2: ref=near2, s1=near1 (chosen), s2=odd (not chosen)
             key2 = ((near2, near1), (near2, odd))
             triadic_chosen[key2]  += n_odd
-            triadic_repeats[key2] += n_total
+            triadic_repeats[key2] += n_odd
 
     resp = dict(triadic_chosen)
     rep  = dict(triadic_repeats)
