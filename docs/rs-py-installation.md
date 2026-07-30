@@ -57,4 +57,4 @@ pyenv(Version='/Users/suniyya/miniconda3/envs/rs_env');
 ```
 Ensure you replace the above path with what you copied in the previous step. 
 
-Now, you should be able to import python modules and run them. See section **Using MATLAB to run `rs_py`** for details. 
+Now, you should be able to import python modules and run them. See section [Using MATLAB to run `rs_py`](/rs-software/python-matlab-octave/) for details. 

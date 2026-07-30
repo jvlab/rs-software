@@ -4,7 +4,7 @@
 * [Go to Script 1 (raw data to detailed choices)](#script-1)
 * [Go to Script 2 (detailed choices to aggregated choice file)](#script-2)
 * [Go to Script 3 (choices to geometric models)](#script-3)
-* [Using Custom Choice Files with rs_py](#using-custom-choice-files-with-rspy)
+* [Using Custom Choice Files](#using-custom-choice-files)
 
 
 
@@ -174,7 +174,7 @@ It detects the file type from `responses_colnames`: if `ref` is present, it writ
 The output file is saved as `{exp_name}_choices_{subject}.mat`.
 
 
-## Using Custom Choice Files with rs_py
+## Using Custom Choice Files
 
 If you bring your own choice file into script 3, include `stim_list` so the script can map stimulus IDs back to names. `stim_list` must contain one complete stimulus name per entry, stored as a string array or a cell array of character vectors. Do not save it as a padded character matrix, or Python may read each entry as individual characters instead of a full string.
 
