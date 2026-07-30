@@ -183,3 +183,72 @@ The same rule applies to `responses_colnames`.
 For coordinate files, the equivalent field is `stim_labels`. It should list the stimuli in the same order as the coordinate data, so each label matches the correct row or column.
 
 `stim_list` is required. If it is empty, downstream modeling will fail.
+
+
+## Script 3
+### `model_fitting.run`
+
+Use this function to fit Euclidean models to a combined choices `.mat` file.
+
+### Import
+
+```python
+from src.rs_py.scripts.model_fitting import run
+```
+
+### Minimal usage
+
+```python
+filepath = "./samples/choice_files/bdce3pt_choices_MC_sess01_10.mat"
+
+run({
+    "filepath": filepath,
+    "output_dir": ".",
+})
+```
+
+If you only pass `filepath` and `output_dir`, the script can still run, but `exp_name` and `subject` may be blank in the output names unless you provide them yourself.
+
+### Recommended usage
+
+```python
+filepath = "./samples/choice_files/bdce3pt_choices_MC_sess01_10.mat"
+
+params = {
+    "filepath": filepath,
+    "output_dir": ".",
+    "exp_name": "bdce",
+    "subject": "MC",
+    "model_dimensions": [2],
+    "max_iterations": 100,
+}
+
+run(params)
+```
+
+### Parameters
+
+#### Required
+
+* `filepath`: path to the combined choice file for one participant
+* `output_dir`: directory where output files will be saved
+
+#### Common optional parameters
+
+* `exp_name`: used in output filenames
+* `subject`: used in output filenames
+* `model_dimensions`: list of model dimensions to fit, such as `[1, 2, 3, 4, 5]`
+* `sigma`: noise scale for the comparison model
+* `filter_trials`: number of unique triads to use; omit or set to all data to use everything
+* `max_iterations`: optimization limit
+* `learning_rate`: optimizer step size
+* `tolerance`: stopping criterion
+* `minimization`: optimization method, typically `"gradient-descent"` or `"nelder-mead"`
+
+### Output files
+
+The script writes:
+* a `.mat` file containing fitted coordinates and likelihoods
+* a `.csv` summary of model log-likelihoods
+* a `.npy` file separately for each model. This is redundant with the `.mat` file, but is a convenient option for viewing coordinates quickly in Python if needed. 
+
