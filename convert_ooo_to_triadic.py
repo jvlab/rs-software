@@ -11,6 +11,11 @@ Conversion logic (from JV, corrected Jul 27 2026):
     So each individual odd-one-out judgment generates exactly two triadic choice entries.
     X never appears as a reference — it is always the losing stimulus.
 
+    Key standardization (Suniyya's standardize_comparison_keys convention):
+    For each triadic key (ref, s1, s2), the two non-ref stimuli are sorted alphabetically
+    so that s1 < s2 always. If the natural assignment would put s2 first, swap s1/s2 and
+    set N(s1 chosen) = 0 for that judgment instead of n_odd.
+
     Note: each row in the input file contains counts across multiple trials (N total per row).
     Each outcome (s1 odd, s2 odd, s3 odd) with count > 0 generates its own 2 triadic entries,
     resulting in up to 6 unique triadic keys per row.
@@ -40,7 +45,7 @@ def ooo_to_triadic(ooo_path, out_path=None):
     Convert an odd-one-out .mat file to standard triadic choice format.
 
     Returns:
-        resp:      dict — {((ref, s1), (ref, s2)): n_s1_chosen}  (0-indexed)
+        resp:      dict — {((ref, s1), (ref, s2)): n_s1_chosen}  (0-indexed, s1 < s2 alphabetically)
         rep:       dict — {((ref, s1), (ref, s2)): n_repeats}    (0-indexed)
         stim_list: list of stimulus names
     """
@@ -72,16 +77,26 @@ def ooo_to_triadic(ooo_path, out_path=None):
             if n_odd == 0:
                 continue
 
-            # entry 1: ref=near1, s1=near2 (chosen), s2=odd (not chosen)
-            # repeats = n_odd because only trials where this stimulus was odd
-            # contribute to this specific triadic comparison
-            key1 = ((near1, near2), (near1, odd))
-            triadic_chosen[key1]  += n_odd
+            # entry 1: ref=near1, non-ref are near2 (chosen) and odd (not chosen)
+            # Standardize: sort non-ref stimuli alphabetically (Suniyya convention).
+            # If near2 is not alpha-first, swap and set chosen=0 for the new s1.
+            if stim_list[near2] <= stim_list[odd]:
+                key1 = ((near1, near2), (near1, odd))
+                chosen1 = n_odd   # s1=near2 was chosen
+            else:
+                key1 = ((near1, odd), (near1, near2))
+                chosen1 = 0       # s1=odd was not chosen
+            triadic_chosen[key1]  += chosen1
             triadic_repeats[key1] += n_odd
 
-            # entry 2: ref=near2, s1=near1 (chosen), s2=odd (not chosen)
-            key2 = ((near2, near1), (near2, odd))
-            triadic_chosen[key2]  += n_odd
+            # entry 2: ref=near2, non-ref are near1 (chosen) and odd (not chosen)
+            if stim_list[near1] <= stim_list[odd]:
+                key2 = ((near2, near1), (near2, odd))
+                chosen2 = n_odd   # s1=near1 was chosen
+            else:
+                key2 = ((near2, odd), (near2, near1))
+                chosen2 = 0       # s1=odd was not chosen
+            triadic_chosen[key2]  += chosen2
             triadic_repeats[key2] += n_odd
 
     resp = dict(triadic_chosen)
@@ -99,6 +114,7 @@ def ooo_to_triadic(ooo_path, out_path=None):
         data = {
             'responses':          arr,
             'responses_colnames': ['ref', 's1', 's2', 'N(s1 chosen)', 'N_repeats'],
+            # s1 < s2 alphabetically (Suniyya's standardize_comparison_keys convention)
             'stim_list':          np.array(stim_list, dtype=f'S{max_len}'),
             'readme': (
                 "Converted from odd-one-out format using JV conversion rule.\n"

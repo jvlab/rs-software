@@ -167,7 +167,7 @@ if __name__ == '__main__':
         model_name = f"{dim}D"
         ARGS["n_dim"] = dim
 
-        model_coords, ll_nd = rs.points_of_best_fit(subset, pairwise_num_repeats, ARGS)
+        model_coords, ll_nd, _ = rs.points_of_best_fit(subset, pairwise_num_repeats, ARGS)
 
         # (Distances computed previously; keep if useful for debugging)
         _ = pdist(model_coords)

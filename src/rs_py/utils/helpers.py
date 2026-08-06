@@ -88,12 +88,14 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
     data = {}
     bias_df = bias_dict()  # for LL bias estimation
     rms_dists_by_dim = {}
+    coords_by_dim = dict(points)  # preserve original dict before loop overwrites it
     for d in model_dimensions:
-        # enter coordinates for each model dimension
-        points = points[d]
-        data["dim{}".format(d)] = points
-        distances = pdist(points)
-        rms_dists_by_dim[d] = np.sqrt(np.mean([d ** 2 for d in distances]))
+        pts = coords_by_dim[d]
+        if pts.ndim == 1:
+            pts = pts.reshape(-1, 1)
+        data["dim{}".format(d)] = pts
+        distances = pdist(pts)
+        rms_dists_by_dim[d] = np.sqrt(np.mean([x ** 2 for x in distances]))
 
     data['rawLLs'] = []  # enter raw log-likelihoods
     data['debiasedRelativeLL'] = []
@@ -117,7 +119,8 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
                         "  based on the RMS distance: sigma\n\n"
                         "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
                         "--------------------------------------------------------------------------")
-    data['stim_list'] = np.array(stim_labels)
+    max_len = max(len(s) for s in stim_labels)
+    data['stim_list'] = np.array(stim_labels, dtype=f'S{max_len}')
     # ---- save ----
     outpath = os.path.join(outdir, f"{exp}_coords_{subject}.mat")
     savemat(outpath, data)

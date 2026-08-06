@@ -3,7 +3,7 @@ app.py — Streamlit UI for surrogate MDS analysis.
 
 Run from inside rs-software:
     cd ~/Downloads/rs-software
-    streamlit run ../app.py
+    streamlit run app.py
 """
 
 import sys
@@ -15,8 +15,7 @@ import plotly.graph_objects as go
 from scipy.linalg import orthogonal_procrustes
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rs-software')
-                if 'rs-software' not in os.getcwd() else '.')
+# repo root — works both locally (cd rs-software && streamlit run app.py) and on Streamlit Cloud
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rs_ui import convergence_plot
 
@@ -262,6 +261,24 @@ if _c2.button("↺", key="d_pe", help="Reset to default"):
 show_pooled = st.sidebar.checkbox("Use pooled (A+B) fit as warm start", value=False,
     help="Fits a compromise map from combined A+B data, then uses it as the starting point for individual A and B fits. Also shows the pooled convergence curve.")
 
+if show_pooled:
+    _c1, _c2 = st.sidebar.columns([3, 1])
+    surrogate_max_iter = _c1.number_input(
+        "Surrogate max iterations", min_value=50, max_value=100000,
+        value=200, step=50,
+        help="Surrogates use the pooled warm start and converge faster — fewer iterations needed.")
+    if _c2.button("↺", key="d_surr_iter", help="Reset to default"):
+        surrogate_max_iter = 200
+    n_surr_conv = _c1.number_input(
+        "Show convergence for first N surrogates", min_value=0, max_value=20,
+        value=1, step=1,
+        help="Plots the convergence curve for the first N surrogates to verify warm start is working.")
+    if _c2.button("↺", key="d_surr_conv", help="Reset to default"):
+        n_surr_conv = 1
+else:
+    surrogate_max_iter = max_iterations
+    n_surr_conv = 0
+
 st.sidebar.markdown("---")
 
 # Use all defaults — at the bottom so users see all parameters first
@@ -406,6 +423,10 @@ if residuals1 or residuals2:
         styles["Pooled (A+B)"] = {"color": "purple", "dash": "dash"}
     convergence_plot(res_dict, tri_dict, styles)
 
+# surrogate convergence plot (warm start verification) — shown after real convergence, before surrogate run
+# We'll render it after surrogates complete below. Store a flag here.
+_show_surr_conv = show_pooled and n_surr_conv > 0
+
 # prelim mode — stop here
 if n_surrogates == 0:
     st.success("Preliminary run complete. Check the convergence plot above to decide how many iterations you need, then rerun with surrogates.")
@@ -421,13 +442,16 @@ observations = pool_observations(resp1, rep1, resp2, rep2)
 pool = build_pool(observations)
 
 def _run_one_surrogate(args):
-    seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim, max_iterations, learning_rate = args
-    coords1, ll1, _ = run_mds(s_resp1, s_rep1, stims1, dim, max_iterations, learning_rate)
-    coords2, ll2, _ = run_mds(s_resp2, s_rep2, stims2, dim, max_iterations, learning_rate)
+    seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim, max_iterations, learning_rate, start1, start2, track_conv = args
+    log_every = 1 if track_conv else 0
+    coords1, ll1, res1 = run_mds(s_resp1, s_rep1, stims1, dim, max_iterations, learning_rate,
+                                  log_every=log_every, label="Surrogate A", start_points=start1)
+    coords2, ll2, res2 = run_mds(s_resp2, s_rep2, stims2, dim, max_iterations, learning_rate,
+                                  log_every=log_every, label="Surrogate B", start_points=start2)
     disp = compute_disparity(coords1, coords2, stims1, stims2)
     ll_a = -ll1 / sum(s_rep1.values())
     ll_b = -ll2 / sum(s_rep2.values())
-    return disp, ll_a, ll_b
+    return disp, ll_a, ll_b, res1 if track_conv else [], res2 if track_conv else []
 
 # build all surrogate pairs
 jobs = []
@@ -438,7 +462,9 @@ for seed in range(n_surrogates):
     else:
         s_resp1, s_rep1 = resample_dataset(pool, resp1, rep1, resample_method)
         s_resp2, s_rep2 = resample_dataset(pool, resp2, rep2, resample_method)
-    jobs.append((seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim, max_iterations, learning_rate))
+    track = (seed < n_surr_conv)
+    jobs.append((seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim,
+                 surrogate_max_iter, learning_rate, start1, start2, track))
 
 from concurrent.futures import ThreadPoolExecutor
 with st.spinner(f"Running {n_surrogates} surrogates..."):
@@ -447,6 +473,7 @@ with st.spinner(f"Running {n_surrogates} surrogates..."):
 
 surrogate_disparities = np.array([r[0] for r in results])
 surrogate_lls = [(r[1], r[2]) for r in results]
+surrogate_conv_results = [(r[3], r[4]) for r in results if r[3]]  # only tracked surrogates
 
 p_value = float(np.mean(surrogate_disparities >= real_disparity))
 
@@ -483,6 +510,27 @@ fig_dist.update_layout(
 )
 st.plotly_chart(fig_dist, use_container_width=True)
 st.caption("Blue bars = surrogate null distribution. Red dashed line = real disparity. The further right the red line, the more the two datasets differ.")
+
+# surrogate convergence (warm start verification)
+if _show_surr_conv and surrogate_conv_results:
+    st.markdown("#### Warm start verification — surrogate convergence")
+    st.caption(
+        f"Convergence of the first {len(surrogate_conv_results)} surrogate(s) (dashed), overlaid with the real fits (solid). "
+        "If warm start is working, surrogates should converge in far fewer iterations."
+    )
+    surr_res_dict = {name1: residuals1, name2: residuals2}
+    surr_tri_dict = {name1: total_triads1, name2: total_triads2}
+    surr_styles = {}
+    for i, (res_a, res_b) in enumerate(surrogate_conv_results):
+        lbl_a = f"Surrogate {i+1} A"
+        lbl_b = f"Surrogate {i+1} B"
+        surr_res_dict[lbl_a] = res_a
+        surr_res_dict[lbl_b] = res_b
+        surr_tri_dict[lbl_a] = sum(jobs[i][2].values())   # s_rep1 total
+        surr_tri_dict[lbl_b] = sum(jobs[i][4].values())   # s_rep2 total
+        surr_styles[lbl_a] = {"color": "#378ADD", "dash": "dash"}
+        surr_styles[lbl_b] = {"color": "#E24B4A", "dash": "dash"}
+    convergence_plot(surr_res_dict, surr_tri_dict, surr_styles)
 
 # surrogate LL table
 st.markdown("#### Surrogate log-likelihoods")

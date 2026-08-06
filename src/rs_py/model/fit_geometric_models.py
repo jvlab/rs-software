@@ -82,8 +82,10 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
         )
         solution = optimal.model_coords
         solution_ll = optimal.fun
+        all_residuals = []  # nelder-mead doesn't produce per-iteration residuals
     else:
-        solution = gradient_descent(cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)
+        solution, all_residuals = gradient_descent(cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args,
+                                    log_every=args.get('log_every', 0), label=args.get('label', ''))
         stim = ac.params_to_points(solution, args['num_stimuli'], args['n_dim'])
         ll_final, is_model_bad = dist_model_ll_vectorized(pairs_a, pairs_b, response_counts, comp_repeats, args, stim)
         solution_ll = -1 * ll_final
@@ -98,7 +100,7 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
     LOG.debug('########  Procrustes distance between anchored start and final solution: {}'.format(
         procr_dist)
     )
-    return coordinates, solution_ll  # , sum_residual_squares
+    return coordinates, solution_ll, all_residuals
 
 
 def hyperbolic_points_of_best_fit(judgments, number_repeats, args, start_points=None):
