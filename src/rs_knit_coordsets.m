@@ -105,13 +105,23 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
-% Note: General notes
+% Note: Note regarding poropagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
-%     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
-%     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
-%     - If present, the 'paradigm_type' fields of data_in.sets{:} is propagated to data_out.sets{1}
-%     - The 'paradigm_name' fields of data_in.sets{:} are concatenated with + signs in between and propagated to data_out.sets{1}
+%     - If present, the 'paradigm_type' field common to data_in.sets{:} for all k for which data_in.sets{k}.type='data' is propagated to data_out.sets{1}
+%     - The following fields of data_in.sets{:} are concatenated with + signs in between and propagated to data_out.sets{1}
+%
+%         - paradigm_name
+%         - subj_id
+%         - subj_id_short
+%         - label_long
+%         - label
+%         - extra
+%
+%     - pipeline field of data_out.sets{1}:
+%
+%         - data_out.sets{1}.pipeline.type='knit'.
+%         - data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`
 %
 % Note: Note regarding statistics and plots
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields (rmsd=root-mean-squared deviation):
