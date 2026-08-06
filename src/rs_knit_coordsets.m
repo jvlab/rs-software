@@ -110,6 +110,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
 %     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
+%     - If present, the 'paradigm_type' fields of data_in.sets{:} is propagated to data_out.sets{1}
+%     - The 'paradigm_name' fields of data_in.sets{:} are concatenated with + signs in between and propagated to data_out.sets{1}
 %
 % Note: Note regarding statistics and plots
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields (rmsd=root-mean-squared deviation):
@@ -497,12 +499,14 @@ if aux_out.warn_bad==0
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=''; % was []
+        counts=0;
         for iset=1:nsets
             if isfield(data_in.sets{iset},fn)
                 sets_knitted.(fn)=cat(2,sets_knitted.(fn),char(data_in.sets{iset}.(fn)),'+');
+                counts=counts+1;
             end
         end
-        if length(sets_knitted.(fn))>1
+        if counts>=1 %remove trailing +
             sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
         end
     end
@@ -521,10 +525,24 @@ if aux_out.warn_bad==0
         data_in.sets{iset}.dim_list=dim_list_out;
         data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);       
     end
+    %propagate paradigm type (must match if sets{:}.type='data', checked in rs_align_coordsets
+    paradigm_type=[];
+    for iset=1:nsets
+        if strcmp(data_in.sets{iset}.type,'data')
+            if isfield(data_in.sets{iset},'paradigm_type')
+                if isempty(paradigm_type) 
+                    paradigm_type=data_in.sets{iset}.paradigm_type;
+                end
+            end
+        end
+    end
     data_out.ds{1}=ds_knitted;
     data_out.sas{1}=sas_knitted;
     data_out.sets{1}=sets_knitted;
     data_out.sets{1}.type=data_in.sets{1}.type;
+    if ~isempty(paradigm_type)
+        data_out.sets{1}.paradigm_type=paradigm_type;
+    end
     %
     aux_out.rayss{1}=rays;
     aux_out.opts_rays{1}=opts_rays_used;
