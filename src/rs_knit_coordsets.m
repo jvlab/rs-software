@@ -499,12 +499,14 @@ if aux_out.warn_bad==0
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=''; % was []
+        counts=0;
         for iset=1:nsets
             if isfield(data_in.sets{iset},fn)
                 sets_knitted.(fn)=cat(2,sets_knitted.(fn),char(data_in.sets{iset}.(fn)),'+');
+                counts=counts+1;
             end
         end
-        if length(sets_knitted.(fn))>1
+        if counts>=1 %remove trailing +
             sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
         end
     end
