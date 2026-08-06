@@ -427,7 +427,20 @@ if aux_out.warn_bad==0
         end
     end
     %
-    %do a consensus on each model-dimension separately
+    %determine overlaps between datasets for heuristic calc of whether there are suifficient constraints
+    %this is done separately for each dimension:  missing data will generate a NaN at all dimensions, but a single coordinate value may also be a NaN
+    %
+    for dptr=1:length(dim_list_in)
+        idim=dim_list_in(dptr);
+        overlaps=ones(nstims_all,nsets);
+        for iset=1:nsets
+            z=data_align.ds{iset}{idim}
+            anynan=reshape(any(isnan(z),2),size(z,1),size(z,3));
+            overlaps(anynan==1,iset)=0;
+        end
+    end
+    %
+    %do a consensus 
     %
     opts_pcon=aux.opts_knit;
     [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
