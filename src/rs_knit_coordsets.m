@@ -317,7 +317,7 @@ nstims_all=min(nstims_each);
 coords_isnan=zeros(nstims_all,nsets);
 for iset=1:nsets
     for kd=dim_list_each{iset}
-        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimension, it's missing
+        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if any coordinate is missing for any dimension, here we consider it missing
     end
     if aux.opts_knit.if_log
         disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
@@ -327,12 +327,6 @@ aux_out.coords_havedata=1-coords_isnan;
 if aux.opts_knit.if_log
     disp('data table')
     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
-end
-if any(all(coords_isnan,2))
-   wmsg='at least one stimulus is not present in any dataset';
-   aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
-   disp('table of missing data, after alignment (each row is a stimulus, each col is a dataset)');
-   disp(coords_isnan)
 end
 %
 %if aux.sa_pooled is present, use it, otherwise, re create
@@ -358,6 +352,14 @@ else
     [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux2);
     sa_pooled=aux_align.sa_pooled;
     opts_align_used=aux_align.opts_align;
+end
+if any(all(coords_isnan,2))
+   wmsg='at least one stimulus is not present in any dataset';
+   aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+   disp('table of missing data')
+    for istim=1:nstims_all
+        disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',coords_isnan(istim,:))));
+    end
 end
 if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
     wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
@@ -431,18 +433,13 @@ if aux_out.warn_bad==0
         end
     end
     %
-    %determine overlaps between datasets for heuristic calc of whether there are suifficient constraints
+    %determine overlaps between datasets for heuristic calc of whether there are sufficient constraints
     %this is done separately for each dimension:  missing data will generate a NaN at all dimensions, but a single coordinate value may also be a NaN
     %
-    for dptr=1:length(dim_list_in)
+    overlaps=1-coords_isnan;
+    h=overlap_heuristics(overlaps);
+    for dptr=1:length(dim_list_out)
         idim=dim_list_in(dptr);
-        overlaps=ones(nstims_all,nsets);
-        for iset=1:nsets
-            z=data_align.ds{iset}{idim};
-            anynan=reshape(any(isnan(z),2),size(z,1),size(z,3));
-            overlaps(anynan==1,iset)=0;
-        end
-        h=overlap_heuristics(overlaps);
         if idim>h.dmax
             if_hbad=1;
         else
@@ -451,6 +448,9 @@ if aux_out.warn_bad==0
         if if_hbad
             wmsg=sprintf('number of overlaps between datasets may be insufficient for dimension %2.0f',idim);
             aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+            for istim=1:nstims_all
+                disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',overlaps(istim,:))));
+            end
         end
         if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
             disp(sprintf('for target dimension %2.0f, dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f',...
