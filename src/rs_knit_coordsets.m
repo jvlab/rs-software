@@ -73,7 +73,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
-%
 %     - opts_knit (struct): aux.opts_knit, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array of struct): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim

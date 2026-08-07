@@ -1,22 +1,30 @@
 function h=overlap_heuristics(overlaps)
-% h=overlap_heuristics(overlaps) computes several heuristics related to the number of overlaps of pairwise distances across several datasets
+% h=overlap_heuristics(overlaps)
+% computes several heuristics for whether the number of overlaps of pairwise distances across several datasets
+% suffices for a well-defined knitting across these datasets
+% 
+% Args:
+%   overlaps (int 2-D array): overlaps(istim,iset) is 1 if stimulus istim is present in record iset, 0 otherwise
 %
-% overlaps: 2-d array, nstims x nsets, 1 = data available
+% Returns:
+%   h (struct): structure of heuristics, with fields
+% 
+%     - nstims (int): number of stimuli (size(overlaps,1))
+%     - nstims_used (int): number of stimuli present in at least one record
+%     - npairs (int): total number of pairwise distances within records
+%     - nmax (int): maximum number of pairwise distances if all stimuli were in the same record
+%     - counts (int 2-D array): counts(istim,jstim) is the number of records that contain both stimuli
+%     - nfree (int 1-D array): nfree(iset) is the number of stimuli unique to record iset
+%     - nbound (int 1-D array): nbound(iset) is the number of stimuli in record iset that are in at least one other record
+%     - novlp (int 2-D array): novlp(iset,jset) is the number of stimuili in common between records iset and jset
+%     - dmax_free (int): maximum dimension that is rigidly constrained by bound points, equal to min(nbound-1) for all records with nfree(irec)>0
+%     - dmax_constraints (int): maximum dimension for which number of coordinates to be found, minus offset and rotational d.o.f., does not exceed npairs
+%     - dmax (int): maximum dimension for which a well-defined knitting solution can be expected, min(dmax_free,dmax_constraints)
 %
-% h: structure with fields
-%    npairs: total number of pairwise distances within the same dataset
-%    nmax: maximum number of pairwise distances, if all points were in the same datasaet
-%    nstims: number of stimuli (from rows of overlaps)
-%    nstims_used: number of stimuli used in at least one set
-%    counts: 2-d array [nstims nstims], number of sets containing each pair distance
-%    nfree: 1-d array, length is nsets, number of points in each dataset that are not connected with any other dataset
-%    nbound: 1-d array, length is nsets, number of points in each dataset that are connected to some point in another dataset
-%    novlp: 2-d array [nsets nsets], number of overlaps between each pair of datasets
-%    dmax_free: maximum dimension that is rigidly constrained by bound points, equal to min(nbound-1) for all datasets with nfree>0
-%    dmax_constraints: maximum dimension for which number of coordinates to be found, minus offset and rotational d.o.f., does not exceed number of pairs of distances
-%    dmax: min(dmax_free,dmax_constraints)
+% Note: Note regarding format of overlaps
+%     - The format of overlaps is identical to the optional argument opts_pcon.overlaps in `procrustes_consensus`.
 %
-%   See also: RIGIDITY_CONSTRAINTS, RIGIDITY_CONSTRAINTS_DEMO, PROCRUSTES_CONSENSUS.
+% See also: PROCRUSTES_CONSENSUS.
 %
 nstims=size(overlaps,1);
 nsets=size(overlaps,2);
