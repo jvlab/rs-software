@@ -37,6 +37,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
 %         - dim_aug (int): number of dimensions to add for knitted datasets in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
+%         - if_dim_heuristics (int): 1 to always show heuristics as to whether there are sufficient constraints for the requested dimensions, 0 only if insufficient constraints; default is 0
 %
 %         - **Plotting and replotting**
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
@@ -57,7 +58,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency or sufficient overlaps, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
 %     - opts_align (struct): options for alignment of data, typically omitted; see note below regarding recalculation of alignment
@@ -192,7 +193,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %             - One is that the number of overlapping stimuli is too small. For example,
 %             at least m points are required to determine a rotation and translation in an m-dimensional space; if there are fewer overlaps, then a consensus will
-%             still be found but there are many other consensus datasets that fit equally well.
+%             still be found but there are many other consensus datasets that fit equally well. Note that setting aux.opts_knit.if_dim_heuristics=1 will display heuristics concerning whether there are sufficient overlaps.
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
@@ -248,6 +249,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
+aux.opts_knit=filldefault(aux.opts_knit,'if_dim_heuristics',0);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -327,7 +329,10 @@ if aux.opts_knit.if_log
     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
 end
 if any(all(coords_isnan,2))
-    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+   wmsg='at least one stimulus is not present in any dataset';
+   aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+   disp('table of missing data, after alignment (each row is a stimulus, each col is a dataset)');
+   disp(coords_isnan)
 end
 %
 %if aux.sa_pooled is present, use it, otherwise, re create
@@ -437,7 +442,20 @@ if aux_out.warn_bad==0
             anynan=reshape(any(isnan(z),2),size(z,1),size(z,3));
             overlaps(anynan==1,iset)=0;
         end
-        h=overlap_heuristics(overlaps)
+        h=overlap_heuristics(overlaps);
+        if idim>h.dmax
+            if_hbad=1;
+        else
+            if_hbad=0;
+        end
+        if if_hbad
+            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimension %2.0f',idim);
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        end
+        if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
+            disp(sprintf('for target dimension %2.0f, dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f',...
+                idim,h.dmax,h.dmax_free,h.dmax_constraints));
+        end
     end
     %
     %do a consensus 
