@@ -227,7 +227,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %   PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
+%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, OVERLAP_HEURISTICS, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %
 if (nargin<=1)
     aux=struct;
@@ -434,10 +434,11 @@ if aux_out.warn_bad==0
         idim=dim_list_in(dptr);
         overlaps=ones(nstims_all,nsets);
         for iset=1:nsets
-            z=data_align.ds{iset}{idim}
+            z=data_align.ds{iset}{idim};
             anynan=reshape(any(isnan(z),2),size(z,1),size(z,3));
             overlaps(anynan==1,iset)=0;
         end
+        h=overlap_heuristics(overlaps)
     end
     %
     %do a consensus 
