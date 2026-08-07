@@ -4,3 +4,4 @@ matplotlib>=3.7
 plotly>=5.0
 pandas>=2.0
 streamlit>=1.35
+scikit-learn>=1.3
