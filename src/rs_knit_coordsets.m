@@ -105,7 +105,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
-% Note: Note regarding poropagation of fields from data_in to data_out
+% Note: Note regarding propagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
 %     - If present, the 'paradigm_type' field common to data_in.sets{:} for all k for which data_in.sets{k}.type='data' is propagated to data_out.sets{1}
@@ -427,7 +427,20 @@ if aux_out.warn_bad==0
         end
     end
     %
-    %do a consensus on each model-dimension separately
+    %determine overlaps between datasets for heuristic calc of whether there are suifficient constraints
+    %this is done separately for each dimension:  missing data will generate a NaN at all dimensions, but a single coordinate value may also be a NaN
+    %
+    for dptr=1:length(dim_list_in)
+        idim=dim_list_in(dptr);
+        overlaps=ones(nstims_all,nsets);
+        for iset=1:nsets
+            z=data_align.ds{iset}{idim}
+            anynan=reshape(any(isnan(z),2),size(z,1),size(z,3));
+            overlaps(anynan==1,iset)=0;
+        end
+    end
+    %
+    %do a consensus 
     %
     opts_pcon=aux.opts_knit;
     [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
