@@ -293,256 +293,289 @@ st.sidebar.markdown("---")
 run_btn = st.sidebar.button("Run analysis", type="primary", use_container_width=True)
 
 # --- main area ---
-st.title("Surrogate MDS Analysis")
+st.title("rs-software")
+tab_analysis, tab_convert = st.tabs(["Surrogate MDS Analysis", "Convert .mat → NumPy"])
 
-# check inputs ready
-if input_mode == "Upload files":
-    ready = file1 is not None and file2 is not None
-else:
-    ready = bool(path1_direct) and bool(path2_direct) and os.path.exists(path1_direct) and os.path.exists(path2_direct)
+with tab_convert:
+    st.header("Convert choice file to NumPy")
+    st.markdown(
+        "Upload a `.mat` choices file and download it as a `.npy` array "
+        "with columns: `[ref, s1, s2, n_s1_chosen, n_repeats]` (1-indexed)."
+    )
+    conv_file = st.file_uploader("Upload .mat choices file", type=["mat"], key="conv_upload")
+    if conv_file is not None:
+        with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
+            tmp.write(conv_file.read())
+            tmp_path = tmp.name
+        try:
+            from convert_mat_to_numpy import mat_to_numpy
+            arr, stim_list = mat_to_numpy(tmp_path)
+            st.success(f"Loaded: **{arr.shape[0]} trials**, **{len(stim_list)} stimuli**")
+            st.markdown(f"**Stimuli:** {', '.join(stim_list[:10])}{'...' if len(stim_list) > 10 else ''}")
+            st.dataframe(
+                {"ref": arr[:,0].astype(int), "s1": arr[:,1].astype(int),
+                 "s2": arr[:,2].astype(int), "n_s1_chosen": arr[:,3].astype(int),
+                 "n_repeats": arr[:,4].astype(int)},
+                use_container_width=True, height=300
+            )
+            buf = arr.tobytes()
+            out_name = conv_file.name.replace(".mat", ".npy")
+            st.download_button("Download .npy file", data=buf, file_name=out_name, mime="application/octet-stream")
+        except Exception as e:
+            st.error(f"Conversion failed: {e}")
+        finally:
+            os.unlink(tmp_path)
 
-if not ready:
+with tab_analysis:
+
+    # check inputs ready
     if input_mode == "Upload files":
-        st.info("Upload two .mat files in the sidebar to get started.")
+        ready = file1 is not None and file2 is not None
     else:
-        if path1_direct and not os.path.exists(path1_direct):
-            st.error(f"File not found: {path1_direct}")
-        elif path2_direct and not os.path.exists(path2_direct):
-            st.error(f"File not found: {path2_direct}")
+        ready = bool(path1_direct) and bool(path2_direct) and os.path.exists(path1_direct) and os.path.exists(path2_direct)
+
+    if not ready:
+        if input_mode == "Upload files":
+            st.info("Upload two .mat files in the sidebar to get started.")
         else:
-            st.info("Enter paths to two .mat files in the sidebar to get started.")
-    st.stop()
+            if path1_direct and not os.path.exists(path1_direct):
+                st.error(f"File not found: {path1_direct}")
+            elif path2_direct and not os.path.exists(path2_direct):
+                st.error(f"File not found: {path2_direct}")
+            else:
+                st.info("Enter paths to two .mat files in the sidebar to get started.")
+        st.stop()
 
-if not run_btn:
+    if not run_btn:
+        if input_mode == "Upload files":
+            n1 = file1.name.replace('_suniyya.mat', '').replace('.mat', '')
+            n2 = file2.name.replace('_suniyya.mat', '').replace('.mat', '')
+        else:
+            n1 = os.path.basename(path1_direct).replace('_suniyya.mat', '').replace('.mat', '')
+            n2 = os.path.basename(path2_direct).replace('_suniyya.mat', '').replace('.mat', '')
+        st.markdown(f"**Dataset 1:** {n1}")
+        st.markdown(f"**Dataset 2:** {n2}")
+        st.markdown(f"Ready to run: **{dim}D**, **{n_surrogates} surrogates**, **{max_iterations} max iterations**, learning rate **{learning_rate}**")
+        st.stop()
+
+    # --- resolve paths ---
     if input_mode == "Upload files":
-        n1 = file1.name.replace('_suniyya.mat', '').replace('.mat', '')
-        n2 = file2.name.replace('_suniyya.mat', '').replace('.mat', '')
+        with tempfile.NamedTemporaryFile(suffix='.mat', delete=False) as tmp1:
+            tmp1.write(file1.read())
+            path1 = tmp1.name
+        with tempfile.NamedTemporaryFile(suffix='.mat', delete=False) as tmp2:
+            tmp2.write(file2.read())
+            path2 = tmp2.name
+        name1 = file1.name.replace('_suniyya.mat', '').replace('.mat', '')
+        name2 = file2.name.replace('_suniyya.mat', '').replace('.mat', '')
     else:
-        n1 = os.path.basename(path1_direct).replace('_suniyya.mat', '').replace('.mat', '')
-        n2 = os.path.basename(path2_direct).replace('_suniyya.mat', '').replace('.mat', '')
-    st.markdown(f"**Dataset 1:** {n1}")
-    st.markdown(f"**Dataset 2:** {n2}")
-    st.markdown(f"Ready to run: **{dim}D**, **{n_surrogates} surrogates**, **{max_iterations} max iterations**, learning rate **{learning_rate}**")
-    st.stop()
+        path1 = path1_direct
+        path2 = path2_direct
+        name1 = os.path.basename(path1).replace('_suniyya.mat', '').replace('.mat', '')
+        name2 = os.path.basename(path2).replace('_suniyya.mat', '').replace('.mat', '')
 
-# --- resolve paths ---
-if input_mode == "Upload files":
-    with tempfile.NamedTemporaryFile(suffix='.mat', delete=False) as tmp1:
-        tmp1.write(file1.read())
-        path1 = tmp1.name
-    with tempfile.NamedTemporaryFile(suffix='.mat', delete=False) as tmp2:
-        tmp2.write(file2.read())
-        path2 = tmp2.name
-    name1 = file1.name.replace('_suniyya.mat', '').replace('.mat', '')
-    name2 = file2.name.replace('_suniyya.mat', '').replace('.mat', '')
-else:
-    path1 = path1_direct
-    path2 = path2_direct
-    name1 = os.path.basename(path1).replace('_suniyya.mat', '').replace('.mat', '')
-    name2 = os.path.basename(path2).replace('_suniyya.mat', '').replace('.mat', '')
+    st.subheader(f"{name1}  vs  {name2}")
+    st.caption(f"{dim}D · {n_surrogates} surrogates · {max_iterations} max iterations · learning rate {learning_rate} · {resample_method.replace('_', ' ')}")
 
-st.subheader(f"{name1}  vs  {name2}")
-st.caption(f"{dim}D · {n_surrogates} surrogates · {max_iterations} max iterations · learning rate {learning_rate} · {resample_method.replace('_', ' ')}")
+    # load files
+    with st.spinner("Loading files..."):
+        resp1, rep1, stims1 = load_mat(path1)
+        resp2, rep2, stims2 = load_mat(path2)
 
-# load files
-with st.spinner("Loading files..."):
-    resp1, rep1, stims1 = load_mat(path1)
-    resp2, rep2, stims2 = load_mat(path2)
+    total_triads1 = sum(rep1.values())
+    total_triads2 = sum(rep2.values())
 
-total_triads1 = sum(rep1.values())
-total_triads2 = sum(rep2.values())
+    # pooled fit (warm start) — must run BEFORE real fits so we can pass start_points
+    pooled_residuals, total_triads_pooled = [], None #pooled_residuals= convergence log of pooled MDS fit
+    start1, start2 = None, None
+    if show_pooled: #if checkbox has been selected (t or f)
+        with st.spinner("Running pooled (A+B) MDS for warm start..."): #shows a spinning loading animation 
+            global_stims = list(stims1) #global_stims is the pooled stimuli list
+            for s in stims2:
+                if s not in global_stims:
+                    global_stims.append(s)
+            idx_map1 = {i: global_stims.index(s) for i, s in enumerate(stims1)} #for each dataset, build a lookup table (because A and B use their own local numbering but the pooled dataset needs one consistent numbering)
+            idx_map2 = {i: global_stims.index(s) for i, s in enumerate(stims2)}
+            def remap(resp, rep, idx_map):
+                nr, np_ = {}, {}
+                for key, count in resp.items(): #loop through every trial
+                    (a,b),(c,d) = key
+                    nk = ((idx_map[a],idx_map[b]),(idx_map[c],idx_map[d])) #translate all four local indices to global indices using the lookup table (nk is the new key in global numbering)
+                    nr[nk] = nr.get(nk, 0) + count #store the response count and repeat count under the new global key
+                    np_[nk] = np_.get(nk, 0) + rep[key]
+                return nr, np_
+            pr1, pp1 = remap(resp1, rep1, idx_map1)
+            pr2, pp2 = remap(resp2, rep2, idx_map2)
+            pooled_resp = dict(pr1)
+            pooled_rep = dict(pp1)
+            for key, count in pr2.items():
+                pooled_resp[key] = pooled_resp.get(key, 0) + count
+                pooled_rep[key] = pooled_rep.get(key, 0) + pp2[key]
+            total_triads_pooled = sum(pooled_rep.values())
+            pooled_coords, pooled_ll, pooled_residuals = run_mds(
+                pooled_resp, pooled_rep, global_stims, dim, max_iterations, learning_rate,
+                log_every=1, label="Pooled")
+            start1 = np.array([pooled_coords[idx_map1[i]] for i in range(len(stims1))])
+            start2 = np.array([pooled_coords[idx_map2[i]] for i in range(len(stims2))])
+            st.success(f"Pooled LL: {-pooled_ll/total_triads_pooled:.4f} — using as warm start for A and B fits")
 
-# pooled fit (warm start) — must run BEFORE real fits so we can pass start_points
-pooled_residuals, total_triads_pooled = [], None #pooled_residuals= convergence log of pooled MDS fit
-start1, start2 = None, None
-if show_pooled: #if checkbox has been selected (t or f)
-    with st.spinner("Running pooled (A+B) MDS for warm start..."): #shows a spinning loading animation 
-        global_stims = list(stims1) #global_stims is the pooled stimuli list
-        for s in stims2:
-            if s not in global_stims:
-                global_stims.append(s)
-        idx_map1 = {i: global_stims.index(s) for i, s in enumerate(stims1)} #for each dataset, build a lookup table (because A and B use their own local numbering but the pooled dataset needs one consistent numbering)
-        idx_map2 = {i: global_stims.index(s) for i, s in enumerate(stims2)}
-        def remap(resp, rep, idx_map):
-            nr, np_ = {}, {}
-            for key, count in resp.items(): #loop through every trial
-                (a,b),(c,d) = key
-                nk = ((idx_map[a],idx_map[b]),(idx_map[c],idx_map[d])) #translate all four local indices to global indices using the lookup table (nk is the new key in global numbering)
-                nr[nk] = nr.get(nk, 0) + count #store the response count and repeat count under the new global key
-                np_[nk] = np_.get(nk, 0) + rep[key]
-            return nr, np_
-        pr1, pp1 = remap(resp1, rep1, idx_map1)
-        pr2, pp2 = remap(resp2, rep2, idx_map2)
-        pooled_resp = dict(pr1)
-        pooled_rep = dict(pp1)
-        for key, count in pr2.items():
-            pooled_resp[key] = pooled_resp.get(key, 0) + count
-            pooled_rep[key] = pooled_rep.get(key, 0) + pp2[key]
-        total_triads_pooled = sum(pooled_rep.values())
-        pooled_coords, pooled_ll, pooled_residuals = run_mds(
-            pooled_resp, pooled_rep, global_stims, dim, max_iterations, learning_rate,
-            log_every=1, label="Pooled")
-        start1 = np.array([pooled_coords[idx_map1[i]] for i in range(len(stims1))])
-        start2 = np.array([pooled_coords[idx_map2[i]] for i in range(len(stims2))])
-        st.success(f"Pooled LL: {-pooled_ll/total_triads_pooled:.4f} — using as warm start for A and B fits")
+    # real data MDS
+    st.markdown("#### Real data MDS")
+    st.caption("Fitting an MDS coordinate map to each dataset's actual choices. LL (log-likelihood) measures fit quality — closer to 0 is better. Disparity measures how different the two maps are after alignment.")
+    prog = st.progress(0, text="Fitting real data...")
 
-# real data MDS
-st.markdown("#### Real data MDS")
-st.caption("Fitting an MDS coordinate map to each dataset's actual choices. LL (log-likelihood) measures fit quality — closer to 0 is better. Disparity measures how different the two maps are after alignment.")
-prog = st.progress(0, text="Fitting real data...")
+    with st.spinner(f"Running {dim}D MDS on dataset 1..."):
+        real_coords1, real_ll1, residuals1 = run_mds(
+            resp1, rep1, stims1, dim, max_iterations, learning_rate, log_every=1, label=name1, start_points=start1)
+    prog.progress(50, text="Dataset 1 done...")
 
-with st.spinner(f"Running {dim}D MDS on dataset 1..."):
-    real_coords1, real_ll1, residuals1 = run_mds(
-        resp1, rep1, stims1, dim, max_iterations, learning_rate, log_every=1, label=name1, start_points=start1)
-prog.progress(50, text="Dataset 1 done...")
+    with st.spinner(f"Running {dim}D MDS on dataset 2..."):
+        real_coords2, real_ll2, residuals2 = run_mds(
+            resp2, rep2, stims2, dim, max_iterations, learning_rate, log_every=1, label=name2, start_points=start2)
+    prog.progress(100, text="Real data done.")
 
-with st.spinner(f"Running {dim}D MDS on dataset 2..."):
-    real_coords2, real_ll2, residuals2 = run_mds(
-        resp2, rep2, stims2, dim, max_iterations, learning_rate, log_every=1, label=name2, start_points=start2)
-prog.progress(100, text="Real data done.")
+    real_disparity = compute_disparity(real_coords1, real_coords2, stims1, stims2)
+    final_ll1 = -real_ll1 / total_triads1
+    final_ll2 = -real_ll2 / total_triads2
 
-real_disparity = compute_disparity(real_coords1, real_coords2, stims1, stims2)
-final_ll1 = -real_ll1 / total_triads1
-final_ll2 = -real_ll2 / total_triads2
+    col1, col2, col3 = st.columns(3)
+    col1.metric(f"{name1} LL", f"{final_ll1:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit. Best possible model is the empirical choice probability itself.")
+    col2.metric(f"{name2} LL", f"{final_ll2:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit.")
+    col3.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two maps. 0 = identical, higher = more different.")
 
-col1, col2, col3 = st.columns(3)
-col1.metric(f"{name1} LL", f"{final_ll1:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit. Best possible model is the empirical choice probability itself.")
-col2.metric(f"{name2} LL", f"{final_ll2:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit.")
-col3.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two maps. 0 = identical, higher = more different.")
+    # convergence plot
+    if residuals1 or residuals2:
+        st.markdown("#### Convergence")
+        st.caption("Log-likelihood per iteration for each dataset. A flat curve indicates the fit has converged — if it is still decreasing at the end, increase max iterations.")
+        res_dict = {name1: residuals1, name2: residuals2}
+        tri_dict = {name1: total_triads1, name2: total_triads2}
+        styles = {}
+        if show_pooled and pooled_residuals:
+            res_dict["Pooled (A+B)"] = pooled_residuals
+            tri_dict["Pooled (A+B)"] = total_triads_pooled
+            styles["Pooled (A+B)"] = {"color": "purple", "dash": "dash"}
+        convergence_plot(res_dict, tri_dict, styles)
 
-# convergence plot
-if residuals1 or residuals2:
-    st.markdown("#### Convergence")
-    st.caption("Log-likelihood per iteration for each dataset. A flat curve indicates the fit has converged — if it is still decreasing at the end, increase max iterations.")
-    res_dict = {name1: residuals1, name2: residuals2}
-    tri_dict = {name1: total_triads1, name2: total_triads2}
-    styles = {}
-    if show_pooled and pooled_residuals:
-        res_dict["Pooled (A+B)"] = pooled_residuals
-        tri_dict["Pooled (A+B)"] = total_triads_pooled
-        styles["Pooled (A+B)"] = {"color": "purple", "dash": "dash"}
-    convergence_plot(res_dict, tri_dict, styles)
+    # surrogate convergence plot (warm start verification) — shown after real convergence, before surrogate run
+    # We'll render it after surrogates complete below. Store a flag here.
+    _show_surr_conv = show_pooled and n_surr_conv > 0
 
-# surrogate convergence plot (warm start verification) — shown after real convergence, before surrogate run
-# We'll render it after surrogates complete below. Store a flag here.
-_show_surr_conv = show_pooled and n_surr_conv > 0
+    # prelim mode — stop here
+    if n_surrogates == 0:
+        st.success("Preliminary run complete. Check the convergence plot above to decide how many iterations you need, then rerun with surrogates.")
+        os.unlink(path1)
+        os.unlink(path2)
+        st.stop()
 
-# prelim mode — stop here
-if n_surrogates == 0:
-    st.success("Preliminary run complete. Check the convergence plot above to decide how many iterations you need, then rerun with surrogates.")
+    # --- surrogates ---
+    st.markdown("#### Surrogate runs")
+    st.caption("Each surrogate is a randomly resampled dataset pair drawn from the pooled observations. Running MDS on many surrogates builds a null distribution — how different two maps look when there is no genuine difference between datasets.")
+
+    observations = pool_observations(resp1, rep1, resp2, rep2)
+    pool = build_pool(observations)
+
+    def _run_one_surrogate(args):
+        seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim, max_iterations, learning_rate, start1, start2, track_conv = args
+        log_every = 1 if track_conv else 0
+        coords1, ll1, res1 = run_mds(s_resp1, s_rep1, stims1, dim, max_iterations, learning_rate,
+                                      log_every=log_every, label="Surrogate A", start_points=start1)
+        coords2, ll2, res2 = run_mds(s_resp2, s_rep2, stims2, dim, max_iterations, learning_rate,
+                                      log_every=log_every, label="Surrogate B", start_points=start2)
+        disp = compute_disparity(coords1, coords2, stims1, stims2)
+        ll_a = -ll1 / sum(s_rep1.values())
+        ll_b = -ll2 / sum(s_rep2.values())
+        return disp, ll_a, ll_b, res1 if track_conv else [], res2 if track_conv else []
+
+    # build all surrogate pairs
+    jobs = []
+    for seed in range(n_surrogates):
+        np.random.seed(seed)
+        if resample_method == 'without_replacement_paired':
+            s_resp1, s_rep1, s_resp2, s_rep2 = resample_paired(pool, resp1, rep1, resp2, rep2)
+        else:
+            s_resp1, s_rep1 = resample_dataset(pool, resp1, rep1, resample_method)
+            s_resp2, s_rep2 = resample_dataset(pool, resp2, rep2, resample_method)
+        track = (seed < n_surr_conv)
+        jobs.append((seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim,
+                     surrogate_max_iter, learning_rate, start1, start2, track))
+
+    from concurrent.futures import ThreadPoolExecutor
+    with st.spinner(f"Running {n_surrogates} surrogates..."):
+        with ThreadPoolExecutor(max_workers=min(8, len(jobs))) as ex:
+            results = list(ex.map(_run_one_surrogate, jobs))
+
+    surrogate_disparities = np.array([r[0] for r in results])
+    surrogate_lls = [(r[1], r[2]) for r in results]
+    surrogate_conv_results = [(r[3], r[4]) for r in results if r[3]]  # only tracked surrogates
+
+    p_value = float(np.mean(surrogate_disparities >= real_disparity))
+
+    # --- results ---
+    st.markdown("#### Results")
+    st.caption("The real disparity (red line) is compared against the surrogate null distribution (blue bars). If the real disparity falls in the tail of the distribution, the two datasets are genuinely different.")
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two real datasets.")
+    m2.metric("Surrogate mean", f"{surrogate_disparities.mean():.4f}", help="Average disparity across all surrogate pairs — this is what 'no real difference' looks like.")
+    m3.metric("Surrogate std", f"{surrogate_disparities.std():.4f}", help="Spread of the surrogate distribution. Wider = more variable null.")
+    m4.metric("p-value", f"{p_value:.4f}", help="Fraction of surrogates with disparity ≥ real. Below 0.05 = statistically significant. Use at least 100 surrogates for a reliable estimate.")
+
+    if p_value < 0.05:
+        st.success(f"Statistically significant at p = 0.05 (p = {p_value:.4f}) — the two maps are more different than expected by chance.")
+    else:
+        st.warning(f"Not statistically significant at p = 0.05 (p = {p_value:.4f}) — cannot rule out that the difference is due to chance.")
+
+    # distribution plot
+    fig_dist = go.Figure()
+    fig_dist.add_trace(go.Histogram(
+        x=surrogate_disparities.tolist(), name="Surrogates",
+        marker_color="#378ADD", opacity=0.75,
+        nbinsx=20
+    ))
+    fig_dist.add_vline(
+        x=float(real_disparity), line_color="#E24B4A", line_dash="dash",
+        annotation_text=f"Real: {real_disparity:.4f}", annotation_position="top right"
+    )
+    fig_dist.update_layout(
+        xaxis_title="Procrustes disparity", yaxis_title="Count",
+        height=300, margin=dict(l=40, r=20, t=20, b=40),
+        showlegend=False
+    )
+    st.plotly_chart(fig_dist, use_container_width=True)
+    st.caption("Blue bars = surrogate null distribution. Red dashed line = real disparity. The further right the red line, the more the two datasets differ.")
+
+    # surrogate convergence (warm start verification)
+    if _show_surr_conv and surrogate_conv_results:
+        st.markdown("#### Warm start verification — surrogate convergence")
+        st.caption(
+            f"Convergence of the first {len(surrogate_conv_results)} surrogate(s) (dashed), overlaid with the real fits (solid). "
+            "If warm start is working, surrogates should converge in far fewer iterations."
+        )
+        surr_res_dict = {name1: residuals1, name2: residuals2}
+        surr_tri_dict = {name1: total_triads1, name2: total_triads2}
+        surr_styles = {}
+        for i, (res_a, res_b) in enumerate(surrogate_conv_results):
+            lbl_a = f"Surrogate {i+1} A"
+            lbl_b = f"Surrogate {i+1} B"
+            surr_res_dict[lbl_a] = res_a
+            surr_res_dict[lbl_b] = res_b
+            surr_tri_dict[lbl_a] = sum(jobs[i][2].values())   # s_rep1 total
+            surr_tri_dict[lbl_b] = sum(jobs[i][4].values())   # s_rep2 total
+            surr_styles[lbl_a] = {"color": "#378ADD", "dash": "dash"}
+            surr_styles[lbl_b] = {"color": "#E24B4A", "dash": "dash"}
+        convergence_plot(surr_res_dict, surr_tri_dict, surr_styles)
+
+    # surrogate LL table
+    st.markdown("#### Surrogate log-likelihoods")
+    st.caption("Log-likelihood per trial for each surrogate's two datasets. Similar values across surrogates indicate stable fits.")
+    import pandas as pd
+    full_tbl = {
+        "Surrogate": list(range(1, n_surrogates + 1)),
+        f"LL ({name1})": [f"{r[0]:.4f}" for r in surrogate_lls],
+        f"LL ({name2})": [f"{r[1]:.4f}" for r in surrogate_lls],
+        "Disparity": [f"{d:.4f}" for d in surrogate_disparities],
+    }
+    st.dataframe(full_tbl, use_container_width=True, hide_index=True)
+
     os.unlink(path1)
     os.unlink(path2)
-    st.stop()
-
-# --- surrogates ---
-st.markdown("#### Surrogate runs")
-st.caption("Each surrogate is a randomly resampled dataset pair drawn from the pooled observations. Running MDS on many surrogates builds a null distribution — how different two maps look when there is no genuine difference between datasets.")
-
-observations = pool_observations(resp1, rep1, resp2, rep2)
-pool = build_pool(observations)
-
-def _run_one_surrogate(args):
-    seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim, max_iterations, learning_rate, start1, start2, track_conv = args
-    log_every = 1 if track_conv else 0
-    coords1, ll1, res1 = run_mds(s_resp1, s_rep1, stims1, dim, max_iterations, learning_rate,
-                                  log_every=log_every, label="Surrogate A", start_points=start1)
-    coords2, ll2, res2 = run_mds(s_resp2, s_rep2, stims2, dim, max_iterations, learning_rate,
-                                  log_every=log_every, label="Surrogate B", start_points=start2)
-    disp = compute_disparity(coords1, coords2, stims1, stims2)
-    ll_a = -ll1 / sum(s_rep1.values())
-    ll_b = -ll2 / sum(s_rep2.values())
-    return disp, ll_a, ll_b, res1 if track_conv else [], res2 if track_conv else []
-
-# build all surrogate pairs
-jobs = []
-for seed in range(n_surrogates):
-    np.random.seed(seed)
-    if resample_method == 'without_replacement_paired':
-        s_resp1, s_rep1, s_resp2, s_rep2 = resample_paired(pool, resp1, rep1, resp2, rep2)
-    else:
-        s_resp1, s_rep1 = resample_dataset(pool, resp1, rep1, resample_method)
-        s_resp2, s_rep2 = resample_dataset(pool, resp2, rep2, resample_method)
-    track = (seed < n_surr_conv)
-    jobs.append((seed, s_resp1, s_rep1, s_resp2, s_rep2, stims1, stims2, dim,
-                 surrogate_max_iter, learning_rate, start1, start2, track))
-
-from concurrent.futures import ThreadPoolExecutor
-with st.spinner(f"Running {n_surrogates} surrogates..."):
-    with ThreadPoolExecutor(max_workers=min(8, len(jobs))) as ex:
-        results = list(ex.map(_run_one_surrogate, jobs))
-
-surrogate_disparities = np.array([r[0] for r in results])
-surrogate_lls = [(r[1], r[2]) for r in results]
-surrogate_conv_results = [(r[3], r[4]) for r in results if r[3]]  # only tracked surrogates
-
-p_value = float(np.mean(surrogate_disparities >= real_disparity))
-
-# --- results ---
-st.markdown("#### Results")
-st.caption("The real disparity (red line) is compared against the surrogate null distribution (blue bars). If the real disparity falls in the tail of the distribution, the two datasets are genuinely different.")
-
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two real datasets.")
-m2.metric("Surrogate mean", f"{surrogate_disparities.mean():.4f}", help="Average disparity across all surrogate pairs — this is what 'no real difference' looks like.")
-m3.metric("Surrogate std", f"{surrogate_disparities.std():.4f}", help="Spread of the surrogate distribution. Wider = more variable null.")
-m4.metric("p-value", f"{p_value:.4f}", help="Fraction of surrogates with disparity ≥ real. Below 0.05 = statistically significant. Use at least 100 surrogates for a reliable estimate.")
-
-if p_value < 0.05:
-    st.success(f"Statistically significant at p = 0.05 (p = {p_value:.4f}) — the two maps are more different than expected by chance.")
-else:
-    st.warning(f"Not statistically significant at p = 0.05 (p = {p_value:.4f}) — cannot rule out that the difference is due to chance.")
-
-# distribution plot
-fig_dist = go.Figure()
-fig_dist.add_trace(go.Histogram(
-    x=surrogate_disparities.tolist(), name="Surrogates",
-    marker_color="#378ADD", opacity=0.75,
-    nbinsx=20
-))
-fig_dist.add_vline(
-    x=float(real_disparity), line_color="#E24B4A", line_dash="dash",
-    annotation_text=f"Real: {real_disparity:.4f}", annotation_position="top right"
-)
-fig_dist.update_layout(
-    xaxis_title="Procrustes disparity", yaxis_title="Count",
-    height=300, margin=dict(l=40, r=20, t=20, b=40),
-    showlegend=False
-)
-st.plotly_chart(fig_dist, use_container_width=True)
-st.caption("Blue bars = surrogate null distribution. Red dashed line = real disparity. The further right the red line, the more the two datasets differ.")
-
-# surrogate convergence (warm start verification)
-if _show_surr_conv and surrogate_conv_results:
-    st.markdown("#### Warm start verification — surrogate convergence")
-    st.caption(
-        f"Convergence of the first {len(surrogate_conv_results)} surrogate(s) (dashed), overlaid with the real fits (solid). "
-        "If warm start is working, surrogates should converge in far fewer iterations."
-    )
-    surr_res_dict = {name1: residuals1, name2: residuals2}
-    surr_tri_dict = {name1: total_triads1, name2: total_triads2}
-    surr_styles = {}
-    for i, (res_a, res_b) in enumerate(surrogate_conv_results):
-        lbl_a = f"Surrogate {i+1} A"
-        lbl_b = f"Surrogate {i+1} B"
-        surr_res_dict[lbl_a] = res_a
-        surr_res_dict[lbl_b] = res_b
-        surr_tri_dict[lbl_a] = sum(jobs[i][2].values())   # s_rep1 total
-        surr_tri_dict[lbl_b] = sum(jobs[i][4].values())   # s_rep2 total
-        surr_styles[lbl_a] = {"color": "#378ADD", "dash": "dash"}
-        surr_styles[lbl_b] = {"color": "#E24B4A", "dash": "dash"}
-    convergence_plot(surr_res_dict, surr_tri_dict, surr_styles)
-
-# surrogate LL table
-st.markdown("#### Surrogate log-likelihoods")
-st.caption("Log-likelihood per trial for each surrogate's two datasets. Similar values across surrogates indicate stable fits.")
-import pandas as pd
-full_tbl = {
-    "Surrogate": list(range(1, n_surrogates + 1)),
-    f"LL ({name1})": [f"{r[0]:.4f}" for r in surrogate_lls],
-    f"LL ({name2})": [f"{r[1]:.4f}" for r in surrogate_lls],
-    "Disparity": [f"{d:.4f}" for d in surrogate_disparities],
-}
-st.dataframe(full_tbl, use_container_width=True, hide_index=True)
-
-os.unlink(path1)
-os.unlink(path2)
