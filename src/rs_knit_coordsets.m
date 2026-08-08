@@ -395,9 +395,35 @@ if length(aux.opts_knit.dim_list_out)~=length(unique(aux.opts_knit.dim_list_out)
     wmsg=sprintf('dim_list_out values are not unique');
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
+%
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
+    %
+    %do dimension heuristics
+    %
+    overlaps=1-coords_isnan;
+    h=overlap_heuristics(overlaps);
+    if h.dmax<max(aux.opts_knit.dim_list_out)
+        if_hbad=1;
+    else
+        if_hbad=0;
+    end
+    if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
+        disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
+            h.dmax,h.dmax_free,h.dmax_constraints));
+        if if_hbad
+            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
+                h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        end
+        disp('table of available data')
+        for istim=1:nstims_all
+            disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',overlaps(istim,:))));
+        end
+    end
+    %
     %process
+    %
     typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     dim_list_in=aux.opts_knit.dim_list_in;
     dim_list_out=aux.opts_knit.dim_list_out;
@@ -430,31 +456,6 @@ if aux_out.warn_bad==0
             aux.opts_knit.initialize_set='pca_center';
         else
             aux.opts_knit.initialize_set='pca_nocenter';
-        end
-    end
-    %
-    %determine overlaps between datasets for heuristic calc of whether there are sufficient constraints
-    %this is done separately for each dimension:  missing data will generate a NaN at all dimensions, but a single coordinate value may also be a NaN
-    %
-    overlaps=1-coords_isnan;
-    h=overlap_heuristics(overlaps);
-    for dptr=1:length(dim_list_out)
-        idim=dim_list_in(dptr);
-        if idim>h.dmax
-            if_hbad=1;
-        else
-            if_hbad=0;
-        end
-        if if_hbad
-            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimension %2.0f',idim);
-            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
-            for istim=1:nstims_all
-                disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',overlaps(istim,:))));
-            end
-        end
-        if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
-            disp(sprintf('for target dimension %2.0f, dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f',...
-                idim,h.dmax,h.dmax_free,h.dmax_constraints));
         end
     end
     %
