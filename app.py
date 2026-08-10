@@ -246,9 +246,11 @@ st.sidebar.subheader("Optional settings")
 # Learning rate
 _c1, _c2 = st.sidebar.columns([3, 1])
 learning_rate = _c1.number_input("Learning rate", min_value=0.001, max_value=1.0,
-                                  value=float(DEFAULT_LEARNING_RATE), step=0.001, format="%.3f")
+                                  value=float(DEFAULT_LEARNING_RATE), step=0.001, format="%.3f",
+                                  help="Controls how fast the model updates at each step. The default (0.05) works well for most datasets — only adjust if the convergence plot shows instability.")
 if _c2.button("↺", key="d_lr", help="Reset to default"):
     learning_rate = DEFAULT_LEARNING_RATE
+st.sidebar.caption("ℹ️ Learning rate rarely needs changing. Default of 0.05 is appropriate for most runs.")
 
 # Print convergence interval
 _c1, _c2 = st.sidebar.columns([3, 1])
@@ -344,7 +346,9 @@ with tab_c2c:
     with c2c_c2:
         c2c_lr = st.number_input("Learning rate", min_value=0.001, max_value=1.0,
                                   value=float(DEFAULT_LEARNING_RATE), step=0.001,
-                                  format="%.3f", key="c2c_lr")
+                                  format="%.3f", key="c2c_lr",
+                                  help="Controls how fast the model updates at each step. The default (0.05) works well for most datasets — only adjust if the convergence plot shows instability.")
+        st.caption("ℹ️ Learning rate rarely needs changing. Default of 0.05 is appropriate for most runs.")
         c2c_warm = st.checkbox("Use warm start", value=False, key="c2c_warm",
                                 help="Fit a 2D map first and use it as a starting point for the full fit.")
 
