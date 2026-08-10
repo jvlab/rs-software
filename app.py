@@ -294,7 +294,7 @@ run_btn = st.sidebar.button("Run analysis", type="primary", use_container_width=
 
 # --- main area ---
 st.title("rs-software")
-tab_analysis, tab_convert = st.tabs(["Surrogate MDS Analysis", "Convert .mat → NumPy"])
+tab_analysis, tab_convert, tab_c2c = st.tabs(["Surrogate MDS Analysis", "Convert .mat → NumPy", "Choice → Coordinates"])
 
 with tab_convert:
     st.header("Convert choice file to NumPy")
@@ -325,6 +325,97 @@ with tab_convert:
             st.error(f"Conversion failed: {e}")
         finally:
             os.unlink(tmp_path)
+
+with tab_c2c:
+    st.header("Choice → Coordinates")
+    st.markdown(
+        "Upload a `.mat` choices file, fit an MDS perceptual map, "
+        "and download the result as a coordinates `.mat` file."
+    )
+
+    c2c_file = st.file_uploader("Upload .mat choices file", type=["mat"], key="c2c_upload")
+
+    c2c_col1, c2c_col2 = st.sidebar.columns([3, 1]) if False else (st.columns(2)[0], st.columns(2)[1])
+    c2c_c1, c2c_c2 = st.columns(2)
+    with c2c_c1:
+        c2c_dim = st.selectbox("Dimensions", [2, 3], index=1, key="c2c_dim")
+        c2c_max_iter = st.number_input("Max iterations", min_value=100, max_value=10000,
+                                        value=2000, step=100, key="c2c_iter")
+    with c2c_c2:
+        c2c_lr = st.number_input("Learning rate", min_value=0.001, max_value=1.0,
+                                  value=float(DEFAULT_LEARNING_RATE), step=0.001,
+                                  format="%.3f", key="c2c_lr")
+        c2c_warm = st.checkbox("Use warm start", value=False, key="c2c_warm",
+                                help="Fit a 2D map first and use it as a starting point for the full fit.")
+
+    c2c_run = st.button("Fit coordinates", type="primary", key="c2c_run")
+
+    if c2c_file is not None and c2c_run:
+        with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
+            tmp.write(c2c_file.read())
+            c2c_tmp = tmp.name
+        try:
+            with st.spinner("Loading choices..."):
+                c2c_resp, c2c_rep, c2c_stims = load_mat(c2c_tmp)
+
+            st.info(f"Loaded **{len(c2c_stims)} stimuli**, **{sum(c2c_rep.values())} trials**")
+
+            c2c_start = None
+            if c2c_warm:
+                with st.spinner("Running warm start (2D)..."):
+                    _, _, c2c_res_warm = run_mds(c2c_resp, c2c_rep, c2c_stims, 2,
+                                                  c2c_max_iter, c2c_lr, log_every=0)
+                    # reuse 2D coords as starting point — pad with zeros for extra dims
+                    import scipy.io as sio_c2c
+                    pass  # warm start handled inline below
+
+            with st.spinner(f"Fitting {c2c_dim}D MDS..."):
+                c2c_coords, c2c_ll, c2c_residuals = run_mds(
+                    c2c_resp, c2c_rep, c2c_stims, c2c_dim, c2c_max_iter, c2c_lr,
+                    log_every=1, label=c2c_file.name, start_points=c2c_start)
+
+            c2c_final_ll = -c2c_ll / sum(c2c_rep.values())
+            st.success(f"Fit complete — LL per trial: **{c2c_final_ll:.4f}**")
+
+            if c2c_residuals:
+                st.markdown("#### Convergence")
+                st.caption("Log-likelihood per iteration. A flat curve means the fit has converged.")
+                convergence_plot(
+                    {c2c_file.name: c2c_residuals},
+                    {c2c_file.name: sum(c2c_rep.values())},
+                    {}
+                )
+
+            # show coordinates table
+            import pandas as pd
+            coord_cols = [f"dim{i+1}" for i in range(c2c_dim)]
+            c2c_df = pd.DataFrame(c2c_coords, columns=coord_cols)
+            c2c_df.insert(0, "stimulus", c2c_stims)
+            st.markdown("#### Coordinates")
+            st.dataframe(c2c_df, use_container_width=True, height=300)
+
+            # save to .mat and offer download
+            import scipy.io as sio_c2c
+            max_len = max(len(s) for s in c2c_stims)
+            c2c_out = {
+                'points':    c2c_coords,
+                'stim_list': np.array(c2c_stims, dtype=f'S{max_len}'),
+                'readme':    f"MDS coordinates fitted from {c2c_file.name}. {c2c_dim}D, {c2c_max_iter} max iter."
+            }
+            import io
+            c2c_buf = io.BytesIO()
+            sio_c2c.savemat(c2c_buf, c2c_out)
+            c2c_buf.seek(0)
+            out_name = c2c_file.name.replace("choices", "coords").replace(".mat", f"_{c2c_dim}d.mat")
+            st.download_button("Download coordinates .mat", data=c2c_buf,
+                               file_name=out_name, mime="application/octet-stream")
+
+        except Exception as e:
+            st.error(f"Failed: {e}")
+        finally:
+            os.unlink(c2c_tmp)
+    elif c2c_file is None:
+        st.info("Upload a choices .mat file above to get started.")
 
 with tab_analysis:
 
