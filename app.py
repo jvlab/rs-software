@@ -398,16 +398,9 @@ with tab_c2c:
             import scipy.io as sio_c2c
             max_len = max(len(s) for s in c2c_stims)
             c2c_out = {}
-            for d in range(c2c_dim):
-                c2c_out[f'dim{d+1}'] = c2c_coords[:, d].reshape(-1, 1)
-            c2c_out['stim_list'] = np.array(c2c_stims, dtype=f'S{max_len}')
-            c2c_out['rawLLs'] = np.array([c2c_final_ll])
-            c2c_out['readme'] = (
-                f"MDS coordinates fitted from {c2c_file.name}. {c2c_dim}D, {c2c_max_iter} max iter.\n"
-                "dim1, dim2, ... = coordinate columns (one per dimension)\n"
-                "stim_list = stimulus names\n"
-                "rawLLs = log-likelihood per trial"
-            )
+            for d in range(1, c2c_dim + 1):
+                c2c_out[f'dim{d}'] = c2c_coords[:, :d]
+            c2c_out['stim_labels'] = np.array(c2c_stims)
             import io
             c2c_buf = io.BytesIO()
             sio_c2c.savemat(c2c_buf, c2c_out)
