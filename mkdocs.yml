@@ -86,5 +86,7 @@ nav:
     - Data structures: data_structures.md
     - Domains: domains.md
   - Python - MATLAB/Octave: python-matlab-octave.md
+  - Python Tools: python_tools.md
+  - Web-based interfaces: web_ui.md
 
 not_in_nav: mfiles/*
