@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "rs-tools"
 version = "0.1.0"
 description = "Conversion and analysis utilities for representational similarity choice data"
+readme = "README_pypi.md"
 requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.24",

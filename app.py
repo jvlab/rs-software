@@ -50,7 +50,7 @@ def load_mat(path):
 
 
 def run_mds(responses, repeats, stim_list, dim, max_iterations, learning_rate,
-            log_every=0, label="", start_points=None):
+            log_every=0, label="", start_points=None, seed=None):
     args = {
         'num_stimuli':    len(stim_list),
         'sigma':          _CFG['sigma'],
@@ -63,7 +63,7 @@ def run_mds(responses, repeats, stim_list, dim, max_iterations, learning_rate,
         'log_every':      log_every,
         'label':          label,
     }
-    coords, ll, residuals = rs.points_of_best_fit(responses, repeats, args, start_points=start_points)
+    coords, ll, residuals = rs.points_of_best_fit(responses, repeats, args, start_points=start_points, seed=seed)
     return coords, ll, residuals
 
 
@@ -296,7 +296,7 @@ run_btn = st.sidebar.button("Run analysis", type="primary", use_container_width=
 
 # --- main area ---
 st.title("rs-software")
-tab_analysis, tab_convert, tab_c2c = st.tabs(["Surrogate MDS Analysis", "Convert .mat → NumPy", "Choice → Coordinates"])
+tab_analysis, tab_convert, tab_c2c, tab_ooo = st.tabs(["Surrogate MDS Analysis", "Convert .mat → NumPy", "Choice → Coordinates", "OOO → Triadic"])
 
 with tab_convert:
     st.header("Convert choice file to NumPy")
@@ -331,28 +331,28 @@ with tab_convert:
 with tab_c2c:
     st.header("Choice → Coordinates")
     st.markdown(
-        "Upload a `.mat` choices file, fit an MDS perceptual map, "
-        "and download the result as a coordinates `.mat` file."
+        "Upload a `.mat` choices file, fit MDS models at dimensions 1–7, "
+        "and download a coordinates `.mat` file matching JV's format."
+    )
+    st.info(
+        "Fits models at **all 7 dimensions**. Output includes `dim1`–`dim7`, `rawLLs`, `bestModelLL`, and `stim_labels`. "
+        "Note: `biasEstimate` and `debiasedRelativeLL` are not computed (requires bias-estimation files not in repo)."
     )
 
     c2c_file = st.file_uploader("Upload .mat choices file", type=["mat"], key="c2c_upload")
 
-    c2c_col1, c2c_col2 = st.sidebar.columns([3, 1]) if False else (st.columns(2)[0], st.columns(2)[1])
     c2c_c1, c2c_c2 = st.columns(2)
     with c2c_c1:
-        c2c_dim = st.selectbox("Dimensions", [2, 3], index=1, key="c2c_dim")
-        c2c_max_iter = st.number_input("Max iterations", min_value=100, max_value=10000,
+        c2c_max_iter = st.number_input("Max iterations per dimension", min_value=100, max_value=10000,
                                         value=2000, step=100, key="c2c_iter")
     with c2c_c2:
         c2c_lr = st.number_input("Learning rate", min_value=0.001, max_value=1.0,
                                   value=float(DEFAULT_LEARNING_RATE), step=0.001,
                                   format="%.3f", key="c2c_lr",
-                                  help="Controls how fast the model updates at each step. The default (0.05) works well for most datasets — only adjust if the convergence plot shows instability.")
+                                  help="Controls how fast the model updates at each step. Default of 0.05 works for most datasets.")
         st.caption("ℹ️ Learning rate rarely needs changing. Default of 0.05 is appropriate for most runs.")
-        c2c_warm = st.checkbox("Use warm start", value=False, key="c2c_warm",
-                                help="Fit a 2D map first and use it as a starting point for the full fit.")
 
-    c2c_run = st.button("Fit coordinates", type="primary", key="c2c_run")
+    c2c_run = st.button("Fit coordinates (1–7D)", type="primary", key="c2c_run")
 
     if c2c_file is not None and c2c_run:
         with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
@@ -362,54 +362,73 @@ with tab_c2c:
             with st.spinner("Loading choices..."):
                 c2c_resp, c2c_rep, c2c_stims = load_mat(c2c_tmp)
 
-            st.info(f"Loaded **{len(c2c_stims)} stimuli**, **{sum(c2c_rep.values())} trials**")
+            n_trials = sum(c2c_rep.values())
+            st.info(f"Loaded **{len(c2c_stims)} stimuli**, **{n_trials} trials** — fitting 7 models...")
 
-            c2c_start = None
-            if c2c_warm:
-                with st.spinner("Running warm start (2D)..."):
-                    _, _, c2c_res_warm = run_mds(c2c_resp, c2c_rep, c2c_stims, 2,
-                                                  c2c_max_iter, c2c_lr, log_every=0)
-                    # reuse 2D coords as starting point — pad with zeros for extra dims
-                    import scipy.io as sio_c2c
-                    pass  # warm start handled inline below
+            import io, scipy.io as sio_c2c, pandas as pd
 
-            with st.spinner(f"Fitting {c2c_dim}D MDS..."):
-                c2c_coords, c2c_ll, c2c_residuals = run_mds(
-                    c2c_resp, c2c_rep, c2c_stims, c2c_dim, c2c_max_iter, c2c_lr,
-                    log_every=1, label=c2c_file.name, start_points=c2c_start)
+            c2c_out = {}
+            raw_lls = {}
+            all_residuals = {}
+            prog = st.progress(0, text="Fitting 1D...")
+            prev_coords = None
 
-            c2c_final_ll = -c2c_ll / sum(c2c_rep.values())
-            st.success(f"Fit complete — LL per trial: **{c2c_final_ll:.4f}**")
+            for d in range(1, 8):
+                prog.progress(int((d - 1) / 7 * 100), text=f"Fitting {d}D...")
+                coords_d, ll_d, res_d = run_mds(
+                    c2c_resp, c2c_rep, c2c_stims, d, c2c_max_iter, c2c_lr,
+                    log_every=1, label=f"dim{d}", start_points=prev_coords)
+                c2c_out[f'dim{d}'] = coords_d[:, :d]
+                raw_lls[d] = float(-ll_d)
+                all_residuals[f'dim{d}'] = res_d
+                # use this dim's coords as warm start for next
+                prev_coords = np.pad(coords_d, ((0, 0), (0, 1))) if d < 7 else coords_d
 
-            if c2c_residuals:
-                st.markdown("#### Convergence")
-                st.caption("Log-likelihood per iteration. A flat curve means the fit has converged.")
-                convergence_plot(
-                    {c2c_file.name: c2c_residuals},
-                    {c2c_file.name: sum(c2c_rep.values())},
-                    {}
-                )
+            prog.progress(100, text="All dimensions done.")
 
-            # show coordinates table
-            import pandas as pd
-            coord_cols = [f"dim{i+1}" for i in range(c2c_dim)]
-            c2c_df = pd.DataFrame(c2c_coords, columns=coord_cols)
+            best_dim = max(raw_lls, key=raw_lls.get)
+            best_ll = raw_lls[best_dim]
+
+            st.success(f"Best model: **{best_dim}D** (LL = {best_ll/n_trials:.4f} per trial)")
+
+            # convergence plots
+            st.markdown("#### Convergence per dimension")
+            st.caption("Each line is one dimension's fit. Flat = converged.")
+            convergence_plot(
+                {f"dim{d}": all_residuals[f'dim{d}'] for d in range(1, 8)},
+                {f"dim{d}": n_trials for d in range(1, 8)},
+                {}
+            )
+
+            # LL table
+            st.markdown("#### Log-likelihoods by dimension")
+            ll_df = pd.DataFrame({
+                "Dimension": list(range(1, 8)),
+                "Raw LL": [raw_lls[d] for d in range(1, 8)],
+                "LL per trial": [raw_lls[d] / n_trials for d in range(1, 8)],
+            })
+            st.dataframe(ll_df, use_container_width=True, hide_index=True)
+
+            # coordinates table (show best dim)
+            st.markdown(f"#### Coordinates ({best_dim}D — best model)")
+            coord_cols = [f"dim{i+1}" for i in range(best_dim)]
+            c2c_df = pd.DataFrame(c2c_out[f'dim{best_dim}'], columns=coord_cols)
             c2c_df.insert(0, "stimulus", c2c_stims)
-            st.markdown("#### Coordinates")
             st.dataframe(c2c_df, use_container_width=True, height=300)
 
-            # save to .mat and offer download
-            import scipy.io as sio_c2c
-            max_len = max(len(s) for s in c2c_stims)
-            c2c_out = {}
-            for d in range(1, c2c_dim + 1):
-                c2c_out[f'dim{d}'] = c2c_coords[:, :d]
+            # build output .mat
+            c2c_out['rawLLs'] = np.array([raw_lls[d] for d in range(1, 8)])
+            c2c_out['bestModelLL'] = float(best_ll)
             c2c_out['stim_labels'] = np.array(c2c_stims)
-            import io
+            c2c_out['metadata'] = (
+                "rawLLs[i] is the raw model LL for model with i+1 dimensions. "
+                "biasEstimate and debiasedRelativeLL not computed (bias-estimation files required)."
+            )
+
             c2c_buf = io.BytesIO()
             sio_c2c.savemat(c2c_buf, c2c_out)
             c2c_buf.seek(0)
-            out_name = c2c_file.name.replace("choices", "coords").replace(".mat", f"_{c2c_dim}d.mat")
+            out_name = c2c_file.name.replace("choices", "coords").replace(".mat", "_7d.mat")
             st.download_button("Download coordinates .mat", data=c2c_buf,
                                file_name=out_name, mime="application/octet-stream")
 
@@ -419,6 +438,76 @@ with tab_c2c:
             os.unlink(c2c_tmp)
     elif c2c_file is None:
         st.info("Upload a choices .mat file above to get started.")
+
+with tab_ooo:
+    st.header("OOO → Triadic")
+    st.markdown(
+        "Upload an **odd-one-out** `.mat` file and convert it to standard triadic choice format. "
+        "Each OOO judgment generates exactly 2 triadic entries using JV's conversion rule."
+    )
+    st.info(
+        "**Input format:** columns `s1, s2, s3, N(s1 odd), N(s2 odd), N(s3 odd)` (1-indexed)\n\n"
+        "**Output format:** columns `ref, s1, s2, N(s1 chosen), N_repeats` (1-indexed)"
+    )
+
+    ooo_file = st.file_uploader("Upload OOO .mat file", type=["mat"], key="ooo_upload")
+
+    if ooo_file is not None:
+        with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
+            tmp.write(ooo_file.read())
+            ooo_tmp = tmp.name
+        try:
+            from convert_ooo_to_triadic import ooo_to_triadic
+            resp_ooo, rep_ooo, stims_ooo = ooo_to_triadic(ooo_tmp, out_path=None)
+
+            n_input_triplets = None
+            from scipy.io import loadmat as _loadmat
+            _d = _loadmat(ooo_tmp)
+            if 'responses' in _d:
+                n_input_triplets = _d['responses'].shape[0]
+
+            st.success(
+                f"Converted: **{n_input_triplets} input triplets** → **{len(resp_ooo)} triadic trials** · **{len(stims_ooo)} stimuli**"
+            )
+            st.markdown(f"**Stimuli:** {', '.join(stims_ooo[:10])}{'...' if len(stims_ooo) > 10 else ''}")
+
+            # build preview table
+            import pandas as pd
+            rows = []
+            for (ref_s1, s1), (_, s2) in list(resp_ooo.keys())[:200]:
+                key = ((ref_s1, s1), (ref_s1, s2))
+                rows.append({
+                    "ref": ref_s1 + 1,
+                    "s1": s1 + 1,
+                    "s2": s2 + 1,
+                    "n_s1_chosen": resp_ooo[key],
+                    "n_repeats": rep_ooo[key],
+                    "ref_name": stims_ooo[ref_s1],
+                    "s1_name": stims_ooo[s1],
+                    "s2_name": stims_ooo[s2],
+                })
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, height=300)
+
+            # save and offer download
+            with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as out_tmp:
+                out_ooo_path = out_tmp.name
+            ooo_to_triadic(ooo_tmp, out_path=out_ooo_path)
+            with open(out_ooo_path, "rb") as f:
+                ooo_bytes = f.read()
+            os.unlink(out_ooo_path)
+
+            out_ooo_name = ooo_file.name.replace("ooo", "triadic").replace(".mat", "_triadic.mat")
+            if "triadic" not in out_ooo_name:
+                out_ooo_name = ooo_file.name.replace(".mat", "_triadic.mat")
+            st.download_button("Download triadic .mat", data=ooo_bytes,
+                               file_name=out_ooo_name, mime="application/octet-stream")
+
+        except Exception as e:
+            st.error(f"Conversion failed: {e}")
+        finally:
+            os.unlink(ooo_tmp)
+    else:
+        st.info("Upload an OOO .mat file above to get started.")
 
 with tab_analysis:
 
@@ -508,7 +597,7 @@ with tab_analysis:
             total_triads_pooled = sum(pooled_rep.values())
             pooled_coords, pooled_ll, pooled_residuals = run_mds(
                 pooled_resp, pooled_rep, global_stims, dim, max_iterations, learning_rate,
-                log_every=1, label="Pooled")
+                log_every=1, label="Pooled", seed=0)
             start1 = np.array([pooled_coords[idx_map1[i]] for i in range(len(stims1))])
             start2 = np.array([pooled_coords[idx_map2[i]] for i in range(len(stims2))])
             st.success(f"Pooled LL: {-pooled_ll/total_triads_pooled:.4f} — using as warm start for A and B fits")
