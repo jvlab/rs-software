@@ -15,10 +15,11 @@
 %   rs_concat_coordsets: concatenate dataset structures
 %   rs_extract_coordsets: extract a subset of dataset structures
 %   rs_geofit: fit geometrical models
-%   rs_knit_coordsets: find consensus coordinates across coordinate files with non-identical stimuli
+%   rs_knit_coordsets: find consensus coordinates across coordinate files
 %   rs_xform_specify: specify a transformation (rotation and translation)
 %   rs_xform_apply: apply a transformation from rs_xform_specify
-%
+%   rs_vara_coordsets: calculate statitics of consensus within groups
+% 
 % Visualization
 %   rs_disp_coordsets: display one or more sets of coordinates
 %   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.
