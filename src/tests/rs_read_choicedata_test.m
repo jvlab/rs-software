@@ -24,10 +24,10 @@ opts_used=cell(1,ntests);
 data_outs=cell(1,ntests);
 aux_outs=cell(1,ntests);
 %
-test_descs{1}='reading triadic choice file, animal-domain';
+test_descs{1}='reading triadic choice file, animal-domain, with logging';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
-auxs{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
+auxs{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
 %
 test_descs{2}='reading triadic choice file, bgca stimulus set';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};

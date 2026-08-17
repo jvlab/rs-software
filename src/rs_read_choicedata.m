@@ -16,7 +16,7 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %
 %         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1; see note below regarding customization
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
-%         - data_fullname_def (char): prompt for data file if 'data_fullname' is empty; see note below regarding customization
+%         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
 %         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_choices*'; see note below regarding customization
 %
 %         - **Options for internal use and maintenance**
@@ -96,8 +96,13 @@ aux.opts_read.nometa=1;
 aux.opts_read.sign_check_mode=0; %look for sign (< or >) in responses_colnames, and ask if it is not found
 aux.opts_read.data_fullname_def=strrep(aux.opts_read.data_fullname_def,'_coords','_choices');
 aux.opts_read.permutes=[]; %so that psg_read_coorddata will not attempt to permute rays
-[data_comp,opts_read_used]=psg_read_choicedata(fullname,[],aux.opts_read);
-
+[data_comp,sa,aux_out.opts_read]=psg_read_choicedata(fullname,[],aux.opts_read);
+%
+aux_out.typenames=sa.typenames;
+%
+% check that opts_read_used.choice_type is legal and issue warnings,
+% check that typenames and indices are consistent
+%
 % %
 % data_out.ds{1}=d;
 % data_out.sas{1}=sa;
@@ -121,4 +126,4 @@ aux.opts_read.permutes=[]; %so that psg_read_coorddata will not attempt to permu
 %     end
 % end
 % aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
-% return
+return

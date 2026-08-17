@@ -20,7 +20,7 @@ function [data_out,aux_out]=rs_read_coorddata(fullname,aux)
 %
 %         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1; see note below regarding customization
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
-%         - data_fullname_def (char): prompt for data file if 'data_fullname' is empty; see note below regarding customization
+%         - data_fullname_def (char): prompt for data file if fullname' is empty; see note below regarding customization
 %         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_coords*';see note below regarding customization
 %
 %         - **Options related to stimulus coordinates, domains, and setup files (see notes below)** 
