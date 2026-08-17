@@ -1,9 +1,11 @@
 function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 % [data_comp,aux_out]=rs_read_choicedata(fullname,aux) reads a single `choice file`
 %
-% The choice file may be triadic or tetradic.  This is determined by the number of columns in the choices variable of the data file:  5 columns if triadic, 6 columns if tetradic
-% Each row holds responses from one or more presentations of a single comparison.  Comparisons may be repeated in other rows.
-% A comparison may also be repeated with a separate indexing (e.g., s1 and s2 may be reversed.
+% The `choice file` may be triadic or tetradic, as determined by the number of columns in the choices variable of the data file:  5 columns if triadic, 6 columns if tetradic
+% Each row of the variable 'responses' holds responses from one or more presentations of a single comparison.  Comparisons may be repeated in other rows, and a comparison may also be repeated with a separate indexing (e.g., s1 and s2 may be reversed).
+%
+% __Important note__: The standard convention in the `choice file` is to count the number of times the first comparison is judged to be more different than the second; in 'data_comp', the __opposite__ convention is used.
+% This conversion is made automatically and logged.
 %
 % Args:
 %   fullname (char or singleton char array): full file name with path; if empty, it will be requested interactively. File names must contain the string '_coords'. See note below regarding setup files.
@@ -32,9 +34,8 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %          - triadic: col 1 is reference, col 2 is s1, col 3 is s2, comparisons are (ref,s1) and (ref,s2)
 %          - tetradic: cols 1-4 are s1-s4, comparisons are (s1,s2) and (s3,s4)
 %
-%      - next column: number of times the first comparison was judged __more similar than__ the second comparison
+%      - next column: number of times the first comparison was judged __more similar than__ the second comparison.
 %      - final column: number of times the comparison was made
-%      - that this is *opposite* from the convention in the data file.
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -49,7 +50,7 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %
 %         - if_gui
 %         - if_log
-%         - data_fullname_def
+%         - data_fullname_def ('_coords' will be replaced by '_choices' at run time)
 %         - coord_string
 %         - type_class_aux
 %
