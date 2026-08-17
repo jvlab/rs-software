@@ -1,4 +1,4 @@
-function [data_comp,aux_out]=rs_read_coorddata(fullname,aux)
+function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 % [data_comp,aux_out]=rs_read_choicedata(fullname,aux) reads a single `choice file`
 %
 % The choice file may be triadic or tetradic.  This is determined by the number of columns in the choices variable of the data file:  5 columns if triadic, 6 columns if tetradic
@@ -15,7 +15,7 @@ function [data_comp,aux_out]=rs_read_coorddata(fullname,aux)
 %         - if_gui (int): 1 to use graphical interface to request data file name if 'fullname' is empty, 0 to use console; default is 1; see note below regarding customization
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %         - data_fullname_def (char): prompt for data file if 'data_fullname' is empty; see note below regarding customization
-%         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_coords';see note below regarding customization
+%         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_choices*'; see note below regarding customization
 %
 %         - **Options for internal use and maintenance**
 %         - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
@@ -48,7 +48,6 @@ function [data_comp,aux_out]=rs_read_coorddata(fullname,aux)
 %     - The defaults for the following parameters can be set by editing the line containing generic.opts_read.[param_name] in  `rs_aux_defaults_define`, running it once, and saving the workspace as rs_aux_defaults.mat.
 %
 %         - if_gui
-%         - ui_filter
 %         - if_log
 %         - data_fullname_def
 %         - coord_string
@@ -66,61 +65,38 @@ aux=filldefault(aux,'opts_rays',struct);
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
+aux.opts_read.ui_filter='*_choices*';
 aux=rs_aux_customize(aux,'rs_read_choicedata');
 %
-data_out=struct;
 aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-data_comp=[];
-return
-
+if iscell(fullname)
+    fullname=fullname{1};
+end
 %
-% if iscell(fullname)
-%     fullname=fullname{1};
-% end
-% %
-% if isempty(fullname)
-%     if aux.opts_read.if_gui
-%         if_manual=0;
-%         if aux.opts_read.if_justsetup
-%             ui_prompt='Select a setup file';
-%             ui_filter={cat(2,'*',aux.opts_read.setup_suffix,'.mat'),'setup file'};
-%         else
-%             ui_prompt='Select a coordinate file';
-%             ui_filter=aux.opts_read.ui_filter;
-%         end
-%         while (if_manual==0 & isempty(fullname))
-%             [filename_short,pathname]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
-%             if  (isequal(filename_short,0) | isequal(pathname,0)) %use Matlab's suggested way to detect cancel
-%                 if_manual=getinp('1 to return to selection from console','d',[0 1]);
-%             else
-%                 fullname=cat(2,pathname,filename_short);
-%             end
-%         end
-%     end
-% end
-% if aux.opts_read.if_justsetup==0
-%     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,[],aux.opts_read);
-%     opts_read_used.data_fullnames={opts_read_used.data_fullname}; %for compatibility with rs_get_coordsets
-%     opts_read_used.setup_fullnames={opts_read_used.setup_fullname}; %for compatibility with rs_get_coordsets
-%     opts_read_used.input_type_desc=aux.opts_read.input_types{1}; %rs_read_coorddata only reads experimental data, which is type 1
-%     opts_makeset.paradigm_type_def=aux.opts_read.paradigm_type_def;
-%     opts_makeset.domain_list_def=aux.opts_read.domain_list_def;
-%     opts_makeset.if_uselocal=aux.opts_read.if_uselocal;
-%     sets=psg_make_setstruct('data',opts_read_used.dim_list,opts_read_used.data_fullname,sa.nstims,pipeline,opts_makeset);
-%     %
-%     [rays,wmsg,opts_rays_used]=rs_findrays(sa,opts_read_used.setup_fullname,aux.opts_rays);
-%     if ~isempty(wmsg)
-%         aux_out=rs_warning(wmsg,0,aux_out);
-%     end
-% else
-%     setup_fullname=fullname;
-%     [d,sa,opts_read_used,pipeline]=psg_read_coorddata(fullname,setup_fullname,aux.opts_read);
-%     d=struct;
-%     sets=struct;
-% end
+if isempty(fullname)
+    if aux.opts_read.if_gui
+        if_manual=0;
+        ui_prompt='Select a choice file';
+        ui_filter=aux.opts_read.ui_filter;       
+        while (if_manual==0 & isempty(fullname))
+            [filename_short,pathname]=uigetfile(ui_filter,ui_prompt,'Multiselect','off');
+            if  (isequal(filename_short,0) | isequal(pathname,0)) %use Matlab's suggested way to detect cancel
+                if_manual=getinp('1 to return to selection from console','d',[0 1]);
+            else
+                fullname=cat(2,pathname,filename_short);
+            end
+        end
+    end
+end
+aux.opts_read.nometa=1;
+aux.opts_read.sign_check_mode=0; %look for sign (< or >) in responses_colnames, and ask if it is not found
+aux.opts_read.data_fullname_def=strrep(aux.opts_read.data_fullname_def,'_coords','_choices');
+aux.opts_read.permutes=[]; %so that psg_read_coorddata will not attempt to permute rays
+[data_comp,opts_read_used]=psg_read_choicedata(fullname,[],aux.opts_read);
+
 % %
 % data_out.ds{1}=d;
 % data_out.sas{1}=sa;
