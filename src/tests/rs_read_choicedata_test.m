@@ -27,17 +27,17 @@ aux_outs=cell(1,ntests);
 test_descs{1}='reading triadic choice file, animal-domain, with logging';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
-auxs{1}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
+auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 %
 test_descs{2}='reading triadic choice file, bgca stimulus set';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
 auxs{2}=auxs_force;
-auxs{2}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
+auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 %
-test_descs{3}='reading tetradic choice file, coordinate file, bgca-gm stimulus set';
+test_descs{3}='reading tetradic choice file, coordinate file, bgca-gm stimulus set, with logging';
 filenames_examples{3}={'./samples/bwtextures/bgca3pt_choices_MC-gm_sess01_10.mat'};
 auxs{3}=auxs_force;
-auxs{3}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,0});
+auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

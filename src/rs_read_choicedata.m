@@ -1,5 +1,5 @@
 function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
-% [data_comp,aux_out]=rs_read_choicedata(fullname,aux) reads a single `choice file`
+% [data_comp,aux_out]=rs_read_choicedata(fullname,aux) reads a single `choice file` and validates entries
 %
 % The `choice file` may be triadic or tetradic, as determined by the number of columns in the choices variable of the data file:  5 columns if triadic, 6 columns if tetradic
 % Each row of the variable 'responses' holds responses from one or more presentations of a single comparison.  Comparisons may be repeated in other rows, and a comparison may also be repeated with a separate indexing (e.g., s1 and s2 may be reversed).
@@ -56,6 +56,8 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %
 %  See also: RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_READ_COORDDATA.
 %
+valid_choice_types={'triadic','tetradic'};
+%
 if (nargin<=1)
     aux=struct;
 end
@@ -96,34 +98,53 @@ aux.opts_read.nometa=1;
 aux.opts_read.sign_check_mode=0; %look for sign (< or >) in responses_colnames, and ask if it is not found
 aux.opts_read.data_fullname_def=strrep(aux.opts_read.data_fullname_def,'_coords','_choices');
 aux.opts_read.permutes=[]; %so that psg_read_coorddata will not attempt to permute rays
-[data_comp,sa,aux_out.opts_read]=psg_read_choicedata(fullname,[],aux.opts_read);
+[data_comp,sa,opts_read_used]=psg_read_choicedata(fullname,[],aux.opts_read);
 %
 aux_out.typenames=sa.typenames;
+aux_out.opts_read=opts_read_used;
+aux_out.opts_check=aux.opts_check;
 %
-% check that opts_read_used.choice_type is legal and issue warnings,
-% check that typenames and indices are consistent
+ncols=size(data_comp,2);
 %
-% %
-% data_out.ds{1}=d;
-% data_out.sas{1}=sa;
-% data_out.sets{1}=sets;
-% aux_out.opts_check=aux.opts_check;
-% aux_out.opts_read{1}=opts_read_used;
-% aux_out.opts_rays{1}=opts_rays_used;
-% aux_out.rayss{1}=rays;
-% %for compatibility with rs_get_coordsets;
-% aux_out.opts_qpred{1}=struct;
-% aux_out.syms_list=struct();
-% %
-% %check consistency
-% %
-% check=rs_check_coordsets(data_out,aux.opts_check);
-% if ~isempty(check.warnings) %since strvcat([],[])~=[]
-%     aux_out.warnings=strvcat(aux_out.warnings,check.warnings);
-%     warn_leadin=getfield(getfield(rs_aux_customize(struct()),'overall'),'warn_leadin');
-%     for k=1:size(aux_out.warnings,1)
-%         disp(cat(2,warn_leadin,aux_out.warnings(k,:)));
-%     end
-% end
-% aux_out.warn_bad=aux_out.warn_bad+check.warn_bad;
+%validate response values: integer and in range, otherwise can't proceed
+%
+resps=data_comp(:,ncols-1);
+trials=data_comp(:,ncols);
+if any(resps~=round(resps)) | any(trials~=round(trials)) | any(resps<0) | any(resps>trials) | any(trials<0)
+    wmsg=sprintf('response counts or trial counts is non-integer or out of range');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+end
+%
+%validate indices for choices: integer and in range, otherwise can't proceed
+%
+all_stim_indices=unique(data_comp(:,1:ncols-2));
+if any(all_stim_indices~=round(all_stim_indices)) | any(all_stim_indices<1) | any(all_stim_indices>length(aux_out.typenames))
+    wmsg=sprintf('stimulus indices are non-integer or out of range, should be in [1:%1.0f]',length(aux_out.typenames));
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+end
+%
+% stimuli that never appear as indices: warning but can proceed
+%
+missing_stims=setdiff(1:length(aux_out.typenames),all_stim_indices);
+if ~isempty(missing_stims) 
+    wmsg=sprintf('some stimulus indices never appear in choices');
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+    disp('missing indices:')
+    disp(sprintf(' %1.0f',missing_stims))
+end   
+%
+%validate choice type: if not recognized, cannot proceed
+%
+if_valid_choice_type=strmatch(aux_out.opts_read.choice_type,valid_choice_types,'exact');
+if isempty(if_valid_choice_type)
+    wmsg=sprintf('choice type (%s) not recognized',aux_out.opts_read.choice_type);
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+end
+%
+if aux_out.warn_bad>0
+    disp('cannot proceed');
+    disp(aux_out.warnings);
+    return
+end
 return
+end
