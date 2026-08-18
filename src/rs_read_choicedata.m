@@ -18,9 +18,7 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %         - data_fullname_def (char): prompt for data file if 'fullname' is empty; see note below regarding customization
 %         - ui_filter (char): file name filter that appears in graphical user interface when if_gui=1; defaults to '*_choices*'; see note below regarding customization
-%
-%         - **Options for internal use and maintenance**
-%         - if_uselocal (int): typically omitted; 0 to use options in rs_aux_defaults, 1 is reserved for maintenance; default is 0
+%         - if_consolidate (int): 1 to consolidate equivalent triadic and tetradic judgments into a single line, 0 does not; default is 1
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -62,6 +60,7 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_read',struct);
+aux.opts_read=filldefault(aux.opts_read,'if_consolidate',1);
 %
 aux=filldefault(aux,'opts_rays',struct);
 %
@@ -145,6 +144,41 @@ if aux_out.warn_bad>0
     disp('cannot proceed');
     disp(aux_out.warnings);
     return
+end
+%
+%consolidate if requested
+%
+if aux.opts_read.if_consolidate
+    data_comp_orig=data_comp;
+    switch aux_out.opts_read.choice_type
+        case 'triadic'
+            flip=find(data_comp(:,2)>data_comp(:,3));
+            data_comp(flip,[2 3])=data_comp(flip,[3 2]); %change the indices
+        case 'tetradic'
+            %first put comparisons in lexicographic order
+            rev12=find(data_comp(:,1)>data_comp(:,2));
+            data_comp(rev12,[1 2])=data_comp(rev12,[2 1]);
+            rev34=find(data_comp(:,3)>data_comp(:,4));
+            data_comp(rev34,[3 4])=data_comp(rev34,[4 3]);
+            %
+            flip_first=find(data_comp(:,1)>data_comp(:,3));
+            flip_tie=intersect(find(data_comp(:,1)==data_comp(:,3)),find(data_comp(:,2)>data_comp(:,4)));
+            flip=union(flip_first,flip_tie);
+            data_comp(flip,[1 2 3 4])=data_comp(flip,[3 4 1 2]); %change the indices
+    end
+    nflipped=length(flip);
+    data_comp(flip,ncols-1)=data_comp(flip,ncols)-data_comp(flip,ncols-1);
+    [urows,ia,ic]=unique(data_comp(:,1:ncols-2),'rows','stable');
+    data_comp_dups=data_comp;
+    data_comp=zeros(length(ia),ncols);
+    for k=1:length(ia)
+        rows=find(ic==k);
+        data_comp(k,1:ncols-2)=data_comp_dups(rows(1),1:ncols-2);
+        data_comp(k,ncols-1:ncols)=sum(data_comp_dups(rows,ncols-1:ncols),1);
+    end
+    if aux.opts_read.if_log
+        disp(sprintf('consolidation: %4.0f sets of judgments consolidated to %4.0f; %4.0f sets flipped',size(data_comp_orig,1),size(data_comp,1),nflipped));
+    end      
 end
 return
 end
