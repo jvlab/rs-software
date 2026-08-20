@@ -37,6 +37,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - dim_list_in (int 1-D array): list of dimensions to use from data_in.ds, must be unique; default is [1:dim_max_in]
 %         - dim_aug (int): number of dimensions to add for knitted datasets in data_out.ds; default is 0; see note below regarding Procrustes consensus algorithm
 %         - dim_list_out (int 1-D array): list of dimensions  to create in data_out.ds, must be same length as dim_list_in, no less than corresponding elements of dim_list_in, and unique; default is [1:dim_list_in]+dim_aug
+%         - if_dim_heuristics (int): 1 to always show heuristics as to whether there are sufficient constraints for the requested dimensions, 0 only if insufficient constraints; default is 0
 %
 %         - **Plotting and replotting**
 %         - if_plot (int): 1 to plot statistics, 0 does not; default is if_stats
@@ -57,7 +58,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
-%         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
+%         - if_warn (int): 1 to show warnings when datasets are checked for consistency or sufficient overlaps, 0 to suppress; default is 1
 %
 %     - opts_pca (struct): options for principal components analysis of consensus, typically omitted, only relevant if if_pca=1
 %     - opts_align (struct): options for alignment of data, typically omitted; see note below regarding recalculation of alignment
@@ -73,7 +74,6 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
-%
 %     - opts_knit (struct): aux.opts_knit, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %     - opts_pcon (cell array of struct): opts_pcon{idim} are the options used in Procrustes alignment for model dimension idim
@@ -105,11 +105,23 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %
-% Note: General notes
+% Note: Note regarding propagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
-%     - Pipeline: data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`;
-%     data_out.sets{1}.pipeline.type='knit'.
 %     - The 'type' field of data_in.sets{1} is propagated to data_out.sets{1}
+%     - If present, the 'paradigm_type' field common to data_in.sets{:} for all k for which data_in.sets{k}.type='data' is propagated to data_out.sets{1}
+%     - The following fields of data_in.sets{:} are concatenated with + signs in between and propagated to data_out.sets{1}
+%
+%         - paradigm_name
+%         - subj_id
+%         - subj_id_short
+%         - label_long
+%         - label
+%         - extra
+%
+%     - pipeline field of data_out.sets{1}:
+%
+%         - data_out.sets{1}.pipeline.type='knit'.
+%         - data_out.sets{1}.pipeline.sets_combined{:} contains metadata from all records of `data_in`
 %
 % Note: Note regarding statistics and plots
 %     - If aux.opts_knit.if_stats=1, variance explained by the consensus coordinates are calculated and returned in aux_out.knit_stats, in the following fields (rmsd=root-mean-squared deviation):
@@ -181,7 +193,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %             - One is that the number of overlapping stimuli is too small. For example,
 %             at least m points are required to determine a rotation and translation in an m-dimensional space; if there are fewer overlaps, then a consensus will
-%             still be found but there are many other consensus datasets that fit equally well.
+%             still be found but there are many other consensus datasets that fit equally well. Note that setting aux.opts_knit.if_dim_heuristics=1 will display heuristics concerning whether there are sufficient overlaps.
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
@@ -215,7 +227,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 % See also:
 %   RS_ALIGN_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, RS_FINDRAYS,
 %   PSG_ALIGN_COORDSETS, PSG_KNIT_STATS,
-%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
+%   PSG_REMNAN_COORDSETS, PSG_COORD_PIPE_UTIL, OVERLAP_HEURISTICS, PROCRUSTES_CONSENSUS, PSG_ALIGN_STATS_PLOT.
 %
 if (nargin<=1)
     aux=struct;
@@ -237,6 +249,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'pcon_initial_guess',[]);
 aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_initial_guess);
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
+aux.opts_knit=filldefault(aux.opts_knit,'if_dim_heuristics',0);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -304,7 +317,7 @@ nstims_all=min(nstims_each);
 coords_isnan=zeros(nstims_all,nsets);
 for iset=1:nsets
     for kd=dim_list_each{iset}
-        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if data are missing for any dimension, it's missing
+        coords_isnan(:,iset)=or(coords_isnan(:,iset),any(isnan(data_in.ds{iset}{kd}),2)); %if any coordinate is missing for any dimension, here we consider it missing
     end
     if aux.opts_knit.if_log
         disp(sprintf(' number of stimuli missing in dataset %3.0f: %4.0f',iset,sum(coords_isnan(:,iset),1)));
@@ -314,9 +327,6 @@ aux_out.coords_havedata=1-coords_isnan;
 if aux.opts_knit.if_log
     disp('data table')
     disp(aux_out.coords_havedata'*aux_out.coords_havedata)
-end
-if any(all(coords_isnan,2))
-    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
 %
 %if aux.sa_pooled is present, use it, otherwise, re create
@@ -342,6 +352,14 @@ else
     [data_align,aux_align]=rs_align_coordsets(data_in_nonan,aux2);
     sa_pooled=aux_align.sa_pooled;
     opts_align_used=aux_align.opts_align;
+end
+if any(all(coords_isnan,2))
+   wmsg='at least one stimulus is not present in any dataset';
+   aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
+   disp('table of missing data')
+    for istim=1:nstims_all
+        disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',coords_isnan(istim,:))));
+    end
 end
 if length(intersect(sa_pooled.typenames,typenames_union))~=length(union(sa_pooled.typenames,typenames_union))
     wmsg=sprintf('pooled typenames are incompatible with type names from individual datasets');
@@ -377,9 +395,35 @@ if length(aux.opts_knit.dim_list_out)~=length(unique(aux.opts_knit.dim_list_out)
     wmsg=sprintf('dim_list_out values are not unique');
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
 end
+%
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
+    %
+    %do dimension heuristics
+    %
+    overlaps=1-coords_isnan;
+    h=overlap_heuristics(overlaps);
+    if h.dmax<max(aux.opts_knit.dim_list_out)
+        if_hbad=1;
+    else
+        if_hbad=0;
+    end
+    if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
+        disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
+            h.dmax,h.dmax_free,h.dmax_constraints));
+        if if_hbad
+            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
+                h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
+            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        end
+        disp('table of available data')
+        for istim=1:nstims_all
+            disp(cat(2,sprintf(' %12s',sa_pooled.typenames{istim}),sprintf(' %2.0f',overlaps(istim,:))));
+        end
+    end
+    %
     %process
+    %
     typenames_all=typenames_inter; %because stimuli are required to be the same across datasets
     dim_list_in=aux.opts_knit.dim_list_in;
     dim_list_out=aux.opts_knit.dim_list_out;
@@ -415,7 +459,7 @@ if aux_out.warn_bad==0
         end
     end
     %
-    %do a consensus on each model-dimension separately
+    %do a consensus 
     %
     opts_pcon=aux.opts_knit;
     [ra,warnings,details]=psg_knit_stats(data_align.ds,data_align.sas,dim_list_in,dim_list_out,opts_pcon);
@@ -497,12 +541,14 @@ if aux_out.warn_bad==0
     for ifn=1:length(set_knit_strings)
         fn=set_knit_strings{ifn};
         sets_knitted.(fn)=''; % was []
+        counts=0;
         for iset=1:nsets
             if isfield(data_in.sets{iset},fn)
                 sets_knitted.(fn)=cat(2,sets_knitted.(fn),char(data_in.sets{iset}.(fn)),'+');
+                counts=counts+1;
             end
         end
-        if length(sets_knitted.(fn))>1
+        if counts>=1 %remove trailing +
             sets_knitted.(fn)=sets_knitted.(fn)(1:end-1);
         end
     end
@@ -521,10 +567,24 @@ if aux_out.warn_bad==0
         data_in.sets{iset}.dim_list=dim_list_out;
         data_in.sets{iset}.pipeline=psg_coord_pipe_util('knit',pipeline_opts,data_in.sets{iset},[],data_in.sets);       
     end
+    %propagate paradigm type (must match if sets{:}.type='data', checked in rs_align_coordsets
+    paradigm_type=[];
+    for iset=1:nsets
+        if strcmp(data_in.sets{iset}.type,'data')
+            if isfield(data_in.sets{iset},'paradigm_type')
+                if isempty(paradigm_type) 
+                    paradigm_type=data_in.sets{iset}.paradigm_type;
+                end
+            end
+        end
+    end
     data_out.ds{1}=ds_knitted;
     data_out.sas{1}=sas_knitted;
     data_out.sets{1}=sets_knitted;
     data_out.sets{1}.type=data_in.sets{1}.type;
+    if ~isempty(paradigm_type)
+        data_out.sets{1}.paradigm_type=paradigm_type;
+    end
     %
     aux_out.rayss{1}=rays;
     aux_out.opts_rays{1}=opts_rays_used;

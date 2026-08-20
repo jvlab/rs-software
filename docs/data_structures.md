@@ -20,7 +20,7 @@ Typically a `dataset structure` is created by reading one or more `coordinate fi
 This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:
 
 * nstims: number of stimuli
-* typenames: a 1-D cell array of stimulus labels.  Entries will match 'stim\_labels' in the `coordinate file` that was used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records.
+* typenames: a 1-D cell array of stimulus labels. Entries correspond to 'stim\_labels' in the `coordinate file` is used to create the `dataset structure`.  This field is used to identify unique stimuli when merging datasets and records; matching is case-sensitive. The allowed characters are a-z, A-Z ,0-9, and '-'.
 * type\_coords: a 2-D array of `stimulus coordinates`, if the domain has a priori coordinates; typically empty if not. See `stimulus coordinates` for further details.
 * the optional variables \*LL\* and metadata from a `coordinate file`
 
