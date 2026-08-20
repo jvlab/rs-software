@@ -75,6 +75,7 @@ nav:
       - Demo 1 - Raw Rankings → Detailed Choice File: rs-py-demo1.md
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
+      - How to Run Scripts: rs-py-scripts.md
     - Function index: function-index-python.md 
   - Manipulating RS:
     - Overview: rs-ml-overview.md

@@ -75,7 +75,7 @@ def format_distances(distance_dict):
     return distance_matrix
 
 
-def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9, seed=None):
+def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9):
     """Given judgments and number of dimensions, return an estimate of point coordinates using MDS
     :param seed: for MDS (int)
     :param judgments (dict)
@@ -83,8 +83,6 @@ def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9, seed=None):
     :param n_dim (int)
     :param epsilon: error threshold which controls when MDS terminates
     """
-    if seed is not None:
-        np.random.seed(seed)
     distance_matrix = format_distances(heuristic_distances(judgments, repeats))
     LOG.info('#################  Running MDS')
     coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon, n_init=8)
