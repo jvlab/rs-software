@@ -1,6 +1,6 @@
 %rs_toygeom_scenarioB: geometric transformations, with statistical analysis of nested models: procrustes, affine, projective
 %
-% Scenario B for rs_toygeom_demo: 
+% Scenario B for rs_toygeom_sim: 
 % illustration of geometric models, focusing on nesting by model
 %
 % Geometric model simulated: affine (3 dimensions)
@@ -11,6 +11,7 @@
 %  * With medium noise (subject 2), affine is statistically better than procrustes for 2-dim fit, and projective is not statistically better than affine
 %  * With high noise (subject 3), affine is not statisticlaly better than procrustes, and projective is not statistically better than affine
 %
+clear; %parameters are read from the workspace, so start from a clean one
 scenario_name='scenario B';
 %transform selection
 transform_names={'affine'};
@@ -32,7 +33,7 @@ model_list={'procrustes_scale_offset','affine_offset','projective'};
 opts_geof=struct;
 opts_geof.if_stats=1;
 %
-rs_toygeom_demo; %create the stimuli and datasets, and fit the models
+rs_toygeom_sim; %create the stimuli and datasets, and fit the models
 %
 %geometric model fit display customizations
 paradigms_fit_show={'Axes'};

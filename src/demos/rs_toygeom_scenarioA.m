@@ -1,6 +1,6 @@
 %rs_toygeom_scenarioA: geometric transformations, without statistics: procrustes, affine, projective, piecewise affine
 %
-% Scenario A for rs_toygeom_demo: 
+% Scenario A for rs_toygeom_sim: 
 % general illustration of geometric models, without statistics
 %
 % Geometric models simulated: procrustes, affine, projective, and piecewise affine (3 dimensions each)
@@ -10,6 +10,7 @@
 % * affine is also fit by projective and piecewise affine
 % * projective and piecewise affine can be distinguished, but not as readily
 %
+clear; %parameters are read from the workspace, so start from a clean one
 scenario_name='scenario A';
 %transform selection
 transform_names={'procrustes','affine','projective','pwaffine'};
@@ -32,7 +33,7 @@ model_list={'procrustes_scale_offset','affine_offset','projective','pwaffine'};
 opts_geof=struct;
 opts_geof.if_stats=0;
 %
-rs_toygeom_demo; %create the stimuli and datasets, and fit the models
+rs_toygeom_sim; %create the stimuli and datasets, and fit the models
 %
 %geometric model fit display customizations
 paradigms_fit_show={'Axes','Random'};

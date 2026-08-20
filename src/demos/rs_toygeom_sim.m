@@ -1,8 +1,14 @@
-% rs_toygeom_demo: geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
+% rs_toygeom_sim: geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
 %
 % This illustrates fitting of geometric models via creation of simulated coordinate set structures. 
-% It is intended that several of the parameters, especially paradigm_names, transform_names, are edited, 
-% or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.
+% The defaults below are deliberately small, so that this script runs standalone in a
+% reasonable time: two transforms, two paradigms, and model fitting without statistics.
+% Any of the parameters may be set in the workspace before running, in which case the
+% default is not applied; rs_toygeom_scenario*.m does exactly that, supplying richer
+% parameter sets, and then calls this script.
+%
+% Because parameters are taken from the workspace when they are already defined, run this
+% from a clear workspace unless you intend to supply parameters yourself.
 %
 % Constructs several transformations, designated by the strings in transform_names:
 %     null: the identity
@@ -38,12 +44,12 @@
 %
 %these are the main simulation parameters that may be edited, or have values set before running
 %
-if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
+if ~exist('transform_names') transform_names={'procrustes','affine'}; end %a small default set; available names are in transform_names_avail below
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 if ~exist('projective_mag') projective_mag=0.1; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
 %
-if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
+if ~exist('paradigm_names') paradigm_names={'Axes','Random'}; end %a small default set; others are Rings_C12, Rings_C13, Rings_C23, RandomAndAxisEnds
 if ~exist('axis_samples') axis_samples=[2 4 6 8]; end %sample points in each direction along each axis
 if ~exist('ring_radii') ring_radii=[4 6 8]; end %radii for the rings
 if ~exist('ring_angles') ring_angles=8; end %number of sample points in a ring
@@ -485,7 +491,7 @@ paradigms_all=fieldnames(sims); %includes original paradigms and knitted
 if ~exist('opts_geof') opts_geof=struct; end
 opts_geof=filldefault(opts_geof,'model_list',model_list);
 opts_geof=filldefault(opts_geof,'dimpairs_method','all');
-opts_geof=filldefault(opts_geof,'if_stats',1);
+opts_geof=filldefault(opts_geof,'if_stats',0); %statistics are slow; the scenarios that need them set this to 1
 opts_geof=filldefault(opts_geof,'nshuffs',20);
 opts_geof=filldefault(opts_geof,'if_nestbymodel',-1);
 opts_geof=filldefault(opts_geof,'if_nestbydim',-1);
@@ -527,4 +533,4 @@ sims.noise_add_subj=noise_add_subj;
 sims.noise_add=noise_add;
 sims.model_list=model_list;
 %
-disp('consider saving the structure ''sims'', and using rs_toygeom_demo to display results')
+disp('consider saving the structure ''sims'', and using rs_toygeom_disp to display results')

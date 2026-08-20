@@ -28,8 +28,8 @@ disp('1-> read data files sequentially with rs_read_coorddata');
 disp('2-> read several data files at once with rs_get_coordsets');
 disp('3-> read several datasets created with quadratic form models with rs_get_coordsets');
 disp('4-> read mix of data files and datasets created with quadratic form models with rs_get_coordsets');
-which_read=getinp('choice','d',[1 4],1);
-if_builtin=getinp('1 for built-in file names, 0 to specify via gui','d',[0 1],1);
+which_read=getinp('choice','d',[1 4],1); %#demo-input: 1
+if_builtin=getinp('1 for built-in file names, 0 to specify via gui','d',[0 1],1);  %#demo-input: 1
 %
 if ~exist('datafile_names')
     datafile_names={'demos/opposites_coords_FG','demos/opposites_coords_PQ','demos/opposites_coords_UV'}; %coordinate file names
