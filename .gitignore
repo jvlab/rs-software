@@ -23,3 +23,7 @@ docs/demos.md
 build/
 docs/images/demos/
 
+# a perceptual_space_geometry checkout placed inside the repository, as the CI
+# workflows do; run_all.m picks it up from here
+perceptual_space_geometry
+

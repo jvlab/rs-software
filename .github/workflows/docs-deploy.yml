@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check out perceptual_space_geometry
+        # The rs_* modules call psg_* functions from this repository, so the demo
+        # capture step needs it. run_all.m finds it at this path automatically.
+        uses: actions/checkout@v4
+        with:
+          repository: jvlab/perceptual_space_geometry
+          path: perceptual_space_geometry
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
