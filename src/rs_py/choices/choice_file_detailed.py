@@ -37,7 +37,25 @@ def get_response_files(directory, suffix="responses", extension="csv"):
 
 
 def parse_click_sequence(row):
-    """Return a list of stimuli in the order they were clicked for a trial."""
+    """
+    Parse the click order for a trial into a sequence of stimulus labels.
+
+    Given a trial row, read the stored click-order indices from `row['clicks']`
+    and return the corresponding stimuli in the order they were clicked.
+
+    Args:
+        row (dict):
+            A single trial row containing a `clicks` field and a list of stimuli.
+            The `clicks` field must encode the clicked stimulus indices in the
+            order they were selected.
+
+    Returns:
+        - sequence (list[str]) - Ordered list of stimulus labels corresponding
+          to the clicked stimuli for that trial.
+
+    Notes:
+        - Assumes data are being read in from csv files created by Waraich and Victor (2022) paradigm.
+    """
     sequence = ast.literal_eval(row['clicks'])
     return [row[stim_num] for stim_num in sequence]
 
@@ -104,54 +122,47 @@ def generate_comparisons(reference, clicks, trial_num):
 
 def process_subject_data(input_directory):
     """
-    Read response CSV files for a single subject and, for every trial, convert the
-    observed click order of stimuli into all (n choose 2) triadic distance comparisons
-    relative to the reference stimulus. For example, for trials with 8 comparison stimuli,
-    there will be 7*8/2 = 28 such triadic comparisons.
+        Read response CSV files for a single subject and convert each trial’s click
+        order into all implied pairwise triadic distance comparisons relative to the
+        reference stimulus.
 
-    This function searches recursively under `input_directory` for CSV files
-    whose filenames match the response-file pattern (as defined by
-    `get_response_files`). Each row of each CSV file is treated as one trial
-    of a ranking experiment in which a reference stimulus is presented along
-    with a set of surrounding stimuli that are clicked in order of increasing
-    (or decreasing, depending on experiment design) distance from the reference.
+        For every row in every matching response CSV file, the function parses the
+        observed click order, generates all (n choose 2) comparisons among the
+        comparison stimuli, and assigns trial numbers sequentially across all files
+        and rows.
 
-    For each trial, the function:
-      1. Parses the click order to recover the ordered list of surrounding stimuli.
-      2. Generates all pairwise triadic comparisons of the form
-         D(ref, s_i) > D(ref, s_j) using `generate_comparisons`.
-      3. Assigns a monotonically increasing trial number across all files
-         and rows, preserving row order within each file.
-      4. Accumulates the set of all stimuli encountered (reference and
-         non-reference).
+        Args:
+            input_directory (str):
+                Path to a directory containing one or more response CSV files for a
+                single subject. Subdirectories are searched recursively for files
+                matching the response-file pattern defined by `get_response_files`.
 
-    The function does not perform any canonicalization of comparison keys,
-    stimulus ID remapping, or aggregation across trials; it is intended to
-    provide a clean semantic representation of trial-level comparisons that
-    downstream steps may further standardize or serialize.
+        Returns:
+            - all_comparisons (list[dict]) - Flat list of comparison dictionaries, one
+              for each generated triadic comparison.
+              Each dictionary contains:
+                - trial
+                - s1
+                - s2
+                - operator
+                - s3
+                - s4
+                - judgment
+            - stimuli (set) - Labels of all stimuli encountered across all processed
+              trials, including both reference and non-reference stimuli.
 
-    Args:
-        input_directory (str):
-            Path to a directory containing one or more response CSV files for a
-            single subject. The directory may contain subdirectories; all matching
-            response files will be processed.
+        Notes:
+            - Trial numbering starts at 1 and increases sequentially across all files
+              and rows; no session boundaries are inferred.
+            - CSV files are read using UTF-8 with BOM (`utf-8-sig`) encoding to match
+              experimental data exports.
+            - This function does not canonicalize comparison keys, remap stimulus IDs,
+              or aggregate across trials; those steps are handled downstream.
+            - The interpretation of click order and judgment semantics is handled by
+              `generate_comparisons`.
 
-
-    Returns:
-        all_comparisons (list[dict]):
-            A flat list of comparison dictionaries. Each dictionary corresponds to a single triadic comparison and contains at least the keys:
-            `trial`, `s1`, `s2`, `operator`, `s3`, `s4`, and `judgment`.
-        stimuli (set):
-            Labels of all stimuli encountered across all processed trials, including reference and non-reference stimuli.
-
-    Note:
-       -  Trial numbering starts at 1 and increases sequentially across all files and rows; no session boundaries are inferred or enforced.
-       - The interpretation of click order and judgment semantics is dealt with in `generate_comparisons`.
-       - CSV files are read using UTF-8 with BOM (utf-8-sig) encoding to match experimental data exports.
-
-    See also:
-        generate_comparisons
-    """
+            See also: generate_comparisons
+        """
     all_comparisons = []
     stimuli = set()
     trial_num = 1
@@ -186,38 +197,48 @@ def process_subject_data(input_directory):
 
 def standardize_comparison_keys(comparisons, comparison_type='triadic'):
     """
-    Takes in a list of comparisons, edits their fields (s1, s2, s3, s4, judgment) and returns the list.
-    Enforce a canonical ordering of comparison keys so that equivalent
-    comparisons (same two stimulus pairs) are always represented identically.
+    Standardize comparison field order and canonicalize comparison keys.
 
-    If (s2, s4) appears in reverse order, swap them and flip the judgment.
-    This ensures downstream tallying and aggregation treat comparisons
-    consistently.
+    Takes in a list of comparisons, edits their fields (`s1`, `s2`, `s3`, `s4`,
+    `judgment`), and returns the same list with comparison keys ordered
+    consistently. Equivalent comparisons are therefore represented identically,
+    which supports downstream tallying and aggregation.
 
-    Triadic comparisons: In these cases the reference appears in both pairs of stimuli. The reference
-    is chosen as the first stimulus in each pair s1=s3=ref. The choice of which pair is listed first is based
-    on alphabetical order of the non-ref elements.
-    example - for pairs (k, l), (c, k) -> s1=k, s2=c, s3=k, s4=l
-
-    Parameters:
-    -----------
-    comparisons : list of dictionaries
-        a list of comparisons and judgments with the following keys: s1, s2, s3, s4 and judgment
-    comparison_type : str
-        'triadic' by default and the only type implemented as of 02/17/2026
+    Args:
+        comparisons (list[dict]):
+            A list of comparisons and judgments with the keys `s1`, `s2`, `s3`,
+            `s4`, and `judgment`.
+        comparison_type (str):
+            Comparison type to standardize. `'triadic'` by default, and the only
+            type implemented as of 02/17/2026.
 
     Returns:
-    --------
-    comparisons : list of dictionaries
-        the same list of comparisons with the fieldnames put into a standardized order.
+        - comparisons (list[dict]) - The same list of comparisons with field
+          names and comparison order standardized.
+          Each dictionary contains:
+            - s1
+            - s2
+            - s3
+            - s4
+            - judgment
 
     Notes:
-    -------
-    Tetradic comparisons are not yet implemented.
-    Here, the first pair is the one with the first element alphabetically. Within pairs, order
-    of elements again depends on alphabetical order.
-    example - for pairs (k, l), (h, w) -> s1=h, s2=w, s3=k, s4=l
+        - If `(s2, s4)` appears in reverse order, the elements are swapped and
+          the judgment is flipped.
+        - For triadic comparisons, the reference appears in both pairs of stimuli
+          and is always assigned as `s1 = s3 = ref`.
+        - The ordering of the two stimulus pairs is determined by alphabetical
+          order of the non-reference elements.
+        - Example: for pairs `(k, l)` and `(c, k)`, the standardized form is
+          `s1 = k, s2 = c, s3 = k, s4 = l`.
+        - Tetradic comparisons are not yet implemented.
+        - Within each pair, stimulus order is also determined alphabetically.
+        - Example: for pairs `(k, l)` and `(h, w)`, the standardized form is
+          `s1 = h, s2 = w, s3 = k, s4 = l`.
+
+        See also: generate_comparisons
     """
+
     if comparison_type == 'tetradic':
         for i in range(len(comparisons)):
             c = comparisons[i]
@@ -276,42 +297,38 @@ def standardize_comparison_keys(comparisons, comparison_type='triadic'):
 
 def replace_stimuli_with_ids(comparisons, stimuli_set):
     """
-    Replace stimulus labels in comparison dictionaries with integer stimulus IDs.
+        Replace stimulus labels in comparison dictionaries with integer stimulus IDs.
 
-    This function constructs a deterministic mapping from stimulus labels to
-    integer IDs based on the sorted order of `stimuli_set`. It then iterates
-    over the provided list of comparison dictionaries and replaces the values
-    of the stimulus fields ('s1', 's2', 's3', 's4') with their corresponding
-    integer IDs.
+        Constructs a deterministic mapping from stimulus labels to integer IDs
+        based on the sorted order of `stimuli_set`, then replaces the values of the
+        stimulus fields (`s1`, `s2`, `s3`, `s4`) in each comparison dictionary with
+        their corresponding integer IDs.
 
-    The function does not perform any canonicalization, reordering of stimulus
-    keys, or judgment flipping. All stimulus fields are replaced directly and
-    uniformly according to the generated mapping.
+        Args:
+            comparisons (list[dict]):
+                List of comparison dictionaries. Each dictionary must contain the
+                keys `s1`, `s2`, `s3`, and `s4`, whose values are stimulus labels
+                present in `stimuli_set`. The list is modified in place.
+            stimuli_set (set):
+                Set of all stimulus labels to be mapped to integer IDs. IDs are
+                assigned starting from 1, in alphabetical order of the labels.
 
-    Parameters
-    ----------
-    comparisons : list of dict
-        List of comparison dictionaries. Each dictionary must contain the keys
-        's1', 's2', 's3', and 's4', whose values are stimulus labels present in
-        `stimuli_set`. The list is modified in place.
+        Returns:
+            - comparisons (list[dict]) - The input list of comparison dictionaries
+              with stimulus labels replaced by integer stimulus IDs.
+              The mapping of IDs to stimuli is also returned or stored separately,
+              depending on downstream use.
 
-    stimuli_set : set
-        Set of all stimulus labels to be mapped to integer IDs. IDs are assigned starting from 1, in alphabetical order of the labels.
+        Notes:
+            - The function mutates the input `comparisons` list in place.
+            - Judgment values and non-stimulus fields are not modified.
+            - If a comparison contains a stimulus label not present in `stimuli_set`,
+              a `KeyError` will be raised.
+            - The function does not perform canonicalization, reordering of stimulus
+              keys, or judgment flipping.
 
-    Returns
-    -------
-    comparisons : list of dict
-        The input list of comparison dictionaries with stimulus labels replaced
-        by integer stimulus IDs.
-        The mapping of IDs to stimuli
-
-    Notes
-    -----
-    - The function mutates the input `comparisons` list in place.
-    - Judgment values and non-stimulus fields are not modified.
-    - If a comparison contains a stimulus label not present in `stimuli_set`,
-      a KeyError will be raised.
-    """
+            See also: standardize_comparison_keys
+        """
     stimuli = sorted(list(stimuli_set))
     names_to_id = stimulus_name_to_id(stimuli, one_indexed=True)
     id_to_name = stimulus_id_to_name_for_mat(stimuli)
@@ -375,7 +392,7 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
 
     results = {
         'metadata': metadata,
-        'response_colnames': responses_col_names,
+        'responses_colnames': responses_col_names,
         'responses': responses
     }
 

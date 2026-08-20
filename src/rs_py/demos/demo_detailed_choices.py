@@ -27,7 +27,7 @@ def demo_inputs():
         'num_trials': 1110,  # sample had 222 unique trials x 5
         'num_sessions': 10,
         'subject': 'S4',    # used to name out file
-        'exp_name': 'animals'       # used to name out file
+        'exp_name': 'image'       # used to name out file
     }
     # Creates the folder if missing; does nothing if it already exists
     demo_defaults["output_dir"].mkdir(parents=True, exist_ok=True)

@@ -64,35 +64,52 @@ def stimulus_id_to_name_for_mat(stimlist):
     return id_to_name
 
 
-# def read_in_params():
-#     # Read in parameters from config file
-#     from src.rs_py.utils.config import CONFIG as USER_PARAMS
-#     # Fix type of all inputs
-#     USER_PARAMS['stim_list'] = stimulus_names(USER_PARAMS['dataset']['stimfile'])
-#     return (USER_PARAMS,
-#             stimulus_name_to_id(USER_PARAMS['stim_list']),
-#             stimulus_id_to_name_for_mat(USER_PARAMS['stim_list']))
-
-
 def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim_labels, tolerance=0.5, samples=70):
     """
-    Edited on Aug 3, 2023
-    Add LL and biases too
-    @param directory: input dir - dir in which is a domain dir then a subject dir
-    @param subject:
-    @param outdir:
-    @param min_dim:
-    @param max_dim:
-    @return:
+    Save fitted coordinates, likelihoods, and stimulus labels to a .mat file.
+
+    Args:
+        outdir (str):
+            Directory where the `.mat` file will be written.
+        exp (str):
+            Experiment name used in the output filename.
+        subject (str):
+            Subject ID used in the output filename.
+        model_dimensions (list[int]):
+            Model dimensions to include, such as `[1, 2, 3, 4, 5]`.
+        points (dict):
+            Fitted coordinates for each dimension, keyed by dimension.
+        lls (dict):
+            Log-likelihood values for each dimension, plus `"best"` and `"random"`.
+        stim_labels (list[str]):
+            Stimulus labels in the order matching the fitted data.
+        tolerance (float, optional):
+            Tolerance used when estimating likelihood bias. Default is `0.5`.
+        samples (int, optional):
+            Number of samples used when estimating likelihood bias. Default is `70`.
+
+    Returns:
+        str:
+            Path to the saved `.mat` file.
+
+    Notes:
+        The saved file includes:
+        - `dim{d}` for each fitted dimension
+        - `rawLLs`
+        - `biasEstimate`
+        - `debiasedRelativeLL`
+        - `bestModelLL`
+        - `randModelLL`
+        - `stim_labels`
     """
     data = {}
     bias_df = bias_dict()  # for LL bias estimation
     rms_dists_by_dim = {}
     for d in model_dimensions:
         # enter coordinates for each model dimension
-        points = points[d]
-        data["dim{}".format(d)] = points
-        distances = pdist(points)
+        points_curr = points[d]
+        data["dim{}".format(d)] = points_curr
+        distances = pdist(points_curr)
         rms_dists_by_dim[d] = np.sqrt(np.mean([d ** 2 for d in distances]))
 
     data['rawLLs'] = []  # enter raw log-likelihoods
@@ -117,7 +134,7 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
                         "  based on the RMS distance: sigma\n\n"
                         "debiasedRelativeLL = (rawLLs + biasEstimate) - bestModelLL\n"
                         "--------------------------------------------------------------------------")
-    data['stim_list'] = np.array(stim_labels)
+    data['stim_labels'] = np.array(stim_labels)
     # ---- save ----
     outpath = os.path.join(outdir, f"{exp}_coords_{subject}.mat")
     savemat(outpath, data)

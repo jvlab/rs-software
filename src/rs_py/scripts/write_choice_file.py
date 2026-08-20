@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import json
 from copy import deepcopy
 
 
@@ -18,7 +17,7 @@ def options_default():
     return opt_defaults
 
 
-def merge_with_defaults(user_params: dict | None) -> dict:
+def merge_with_defaults(user_params):
     defaults = options_default()
     params = deepcopy(defaults)
 
@@ -46,30 +45,7 @@ def validate_required(params: dict):
         raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
 
-def normalize_params(user_params) -> dict:
-    """
-    Accept:
-      - None
-      - dict
-      - JSON string
-    """
-    if user_params is None:
-        return {}
-
-    if isinstance(user_params, dict):
-        return user_params
-
-    if isinstance(user_params, str):
-        user_params = user_params.strip()
-        if not user_params:
-            return {}
-        return json.loads(user_params)
-
-    raise TypeError("user_params must be a dict, JSON string, or None")
-
-
-def run(user_params: dict | None = None):
-    user_params = normalize_params(user_params)
+def run(user_params):
     params = merge_with_defaults(user_params)
     validate_required(params)
 

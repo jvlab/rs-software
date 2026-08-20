@@ -59,7 +59,7 @@ The `rs_py` package can be used at three stages of the analysis pipeline.
 > **Important:** This step is specific to the ranking paradigm described in Waraich & Victor (2022, 2024).
 > If your data come from a different similarity-judgment paradigm, it is often easier to start from Step 2 or Step 3 instead. See [Which entry point should I use?](#which-entry-point-should-i-use) below.
 
-Use `write_choice_file_detailed`.
+Use [`write_choice_file_detailed`](/rs-software/rs-py-scripts/).
 
 **Input:** Raw ranking data (CSV files) collected using the Waraich & Victor paradigm.
 
@@ -81,7 +81,7 @@ If you are new to the package, we recommend running the demo first using the sam
 
 ### Step 2: Detailed Choice File to Choice File
 
-Use `write_choice_file_combined`.
+Use [`write_choice_file`](/rs-software/rs-py-scripts/).
 
 **Input:** A detailed choice file.
 
@@ -103,7 +103,7 @@ The demo can be run using the sample detailed choice file produced in Step 1. Se
 
 ### Step 3: Choice File to Geometric Model
 
-Use `run_model_fitting`.
+Use [`model_fitting`](/rs-software/rs-py-scripts/).
 
 **Input:** A choice file with judgments combined across repetitions.
 

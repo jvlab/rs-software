@@ -193,7 +193,7 @@ if paradigm_match==0
     wmsg=sprintf('paradigm types disagree');
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',1));
     if aux.opts_align.if_log
-        disp([types paradigm_types])
+        disp([types; paradigm_types])
     end
 end
 aux_out.opts_check=aux.opts_check;

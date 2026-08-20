@@ -14,6 +14,7 @@ This component of the package provides for visualization of representational spa
 * Modeling relationships between representational spaces
 
     * Finding a consensus across multiple datasets: `rs_knit_coordsets`
+    * Comparing groups of representational spaces: `rs_vara_coordsets`
     * Fitting linear and nonlinear geometric transformations to the relationship between two representational spaces: `rs_geofit`
 
 * Utilities
