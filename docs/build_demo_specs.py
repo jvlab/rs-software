@@ -4,12 +4,17 @@ Build capture specs for every demo.
 
 Run this before the MATLAB capture step:
 
-    python docs/build_demo_specs.py
+    python docs/build_demo_specs.py                       # every demo
+    python docs/build_demo_specs.py rs_knit_coordsets_demo  # just this one
 
 For each demo it writes build/capture/<name>.spec.json, which the MATLAB
-executor (run_all.m) consumes. Figure and manifest paths are absolute so the
-executor can change working directory to run the demos without affecting where
-output lands.
+executor (run_all.m) consumes. Naming demos limits the run to those demos:
+run_all executes every spec it finds in the directory, so the stale specs of
+a previous run are cleared first. Manifests are left in place, so the demos
+that were not rebuilt keep the output captured for them earlier.
+
+Figure and manifest paths are absolute so the executor can change working
+directory to run the demos without affecting where output lands.
 
 This is a standalone step, separate from the mkdocs hook, so that in CI the
 order is: build specs, run MATLAB (which writes manifests and figures), then
@@ -32,16 +37,54 @@ FIG_DIR = REPO_ROOT / "docs" / "images" / "demos"
 SEED = 0
 
 
-def main():
-    demos = sorted(glob(str(REPO_ROOT / "src" / "demos" / "*.m")))
+def demo_paths(names=()):
+    """
+    Return the demo files to build specs for, sorted by path.
+
+    Args:
+        names: demo names to keep, given as bare names, file names or paths;
+            empty means every demo.
+
+    Returns:
+        A list of demo file paths.
+
+    Raises:
+        SystemExit: if a requested name matches no demo file.
+    """
+    found = {}
+    for demo in sorted(glob(str(REPO_ROOT / "src" / "demos" / "*.m"))):
+        name = Path(demo).stem
+        if name.lower() != "contents":
+            found[name] = demo
+
+    if not names:
+        return list(found.values())
+
+    wanted = [Path(name).stem for name in names]
+    missing = [name for name in wanted if name not in found]
+    if missing:
+        raise SystemExit(
+            f"[build_demo_specs] no such demo: {', '.join(missing)}"
+        )
+    return [found[name] for name in wanted]
+
+
+def clear_specs():
+    """Remove the specs of a previous run, so run_all only sees the new ones."""
+    for stale in BUILD_DIR.glob("*.spec.json"):
+        stale.unlink()
+
+
+def main(argv=None):
+    names = list(sys.argv[1:] if argv is None else argv)
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     FIG_DIR.mkdir(parents=True, exist_ok=True)
+    demos = demo_paths(names)
+    clear_specs()
 
     count = 0
     for demo in demos:
         name = Path(demo).stem
-        if name.lower() == "contents":
-            continue
         build_spec(
             demo,
             fig_dir=FIG_DIR,

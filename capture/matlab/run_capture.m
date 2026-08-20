@@ -79,6 +79,13 @@ function run_capture(spec_path)
         captured = '';
         err_msg = '';
         incomplete = false;
+        % Progress is echoed as the chunk starts, not after it returns, so a
+        % long-running chunk is visibly in progress rather than looking dead.
+        % A demo can take many minutes in a single chunk (rs_geofit with
+        % statistics, for example), and everything the demo prints is
+        % swallowed by evalc, so this is the only feedback the console gets.
+        fprintf('    chunk %d/%d ... ', c, numel(chunks));
+        chunk_timer = tic;
         try
             captured = evalc('evalin(''base'', acc)');
         catch e
@@ -90,8 +97,10 @@ function run_capture(spec_path)
         end
 
         if incomplete
+            fprintf('open block, accumulating\n');
             continue;   % accumulate the next chunk before running again
         end
+        fprintf('%.1f s\n', toc(chunk_timer));
 
         drawnow;        % force pending draws so figures are complete
         after = findall(groot, 'Type', 'figure');

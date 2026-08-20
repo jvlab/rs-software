@@ -37,15 +37,48 @@ function run_all(spec_dir, repo_root)
     listing = dir(fullfile(spec_dir, '*.spec.json'));
     spec_paths = fullfile({listing.folder}, {listing.name});
 
+    local_check_graphics();   % fail fast rather than capture black images
+
     fprintf('run_all: %d demo(s) to capture\n', numel(spec_paths));
+    all_timer = tic;
     for i = 1:numel(spec_paths)
         [~, base] = fileparts(spec_paths{i});
         fprintf('  capturing %s\n', base);
+        demo_timer = tic;
         try
             run_capture(spec_paths{i});
+            fprintf('  captured %s in %.1f s\n', base, toc(demo_timer));
         catch e
-            fprintf(2, '  FAILED %s: %s\n', base, e.message);
+            fprintf(2, '  FAILED %s after %.1f s: %s\n', base, ...
+                toc(demo_timer), e.message);
         end
+    end
+    fprintf('run_all: finished %d demo(s) in %.1f s\n', ...
+        numel(spec_paths), toc(all_timer));
+end
+
+
+function local_check_graphics()
+% Verify that figures actually render before spending minutes capturing demos.
+%
+% A MATLAB started in batch mode while an X display is present tries to use
+% hardware OpenGL, fails to create a GL context, and then exports every figure
+% as a solid black image without raising an error. That failure is silent and
+% costs a whole capture run, so check it once, up front, on a figure we draw
+% ourselves and know cannot be blank.
+    f = figure('Visible', 'off');
+    closer = onCleanup(@() close(f)); %#ok<NASGU>
+    plot(1:10);
+    probe = [tempname '.png'];
+    exportgraphics(f, probe, 'Resolution', 50);
+    img = imread(probe);
+    delete(probe);
+    if numel(unique(img(:))) <= 1
+        error('run_all:blankFigures', ...
+            ['figures render blank: this MATLAB has no usable graphics context. ' ...
+             'On Linux and macOS, start it with -nodisplay, as in ' ...
+             'matlab -nodisplay -batch "addpath(''capture/matlab''); ' ...
+             'run_all(''build/capture'')". docs/update_demo_docs.py does this.']);
     end
 end
 
