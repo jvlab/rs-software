@@ -26,13 +26,16 @@ from ..choices.choice_likelihoods import calculate_ll, dist_model_ll_vectorized,
 LOG = logging.getLogger(__name__)
 
 
-def points_of_best_fit(judgments, number_repeats, args, start_points=None):
+def points_of_best_fit(judgments, number_repeats, args, start_points=None, seed=None):
     """
     Given judgments, number of stimuli and dimensions of space,
     find the lowest likelihood points that give that fit
     :param judgments: {'i,j>k,l' : 4, ...}
     :param args: includes n_dim, num_stimuli, no_noise, sigmas
     :param start_points: optional arg, can use to start minimization at ground truth or other location
+    :param seed: optional seed for the MDS initialization used when start_points is None.
+        Without this, that initial MDS call is randomly seeded, so runs with no start_points
+        (e.g. the pooled A+B warm-start fit) are not reproducible run to run.
     :param minimization: gradient-descent (new improvement) or nelder-mead
     :return: optimal (points (x), minimum negative log-likelihood (y))
     @param minimization:
@@ -52,7 +55,7 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
     args['noise_st_dev'] = args['sigma']
     if start_points is None:
         # if not specified start minimization at coordiates returned by MDS after calculation of win-loss distances
-        start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats)[0]
+        start_0 = mds.get_coordinates(args['n_dim'], judgments, number_repeats, seed=seed)[0]
     else:
         start_0 = start_points
     start = ac.anchor_points(start_0)

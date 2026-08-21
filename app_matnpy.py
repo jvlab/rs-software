@@ -44,7 +44,10 @@ if conv_file is not None:
         )
 
         out_name = conv_file.name.replace(".mat", ".npy")
-        st.download_button("Download .npy file", data=arr.tobytes(),
+        import io
+        buf = io.BytesIO()
+        np.save(buf, arr)
+        st.download_button("Download .npy file", data=buf.getvalue(),
                            file_name=out_name, mime="application/octet-stream")
 
     except Exception as e:

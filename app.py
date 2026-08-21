@@ -335,8 +335,8 @@ with tab_c2c:
         "and download a coordinates `.mat` file matching JV's format."
     )
     st.info(
-        "Fits models at **all 7 dimensions**. Output includes `dim1`–`dim7`, `rawLLs`, `bestModelLL`, and `stim_labels`. "
-        "Note: `biasEstimate` and `debiasedRelativeLL` are not computed (requires bias-estimation files not in repo)."
+        "Fits models at **all 7 dimensions**. Output includes `dim1`–`dim7`, `rawLLs`, `bestModelLL`, "
+        "`biasEstimate`, `debiasedRelativeLL`, `metadata`, and `stim_labels`."
     )
 
     c2c_file = st.file_uploader("Upload .mat choices file", type=["mat"], key="c2c_upload")
@@ -381,8 +381,12 @@ with tab_c2c:
                 c2c_out[f'dim{d}'] = coords_d[:, :d]
                 raw_lls[d] = float(-ll_d)
                 all_residuals[f'dim{d}'] = res_d
-                # use this dim's coords as warm start for next
-                prev_coords = np.pad(coords_d, ((0, 0), (0, 1))) if d < 7 else coords_d
+                # use this dim's coords as warm start for next dim (add small random column to avoid rank deficiency)
+                if d < 7:
+                    extra = np.random.normal(0, 1e-3, (coords_d.shape[0], 1))
+                    prev_coords = np.hstack([coords_d, extra])
+                else:
+                    prev_coords = coords_d
 
             prog.progress(100, text="All dimensions done.")
 
@@ -417,13 +421,37 @@ with tab_c2c:
             st.dataframe(c2c_df, use_container_width=True, height=300)
 
             # build output .mat
-            c2c_out['rawLLs'] = np.array([raw_lls[d] for d in range(1, 8)])
+            raw_lls_arr = np.array([raw_lls[d] for d in range(1, 8)])
+            c2c_out['rawLLs'] = raw_lls_arr
             c2c_out['bestModelLL'] = float(best_ll)
             c2c_out['stim_labels'] = np.array(c2c_stims)
-            c2c_out['metadata'] = (
-                "rawLLs[i] is the raw model LL for model with i+1 dimensions. "
-                "biasEstimate and debiasedRelativeLL not computed (bias-estimation files required)."
-            )
+
+            # bias estimation
+            try:
+                from src.rs_py.utils.helpers import bias_dict, read_out_median_bias
+                from scipy.spatial.distance import pdist
+                bias_df = bias_dict()
+                bias_est = []
+                for d in range(1, 8):
+                    pts = c2c_out[f'dim{d}']
+                    rms = np.sqrt(np.mean(pdist(pts) ** 2))
+                    bias_est.append(float(read_out_median_bias(bias_df, d, rms)))
+                bias_est_arr = np.array(bias_est)
+                debiased = raw_lls_arr - float(best_ll) + bias_est_arr
+                c2c_out['biasEstimate'] = bias_est_arr
+                c2c_out['debiasedRelativeLL'] = debiased
+                c2c_out['metadata'] = (
+                    "rawLLs[i] is the raw model LL for model with i+1 dimensions. "
+                    "biasEstimate[i] is the median bias for the i+1-dimensional model. "
+                    "debiasedRelativeLL = rawLLs + biasEstimate - bestModelLL."
+                )
+                st.success("Bias estimation complete — all fields populated.")
+            except Exception as bias_err:
+                c2c_out['metadata'] = (
+                    "rawLLs[i] is the raw model LL for model with i+1 dimensions. "
+                    f"biasEstimate and debiasedRelativeLL not computed: {bias_err}"
+                )
+                st.warning(f"Bias estimation failed: {bias_err}")
 
             c2c_buf = io.BytesIO()
             sio_c2c.savemat(c2c_buf, c2c_out)

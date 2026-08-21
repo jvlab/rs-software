@@ -113,13 +113,16 @@ def ooo_to_triadic(ooo_path, out_path=None):
         max_len = max(len(s) for s in stim_list)
         data = {
             'responses':          arr,
-            'responses_colnames': ['ref', 's1', 's2', 'N(s1 chosen)', 'N_repeats'],
+            'responses_colnames': ['ref', 's1', 's2',
+                                    'N(D(ref, s1) > D(ref, s2))',
+                                    'N_Repeats(D(ref, s1) > D(ref, s2))'],
             # s1 < s2 alphabetically (Suniyya's standardize_comparison_keys convention)
             'stim_list':          np.array(stim_list, dtype=f'S{max_len}'),
             'readme': (
                 "Converted from odd-one-out format using JV conversion rule.\n"
                 "Each ooo judgment generates 2 triadic entries.\n"
-                "Columns: ref, s1, s2, N(s1 chosen), N_repeats. Indices are 1-based."
+                "Columns: ref, s1, s2, N(D(ref, s1) > D(ref, s2)), N_Repeats(D(ref, s1) > D(ref, s2)). "
+                "Indices are 1-based."
             )
         }
         savemat(out_path, data)

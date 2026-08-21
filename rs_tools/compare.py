@@ -19,7 +19,7 @@ import src.rs_py.model.fit_geometric_models as rs
 _CFG = CONFIG['inputs']['model_fit']
 
 
-def run_mds(resp, rep, stims, dim, max_iter, learning_rate=None, start=None):
+def run_mds(resp, rep, stims, dim, max_iter, learning_rate=None, start=None, seed=None):
     """Fit an MDS coordinate map to a triadic choice dataset."""
     if learning_rate is None:
         learning_rate = _CFG['learning_rate']
@@ -35,7 +35,7 @@ def run_mds(resp, rep, stims, dim, max_iter, learning_rate=None, start=None):
         'log_every':      0,
         'label':          '',
     }
-    coords, ll, _ = rs.points_of_best_fit(resp, rep, args, start_points=start)
+    coords, ll, _ = rs.points_of_best_fit(resp, rep, args, start_points=start, seed=seed)
     return coords, ll
 
 
@@ -91,8 +91,13 @@ def resample_paired(pool, resp1, rep1, resp2, rep2):
     return sr1, srep1, sr2, srep2
 
 
-def warm_start(resp1, rep1, stims1, resp2, rep2, stims2, dim, max_iter=2000):
-    """Fit pooled (A+B) MDS and return starting coordinates for each dataset."""
+def warm_start(resp1, rep1, stims1, resp2, rep2, stims2, dim, max_iter=2000, seed=0):
+    """Fit pooled (A+B) MDS and return starting coordinates for each dataset.
+
+    seed fixes the pooled fit's own MDS initialization (the one fit in this
+    pipeline that runs with no start_points of its own) so the pooled result —
+    and everything downstream that warm-starts from it — is reproducible.
+    """
     global_stims = list(stims1)
     for s in stims2:
         if s not in global_stims:
@@ -117,7 +122,7 @@ def warm_start(resp1, rep1, stims1, resp2, rep2, stims2, dim, max_iter=2000):
         pooled_resp[k] = pooled_resp.get(k, 0) + v
         pooled_rep[k]  = pooled_rep.get(k, 0) + pp2[k]
 
-    pc, _ = run_mds(pooled_resp, pooled_rep, global_stims, dim, max_iter)
+    pc, _ = run_mds(pooled_resp, pooled_rep, global_stims, dim, max_iter, seed=seed)
     return (np.array([pc[idx1[i]] for i in range(len(stims1))]),
             np.array([pc[idx2[i]] for i in range(len(stims2))]))
 
