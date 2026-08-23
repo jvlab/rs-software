@@ -13,7 +13,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run,  default is 1
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
 %
 %         - **Optimization details**
 %         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
@@ -36,7 +36,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
 %
-%      - ah (struct): joint analysis of the Dirichlet shape parameter and discrete component, with fields
+%      - ah (struct): joint analysis of the Dirichlet shape parameter and discrete component (present only if if_discrete=1), with fields
 %
 %          - val (float 1-D array): val(1) is maximum-likelihood value for a, val(2) is maximum-likelihood value for h
 %          - ll_per_choice (float): log likelihood per choice probability
