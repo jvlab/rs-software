@@ -14,7 +14,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=5;
+ntests=6;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -27,11 +27,14 @@ choices=cell(1,ntests);
 dirfits=cell(1,ntests);
 aux_dirfits=cell(1,ntests);
 %
+add_disc=[3 6]; %test examples with an added discrete part
+%
 test_descs{1}='reading triadic choice file, animal-domain';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{1}=struct;
+aux_dirfits{1}.opts_dirfit.if_discrete=1;
 %
 test_descs{2}='reading triadic choice file, bgca stimulus set';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
@@ -39,7 +42,7 @@ auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{2}=struct;
 %
-test_descs{3}='reading triadic choice file, bgca stimulus set, with stats';
+test_descs{3}='reading triadic choice file, bgca stimulus set, with stats, modified for p=0.5 mass';
 filenames_examples{3}=filenames_examples{2};
 auxs{3}=auxs{2};
 aux_dirfits{3}=struct;
@@ -51,7 +54,6 @@ auxs{4}=auxs{2};
 aux_dirfits{4}=struct;
 aux_dirfits{4}.opts_dirfit.if_discrete=1;
 %
-%
 test_descs{5}='reading triadic choice file, bgca stimulus set, with discrete part and stats';
 filenames_examples{5}=filenames_examples{2};
 auxs{5}=auxs{2};
@@ -59,12 +61,22 @@ aux_dirfits{5}=struct;
 aux_dirfits{5}.opts_dirfit.if_discrete=1;
 aux_dirfits{5}.opts_dirfit.if_stats=1;
 %
+test_descs{6}='reading triadic choice file, bgca stimulus set, with discrete part and stats, modified for p=0.5 mass';
+filenames_examples{6}=filenames_examples{2};
+auxs{6}=auxs{2};
+aux_dirfits{6}=struct;
+aux_dirfits{6}.opts_dirfit.if_discrete=1;
+aux_dirfits{6}.opts_dirfit.if_stats=1;
+%
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
 for itest=1:ntests
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [data_comps{itest},aux_reads{itest}]=rs_read_choicedata(filenames_examples{itest},auxs{itest});
     choices{itest}=data_comps{itest}(:,[end-1:end]);
+    if ismember(itest,add_disc)
+        choices{itest}(1:10:end,1)=round(choices{itest}(1:10:end,2)/2);
+    end
     [dirfits{itest},aux_dirfit_outs{itest}]=rs_dirfit_choicedata(choices{itest},aux_dirfits{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     %

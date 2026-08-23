@@ -9,8 +9,9 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %     - opts_dirfit (struct): options for fitting Dirichlet parameters, can be omitted, with fields
 %
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
-%         - a_limits (float): allowed range for the a-parameter, default is [10^-2 10^2]
 %         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5; see note below
+%         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
+%         - h_limits (float): allowed range for the h-parameter (weight for the discrete component), default is [0 1]
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
@@ -53,15 +54,16 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - If all empirical choice probabilities are 0 or 1, the estimated parameter values will go to the limits allowed for the fitted parameters, 'a\_limits' and 'h\_limits'
 %         - This is a bare minimum for non-degeneracy.  Useful fits typically require many more choice probabilities. 
 %
-% See also: RS_READ_CHOICEDATA, LOGLIK_BETA, FMINSEARCH, FMINBND.
+% See also: RS_READ_CHOICEDATA, LOGLIK_BETA_DISCRETE, FMINSEARCH, FMINBND.
 %
 if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_dirfit',struct);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_discrete',0);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_log',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_limits',[10^-2 10^2]);
-aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_discrete',0);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'h_limits',[0 1]);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_frozen',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_stats',0);
 %
@@ -106,7 +108,7 @@ if nchoices<choices_needed
 else
     if nchoices<choices_needed+aux.opts_dirfit.if_stats
         wmsg=sprintf('insufficient choices available for computing statistics; at least %2.0f needed',choices_needed+aux.opts_dirfit.if_stats);
-        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));d
         aux.opts_dirfit.if_stats=0; %remove stats
     end
 end
@@ -125,19 +127,30 @@ end
 %
 %optimize with to the samples, leaving out the discrete part
 %
-[a_fit,nll_a_fit,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta(x,choices),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
+[a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,choices_used),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
 dirfit.a.val=a_fit;
-dirfit.a.ll_per_choice=-nll_a_fit/nchoices;
+dirfit.a.ll_per_choice=-a_fit_nll/nchoices;
 dirfit.a.exitflag=a_fit_exitflag;
 dirfit.a.output=a_fit_output;
 %
+if aux.opts_dirfit.if_discrete
+    %
+    %fit a and h, using fitted a as starting point
+    %
+    h_init=0;
+    opts_beta=struct;
+    opts_beta.qvec=0.5; %discrete part at 0.5
+    ah_init=[a_fit;h_init];
+    [ah_fit,ah_fit_nll,ah_fit_exitflag,ah_fit_output]=fminsearch(@(x) -loglik_beta_discrete(x(1),choices_used,setfield(opts_beta,'hvec',x(2))),ah_init);
+    dirfit.ah.val=ah_fit;
+    dirfit.ah.ll_per_choice=-ah_fit_nll/nchoices;
+    dirfit.ah.exitflag=ah_fit_exitflag;
+    dirfit.ah.output=ah_fit_output;
+    %
+end
 % add loglik_beta and any dependents to utils
 % bring out options for fminbnd, fminsearch, defaults to empty
 %
-% if ~exist('a_limits') a_limits=[2^-10 2^3]; end
-% if ~exist('h_limits') h_limits=[0 1]; end
-% if ~exist('a_try') a_try=2.^[-10:.0625:10]; end
-% if ~exist('q_limits') q_limits=[0.001 0.999]; end
 % if ~exist('h_init') h_init=0; end %initial value for h
 
 % [a_best_samp_beta,nll_best_samp_beta,exitflag_beta]=fminbnd(@(x) -loglik_beta(x,[successes tries]),a_limits(1),a_limits(2));
@@ -145,11 +158,6 @@ dirfit.a.output=a_fit_output;
 % %optimize to the finite samples, assuming discrete part known
 % %
 % [a_best_samp_disc,nll_best_samp_disc,exitflag_disc]=fminbnd(@(x) -loglik_beta(x,[successes tries],opts_disc),a_limits(1),a_limits(2));
-% %
-% %now fit both, using fitted a as starting point
-% %
-% ah_init=[a_best_samp_beta;h_init];
-% [ah_best_samp,nll_best_ah,exitflag_ah,output_ah]=fminsearch(@(x) -loglik_beta(x(1),[successes tries],setfield(opts_disc,'hvec',x(2))),ah_init);
 % %
 
 
