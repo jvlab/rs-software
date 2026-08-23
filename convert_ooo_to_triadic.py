@@ -77,25 +77,26 @@ def ooo_to_triadic(ooo_path, out_path=None):
             if n_odd == 0:
                 continue
 
-            # entry 1: ref=near1, non-ref are near2 (chosen) and odd (not chosen)
+            # entry 1: ref=near1, non-ref are near2 (closer to ref) and odd (farther from ref).
+            # Column meaning is N(D(ref,s1) > D(ref,s2)) -- count goes on whichever of
+            # s1/s2 is the FARTHER (odd) stimulus, not the closer one.
             # Standardize: sort non-ref stimuli alphabetically (Suniyya convention).
-            # If near2 is not alpha-first, swap and set chosen=0 for the new s1.
             if stim_list[near2] <= stim_list[odd]:
                 key1 = ((near1, near2), (near1, odd))
-                chosen1 = n_odd   # s1=near2 was chosen
+                chosen1 = 0       # s1=near2 is the closer stimulus -> D(ref,s1) not > D(ref,s2)
             else:
                 key1 = ((near1, odd), (near1, near2))
-                chosen1 = 0       # s1=odd was not chosen
+                chosen1 = n_odd   # s1=odd is the farther stimulus -> D(ref,s1) > D(ref,s2)
             triadic_chosen[key1]  += chosen1
             triadic_repeats[key1] += n_odd
 
-            # entry 2: ref=near2, non-ref are near1 (chosen) and odd (not chosen)
+            # entry 2: ref=near2, non-ref are near1 (closer to ref) and odd (farther from ref).
             if stim_list[near1] <= stim_list[odd]:
                 key2 = ((near2, near1), (near2, odd))
-                chosen2 = n_odd   # s1=near1 was chosen
+                chosen2 = 0       # s1=near1 is the closer stimulus -> D(ref,s1) not > D(ref,s2)
             else:
                 key2 = ((near2, odd), (near2, near1))
-                chosen2 = 0       # s1=odd was not chosen
+                chosen2 = n_odd   # s1=odd is the farther stimulus -> D(ref,s1) > D(ref,s2)
             triadic_chosen[key2]  += chosen2
             triadic_repeats[key2] += n_odd
 
