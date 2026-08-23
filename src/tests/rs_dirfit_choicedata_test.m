@@ -39,23 +39,25 @@ auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{2}=struct;
 %
-test_descs{3}='reading triadic choice file, bgca stimulus set, no consolidation';
-filenames_examples{3}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
-auxs{3}=auxs_force;
-auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log','if_consolidate'},{1,0});
+test_descs{3}='reading triadic choice file, bgca stimulus set, do stats';
+filenames_examples{3}=filenames_examples{2};
+auxs{3}=auxs{2};
 aux_dirfits{3}=struct;
+aux_dirfits{3}.opts_dirfit.if_stats=1;
 %
-test_descs{4}='reading tetradic choice file, coordinate file, bgca-gm stimulus set';
-filenames_examples{4}={'./samples/bwtextures/bgca3pt_choices_MC-gm_sess01_10.mat'};
-auxs{4}=auxs_force;
-auxs{4}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
+test_descs{4}='reading triadic choice file, bgca stimulus set, with discrete part';
+filenames_examples{4}=filenames_examples{2};
+auxs{4}=auxs{2};
 aux_dirfits{4}=struct;
+aux_dirfits{4}.opts_dirfit.if_discrete=1;
 %
-test_descs{5}='reading tetradic choice file, coordinate file, bgca-gm stimulus set, no consolidation';
-filenames_examples{5}={'./samples/bwtextures/bgca3pt_choices_MC-gm_sess01_10.mat'};
-auxs{5}=auxs_force;
-auxs{5}.opts_read=setfields(auxs_force.opts_read,{'if_log','if_consolidate'},{1,0});
+%
+test_descs{5}='reading triadic choice file, bgca stimulus set, with discrete part and stats';
+filenames_examples{5}=filenames_examples{2};
+auxs{5}=auxs{2};
 aux_dirfits{5}=struct;
+aux_dirfits{5}.opts_dirfit.if_discrete=1;
+aux_dirfits{5}.opts_dirfit.if_stats=1;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
