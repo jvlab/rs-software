@@ -125,7 +125,7 @@ if aux_out.warn_bad>0
     return
 end
 %
-%optimize with to the samples, leaving out the discrete part
+%fit a (without discrete part)
 %
 [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,choices_used),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
 dirfit.a.val=a_fit;
@@ -148,18 +148,6 @@ if aux.opts_dirfit.if_discrete
     dirfit.ah.output=ah_fit_output;
     %
 end
-% add loglik_beta and any dependents to utils
 % bring out options for fminbnd, fminsearch, defaults to empty
-%
-% if ~exist('h_init') h_init=0; end %initial value for h
-
-% [a_best_samp_beta,nll_best_samp_beta,exitflag_beta]=fminbnd(@(x) -loglik_beta(x,[successes tries]),a_limits(1),a_limits(2));
-% %
-% %optimize to the finite samples, assuming discrete part known
-% %
-% [a_best_samp_disc,nll_best_samp_disc,exitflag_disc]=fminbnd(@(x) -loglik_beta(x,[successes tries],opts_disc),a_limits(1),a_limits(2));
-% %
-
-
-
+% do jackknife, keeping track of what is left out
 return
