@@ -10,7 +10,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %         - a_limits (float): allowed range for the a-parameter, default is [10^-2 10^2]
-%         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5
+%         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5; see note below
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
@@ -35,10 +35,25 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %     - warnings (char): warnings generated during consistency check
 %     - warn_bad (int): number of warnings that prevent further processing
-%     - opts_dirfit (struct): opts_dirfit with values used
+%     - opts_dirfit (struct): aux,opts_dirfit with defaults and values used
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-%  See also: RS_READ_CHOICEDATA, LOGLIK_BETA, FMINSEARCH, FMINBND.
+% Note: Notes re fitting, log likelihoods and statistics
+%     - The distribution of observed probabiliies p is fitted to a symmetric Dirichlet distribution with parameter 'a', i.e., P(p)=(p^(a-1))((1-p)^(a-1))/B(a-1,a-1), where B is the beta function
+%
+%         - Each row of 'choices' in which the second column is nonzero is considered an independent observation of the chioce probability distribution; rows containing zeros are ignored
+%         - If if_discrete=1, it is also fitted to a symmetric Dirichlet distribution mixed with a discrete component at p=0.5, with weights 1-h and h, respectively
+%
+%     - Log likelihoods use natural logs, and are normalized by the number of nonzero rows of 'choices'
+%     - Minimal number of choice probabilities (nonzero rows of 'choices') needed
+%
+%         - At least 2 choice probabilities are needed to fit the symmetric Dirichlet distribution
+%         - At least 3 choice probabilities are needed to fit the distribution with an additional discrete component
+%         - For a jacknife estimate of the s.e.m., at least one additional choice probability is needed
+%         - If all empirical choice probabilities are 0 or 1, the estimated parameter values will go to the limits allowed for the fitted parameters, 'a\_limits' and 'h\_limits'
+%         - This is a bare minimum for non-degeneracy.  Useful fits typically require many more choice probabilities. 
+%
+% See also: RS_READ_CHOICEDATA, LOGLIK_BETA, FMINSEARCH, FMINBND.
 %
 if (nargin<=1)
     aux=struct;
@@ -71,10 +86,11 @@ else
     rng('shuffle');
 end
 %
-choices_used=choices(choices(:,2)>0,:);
+choices_nz=find(choices(:,2)>0);
+choices_used=choices(choices_nz,:);
 %
 probs=choices_used(:,1)./choices_used(:,2);
-nchoices=size(choices_used,1);
+nchoices=length(choices_nz);
 if aux.opts_dirfit.if_log
     disp(sprintf('fitting Dirichlet parameters: %5.0f  choices used, probability range: [%8.6f %8.6f]',nchoices,min(probs),max(probs)));
 end
