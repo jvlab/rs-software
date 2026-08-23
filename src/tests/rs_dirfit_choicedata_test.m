@@ -48,20 +48,20 @@ auxs{3}=auxs{2};
 aux_dirfits{3}=struct;
 aux_dirfits{3}.opts_dirfit.if_stats=1;
 %
-test_descs{4}='reading triadic choice file, bgca stimulus set, with discrete part';
+test_descs{4}='reading triadic choice file, bgca stimulus set, fit with discrete part';
 filenames_examples{4}=filenames_examples{2};
 auxs{4}=auxs{2};
 aux_dirfits{4}=struct;
 aux_dirfits{4}.opts_dirfit.if_discrete=1;
 %
-test_descs{5}='reading triadic choice file, bgca stimulus set, with discrete part and stats';
+test_descs{5}='reading triadic choice file, bgca stimulus set, fit with discrete part and stats';
 filenames_examples{5}=filenames_examples{2};
 auxs{5}=auxs{2};
 aux_dirfits{5}=struct;
 aux_dirfits{5}.opts_dirfit.if_discrete=1;
 aux_dirfits{5}.opts_dirfit.if_stats=1;
 %
-test_descs{6}='reading triadic choice file, bgca stimulus set, with discrete part and stats, modified for p=0.5 mass';
+test_descs{6}='reading triadic choice file, bgca stimulus set, fit discrete part and stats, modified for p=0.5 mass';
 filenames_examples{6}=filenames_examples{2};
 auxs{6}=auxs{2};
 aux_dirfits{6}=struct;
