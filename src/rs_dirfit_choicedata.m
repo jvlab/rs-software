@@ -11,7 +11,6 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5; see note below
 %         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
-%         - h_limits (float): allowed range for the h-parameter (weight for the discrete component), default is [0 1]
 %
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
@@ -63,7 +62,6 @@ aux=filldefault(aux,'opts_dirfit',struct);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_discrete',0);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_log',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_limits',[10^-2 10^2]);
-aux.opts_dirfit=filldefault(aux.opts_dirfit,'h_limits',[0 1]);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_frozen',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_stats',0);
 %
