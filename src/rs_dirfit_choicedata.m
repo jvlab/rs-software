@@ -109,11 +109,11 @@ end
 %
 %optimize with to the samples, leaving out the discrete part
 %
-[a_fit,nll_a_fit,a_fit_exitflag,output]=fminbnd(@(x) -loglik_beta(x,choices),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
+[a_fit,nll_a_fit,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta(x,choices),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
 dirfit.a.val=a_fit;
 dirfit.a.ll_per_choice=-nll_a_fit/nchoices;
 dirfit.a.exitflag=a_fit_exitflag;
-dirfit.a.output=output;
+dirfit.a.output=a_fit_output;
 %
 % add loglik_beta and any dependents to utils
 % bring out options for fminbnd, fminsearch, defaults to empty

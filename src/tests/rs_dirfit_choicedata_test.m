@@ -39,7 +39,7 @@ auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{2}=struct;
 %
-test_descs{3}='reading triadic choice file, bgca stimulus set, do stats';
+test_descs{3}='reading triadic choice file, bgca stimulus set, with stats';
 filenames_examples{3}=filenames_examples{2};
 auxs{3}=auxs{2};
 aux_dirfits{3}=struct;
