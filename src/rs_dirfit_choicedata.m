@@ -31,7 +31,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %      - a (struct): analysis of the Dirichlet shape parameter, with fields
 %
 %          - val (float): maximum-likelihood value for a
-%          - ll_per_choice (float): log likelihood per choice probability
+%          - llnat_per_choice (float): log likelihood (natural log) per choice probability
 %          - exitflag (int): exit flag from `fminbnd` optimization
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
@@ -146,7 +146,7 @@ a_opts=optimset(optimset('fminbnd'),aux.opts_dirfit.a_optimset);
 %
 [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,choices_used),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
 dirfit.a.val=a_fit;
-dirfit.a.ll_per_choice=-a_fit_nll/nchoices;
+dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
 dirfit.a.exitflag=a_fit_exitflag;
 dirfit.a.output=a_fit_output;
 dirfit.a.optimset=a_opts;
@@ -162,7 +162,7 @@ if aux.opts_dirfit.if_discrete
     ah_init=[a_fit;h_init];
     [ah_fit,ah_fit_nll,ah_fit_exitflag,ah_fit_output]=fminsearch(@(x) -loglik_beta_discrete(x(1),choices_used,setfield(opts_beta,'hvec',x(2))),ah_init,ah_opts);
     dirfit.ah.val=ah_fit;
-    dirfit.ah.ll_per_choice=-ah_fit_nll/nchoices;
+    dirfit.ah.llnat_per_choice=-ah_fit_nll/nchoices;
     dirfit.ah.exitflag=ah_fit_exitflag;
     dirfit.ah.output=ah_fit_output;
     dirfit.ah.optimset=ah_opts;
