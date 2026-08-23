@@ -32,7 +32,7 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %          - triadic: col 1 is reference, col 2 is s1, col 3 is s2, comparisons are (ref,s1) and (ref,s2)
 %          - tetradic: cols 1-4 are s1-s4, comparisons are (s1,s2) and (s3,s4)
 %
-%      - next column: number of times the first comparison was judged __more similar than__ the second comparison.
+%      - next column: number of times the first difference was judged __more similar than__ the second difference
 %      - final column: number of times the comparison was made
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields

@@ -23,6 +23,7 @@ opts_used=cell(1,ntests);
 %
 data_comps=cell(1,ntests);
 auxs=cell(1,ntests);
+choices=cell(1,ntests);
 dirfits=cell(1,ntests);
 aux_dirfits=cell(1,ntests);
 %
@@ -61,7 +62,8 @@ ifdif=cell(1,ntests);
 for itest=1:ntests
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [data_comps{itest},aux_reads{itest}]=rs_read_choicedata(filenames_examples{itest},auxs{itest});
-    [dirfits{itest},aux_dirfit_outs{itest}]=rs_dirfit_choicedata(data_comps{itest},aux_dirfits{itest});
+    choices{itest}=data_comps{itest}(:,[end-1:end]);
+    [dirfits{itest},aux_dirfit_outs{itest}]=rs_dirfit_choicedata(choices{itest},aux_dirfits{itest});
     fns{itest}=sprintf('rs_%s_test_%1.0f',rs_module,itest);
     %
     s=struct;

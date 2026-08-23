@@ -1,16 +1,12 @@
-function [dirfit,aux_out]=rs_dirfit_choicedata(data_comp,aux)
-% [dirfit,aux_out]=rs_dirfit_choicedata(data_comp,aux) fits Dirichlet parameters to choice probability distribution
+function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
+% [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux) fits Dirichlet parameters to choice probability distribution
 % 
 % Args:
-%   data_comp (int 2-D array): Each row contains the data from a single kind of comparison
+%   choices (int 2-D array): Each row contains the data from a single kind of comparison, typically the last two columns of data_comp as returned by `rs_read_choicedata`
 %
-%      - first 3 or 4 columns: indexes into the stimuli used for the comparison
-% 
-%          - triadic: col 1 is reference, col 2 is s1, col 3 is s2, comparisons are (ref,s1) and (ref,s2)
-%          - tetradic: cols 1-4 are s1-s4, comparisons are (s1,s2) and (s3,s4)
+%      - choices(:,1): number of times the first difference was judged __more similar than__ the second difference
+%      - choices(:,2): number of times the comparison was made
 %
-%      - next column: number of times the first comparison was judged __more similar than__ the second comparison.
-%      - final column: number of times the comparison was made
 %
 %   aux (struct): a structure, can be omitted, with fields 
 %
@@ -24,7 +20,9 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(data_comp,aux)
 %
 % Returns:
 %
-%   dirfit (struct): the fitted Dirichlet parameter values
+%   dirfit (struct): the fitted Dirichlet parameter values, a structure with fields
+%
+%      - nchoices: number of choices used
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -33,10 +31,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(data_comp,aux)
 %     - opts_read (cell array of struct): opts_read{1} is aux.opts_read, with defaults filled in
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-%
 %  See also: RS_READ_CHOICEDATA
-%
-valid_choice_types={'triadic','tetradic'};
 %
 if (nargin<=1)
     aux=struct;
@@ -53,5 +48,12 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
+probs=choices(:,1)./choices(:,2);
+nchoices=size(choices,1);
+if aux.opts_dirfit.if_log
+    disp(sprintf('fitting Dirichlet parameters: %5.0f choices, probability range: [%8.6f %8.6f]',nchoices,min(probs),max(probs)));
+end
+%
 dirfit=struct;
+dirfit.nchoices=nchoices;
 return
