@@ -64,10 +64,11 @@ dirfit.nchoices=nchoices;
 %
 if ~exist('a_limits') a_limits=[2^-10 2^3]; end;
 
-[a_fit,nll_a_fit,a_fit_exitflag]=fminbnd(@(x) -loglik_beta(x,choices),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
+[a_fit,nll_a_fit,a_fit_exitflag,output]=fminbnd(@(x) -loglik_beta(x,choices),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2));
 dirfit.a.fit=a_fit;
 dirfit.a.ll_per_choice=-nll_a_fit/nchoices;
 dirfit.a.exitflag=a_fit_exitflag;
+dirfit.a.output=output;
 %
 % add loglik_beta and any dependents to utils
 % bring out options for fminbnd, fminsearch, defaults to empty
