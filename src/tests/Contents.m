@@ -3,6 +3,7 @@
 % Individual testing modules
 % rs_align_coordsets_test: test rs_align_coordsets 
 % rs_aux_customize_test: test rs_aux_customize
+% rs_dirfit_choicetdata_test: test rs_dirfit_choicedata
 % rs_disp_coordsets_test1: test rs_disp_coordsets    
 % rs_disp_coordsets_test2: test rs_disp_coordsets
 % rs_disp_coordsets_test3: test rs_disp_coordsets

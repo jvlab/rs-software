@@ -62,8 +62,6 @@ end
 aux=filldefault(aux,'opts_read',struct);
 aux.opts_read=filldefault(aux.opts_read,'if_consolidate',1);
 %
-aux=filldefault(aux,'opts_rays',struct);
-%
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %

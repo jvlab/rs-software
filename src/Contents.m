@@ -10,6 +10,9 @@
 %   rs_showpipeline: show the processing pipeline for a coordinate dataset
 %   rs_write_coordsets: write a coordinate dataset
 %
+% Data processing: choices
+%   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
+%
 % Data processing: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
 %   rs_check_coordsets: check consistency of a dataset structure
