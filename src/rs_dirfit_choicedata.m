@@ -1,5 +1,5 @@
 function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
-% [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux) does maximum-likelihood fit of symmetric Dirichlet distribution to choice probabilities, optionally including a discrete component at p=0.5
+% [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux) fonds the maximum-likelihood fit of a symmetric Dirichlet distribution to choice probabilities, optionally including a discrete component at p=0.5
 % 
 % Args:
 %   choices (int 2-D array): choices(:,1) is the number of times the first difference was judged __more similar than__ the second difference; choices(:,2) is the number of times the comparison was made; this is typically the last two columns of data_comp as returned by `rs_read_choicedata`
@@ -14,7 +14,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - **Options for statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
-%         - njacks_max (int): maximum number of choice probabilities to remove for jackknifing (ignored if if_stats=0), default is Inf
+%         - njacks_max (int): maximum number of choice probabilities to remove for jackknifing (ignored if if_stats=0), default is 500
 %
 %         - **Options to control optimization details**
 %         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
@@ -88,7 +88,7 @@ aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_log',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_limits',[10^-2 10^2]);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_frozen',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_stats',0);
-aux.opts_dirfit=filldefault(aux.opts_dirfit,'njacks_max',Inf);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'njacks_max',500);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_optimset',struct());
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'ah_optimset',struct());
 %
