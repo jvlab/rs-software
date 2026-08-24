@@ -17,7 +17,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_knit (struct): options for knitting and consistency checking, with fields
+%     - opts_knit (struct): options for knitting and consistency checking, with fields to control
 %
 %         - **Transformations**
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
@@ -29,8 +29,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets

@@ -11,11 +11,11 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5; see note below
 %
-%         - **Statistics and shuffles**
+%         - **Options for statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
 %
-%         - **Optimization details**
+%         - **Options to control optimization details**
 %         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
 %         - a_optimset (struct): non-default optimizations parameters for fitting a, with `fminbnd`, default is struct()
 %         - ah_optimset (struct): non-default optimizations parameters for fitting a and h, with `fminsearch`, default is struct()

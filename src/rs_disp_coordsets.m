@@ -14,7 +14,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_disp (struct): options for display, with fields
+%     - opts_disp (struct): options for display, with fields to contol
 %
 %         - **Data selection**
 %         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
@@ -27,9 +27,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             - 'keepone': keep one dimension and step the rest;        [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5],[1 3 4],[1 3 5],[1 4 5]
 %             - 'rolling': rolling contiguous subsets;                  [dim_select,coord_group_size]=[5,3] yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %             - 'onlylowest': only the lowest dimensions;               [dim_select,coord_group_size]=[5,3] yields [1 2 3]
-%             - 'list': specify a list in opts_disp.coord_groups, as an
-%             array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the
-%             first, {1,4,5} in the second, {1,6,7} in the third
+%             - 'list': specify a list in opts_disp.coord_groups, as an array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the first, {1,4,5} in the second, {1,6,7} in the third
 %
 %         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
