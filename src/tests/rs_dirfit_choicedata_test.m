@@ -29,7 +29,7 @@ aux_dirfits=cell(1,ntests);
 %
 add_disc=[3 6 7]; %test examples with an added discrete part
 %
-test_descs{1}='reading triadic choice file, animal-domain';
+test_descs{1}='reading triadic choice file, animal-domain, with discrete part';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});

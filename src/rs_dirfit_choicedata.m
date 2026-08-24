@@ -63,7 +63,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 % Note: Notes re fitting, log likelihoods and statistics
 %     - The distribution of observed probabiliies p is fitted to a symmetric Dirichlet distribution with parameter 'a', i.e., P(p)=(p^(a-1))((1-p)^(a-1))/B(a-1,a-1), where B is the beta function
 %
-%         - Each row of 'choices' in which the second column is nonzero is considered an independent observation of the chioce probability distribution; rows containing zeros are ignored
+%         - Each nonzero row of 'choices' is considered an independent observation of the chioce probability distribution; rows containing zeros are ignored
 %         - If if_discrete=1, it is also fitted to a symmetric Dirichlet distribution mixed with a discrete component at p=0.5, with weights 1-h and h, respectively
 %
 %     - Log likelihoods use natural logs, and are normalized by the number of nonzero rows of 'choices'
