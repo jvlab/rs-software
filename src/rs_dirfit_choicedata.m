@@ -14,6 +14,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - **Options for statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
 %         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
+%         - njacks_max (int): maximum number of choice probabilities to remove for jackknifing (ignored if if_stats=0), default is Inf
 %
 %         - **Options to control optimization details**
 %         - a_limits (float): allowed range for the a-parameter (shape), default is [10^-2 10^2]
@@ -35,6 +36,9 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %          - exitflag (int): exit flag from `fminbnd` optimization
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
+%          - jack_val (float 1-D array): maximum-likelihood value for a for each jackknife, only present if if_stats=1
+%          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
+%          - jack_sem (float): jackknife standard error of measurement for a, only present if if_stats=1
 %
 %      - ah (struct): joint analysis of the Dirichlet shape parameter and discrete component (present only if if_discrete=1), with fields
 %
@@ -43,6 +47,11 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %          - exitflag (int): exit flag from `fminsearch optimization
 %          - output (struct): detailed output from `fminsearch` optimization
 %          - optimset (struct): optimization options used in `fminsearch` optimization
+%          - jack_val (float 2-D array): maximum-likelihood value for a (jack_val(1,:)) and h (jack_val(2,:) for each jackknife, only present if if_stats=1
+%          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
+%          - jack_sem (float 1-D array): jack_sem(1) is jackknife standard error of measurement for a, jack_sem(2) is jackknife standard error of measurement for h, only present if if_stats=1
+%
+%      - jack_select (int 1-D array): list of choices omitted on each jackknife (empty if if_stats=0)
 % 
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -79,6 +88,7 @@ aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_log',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_limits',[10^-2 10^2]);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_frozen',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_stats',0);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'njacks_max',Inf);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_optimset',struct());
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'ah_optimset',struct());
 %
@@ -123,7 +133,7 @@ if nchoices<choices_needed
 else
     if nchoices<choices_needed+aux.opts_dirfit.if_stats
         wmsg=sprintf('insufficient choices available for computing statistics; at least %2.0f needed',choices_needed+aux.opts_dirfit.if_stats);
-        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));d
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
         aux.opts_dirfit.if_stats=0; %remove stats
     end
 end
@@ -139,34 +149,81 @@ if aux_out.warn_bad>0
     disp(aux_out.warnings);
     return
 end
+if aux.opts_dirfit.if_stats
+    njacks=min(aux.opts_dirfit.njacks_max,nchoices);
+    if njacks<nchoices
+        jack_select=sort(randperm(nchoices,njacks));
+    else
+        jack_select=[1:nchoices];
+    end
+    dirfit.a.jack_val=zeros(1,njacks);
+    dirfit.a.jack_nllnat_per_choice=zeros(1,njacks);
+    if aux.opts_dirfit.if_discrete
+        dirfit.ah.jack_val=zeros(2,njacks);
+        dirfit.ah.jack_nllnat_per_choice=zeros(1,njacks);
+    end
+else
+    njacks=0;
+    jack_select=[];
+end
+dirfit.jack_select=jack_select;
 %
 %fit a (without discrete part)
 %
 a_opts=optimset(optimset('fminbnd'),aux.opts_dirfit.a_optimset);
 %
-[a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,choices_used),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
-dirfit.a.val=a_fit;
-dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
-dirfit.a.exitflag=a_fit_exitflag;
-dirfit.a.output=a_fit_output;
-dirfit.a.optimset=a_opts;
+for ijack=0:njacks
+    if (ijack==0)
+        c=choices_used;
+    else
+        c=choices_used(setdiff(1:nchoices,jack_select(ijack)),:);
+    end
+    [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
+    if (ijack==0)
+        dirfit.a.val=a_fit;
+        dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
+        dirfit.a.exitflag=a_fit_exitflag;
+        dirfit.a.output=a_fit_output;
+        dirfit.a.optimset=a_opts;
+    else
+        dirfit.a.jack_val(1,ijack)=a_fit;
+        dirfit.a.jack_nllnat_per_choice(1,ijack)=-a_fit_nll/nchoices;
+    end
+end %ijack
+if aux.opts_dirfit.if_stats
+    dirfit.a.jack_sem=sqrt(((nchoices-1)/njacks)*sum((dirfit.a.jack_val-mean(dirfit.a.jack_val,2)).^2,2)); %note njack in denominator, since not all data points may be jackknifed
+end
 %
 if aux.opts_dirfit.if_discrete
-    %
-    %fit a and h, using fitted a as starting point
-    %
-    ah_opts=optimset(optimset('fminsearch'),aux.opts_dirfit.ah_optimset);
     h_init=0;
-    opts_beta=struct;
-    opts_beta.qvec=0.5; %discrete part at 0.5
-    ah_init=[a_fit;h_init];
-    [ah_fit,ah_fit_nll,ah_fit_exitflag,ah_fit_output]=fminsearch(@(x) -loglik_beta_discrete(x(1),choices_used,setfield(opts_beta,'hvec',x(2))),ah_init,ah_opts);
-    dirfit.ah.val=ah_fit;
-    dirfit.ah.llnat_per_choice=-ah_fit_nll/nchoices;
-    dirfit.ah.exitflag=ah_fit_exitflag;
-    dirfit.ah.output=ah_fit_output;
-    dirfit.ah.optimset=ah_opts;
-    %
-end
-% do jackknife, keeping track of what is left out
+    for ijack=0:njacks
+        %
+        %fit a and h, using fitted a as starting point
+        %
+        if (ijack==0)
+            c=choices_used;
+            ah_init=[a_fit;h_init];
+        else
+            c=choices_used(setdiff(1:nchoices,jack_select(ijack)),:);
+            ah_init=dirfit.ah.val; %use starting point from full dataset
+        end
+        ah_opts=optimset(optimset('fminsearch'),aux.opts_dirfit.ah_optimset);
+        opts_beta=struct;
+        opts_beta.qvec=0.5; %discrete part at 0.5
+        [ah_fit,ah_fit_nll,ah_fit_exitflag,ah_fit_output]=fminsearch(@(x) -loglik_beta_discrete(x(1),c,setfield(opts_beta,'hvec',x(2))),ah_init,ah_opts);
+        if (ijack==0)
+            dirfit.ah.val=ah_fit;
+            dirfit.ah.llnat_per_choice=-ah_fit_nll/nchoices;
+            dirfit.ah.exitflag=ah_fit_exitflag;
+            dirfit.ah.output=ah_fit_output;
+            dirfit.ah.optimset=ah_opts;
+        else
+            dirfit.ah.jack_val(:,ijack)=ah_fit;
+            dirfit.ah.jack_nllnat_per_choice(1,ijack)=-ah_fit_nll/nchoices;
+        end
+    end %ijacks
+    if aux.opts_dirfit.if_stats
+        dirfit.ah.jack_sem=sqrt(((nchoices-1)/njacks)*sum((dirfit.ah.jack_val-mean(dirfit.ah.jack_val,2)).^2,2)); %note njack in denominator, since not all data points may be jackknifed
+    end
+end %if_discrete
 return
