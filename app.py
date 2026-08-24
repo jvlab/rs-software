@@ -22,6 +22,7 @@ from rs_ui import convergence_plot
 from src.rs_py.utils.util import load_choices
 from src.rs_py.utils.config import CONFIG
 import src.rs_py.model.fit_geometric_models as rs
+from rng_control import initialize_random_state
 
 # ---------------------------------------------------------------------------
 # defaults
@@ -50,7 +51,7 @@ def load_mat(path):
 
 
 def run_mds(responses, repeats, stim_list, dim, max_iterations, learning_rate,
-            log_every=0, label="", start_points=None, seed=None):
+            log_every=0, label="", start_points=None, if_frozen=-1):
     args = {
         'num_stimuli':    len(stim_list),
         'sigma':          _CFG['sigma'],
@@ -63,7 +64,9 @@ def run_mds(responses, repeats, stim_list, dim, max_iterations, learning_rate,
         'log_every':      log_every,
         'label':          label,
     }
-    coords, ll, residuals = rs.points_of_best_fit(responses, repeats, args, start_points=start_points, seed=seed)
+    if start_points is None:
+        initialize_random_state(if_frozen)
+    coords, ll, residuals = rs.points_of_best_fit(responses, repeats, args, start_points=start_points)
     return coords, ll, residuals
 
 
@@ -625,7 +628,7 @@ with tab_analysis:
             total_triads_pooled = sum(pooled_rep.values())
             pooled_coords, pooled_ll, pooled_residuals = run_mds(
                 pooled_resp, pooled_rep, global_stims, dim, max_iterations, learning_rate,
-                log_every=1, label="Pooled", seed=0)
+                log_every=1, label="Pooled", if_frozen=1)
             start1 = np.array([pooled_coords[idx_map1[i]] for i in range(len(stims1))])
             start2 = np.array([pooled_coords[idx_map2[i]] for i in range(len(stims2))])
             st.success(f"Pooled LL: {-pooled_ll/total_triads_pooled:.4f} — using as warm start for A and B fits")

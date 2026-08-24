@@ -75,38 +75,16 @@ def format_distances(distance_dict):
     return distance_matrix
 
 
-def initialize_random_state(if_frozen):
+def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9):
+    """Given judgments and number of dimensions, return an estimate of point coordinates using MDS
+    :param seed: for MDS (int)
+    :param judgments (dict)
+    :param repeats (int)
+    :param n_dim (int)
+    :param epsilon: error threshold which controls when MDS terminates
     """
-    Set numpy random state according to if_frozen convention (mirrors MATLAB behavior):
-      if_frozen = 1  → seed(0) — same sequence every run
-      if_frozen = 0  → seed(None) — fully random each run
-      if_frozen < 0  → seed(0), then advance by abs(if_frozen) steps
-    """
-    if if_frozen == 0:
-        np.random.seed(None)
-    elif if_frozen == 1:
-        np.random.seed(0)
-    elif if_frozen < 0:
-        np.random.seed(0)
-        np.random.rand(abs(if_frozen))
-
-
-def get_coordinates(n_dim, judgments, repeats, epsilon=1e-9, seed=None, if_frozen=-1):
-    """Given judgments and number of dimensions, return an estimate of point coordinates using MDS.
-    :param n_dim: number of dimensions
-    :param judgments: dict of trial responses
-    :param repeats: dict of trial repeat counts
-    :param epsilon: error threshold for MDS termination
-    :param seed: legacy seed parameter (overrides if_frozen when provided)
-    :param if_frozen: randomization control (1=frozen/seed0, 0=random, <0=specific seed).
-                      State spills over across dimension calls intentionally.
-    """
-    if seed is not None:
-        np.random.seed(seed)
-    else:
-        initialize_random_state(if_frozen)
     distance_matrix = format_distances(heuristic_distances(judgments, repeats))
     LOG.info('#################  Running MDS')
-    coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon, random_state=None)
+    coordinates, stress = smacof(distance_matrix, n_components=n_dim, metric=True, eps=epsilon, n_init=8)
     return coordinates, stress
 
