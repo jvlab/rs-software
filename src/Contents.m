@@ -3,11 +3,15 @@
 % Data input and output
 %   rs_get_coordsets: get one or more dataset structures (coordinates and metadata) from a file
 %   rs_import_coordsets: import a dataset structure from coordinates
+%   rs_read_choicedata: read choices from a file
 %   rs_read_coorddata: read one dataset structure from a file
 %   rs_save_figs: save one or more figure files
 %   rs_save_mat: save a mat file
 %   rs_showpipeline: show the processing pipeline for a coordinate dataset
 %   rs_write_coordsets: write a coordinate dataset
+%
+% Data processing: choices
+%   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
 %
 % Data processing: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
