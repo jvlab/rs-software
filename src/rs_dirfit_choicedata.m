@@ -1,5 +1,5 @@
 function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
-% [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux) fonds the maximum-likelihood fit of a symmetric Dirichlet distribution to choice probabilities, optionally including a discrete component at p=0.5
+% [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux) finds the maximum-likelihood fit of a symmetric Dirichlet distribution to choice probabilities, optionally including a discrete component at p=0.5
 % 
 % Args:
 %   choices (int 2-D array): choices(:,1) is the number of times the first difference was judged __more similar than__ the second difference; choices(:,2) is the number of times the comparison was made; this is typically the last two columns of data_comp as returned by `rs_read_choicedata`
