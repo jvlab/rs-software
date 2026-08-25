@@ -168,9 +168,12 @@ else
 end
 dirfit.jack_select=jack_select;
 %
-%fit a (without discrete part)
-%
 a_opts=optimset(optimset('fminbnd'),aux.opts_dirfit.a_optimset);
+%quantities needed for discrete part
+ah_opts=optimset(optimset('fminsearch'),aux.opts_dirfit.ah_optimset);
+h_init=0;
+opts_beta=struct;
+opts_beta.qvec=0.5;
 %
 for ijack=0:njacks
     if (ijack==0)
@@ -178,6 +181,9 @@ for ijack=0:njacks
     else
         c=choices_used(setdiff(1:nchoices,jack_select(ijack)),:);
     end
+    %
+    %fit a (without discrete part)
+    %
     [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
     if (ijack==0)
         dirfit.a.val=a_fit;
@@ -189,27 +195,12 @@ for ijack=0:njacks
         dirfit.a.jack_val(1,ijack)=a_fit;
         dirfit.a.jack_nllnat_per_choice(1,ijack)=-a_fit_nll/nchoices;
     end
-end %ijack
-if aux.opts_dirfit.if_stats
-    dirfit.a.jack_sem=sqrt(((nchoices-1)/njacks)*sum((dirfit.a.jack_val-mean(dirfit.a.jack_val,2)).^2,2)); %note njack in denominator, since not all data points may be jackknifed
-end
-%
-if aux.opts_dirfit.if_discrete
-    h_init=0;
-    for ijack=0:njacks
-        %
-        %fit a and h, using fitted a as starting point
-        %
+    if aux.opts_dirfit.if_discrete
         if (ijack==0)
-            c=choices_used;
             ah_init=[a_fit;h_init];
         else
-            c=choices_used(setdiff(1:nchoices,jack_select(ijack)),:);
             ah_init=dirfit.ah.val; %use starting point from full dataset
         end
-        ah_opts=optimset(optimset('fminsearch'),aux.opts_dirfit.ah_optimset);
-        opts_beta=struct;
-        opts_beta.qvec=0.5; %discrete part at 0.5
         [ah_fit,ah_fit_nll,ah_fit_exitflag,ah_fit_output]=fminsearch(@(x) -loglik_beta_discrete(x(1),c,setfield(opts_beta,'hvec',x(2))),ah_init,ah_opts);
         if (ijack==0)
             dirfit.ah.val=ah_fit;
@@ -221,9 +212,21 @@ if aux.opts_dirfit.if_discrete
             dirfit.ah.jack_val(:,ijack)=ah_fit;
             dirfit.ah.jack_nllnat_per_choice(1,ijack)=-ah_fit_nll/nchoices;
         end
-    end %ijacks
-    if aux.opts_dirfit.if_stats
-        dirfit.ah.jack_sem=sqrt(((nchoices-1)/njacks)*sum((dirfit.ah.jack_val-mean(dirfit.ah.jack_val,2)).^2,2)); %note njack in denominator, since not all data points may be jackknifed
+    end %if_discrete
+end %ijack
+%
+if aux.opts_dirfit.if_stats
+    dirfit.a.jack_sem=rs_dirfit_jack(dirfit.a.jack_val,nchoices);
+    if aux.opts_dirfit.if_discrete
+        dirfit.ah.jack_sem=rs_dirfit_jack(dirfit.ah.jack_val,nchoices);
     end
-end %if_discrete
+end
+%
 return
+end
+%
+function zsem=rs_dirfit_jack(z,nchoices)
+njacks=size(z,2);
+zsem=sqrt(((nchoices-1)/njacks)*sum((z-mean(z,2)).^2,2)); %note njack in denominator, since not all data points may be jackknifed
+return
+end
