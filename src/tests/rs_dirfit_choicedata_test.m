@@ -34,7 +34,7 @@ filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{1}=struct;
-aux_dirfits{1}.opts_dirfit.if_discrete=1;
+aux_dirfits{1}.opts_dirfit.if_fit_ah=1;
 %
 test_descs{2}='reading triadic choice file, bgca stimulus set';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
@@ -53,13 +53,13 @@ test_descs{4}='reading triadic choice file, bgca stimulus set, fit with discrete
 filenames_examples{4}=filenames_examples{2};
 auxs{4}=auxs{2};
 aux_dirfits{4}=struct;
-aux_dirfits{4}.opts_dirfit.if_discrete=1;
+aux_dirfits{4}.opts_dirfit.if_fit_ah=1;
 %
 test_descs{5}='reading triadic choice file, bgca stimulus set, fit with discrete part and stats, 50 jackknifes';
 filenames_examples{5}=filenames_examples{2};
 auxs{5}=auxs{2};
 aux_dirfits{5}=struct;
-aux_dirfits{5}.opts_dirfit.if_discrete=1;
+aux_dirfits{5}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{5}.opts_dirfit.if_stats=1;
 aux_dirfits{5}.opts_dirfit.njacks_max=50;
 %
@@ -67,17 +67,18 @@ test_descs{6}='reading triadic choice file, bgca stimulus set, fit discrete part
 filenames_examples{6}=filenames_examples{2};
 auxs{6}=auxs{2};
 aux_dirfits{6}=struct;
-aux_dirfits{6}.opts_dirfit.if_discrete=1;
+aux_dirfits{6}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{6}.opts_dirfit.if_stats=1;
 aux_dirfits{6}.opts_dirfit.njacks_max=50;
 %
-test_descs{7}='reading triadic choice file, bgca stimulus set, fit discrete part and stats, modified for p=0.5 mass, 500 jackknifes';
+test_descs{7}='reading triadic choice file, bgca stimulus set, fit discrete part and stats, modified for p=0.5 mass, 50 jackknifes, force h=0.1';
 filenames_examples{7}=filenames_examples{2};
 auxs{7}=auxs{2};
 aux_dirfits{7}=struct;
-aux_dirfits{7}.opts_dirfit.if_discrete=1;
+aux_dirfits{7}.opts_dirfit.fixed_h=0.1;
+aux_dirfits{7}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{7}.opts_dirfit.if_stats=1;
-aux_dirfits{7}.opts_dirfit.njacks_max=500;
+aux_dirfits{7}.opts_dirfit.njacks_max=50;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

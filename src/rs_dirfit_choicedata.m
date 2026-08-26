@@ -9,7 +9,11 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %     - opts_dirfit (struct): options for fitting Dirichlet parameters, can be omitted, with fields
 %
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
-%         - if_discrete (int): 1 to inclulde a discrete component ('h') for choice probability=0.5; see note below
+%         - if_fit_a (int): 1 to fit the shape parameter ('a') with an assumed value of the discrete parameter, 0 omits, default is 1
+%         - fixed_h (float): value of 'h' to use for fitting just 'a', default is 0
+%         - if_fit_h (int): 1 to fit the discrete parameter ('h') with an assumed value of the shape parameter 'a', 0 omits, default is 0
+%         - fixed_a (float): value of 'a' to use for fitting 'h', default is 1
+%         - if_fit_ah (int): 1 to fit the shape parameter 'a' and the discrete parameter 'h' simultaneously, 0 omits, default is 0; see note below
 %
 %         - **Options for statistics and shuffles**
 %         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
@@ -29,18 +33,31 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %   dirfit (struct): the fitted Dirichlet parameter values, a structure with fields
 %
 %      - nchoices (int): number of choices used in the analysis, i.e., the number of rows of choices that has a nonzero element in the final column 
-%      - a (struct): analysis of the Dirichlet shape parameter, with fields
+%      - a (struct): analysis of the Dirichlet shape parameter 'a' (present only if if_fit_a=1), with fields
 %
 %          - val (float): maximum-likelihood value for a
 %          - llnat_per_choice (float): log likelihood (natural log) per choice probability
 %          - exitflag (int): exit flag from `fminbnd` optimization
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
-%          - jack_val (float 1-D array): maximum-likelihood value for a for each jackknife, only present if if_stats=1
+%          - jack_val (float 1-D array): maximum-likelihood value for 'a' for each jackknife, only present if if_stats=1
 %          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
 %          - jack_sem (float): jackknife standard error of measurement for a, only present if if_stats=1
+%          - fixed_h (float):  value of 'h' to use for fitting just 'a'
 %
-%      - ah (struct): joint analysis of the Dirichlet shape parameter and discrete component (present only if if_discrete=1), with fields
+%      - h (struct): analysis of the Dirichlet shape parameter 'h' (present only if if_fit_h=1), with fields
+%
+%          - val (float): maximum-likelihood value for a
+%          - llnat_per_choice (float): log likelihood (natural log) per choice probability
+%          - exitflag (int): exit flag from `fminbnd` optimization
+%          - output (struct): detailed output from `fminbnd` optimization
+%          - optimset (struct): optimization options used in `fminbnd` optimization
+%          - jack_val (float 1-D array): maximum-likelihood value for 'h' for each jackknife, only present if if_stats=1
+%          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
+%          - jack_sem (float): jackknife standard error of measurement for 'h', only present if if_stats=1
+%          - fixed_a (float):  value of 'a' to use for fitting just 'h'
+%
+%      - ah (struct): joint analysis of the shape parameter and discrete parameter (present only if if_fit_ah=1), with fields
 %
 %          - val (float 1-D array): val(1) is maximum-likelihood value for a, val(2) is maximum-likelihood value for h
 %          - ll_per_choice (float): log likelihood per choice probability
@@ -64,7 +81,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %     - The distribution of observed probabiliies p is fitted to a symmetric Dirichlet distribution with parameter 'a', i.e., P(p)=(p^(a-1))((1-p)^(a-1))/B(a-1,a-1), where B is the beta function
 %
 %         - Each nonzero row of 'choices' is considered an independent observation of the chioce probability distribution; rows containing zeros are ignored
-%         - If if_discrete=1, it is also fitted to a symmetric Dirichlet distribution mixed with a discrete component at p=0.5, with weights 1-h and h, respectively
+%         - If if_fit_ah=1, it is also fitted to a symmetric Dirichlet distribution mixed with a discrete component at p=0.5, with weights 1-h and h, respectively
 %
 %     - Log likelihoods use natural logs, and are normalized by the number of nonzero rows of 'choices'
 %     - Minimal number of choice probabilities (nonzero rows of 'choices') needed
@@ -83,7 +100,11 @@ if (nargin<=1)
     aux=struct;
 end
 aux=filldefault(aux,'opts_dirfit',struct);
-aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_discrete',0);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_fit_a',1);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_fit_h',0);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_fit_ah',0);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'fixed_a',1);
+aux.opts_dirfit=filldefault(aux.opts_dirfit,'fixed_h',0);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_log',1);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'a_limits',[10^-2 10^2]);
 aux.opts_dirfit=filldefault(aux.opts_dirfit,'if_frozen',1);
@@ -100,6 +121,8 @@ aux=rs_aux_customize(aux,'rs_dirfit_choicedata');
 aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
+%
+midpoint_prob=0.5; 
 %
 %set up random number generator
 %
@@ -126,7 +149,7 @@ dirfit=struct;
 dirfit.nchoices=nchoices;
 %
 % at least two choices neded to fit a, three choices for a and h, and one extra if doing jackknifes
-choices_needed=2+aux.opts_dirfit.if_discrete; %minimal choices needed
+choices_needed=2+aux.opts_dirfit.if_fit_ah; %minimal choices needed
 if nchoices<choices_needed
     wmsg=sprintf('insufficient choices available for fitting; at least %2.0f needed',choices_needed);
     aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
@@ -158,7 +181,7 @@ if aux.opts_dirfit.if_stats
     end
     dirfit.a.jack_val=zeros(1,njacks);
     dirfit.a.jack_nllnat_per_choice=zeros(1,njacks);
-    if aux.opts_dirfit.if_discrete
+    if aux.opts_dirfit.if_fit_ah
         dirfit.ah.jack_val=zeros(2,njacks);
         dirfit.ah.jack_nllnat_per_choice=zeros(1,njacks);
     end
@@ -173,7 +196,7 @@ a_opts=optimset(optimset('fminbnd'),aux.opts_dirfit.a_optimset);
 ah_opts=optimset(optimset('fminsearch'),aux.opts_dirfit.ah_optimset);
 h_init=0;
 opts_beta=struct;
-opts_beta.qvec=0.5;
+opts_beta.qvec=midpoint_prob;
 %
 for ijack=0:njacks
     if (ijack==0)
@@ -184,18 +207,22 @@ for ijack=0:njacks
     %
     %fit a (without discrete part)
     %
-    [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
+    %***Need to make this optional
+    [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c,setfield(opts_beta,'hvec',aux.opts_dirfit.fixed_h)),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
     if (ijack==0)
         dirfit.a.val=a_fit;
         dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
         dirfit.a.exitflag=a_fit_exitflag;
         dirfit.a.output=a_fit_output;
         dirfit.a.optimset=a_opts;
+        dirfit.a.fixed_h=aux.opts_dirfit.fixed_h;
     else
         dirfit.a.jack_val(1,ijack)=a_fit;
         dirfit.a.jack_nllnat_per_choice(1,ijack)=-a_fit_nll/nchoices;
     end
-    if aux.opts_dirfit.if_discrete
+    %**Need to add fitting just h
+    %**Need to allow for possiiblity that neither a nor h are fit
+    if aux.opts_dirfit.if_fit_ah
         if (ijack==0)
             ah_init=[a_fit;h_init];
         else
@@ -212,12 +239,14 @@ for ijack=0:njacks
             dirfit.ah.jack_val(:,ijack)=ah_fit;
             dirfit.ah.jack_nllnat_per_choice(1,ijack)=-ah_fit_nll/nchoices;
         end
-    end %if_discrete
+    end %if_fit_ah
 end %ijack
 %
 if aux.opts_dirfit.if_stats
-    dirfit.a.jack_sem=rs_dirfit_jack(dirfit.a.jack_val,nchoices);
-    if aux.opts_dirfit.if_discrete
+    if aux.opts_dirfit.if_fit_a
+        dirfit.a.jack_sem=rs_dirfit_jack(dirfit.a.jack_val,nchoices);
+    end
+    if aux.opts_dirfit.if_fit_ah
         dirfit.ah.jack_sem=rs_dirfit_jack(dirfit.ah.jack_val,nchoices);
     end
 end
