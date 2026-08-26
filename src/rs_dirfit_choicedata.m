@@ -207,19 +207,20 @@ for ijack=0:njacks
     %
     %fit a (without discrete part)
     %
-    %***Need to make this optional
-    [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c,setfield(opts_beta,'hvec',aux.opts_dirfit.fixed_h)),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
-    if (ijack==0)
-        dirfit.a.val=a_fit;
-        dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
-        dirfit.a.exitflag=a_fit_exitflag;
-        dirfit.a.output=a_fit_output;
-        dirfit.a.optimset=a_opts;
-        dirfit.a.fixed_h=aux.opts_dirfit.fixed_h;
-    else
-        dirfit.a.jack_val(1,ijack)=a_fit;
-        dirfit.a.jack_nllnat_per_choice(1,ijack)=-a_fit_nll/nchoices;
-    end
+    if aux.opts_dirfit.if_fit_a
+        [a_fit,a_fit_nll,a_fit_exitflag,a_fit_output]=fminbnd(@(x) -loglik_beta_discrete(x,c,setfield(opts_beta,'hvec',aux.opts_dirfit.fixed_h)),aux.opts_dirfit.a_limits(1),aux.opts_dirfit.a_limits(2),a_opts);
+        if (ijack==0)
+            dirfit.a.val=a_fit;
+            dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
+            dirfit.a.exitflag=a_fit_exitflag;
+            dirfit.a.output=a_fit_output;
+            dirfit.a.optimset=a_opts;
+            dirfit.a.fixed_h=aux.opts_dirfit.fixed_h;
+        else
+            dirfit.a.jack_val(1,ijack)=a_fit;
+            dirfit.a.jack_nllnat_per_choice(1,ijack)=-a_fit_nll/nchoices;
+        end
+    end %if_fit_a
     %**Need to add fitting just h
     %**Need to allow for possiiblity that neither a nor h are fit
     if aux.opts_dirfit.if_fit_ah
