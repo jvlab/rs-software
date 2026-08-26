@@ -43,7 +43,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %          - jack_val (float 1-D array): maximum-likelihood value for 'a' for each jackknife, only present if if_stats=1
 %          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
 %          - jack_sem (float): jackknife standard error of measurement for a, only present if if_stats=1
-%          - fixed_h (float):  value of 'h' to use for fitting just 'a'
+%          - fixed_h (float):  value of 'h' used for fitting just 'a'
 %
 %      - h (struct): analysis of the Dirichlet shape parameter 'h' (present only if if_fit_h=1), with fields
 %
@@ -55,7 +55,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %          - jack_val (float 1-D array): maximum-likelihood value for 'h' for each jackknife, only present if if_stats=1
 %          - jack_llnat_per_choice (float 1-D array): log likelihood (natural log) per choice probability for each jackknife, only present if if_stats=1
 %          - jack_sem (float): jackknife standard error of measurement for 'h', only present if if_stats=1
-%          - fixed_a (float):  value of 'a' to use for fitting just 'h'
+%          - fixed_a (float):  value of 'a' used for fitting just 'h'
 %
 %      - ah (struct): joint analysis of the shape parameter and discrete parameter (present only if if_fit_ah=1), with fields
 %
