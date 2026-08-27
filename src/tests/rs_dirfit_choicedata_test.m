@@ -26,6 +26,7 @@ auxs=cell(1,ntests);
 choices=cell(1,ntests);
 dirfits=cell(1,ntests);
 aux_dirfits=cell(1,ntests);
+aux_dirfit_outs=cell(1,ntests);
 %
 add_disc=zeros(1,ntests);
 %

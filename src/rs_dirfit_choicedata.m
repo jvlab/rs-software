@@ -16,8 +16,8 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %         - if_fit_ah (int): 1 to fit the shape parameter 'a' and the discrete parameter 'h' simultaneously, 0 omits, default is 0; see note below
 %
 %         - **Options for statistics and shuffles**
-%         - if_stats (int): 1 to compute jackknife standard error of measuirement, 0 does not; default is 0
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
+%         - if_stats (int): 1 to compute jackknife standard error of measurement, 0 does not; default is 0
+%         - if_frozen (int): random number control; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
 %         - njacks_max (int): maximum number of choice probabilities to remove for jackknifing (ignored if if_stats=0), default is 500
 %
 %         - **Options to control optimization details**
@@ -142,9 +142,9 @@ end
 %
 choices_nz=find(choices(:,2)>0);
 choices_used=choices(choices_nz,:);
-%
 probs=choices_used(:,1)./choices_used(:,2);
 nchoices=length(choices_nz);
+%
 if aux.opts_dirfit.if_log
     disp(sprintf('fitting Dirichlet parameters: %5.0f  choices used, probability range: [%8.6f %8.6f]',nchoices,min(probs),max(probs)));
 end
@@ -152,7 +152,8 @@ end
 dirfit=struct;
 dirfit.nchoices=nchoices;
 %
-% at least two choices neded to fit a, three choices for a and h, and one extra if doing jackknifes
+% enough data? at least two choices needed to fit a, three choices for a and h, and one extra if doing jackknifes
+%
 choices_needed=2+aux.opts_dirfit.if_fit_ah; %minimal choices needed
 if nchoices<choices_needed
     wmsg=sprintf('insufficient choices available for fitting; at least %2.0f needed',choices_needed);
