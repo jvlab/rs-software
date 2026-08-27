@@ -19,6 +19,11 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - **Options for statistics and shuffles**
 %         - if_frozen (int): random number control; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
 %
+%         - **Options to control optimization details**
+%         - a_limits (float): allowed range for 'a' (shape), when fitting only 'a', default is [10^-2 10^2]
+%         - a_optimset (struct): non-default optimizations parameters for fitting 'a', with `fminbnd`, default is struct()
+%         - ah_optimset (struct): non-default optimizations parameters for fitting 'a' and 'h', with `fminsearch`, default is struct()
+%
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings, 0 to suppress; default is 1
@@ -50,6 +55,9 @@ end
 aux=filldefault(aux,'opts_symumi',struct);
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_log',1);
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_frozen',1);
+aux.opts_symumi=filldefault(aux.opts_symumi,'a_limits',[10^-2 10^2]);
+aux.opts_symumi=filldefault(aux.opts_symumi,'a_optimset',struct());
+aux.opts_symumi=filldefault(aux.opts_symumi,'ah_optimset',struct());
 %
 aux.opts_symumi=filldefault(aux.opts_symumi,'h_fixlist',[0 0.001 0.01 0.1]);
 aux.opts_symumi=filldefault(aux.opts_symumi,'ntriplets_min',3);
@@ -62,6 +70,8 @@ aux=rs_aux_customize(aux,'rs_symumi_choicedata');
 aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
+%
+dirfit_opts={'a_limits','a_optimset','ah_optimset','if_frozen','if_log'}; %options to transfer from aux.opts_symumi to aux_dirfit.opts_dirfit
 %
 %set up random number generator
 %
@@ -171,17 +181,26 @@ su.dirichlet.h_fixlist=h_fixlist;
 %
 %Dirichlet fits, for fixed values of h and also h fitted
 %code from psg_umi_triplike_demo, adapted for if_fixa=0, and rs_dirfit_choicedata
-opts_loglik=struct;
-opts_loglik.qvec=0.5; %discrete part always is at 0.5
-%
-ithr=0;
 %
 aux_dirfit=struct;
-%take a_limits, a_optimset, ah_optimset,if_fit_a, if_fit_h, if_fit_ah
-%aux_dirfit.opts_dirfit.if_log=aux.opts_symumi.if_log;
-%aux_dirfit.opts_dirfit.a_optimset=aux.opts_symumi.a_optimset;
-
-
+for k=1:length(dirfit_opts)
+    aux_dirfit.opts_dirfit.(dirfit_opts{k})=aux.opts_symumi.(dirfit_opts{k});
+end
+aux_dirfit.opts_dirfit.if_fit_a=0;
+aux_dirfit.opts_dirfit.if_fit_h=0;
+aux_dirfit.opts_dirfit.if_fit_ah=0;
+aux_dirfit.opts_dirfit.fixed_h=0;
+aux_dirfit.opts_dirfit.if_stats=0;
+%
+aux_dirfit.opts_check=aux.opts_check;
+%
+aux_dirfit_a=aux_dirfit;
+aux_dirfit_a.opts_dirfit.if_fit_a=1;
+%
+aux_dirfit_ah=aux_dirfit;
+aux_dirfit_ah.opts_dirfit.if_fit_ah=1;
+%
+ithr=0;
 for thr=min(ntrials(:)):max(ntrials(:))
     triads_use=find((ntrials(:)>=thr));
     ntriads_use=length(triads_use);
@@ -192,21 +211,16 @@ for thr=min(ntrials(:)):max(ntrials(:))
         data_use=[ncloser(triads_use) ntrials(triads_use)];
         %fixed  values of h
         for ihfix=1:nhfix
-            [fit_a,nll_a,exitflag_a]=fminbnd(@(x) -loglik_beta(x,data_use,setfield(opts_loglik,'hvec',h_fixlist(ihfix))),...
-                10^-2,10^2); %optimize assuming discrete part
-            su.dirichlet.a(ithr,:,ihfix)=[fit_a,-nll_a/ntrials_use];
-
-  %          [dirfit,aux_dirfit_out]=rs_dirfit_choicedata(data_use,aux)
-
+            %
+            aux_dirfit_a.opts_dirfit.fixed_h=h_fixlist(ihfix);
+            [dirfit_a,aux_dirfit_out_a]=rs_dirfit_choicedata(data_use,aux_dirfit_a);
+            su.dirichlet.a(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
         end
-        ah_init=[su.dirichlet.a(ithr,1,1);0]; %optimize with discrete part, using a_only fit as starting point
-        [fit_ah,nll_ah,exitflag_ah,output_ah]=fminsearch(@(x) -loglik_beta(x(1),data_use,setfield(opts_loglik,'hvec',x(2))),ah_init);
-        su.dirichlet.ah(ithr,:)=[fit_ah(:)',-nll_ah/ntrials_use];
+        %fit a and h
+        [dirfit_ah,aux_dirfit_out_ah]=rs_dirfit_choicedata(data_use,aux_dirfit_ah);
+        su.dirichlet.ah(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
     end
 end
-
-%when we fit the Dirichlet, nll should be normalized by trial (for consistencywith psg_umi_triplike) and also by
-%number of trids, for consistency with rs_dirfit_choicedata
 %
 return
 end

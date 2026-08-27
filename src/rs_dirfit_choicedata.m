@@ -150,7 +150,21 @@ nchoices=length(choices_nz);
 ntrials=sum(choices(:,2));
 %
 if aux.opts_dirfit.if_log
-    disp(sprintf('fitting Dirichlet parameters: %5.0f  choices used, %5.0f trials used, robability range: [%8.6f %8.6f]',nchoices,ntrials,min(probs),max(probs)));
+    pstring=[];
+    if aux.opts_dirfit.if_fit_a
+        pstring=cat(2,pstring,sprintf('a (h=%5.3f); ',aux.opts_dirfit.fixed_h'));
+    end
+    if aux.opts_dirfit.if_fit_h
+        pstring=cat(2,pstring,sprintf('h (a=%5.3f); ',aux.opts_dirfit.fixed_a'));
+    end
+    if aux.opts_dirfit.if_fit_ah
+        pstring=cat(2,pstring,sprintf('(a,h); '));
+    end
+    if length(pstring)>0
+        pstring=pstring(1:end-2);
+    end
+    disp(sprintf('fitting Dirichlet params (choices used: %5.0f; trials used: %5.0f; probability range: [%8.6f %8.6f]): %s',...
+        nchoices,ntrials,min(probs),max(probs),pstring));
 end
 %
 dirfit=struct;
