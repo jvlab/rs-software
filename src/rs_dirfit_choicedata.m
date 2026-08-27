@@ -8,7 +8,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %     - opts_dirfit (struct): options for fitting Dirichlet parameters, can be omitted, with fields
 %
-%         - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
+%         - if_log (int): 1 to log progress, 0 to omit; default is 1
 %         - if_fit_a (int): 1 to fit the shape parameter ('a') with an assumed value of the discrete parameter, 0 omits, default is 1
 %         - fixed_h (float): value of 'h' to use for fitting just 'a', default is 0, which corresponds to zero weight for the discrete part
 %         - if_fit_h (int): 1 to fit the discrete parameter ('h') with an assumed value of the shape parameter 'a', 0 omits, default is 0
@@ -39,6 +39,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %          - val (float): maximum-likelihood value for a
 %          - llnat_per_choice (float): log likelihood (natural log) per choice probability
+%          - llnat_per_trial (float): log likelihood (natural log) per trial
 %          - exitflag (int): exit flag from `fminbnd` optimization
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
@@ -51,6 +52,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %          - val (float): maximum-likelihood value for a
 %          - llnat_per_choice (float): log likelihood (natural log) per choice probability
+%          - llnat_per_trial (float): log likelihood (natural log) per trial
 %          - exitflag (int): exit flag from `fminbnd` optimization
 %          - output (struct): detailed output from `fminbnd` optimization
 %          - optimset (struct): optimization options used in `fminbnd` optimization
@@ -63,6 +65,7 @@ function [dirfit,aux_out]=rs_dirfit_choicedata(choices,aux)
 %
 %          - val (float 1-D array): val(1) is maximum-likelihood value for a, val(2) is maximum-likelihood value for h
 %          - ll_per_choice (float): log likelihood per choice probability
+%          - llnat_per_trial (float): log likelihood (natural log) per trial
 %          - exitflag (int): exit flag from `fminsearch optimization
 %          - output (struct): detailed output from `fminsearch` optimization
 %          - optimset (struct): optimization options used in `fminsearch` optimization
@@ -144,9 +147,10 @@ choices_nz=find(choices(:,2)>0);
 choices_used=choices(choices_nz,:);
 probs=choices_used(:,1)./choices_used(:,2);
 nchoices=length(choices_nz);
+ntrials=sum(choices(:,2));
 %
 if aux.opts_dirfit.if_log
-    disp(sprintf('fitting Dirichlet parameters: %5.0f  choices used, probability range: [%8.6f %8.6f]',nchoices,min(probs),max(probs)));
+    disp(sprintf('fitting Dirichlet parameters: %5.0f  choices used, %5.0f trials used, robability range: [%8.6f %8.6f]',nchoices,ntrials,min(probs),max(probs)));
 end
 %
 dirfit=struct;
@@ -225,6 +229,7 @@ for ijack=0:njacks
         if (ijack==0)
             dirfit.a.val=a_fit;
             dirfit.a.llnat_per_choice=-a_fit_nll/nchoices;
+            dirfit.a.llnat_per_trial=-a_fit_nll/ntrials;
             dirfit.a.exitflag=a_fit_exitflag;
             dirfit.a.output=a_fit_output;
             dirfit.a.optimset=a_opts;
@@ -243,6 +248,7 @@ for ijack=0:njacks
         if (ijack==0)
             dirfit.h.val=h_fit;
             dirfit.h.llnat_per_choice=-h_fit_nll/nchoices;
+            dirfit.h.llnat_per_trial=-h_fit_nll/ntrials;
             dirfit.h.exitflag=h_fit_exitflag;
             dirfit.h.output=h_fit_output;
             dirfit.h.optimset=h_opts;
@@ -266,6 +272,7 @@ for ijack=0:njacks
         if (ijack==0)
             dirfit.ah.val=ah_fit;
             dirfit.ah.llnat_per_choice=-ah_fit_nll/nchoices;
+            dirfit.ah.llnat_per_trial=-ah_fit_nll/ntrials;
             dirfit.ah.exitflag=ah_fit_exitflag;
             dirfit.ah.output=ah_fit_output;
             dirfit.ah.optimset=ah_opts;
