@@ -16,7 +16,7 @@ function [loglik,opts_used]=loglik_beta_discrete(ab,obs,opts)
 %   loglik (float): log likelihood (natural log)
 %   opts_used (struct): option values used
 %
-%   See also:  LOGLIK_BETA, BETALN, FILLDEFAULT.
+% See also: LOGLIK_BETA, BETALN, FILLDEFAULT.
 %
 if (nargin<3)
     opts=struct();
