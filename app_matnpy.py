@@ -16,43 +16,76 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 st.set_page_config(page_title=".mat → NumPy", layout="centered")
 st.title(".mat → NumPy Converter")
-st.markdown(
-    "Convert a `.mat` triadic choice file to a 5-column NumPy array."
-)
-st.info(
-    "**Output columns:** `ref, s1, s2, N(s1 chosen), N_repeats` (1-indexed)"
-)
 
-conv_file = st.file_uploader("Upload .mat choices file", type=["mat"])
+mode = st.radio("File type", ["Choice file", "Coordinate file"], horizontal=True)
 
-if conv_file is not None:
-    with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
-        tmp.write(conv_file.read())
-        tmp_path = tmp.name
-    try:
-        from convert_mat_to_numpy import mat_to_numpy
-        arr, stim_list = mat_to_numpy(tmp_path)
+if mode == "Choice file":
+    st.markdown("Convert a `.mat` triadic choice file to a 5-column NumPy array.")
+    st.info("**Output columns:** `ref, s1, s2, N(s1 chosen), N_repeats` (1-indexed)")
 
-        st.success(f"Loaded: **{arr.shape[0]} trials**, **{len(stim_list)} stimuli**")
-        st.markdown(f"**Stimuli:** {', '.join(stim_list[:10])}{'...' if len(stim_list) > 10 else ''}")
+    conv_file = st.file_uploader("Upload .mat choices file", type=["mat"], key="choice_upload")
 
-        st.dataframe(
-            {"ref": arr[:,0].astype(int), "s1": arr[:,1].astype(int),
-             "s2": arr[:,2].astype(int), "n_s1_chosen": arr[:,3].astype(int),
-             "n_repeats": arr[:,4].astype(int)},
-            use_container_width=True, height=300
-        )
+    if conv_file is not None:
+        with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
+            tmp.write(conv_file.read())
+            tmp_path = tmp.name
+        try:
+            from convert_mat_to_numpy import mat_to_numpy
+            arr, stim_list = mat_to_numpy(tmp_path)
 
-        out_name = conv_file.name.replace(".mat", ".npy")
-        import io
-        buf = io.BytesIO()
-        np.save(buf, arr)
-        st.download_button("Download .npy file", data=buf.getvalue(),
-                           file_name=out_name, mime="application/octet-stream")
+            st.success(f"Loaded: **{arr.shape[0]} trials**, **{len(stim_list)} stimuli**")
+            st.markdown(f"**Stimuli:** {', '.join(stim_list[:10])}{'...' if len(stim_list) > 10 else ''}")
 
-    except Exception as e:
-        st.error(f"Conversion failed: {e}")
-    finally:
-        os.unlink(tmp_path)
-else:
-    st.info("Upload a .mat choices file above to get started.")
+            st.dataframe(
+                {"ref": arr[:,0].astype(int), "s1": arr[:,1].astype(int),
+                 "s2": arr[:,2].astype(int), "n_s1_chosen": arr[:,3].astype(int),
+                 "n_repeats": arr[:,4].astype(int)},
+                use_container_width=True, height=300
+            )
+
+            out_name = conv_file.name.replace(".mat", ".npy")
+            import io
+            buf = io.BytesIO()
+            np.save(buf, arr)
+            st.download_button("Download .npy file", data=buf.getvalue(),
+                               file_name=out_name, mime="application/octet-stream")
+
+        except Exception as e:
+            st.error(f"Conversion failed: {e}")
+        finally:
+            os.unlink(tmp_path)
+    else:
+        st.info("Upload a .mat choices file above to get started.")
+
+else:  # Coordinate file
+    st.markdown("Convert a `.mat` coordinate file (`dimN`, `rawLLs`, etc.) to a `.npz` archive.")
+    st.info("A coords file has several differently-shaped arrays, so this saves to `.npz` (a named bundle), not a single `.npy`.")
+
+    conv_file = st.file_uploader("Upload .mat coordinate file", type=["mat"], key="coords_upload")
+
+    if conv_file is not None:
+        with tempfile.NamedTemporaryFile(suffix=".mat", delete=False) as tmp:
+            tmp.write(conv_file.read())
+            tmp_path = tmp.name
+        try:
+            from convert_coords_mat_to_numpy import coords_mat_to_numpy
+            arrays = coords_mat_to_numpy(tmp_path)
+
+            st.success(f"Loaded fields: **{', '.join(arrays.keys())}**")
+            for k, v in arrays.items():
+                shape = getattr(v, 'shape', None)
+                st.markdown(f"- `{k}`: shape {shape}, dtype {v.dtype}")
+
+            out_name = conv_file.name.replace(".mat", ".npz")
+            import io
+            buf = io.BytesIO()
+            np.savez(buf, **arrays)
+            st.download_button("Download .npz file", data=buf.getvalue(),
+                               file_name=out_name, mime="application/octet-stream")
+
+        except Exception as e:
+            st.error(f"Conversion failed: {e}")
+        finally:
+            os.unlink(tmp_path)
+    else:
+        st.info("Upload a .mat coordinate file above to get started.")
