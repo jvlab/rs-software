@@ -533,6 +533,63 @@ with tab_ooo:
             st.download_button("Download triadic .mat", data=ooo_bytes,
                                file_name=out_ooo_name, mime="application/octet-stream")
 
+            # ---- Step 2: fit 2D and 3D coordinates directly from the converted data ----
+            st.markdown("---")
+            st.subheader("Fit 2D & 3D coordinates")
+            st.caption("Runs directly on the triadic data above -- no need to re-upload the download.")
+
+            ooo_max_iter = st.number_input("Max iterations", min_value=100, value=3000, step=100, key="ooo_max_iter")
+            if st.button("Fit coordinates", key="ooo_fit_btn"):
+                from fit_brightness_ooo import run_mds_single_dim, build_mat_output
+                import src.rs_py.choices.choice_likelihoods as an
+
+                total_triads_ooo = sum(rep_ooo.values())
+                n_stim_ooo = len(stims_ooo)
+                coords_by_dim_ooo = {}
+                lls_by_dim_ooo = {}
+                progress_ooo = st.progress(0, text="Fitting...")
+                for i, dim in enumerate([2, 3]):
+                    progress_ooo.progress(i / 2, text=f"Fitting {dim}D model...")
+                    coords, ll, _ = run_mds_single_dim(
+                        resp_ooo, rep_ooo, n_stim_ooo, dim, CONFIG['inputs']['model_fit']['sigma'],
+                        ooo_max_iter, CONFIG['inputs']['model_fit']['tolerance'],
+                        CONFIG['inputs']['model_fit']['learning_rate'], CONFIG['inputs']['model_fit']['minimization']
+                    )
+                    coords_by_dim_ooo[dim] = coords
+                    lls_by_dim_ooo[dim] = -ll / total_triads_ooo
+                ll_best_ooo, _ = an.best_model_ll(resp_ooo, rep_ooo)
+                ll_random_ooo, _ = an.random_choice_ll(resp_ooo, rep_ooo)
+                lls_by_dim_ooo['best'] = ll_best_ooo / total_triads_ooo
+                lls_by_dim_ooo['random'] = ll_random_ooo / total_triads_ooo
+                progress_ooo.progress(1.0, text="Done.")
+
+                st.success(
+                    f"2D LL/triad: {lls_by_dim_ooo[2]:.4f}  |  3D LL/triad: {lls_by_dim_ooo[3]:.4f}  "
+                    f"(best possible: {lls_by_dim_ooo['best']:.4f}, random: {lls_by_dim_ooo['random']:.4f})"
+                )
+
+                fig_ooo, ax_ooo = plt.subplots(figsize=(7, 6))
+                coords2d_ooo = coords_by_dim_ooo[2]
+                ax_ooo.scatter(coords2d_ooo[:, 0], coords2d_ooo[:, 1], zorder=5)
+                for i, label in enumerate(stims_ooo):
+                    ax_ooo.annotate(label, (coords2d_ooo[i, 0], coords2d_ooo[i, 1]),
+                                    textcoords="offset points", xytext=(0, 8), ha='center', fontsize=8)
+                ax_ooo.set_xlabel("Dimension 1")
+                ax_ooo.set_ylabel("Dimension 2")
+                ax_ooo.set_title("2D map fitted from the converted OOO data")
+                ax_ooo.grid(True)
+                st.pyplot(fig_ooo)
+
+                import io as io_ooo
+                from scipy.io import savemat as savemat_ooo
+                out_dict_ooo = build_mat_output(coords_by_dim_ooo, lls_by_dim_ooo, stims_ooo, [2, 3])
+                coords_buf = io_ooo.BytesIO()
+                savemat_ooo(coords_buf, out_dict_ooo)
+                coords_out_name = ooo_file.name.replace(".mat", "_coords.mat")
+                st.download_button("Download coords .mat", data=coords_buf.getvalue(),
+                                   file_name=coords_out_name, mime="application/octet-stream",
+                                   key="ooo_coords_download")
+
         except Exception as e:
             st.error(f"Conversion failed: {e}")
         finally:
