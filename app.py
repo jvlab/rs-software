@@ -568,6 +568,7 @@ with tab_ooo:
                     f"(best possible: {lls_by_dim_ooo['best']:.4f}, random: {lls_by_dim_ooo['random']:.4f})"
                 )
 
+                st.markdown("**2D map**")
                 fig_ooo, ax_ooo = plt.subplots(figsize=(7, 6))
                 coords2d_ooo = coords_by_dim_ooo[2]
                 ax_ooo.scatter(coords2d_ooo[:, 0], coords2d_ooo[:, 1], zorder=5)
@@ -579,6 +580,20 @@ with tab_ooo:
                 ax_ooo.set_title("2D map fitted from the converted OOO data")
                 ax_ooo.grid(True)
                 st.pyplot(fig_ooo)
+
+                st.markdown("**3D map** (drag to rotate)")
+                coords3d_ooo = coords_by_dim_ooo[3]
+                fig3d_ooo = go.Figure(data=[go.Scatter3d(
+                    x=coords3d_ooo[:, 0], y=coords3d_ooo[:, 1], z=coords3d_ooo[:, 2],
+                    mode='markers+text', text=stims_ooo, textposition='top center',
+                    marker=dict(size=5),
+                )])
+                fig3d_ooo.update_layout(
+                    scene=dict(xaxis_title="Dimension 1", yaxis_title="Dimension 2", zaxis_title="Dimension 3"),
+                    margin=dict(l=0, r=0, b=0, t=30),
+                    title="3D map fitted from the converted OOO data",
+                )
+                st.plotly_chart(fig3d_ooo, use_container_width=True)
 
                 import io as io_ooo
                 from scipy.io import savemat as savemat_ooo
