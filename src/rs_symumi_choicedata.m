@@ -24,6 +24,13 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 % Returns:
 %   su (struct): analysis results, a structure with fields
 %
+%     - counts (struct): summary tallies, a structure with fields
+%
+%         - ntrials_found (int): number of individual judgments
+%         - ntriads_found (int): number of distinct triads judged
+%         - nstims_found (int): number of different stimuli
+%         - unique_stims (int 1-D array): list of unique stimuli
+%
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
@@ -31,7 +38,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_symumi (struct): aux,opts_symumi with defaults and values used
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
-% See also: RS_DIRFIT_CHOICEDATA, LOGLIK_BETA_DISCRETE.
+% See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
 %
 if (nargin<=1)
     aux=struct;
@@ -95,6 +102,54 @@ if aux_out.warn_bad>0
     disp('cannot proceed');
     disp(aux_out.warnings);
     return
+end
+%
+%report number of stimulus types
+%
+data_nz=data_comp(choices_nz,:); %ignore choices with no trials
+col_closer=4;
+col_trials=5;
+ntrials_found=sum(data_nz(:,col_trials));
+ntriads_found=size(data_nz,1);
+ustims_found=unique(reshape(data_nz(:,[1:3]),[3*ntriads_found,1]));
+nstims_found=length(ustims_found);
+%
+su.counts=struct;
+su.counts.ntrials_found=ntrials_found;
+su.counts.ntriads_found=ntriads_found;
+su.counts.nstims_found=nstims_found;
+su.counts.unique_stims_found=ustims_found;
+%
+nstims=nstims_found;
+%
+%make stimulus indices be consecutive from 1 to nstims
+data=data_nz;
+indices=data_nz(:,[1:3]);
+[ui,ai,ci]=unique(indices(:));
+data(:,[1:3])=reshape(ci,ntriads_found,3);
+%
+if aux.opts_symumi.if_log
+    disp(sprintf('number of unique stimuli found: %3.0f; range from %3.0f to %3.0f',nstims_found,min(ustims_found),max(ustims_found)));
+    disp(sprintf('number of trials found: %6.0f',ntrials_found));
+    disp(sprintf('number of triads found: %6.0f',ntriads_found));
+end
+%
+triplets=nchoosek([1:nstims],3); %triplets: unordered subsets of 3
+ntriplets=nchoosek(nstims,3); %ntriplets: number of unordered subsets of 3
+%
+% ncloser: [ntriplets,3]: N(d(a,b)<d(a,c)), N(d(b,c)<d(b,a)), N(d(c,a)<d(c,b))
+% ntrials: [ntriplets,3]: total trials in above
+[ncloser,ntrials]=psg_triplet_choices(nstims,data); %extract triplets and sort
+%
+if aux.opts_symumi.if_log
+    disp(sprintf('number of trials   after sorting: %6.0f',sum(ntrials(:)))) 
+    disp(sprintf('number of triads   after sorting: %6.0f',sum(ntrials(:)>0)));
+    disp(sprintf('number of triplets after sorting: %6.0f',sum(sum(ntrials,2)>0)));
+    disp(sprintf('number of trials per triad range from %6.0f to %6.0f',min(ntrials(:)),max(ntrials(:))));
+end
+if (sum(ntrials(:))~=ntrials_found)
+    wmsg=sprintf('mismatch of number of trials in data before sorting (%5.0f) vs after sorting (%5.0f)',ntrials_found,sum(ntrials(:)));
+    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
 end
 %
 return
