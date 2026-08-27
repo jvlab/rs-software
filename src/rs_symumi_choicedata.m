@@ -87,7 +87,7 @@ end
 %
 su=struct;
 %
-% triadic? at least two choices neded to fit a, three choices for a and h, and one extra if doing jackknifes
+% triadic?
 %
 if size(data_comp,2)~=5
     wmsg=sprintf('choice data must be triadic');
