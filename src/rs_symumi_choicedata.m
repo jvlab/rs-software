@@ -151,6 +151,8 @@ if (sum(ntrials(:))~=ntrials_found)
     wmsg=sprintf('mismatch of number of trials in data before sorting (%5.0f) vs after sorting (%5.0f)',ntrials_found,sum(ntrials(:)));
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
 end
+%when we fit the Dirichlet, nll should be normalized by trial (for consistencywith psg_umi_triplike) and also by
+%number of trids, for consistency with rs_dirfit_choicedata
 %
 return
 end
