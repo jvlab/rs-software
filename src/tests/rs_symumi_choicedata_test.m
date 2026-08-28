@@ -14,7 +14,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=2;
+ntests=3;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -28,19 +28,27 @@ sus=cell(1,ntests);
 aux_symumis=cell(1,ntests);
 aux_symumi_outs=cell(1,ntests);
 %
-test_descs{1}='reading triadic choice file, animal-domain';
+test_descs{1}='triadic choice file, animal-domain';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{1}=struct;
 aux_symumis{1}.opts_symumi.h_fixlist=[0 0.01 0.1];
 %
-test_descs{2}='reading triadic choice file, bgca';
+test_descs{2}='triadic choice file, bgca';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
 auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{2}=struct;
 aux_symumis{2}.opts_symumi.h_fixlist=[0 0.01 0.1];
+%
+test_descs{3}='triadic choice file, bgca, include private, reduce h_fixlist';
+filenames_examples{3}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
+auxs{3}=auxs_force;
+auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
+aux_symumis{3}=struct;
+aux_symumis{3}.opts_symumi.h_fixlist=[0 0.01];
+aux_symumis{3}.opts_symumi.if_private=1;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);

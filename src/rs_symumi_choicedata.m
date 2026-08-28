@@ -20,6 +20,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1
 %         - h_fixlist (float 1-D array): values for discrete component, should include zero, default is [0 0.001 0.01 0.1]
 %         - ntriplets_min (int): minimum number of triplets for an analysis, default is 3
+%         - if_private (int): 1 to also do calculations with Dirichlet fits only to the triads that meet threshold criteria, 0 to omit; default is 0
 % 
 %         - **Options for statistics and shuffles**
 %         - if_frozen (int): random number control; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
@@ -76,13 +77,14 @@ if (nargin<=1)
 end
 aux=filldefault(aux,'opts_symumi',struct);
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_log',1);
+aux.opts_symumi=filldefault(aux.opts_symumi,'h_fixlist',[0 0.001 0.01 0.1]);
+aux.opts_symumi=filldefault(aux.opts_symumi,'ntriplets_min',3);
+aux.opts_symumi=filldefault(aux.opts_symumi,'if_private',0);
+%
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_frozen',1);
 aux.opts_symumi=filldefault(aux.opts_symumi,'a_limits',[10^-2 10^2]);
 aux.opts_symumi=filldefault(aux.opts_symumi,'a_optimset',struct());
 aux.opts_symumi=filldefault(aux.opts_symumi,'ah_optimset',struct());
-%
-aux.opts_symumi=filldefault(aux.opts_symumi,'h_fixlist',[0 0.001 0.01 0.1]);
-aux.opts_symumi=filldefault(aux.opts_symumi,'ntriplets_min',3);
 %
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_fast',1);
 aux.opts_symumi=filldefault(aux.opts_symumi,'if_check',0);
@@ -364,27 +366,32 @@ end %itriplet
 if aux.opts_symumi.if_log
     disp(sprintf('symmetry and ultrametric global calculations done'));
 end
-% for ipg=ipg_min:2 %private and global
-%     disp(sprintf('%10s calculations',ipg_strings{ipg}));
-%     for ithr_type=1:nthr_types %three kinds of thresholds: min, max, average
-%         if_ok=1;
-%         thr=0; %threshold
-%         ithr=1; %threshold pointer
-%         disp(sprintf('analyzing for symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
-%         nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
-%         while (if_ok)
-%             switch thr_types{ithr_type}
-%                 case 'min'
-%                     triplets_use=find(min(ntrials,[],2)>=thr);
-%                     thr_val=thr;
-%                 case 'max'
-%                     triplets_use=find(max(ntrials,[],2)>=thr);
-%                     thr_val=thr;
-%                 case 'avg'
-%                     triplets_use=find(sum(ntrials,2)>=thr);
-%                     thr_val=thr/3; %average not total
-%             end
-%             if (length(triplets_use)>=nfit_min)
+ipg_min=2-aux.opts_symumi.if_private;
+for ipg=ipg_min:2 %private and global
+    if aux.opts_symumi.if_log
+        disp(sprintf('%10s calculations',ipg_strings{ipg}));
+    end
+    for ithr_type=1:nthr_types %three kinds of thresholds: min, max, average
+        if_ok=1;
+        thr=0; %threshold
+        ithr=1; %threshold pointer
+        if aux.opts_symumi.if_log
+            disp(sprintf('analyzing for symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
+        end
+       nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
+        while (if_ok)
+            switch thr_types{ithr_type}
+                case 'min'
+                    triplets_use=find(min(ntrials,[],2)>=thr);
+                    thr_val=thr;
+                case 'max'
+                    triplets_use=find(max(ntrials,[],2)>=thr);
+                    thr_val=thr;
+                case 'avg'
+                    triplets_use=find(sum(ntrials,2)>=thr);
+                    thr_val=thr/3; %average not total
+            end
+            if (length(triplets_use)>=aux.opts_symumi.ntriplets_min)
 %                 ntriplets_use=length(triplets_use);
 %                 if ntriplets_use~=nuse_prev
 %                     did_or_skipped='did'; %have to calculate
@@ -531,14 +538,14 @@ end
 %                 end %nuse_prev
 %                 disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f size(loglik_rat_sym) %6.0f %4.0f size(loglik_rat_sym_hfixed) %6.0f %4.0f %4.0f',...
 %                     did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use,size(loglik_rat_sym),size(loglik_rat_sym_hfixed)));
-%                 thr=thr+1; %threshold
-%                 ithr=ithr+1; %pointer
-%             else
-%                 if_ok=0;
-%             end
-%         end %if_ok
-%     end %thr_type
-% end %ipg
+                 thr=thr+1; %threshold
+                 ithr=ithr+1; %pointer
+             else
+                 if_ok=0;
+             end
+         end %if_ok
+    end %thr_type
+end %ipg
 % %
 % %finish and do plots
 % %
