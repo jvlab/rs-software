@@ -29,6 +29,13 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - a_optimset (struct): non-default optimizations parameters for fitting 'a', with `fminbnd`, default is struct()
 %         - ah_optimset (struct): non-default optimizations parameters for fitting 'a' and 'h', with `fminsearch`, default is struct()
 %
+%         - **Options for internal use and maintenance**
+%         - if_fast (int): use hard-coding for partitions, skip calls to filldefault,  default is 1
+%         - if_check (int): 1 to compare methods, -1 to log, treated as 0 if if_fast=1, default is 0
+%         - tol (float): tolerance for checking consistency, ignored if if_check is 0, default is 10^-5
+%         - if_vec (int): if present, use vectorized method, default is abesent
+%         - if_partition (struct): if present, use general calculation of psg_ineq_logic, default is absent
+%
 %     - opts_check (struct): options for consistency checking, with field
 %
 %         - if_warn (int): 1 to show warnings, 0 to suppress; default is 1
@@ -58,6 +65,9 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - warn_bad (int): number of warnings that prevent further processing
 %     - opts_symumi (struct): aux,opts_symumi with defaults and values used
 %     - opts_check (struct): aux.opts_check, with defaults filled in
+%     - opts_dirfit_a (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameter 'a'
+%     - opts_dirfit_ah (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameters 'a' and 'h'
+%     - opts_triplike (struct): options used for `psg_umi_triplike`
 %
 % See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
 %
@@ -74,6 +84,10 @@ aux.opts_symumi=filldefault(aux.opts_symumi,'ah_optimset',struct());
 aux.opts_symumi=filldefault(aux.opts_symumi,'h_fixlist',[0 0.001 0.01 0.1]);
 aux.opts_symumi=filldefault(aux.opts_symumi,'ntriplets_min',3);
 %
+aux.opts_symumi=filldefault(aux.opts_symumi,'if_fast',1);
+aux.opts_symumi=filldefault(aux.opts_symumi,'if_check',0);
+aux.opts_symumi=filldefault(aux.opts_symumi,'if_tol',10^-5);
+%
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
@@ -84,6 +98,7 @@ aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
 dirfit_opts={'a_limits','a_optimset','ah_optimset','if_frozen','if_log'}; %options to transfer from aux.opts_symumi to aux_dirfit.opts_dirfit
+triplike_opts={'if_fast','if_check','tol','if_vec','if_partition'}; %options to transfer from aux.opts_symumi to opts_triplike;
 %
 %set up random number generator
 %
@@ -125,6 +140,7 @@ if all(or(probs==0,probs==1))
    aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
 end
 %
+aux_out.opts_check=aux.opts_check;
 aux_out.opts_symumi=aux.opts_symumi;
 %
 if aux_out.warn_bad>0
@@ -196,8 +212,12 @@ su.dirichlet.h_fixlist=h_fixlist;
 %
 aux_dirfit=struct;
 for k=1:length(dirfit_opts)
-    aux_dirfit.opts_dirfit.(dirfit_opts{k})=aux.opts_symumi.(dirfit_opts{k});
+    fn=dirfit_opts{k};
+    if isfield(aux.opts_symumi,fn)
+        aux_dirfit.opts_dirfit.(fn)=aux.opts_symumi.(fn);
+    end
 end
+%
 aux_dirfit.opts_dirfit.if_fit_a=0;
 aux_dirfit.opts_dirfit.if_fit_h=0;
 aux_dirfit.opts_dirfit.if_fit_ah=0;
@@ -211,6 +231,9 @@ aux_dirfit_a.opts_dirfit.if_fit_a=1;
 %
 aux_dirfit_ah=aux_dirfit;
 aux_dirfit_ah.opts_dirfit.if_fit_ah=1;
+%
+aux_out.opts_dirfit_a=aux_dirfit_a.opts_dirfit;
+aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
 ithr=0;
 for thr=min(ntrials(:)):max(ntrials(:))
@@ -234,8 +257,7 @@ for thr=min(ntrials(:)):max(ntrials(:))
     end
 end
 %
-%analyze for ultrametric inequality and symmetry, via strategy of psg_umi_triplike_demo
-%with conform=0 and if_fast=1
+%analyze for ultrametric inequality and symmetry, via strategy of psg_umi_triplike_demo with conform=0 and if_fast=1
 %
 ipg_strings={'private','global'};
 npg=length(ipg_strings);
@@ -287,53 +309,61 @@ nflips=size(flipconfigs,1); %2^8
 su.meta.llr_d1={'threshold value'};
 su.meta.llr_d2=su.meta.surr_types;
 su.meta.llr_d3={'hfixed'};
-su.meta.nsurrs=length(su.meta.surr_types);
+su.meta.nsurr=length(su.meta.surr_types);
 nsurr=length(su.meta.llr_d2); %three kinds of surrogates: native, flip all, flip any
 %
 % nconform=0;
 % if_fast=1;
-% r.nsurr=nsurr;
-% r.nconform=nconform;
 % %
-% llr_sym=cell(nsurr+nconform,2); %summed log likelihood ratio across trials, and summed variance of total 
-% llr_umi=cell(nsurr+nconform,2);
-% llr_sym_hfixed=cell(nsurr+nconform,2);
-% llr_umi_hfixed=cell(nsurr+nconform,2);
-% surr_list={1,[1 nflips],[1:nflips]};
-% if (if_fast~=0)
-%     %if_fast=1: calculate probabilities for all triplets
-%     loglik_rat_sym_all=zeros(ntriplets,nflips);
-%     loglik_rat_umi_all=zeros(ntriplets,nflips);
-%     loglik_rat_sym_hfixed_all=zeros(ntriplets,nflips,nhfix);
-%     loglik_rat_umi_hfixed_all=zeros(ntriplets,nflips,nhfix);
-%     ah=r.su.global.ah;
-%     ah_fixed=[squeeze(r.dirichlet.a(1,1,:)),h_fixlist(:)];
-%     for itriplet=1:ntriplets %accumulate likelihood ratios from each set of triplets
-%         obs_orig(:,1)=ncloser(itriplet,:)';
-%         obs_orig(:,2)=ntrials(itriplet,:)';
-%         obs_orig_flip=obs_orig(:,2)-obs_orig(:,1); 
-%         %
-%         for iflip=1:nflips %each surrogate
-%             obs=obs_orig;
-%             whichflip=find(flipconfigs(iflip,:)==1);
-%             obs(whichflip,1)=obs_orig_flip(whichflip);
-%             params.a=ah(1);
-%             params.h=ah(2);
-%             likrat=psg_umi_triplike(params,obs,opts_triplike);
-%             loglik_rat_sym_all(itriplet,iflip)=log(likrat.sym);
-%             loglik_rat_umi_all(itriplet,iflip)=log(likrat.umi_trans);
-%             for ihfix=1:nhfix
-%                 params.a=ah_fixed(ihfix,1);
-%                 params.h=ah_fixed(ihfix,2);
-%                 likrat=psg_umi_triplike(params,obs,opts_triplike);
-%                 loglik_rat_sym_hfixed_all(itriplet,iflip,ihfix)=log(likrat.sym);
-%                 loglik_rat_umi_hfixed_all(itriplet,iflip,ihfix)=log(likrat.umi_trans);
-%             end
-%         end %iflip
-%     end %itriplet
-%     disp(sprintf('overall global calculations done.'));
-% end
-% ipg_strings={'private','global'};
+llr_sym=cell(nsurr,2); %summed log likelihood ratio across trials, and summed variance of total 
+llr_umi=cell(nsurr,2);
+llr_sym_hfixed=cell(nsurr,2);
+llr_umi_hfixed=cell(nsurr,2);
+surr_list={1,[1 nflips],[1:nflips]};
+%
+%if_fast=1: calculate probabilities for all triplets
+loglik_rat_sym_all=zeros(ntriplets,nflips);
+loglik_rat_umi_all=zeros(ntriplets,nflips);
+loglik_rat_sym_hfixed_all=zeros(ntriplets,nflips,nhfix);
+loglik_rat_umi_hfixed_all=zeros(ntriplets,nflips,nhfix);
+ah=su.global.ah;
+ah_fixed=[squeeze(su.dirichlet.a(1,1,:)),h_fixlist(:)];
+%
+opts_triplike=struct;
+for k=1:length(triplike_opts)
+    fn=triplike_opts{k};
+    if isfield(aux.opts_symumi,fn)
+        opts_triplike.(fn)=aux.opts_symumi.(fn);
+    end
+end
+aux_out.opts_triplike=opts_triplike;
+%
+for itriplet=1:ntriplets %accumulate likelihood ratios from each set of triplets   
+    obs_orig(:,1)=ncloser(itriplet,:)';
+    obs_orig(:,2)=ntrials(itriplet,:)';
+    obs_orig_flip=obs_orig(:,2)-obs_orig(:,1); 
+    %
+    for iflip=1:nflips %each surrogate
+        obs=obs_orig;
+        whichflip=find(flipconfigs(iflip,:)==1);
+        obs(whichflip,1)=obs_orig_flip(whichflip);
+        params.a=ah(1);
+        params.h=ah(2);
+        likrat=psg_umi_triplike(params,obs,opts_triplike);
+        loglik_rat_sym_all(itriplet,iflip)=log(likrat.sym);
+        loglik_rat_umi_all(itriplet,iflip)=log(likrat.umi_trans);
+        for ihfix=1:nhfix
+            params.a=ah_fixed(ihfix,1);
+            params.h=ah_fixed(ihfix,2);
+            likrat=psg_umi_triplike(params,obs,opts_triplike);
+            loglik_rat_sym_hfixed_all(itriplet,iflip,ihfix)=log(likrat.sym);
+            loglik_rat_umi_hfixed_all(itriplet,iflip,ihfix)=log(likrat.umi_trans);
+        end
+    end %iflip
+end %itriplet
+if aux.opts_symumi.if_log
+    disp(sprintf('symmetry and ultrametric global calculations done'));
+end
 % for ipg=ipg_min:2 %private and global
 %     disp(sprintf('%10s calculations',ipg_strings{ipg}));
 %     for ithr_type=1:nthr_types %three kinds of thresholds: min, max, average
