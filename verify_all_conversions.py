@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_OOO = 'src/samples/brightness/brightness_choices-ooo_GA2.mat'
 DEFAULT_TRIADIC = 'src/samples/brightness/brightness_choices-triadic_GA2.mat'
 DEFAULT_CHOICE = 'src/samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'
-DEFAULT_COORDS = 'src/samples/bwtextures/bgca3pt_coords_MC-gm_sess01_10.mat'
+DEFAULT_COORDS = 'src/samples/bwtextures/bdce3pt_coords_SN_sess01_10.mat'  # rich file: has bestModelLL/biasEstimate/debiasedRelativeLL/metadata, per JV's request to test with rich coord files
 
 PASS = "PASS"
 FAIL = "FAIL"
