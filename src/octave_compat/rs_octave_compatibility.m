@@ -3,3 +3,6 @@
 %disable warning for compound if statements and statements with && and ||
 warning('off', 'Octave:possible-matlab-short-circuit-operator');
 %
+%disable warning for strmatch, which is obsolete but still needed for legacy code
+warning('off', 'Octave:legacy-function');
+%
