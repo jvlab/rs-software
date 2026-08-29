@@ -60,6 +60,8 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
+%     - tallies (cell 1-D array): tallies{ithr_type} tallies the data used for each calculation (ithr_type=1: min, 2: max, 3: avg), where su.tallies{ithr_type}(ithr,:) is [threshold value, number of triplets used, number of trials used]
+% 
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
@@ -392,14 +394,14 @@ for ipg=ipg_min:2 %private and global
                     thr_val=thr/3; %average not total
             end
             if (length(triplets_use)>=aux.opts_symumi.ntriplets_min)
-%                 ntriplets_use=length(triplets_use);
-%                 if ntriplets_use~=nuse_prev
-%                     did_or_skipped='did'; %have to calculate
-%                     nuse_prev=ntriplets_use;
-%                     ntrials_use=sum(sum(ntrials(triplets_use,:)));
-%                     r.su.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
-%                     %compute private best-fitting a and h
-%                     data_use=[reshape(ncloser(triplets_use,:),3*ntriplets_use,1) reshape(ntrials(triplets_use,:),3*ntriplets_use,1)];
+                ntriplets_use=length(triplets_use);
+                if ntriplets_use~=nuse_prev
+                    did_or_skipped='did'; %have to calculate
+                    nuse_prev=ntriplets_use;
+                    ntrials_use=sum(sum(ntrials(triplets_use,:)));
+                    su.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
+                    %compute private best-fitting a and h
+                    data_use=[reshape(ncloser(triplets_use,:),3*ntriplets_use,1) reshape(ntrials(triplets_use,:),3*ntriplets_use,1)];
 %                     %fit with assuming fixed values of h
 %                     for ihfix=1:nhfix
 %                         if (if_fixa==0)
@@ -519,10 +521,10 @@ for ipg=ipg_min:2 %private and global
 %                             r.su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
 %                         end %imv
 %                     end %isurr
-%                 else
-%                     did_or_skipped='skp';
-%                     r.su.tallies{ithr_type}(ithr,:)=r.su.tallies{ithr_type}(ithr-1,:);
-%                     r.su.tallies{ithr_type}(ithr,1)=thr_val; %threshold is new
+                 else
+                     did_or_skipped='skp';
+                     su.tallies{ithr_type}(ithr,:)=su.tallies{ithr_type}(ithr-1,:);
+                     su.tallies{ithr_type}(ithr,1)=thr_val; %threshold is new
 %                     if (ipg==1)
 %                         r.su.private.a{ithr_type}(ithr,:,:)=r.su.private.a{ithr_type}(ithr-1,:,:);
 %                         r.su.private.ah{ithr_type}(ithr,:)=r.su.private.ah{ithr_type}(ithr-1,:);
@@ -535,7 +537,10 @@ for ipg=ipg_min:2 %private and global
 %                             r.su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
 %                         end %imv
 %                     end %isurr
-%                 end %nuse_prev
+                 end %nuse_prev
+                 disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f',...
+                    did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use));
+
 %                 disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f size(loglik_rat_sym) %6.0f %4.0f size(loglik_rat_sym_hfixed) %6.0f %4.0f %4.0f',...
 %                     did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use,size(loglik_rat_sym),size(loglik_rat_sym_hfixed)));
                  thr=thr+1; %threshold
