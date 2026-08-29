@@ -568,26 +568,57 @@ with tab_ooo:
                     f"(best possible: {lls_by_dim_ooo['best']:.4f}, random: {lls_by_dim_ooo['random']:.4f})"
                 )
 
+                # group stimuli by trailing condition code (e.g. sNNcMM -> group MM,
+                # ordered by NN) so trajectories can be colored/connected per group,
+                # same as plot_ooo_trajectory.py / plot_ooo_trajectory_3d.py.
+                # Falls back to a single ungrouped series if names don't match that pattern.
+                import re as re_ooo
+                groups_ooo = {}
+                for i, label in enumerate(stims_ooo):
+                    m = re_ooo.match(r's(\d+)c(\d+)', label)
+                    level, cond = (int(m.group(1)), m.group(2)) if m else (i, 'all')
+                    groups_ooo.setdefault(cond, []).append((level, i, label))
+                for cond in groups_ooo:
+                    groups_ooo[cond].sort(key=lambda e: e[0])
+                palette_ooo = {'01': 'tab:blue', '02': 'tab:orange'}
+                palette3d_ooo = {'01': '#1f77b4', '02': '#ff7f0e'}
+
                 st.markdown("**2D map**")
                 fig_ooo, ax_ooo = plt.subplots(figsize=(7, 6))
                 coords2d_ooo = coords_by_dim_ooo[2]
-                ax_ooo.scatter(coords2d_ooo[:, 0], coords2d_ooo[:, 1], zorder=5)
-                for i, label in enumerate(stims_ooo):
-                    ax_ooo.annotate(label, (coords2d_ooo[i, 0], coords2d_ooo[i, 1]),
-                                    textcoords="offset points", xytext=(0, 8), ha='center', fontsize=8)
+                for cond, entries in sorted(groups_ooo.items()):
+                    color = palette_ooo.get(cond, 'gray')
+                    xs = [coords2d_ooo[i, 0] for _, i, _ in entries]
+                    ys = [coords2d_ooo[i, 1] for _, i, _ in entries]
+                    ax_ooo.plot(xs, ys, color=color, linestyle='--', zorder=1,
+                                label=f'contrast c{cond}' if cond != 'all' else None)
+                    ax_ooo.scatter(xs, ys, color=color, zorder=5)
+                    for level, i, label in entries:
+                        ax_ooo.annotate(label, (coords2d_ooo[i, 0], coords2d_ooo[i, 1]),
+                                        textcoords="offset points", xytext=(0, 8), ha='center', fontsize=8)
                 ax_ooo.set_xlabel("Dimension 1")
                 ax_ooo.set_ylabel("Dimension 2")
                 ax_ooo.set_title("2D map fitted from the converted OOO data")
+                if any(cond != 'all' for cond in groups_ooo):
+                    ax_ooo.legend()
                 ax_ooo.grid(True)
                 st.pyplot(fig_ooo)
 
                 st.markdown("**3D map** (drag to rotate)")
                 coords3d_ooo = coords_by_dim_ooo[3]
-                fig3d_ooo = go.Figure(data=[go.Scatter3d(
-                    x=coords3d_ooo[:, 0], y=coords3d_ooo[:, 1], z=coords3d_ooo[:, 2],
-                    mode='markers+text', text=stims_ooo, textposition='top center',
-                    marker=dict(size=5),
-                )])
+                fig3d_ooo = go.Figure()
+                for cond, entries in sorted(groups_ooo.items()):
+                    color = palette3d_ooo.get(cond, 'gray')
+                    xs = [coords3d_ooo[i, 0] for _, i, _ in entries]
+                    ys = [coords3d_ooo[i, 1] for _, i, _ in entries]
+                    zs = [coords3d_ooo[i, 2] for _, i, _ in entries]
+                    labels = [label for _, _, label in entries]
+                    fig3d_ooo.add_trace(go.Scatter3d(
+                        x=xs, y=ys, z=zs, mode='lines+markers+text',
+                        line=dict(color=color, dash='dash'), marker=dict(size=5, color=color),
+                        text=labels, textposition='top center',
+                        name=f'contrast c{cond}' if cond != 'all' else 'stimuli',
+                    ))
                 fig3d_ooo.update_layout(
                     scene=dict(xaxis_title="Dimension 1", yaxis_title="Dimension 2", zaxis_title="Dimension 3"),
                     margin=dict(l=0, r=0, b=0, t=30),
