@@ -31,6 +31,7 @@ DEFAULT_OOO = 'src/samples/brightness/brightness_choices-ooo_GA2.mat'
 DEFAULT_TRIADIC = 'src/samples/brightness/brightness_choices-triadic_GA2.mat'
 DEFAULT_CHOICE = 'src/samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'
 DEFAULT_COORDS = 'src/samples/bwtextures/bdce3pt_coords_SN_sess01_10.mat'  # rich file: has bestModelLL/biasEstimate/debiasedRelativeLL/metadata, per JV's request to test with rich coord files
+DEFAULT_COORDS_BENCHMARK = 'src/samples/brightness/brightness_ooo_GA2_coords_BENCHMARK.mat'
 
 PASS = "PASS"
 FAIL = "FAIL"
@@ -168,6 +169,80 @@ def check_choice_roundtrip(choice_path):
                     f"{len(orig_stims)} stimuli, {sum(orig_rep.values())} total trials, all exact")
 
 
+DISPARITY_THRESHOLD = 0.1   # ~5-10x normal run-to-run variance (observed ~0.01-0.02)
+LL_THRESHOLD = 0.05         # ~5-10x normal run-to-run variance (observed ~0.004-0.012)
+
+
+def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3000):
+    """Benchmark strategy (per JV) for choices -> coordinates: since MDS starts
+    from a random position, a fresh correct run won't be byte-identical to a
+    frozen benchmark even when nothing is wrong. So this checks two different
+    things with two different standards:
+      - structure (field names/shapes, i.e. "columns aren't skipped"): exact
+        match, since that has nothing to do with randomness.
+      - the coordinate values themselves: Procrustes disparity + LL, within a
+        tolerance calibrated from real run-to-run variance, not byte-exact.
+    """
+    print("\n=== 2b. Choices -> Coordinates: fresh fit vs. frozen benchmark ===")
+    if not (os.path.exists(triadic_path) and os.path.exists(benchmark_path)):
+        report("Choices -> Coordinates benchmark", SKIP, f"missing file(s): {triadic_path} / {benchmark_path}")
+        return
+
+    from fit_brightness_ooo import run_mds_single_dim, build_mat_output
+    from src.rs_py.utils.util import load_choices
+    from src.rs_py.utils.config import CONFIG
+    import src.rs_py.choices.choice_likelihoods as an
+    from rs_tools.compare import procrustes_disparity
+
+    resp, rep, _, stim_list = load_choices(triadic_path)
+    total_triads = sum(rep.values())
+    DEFAULTS = CONFIG['inputs']['model_fit']
+
+    coords_by_dim = {}
+    lls_by_dim = {}
+    for dim in dims:
+        coords, ll, _ = run_mds_single_dim(
+            resp, rep, len(stim_list), dim, DEFAULTS['sigma'], max_iter,
+            DEFAULTS['tolerance'], DEFAULTS['learning_rate'], DEFAULTS['minimization']
+        )
+        coords_by_dim[dim] = coords
+        lls_by_dim[dim] = -ll / total_triads
+
+    bench = loadmat(benchmark_path)
+    bench_fields = {k for k in bench if not k.startswith('__')}
+    expected_fields = {f'dim{d}' for d in dims} | {'rawLLs', 'bestModelLL', 'randModelLL',
+                                                     'biasEstimate', 'debiasedRelativeLL', 'stim_list'}
+
+    # --- structure check: exact, no tolerance ---
+    missing = expected_fields - bench_fields
+    if missing:
+        report("Choices -> Coordinates benchmark", FAIL, f"benchmark file missing expected fields: {missing}")
+        return
+
+    bench_stims = [s.strip() for s in bench['stim_list']]
+    bench_rawLLs = np.atleast_1d(bench['rawLLs']).squeeze()
+
+    print(f"\n{'dim':<6}{'Procrustes disparity':<24}{'fresh LL':<14}{'benchmark LL':<14}{'LL diff'}")
+    problems = []
+    for i, dim in enumerate(dims):
+        if f'dim{dim}' not in bench_fields:
+            problems.append(f"dim{dim} missing from benchmark")
+            continue
+        disparity, n_shared = procrustes_disparity(coords_by_dim[dim], stim_list, bench[f'dim{dim}'], bench_stims)
+        ll_diff = abs(lls_by_dim[dim] - bench_rawLLs[i])
+        print(f"{dim:<6}{disparity:<24.5f}{lls_by_dim[dim]:<14.5f}{bench_rawLLs[i]:<14.5f}{ll_diff:.5f}")
+        if disparity > DISPARITY_THRESHOLD:
+            problems.append(f"dim{dim} Procrustes disparity {disparity:.5f} exceeds threshold {DISPARITY_THRESHOLD}")
+        if ll_diff > LL_THRESHOLD:
+            problems.append(f"dim{dim} LL diff {ll_diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    if problems:
+        report("Choices -> Coordinates benchmark", FAIL, "; ".join(problems))
+    else:
+        report("Choices -> Coordinates benchmark", PASS,
+                f"structure exact match, values within tolerance (disparity <= {DISPARITY_THRESHOLD}, LL diff <= {LL_THRESHOLD})")
+
+
 def check_coords_roundtrip(coords_path):
     print("\n=== 3. Coordinate file: mat -> npz -> mat round trip ===")
     if not os.path.exists(coords_path):
@@ -286,6 +361,7 @@ if __name__ == '__main__':
         coords_path = args.coords or ask("Path to coordinate file", DEFAULT_COORDS, interactive)
         print(f"\nTesting: {coords_path}")
         check_coords_roundtrip(coords_path)
+        check_coords_benchmark(DEFAULT_TRIADIC, DEFAULT_COORDS_BENCHMARK)
 
     print("\n" + "=" * 60)
     print("SUMMARY")
