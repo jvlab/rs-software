@@ -71,6 +71,59 @@ def check_ooo_to_triadic(ooo_path, triadic_path):
         report("OOO -> Triadic", PASS, f"all {total_keys} independently-derived facts matched exactly")
 
 
+def check_ooo_benchmark(ooo_path, benchmark_path):
+    """Benchmark strategy (per JV): re-run the converter fresh and check its
+    output against a frozen, known-correct file -- exact match, since this
+    conversion is deterministic (no randomness involved)."""
+    print("\n=== 1b. OOO -> Triadic: fresh run vs. frozen benchmark ===")
+    if not (os.path.exists(ooo_path) and os.path.exists(benchmark_path)):
+        report("OOO -> Triadic benchmark", SKIP, f"missing file(s): {ooo_path} / {benchmark_path}")
+        return
+
+    from convert_ooo_to_triadic import ooo_to_triadic
+    with tempfile.TemporaryDirectory() as tmp:
+        fresh_path = os.path.join(tmp, 'fresh_triadic.mat')
+        ooo_to_triadic(ooo_path, out_path=fresh_path)
+
+        fresh = loadmat(fresh_path)
+        bench = loadmat(benchmark_path)
+        fresh_fields = {k for k in fresh if not k.startswith('__')}
+        bench_fields = {k for k in bench if not k.startswith('__')}
+
+        print(f"\n{'FRESH RUN':<45} | FROZEN BENCHMARK")
+        for k in sorted(fresh_fields & bench_fields):
+            f, b = fresh[k], bench[k]
+            if f.dtype.kind in ('U', 'S'):
+                f_sq, b_sq = f.squeeze(), b.squeeze()
+                f_str = str(f_sq) if f_sq.ndim == 0 else str([str(s).strip() for s in f_sq][:3])
+                b_str = str(b_sq) if b_sq.ndim == 0 else str([str(s).strip() for s in b_sq][:3])
+            else:
+                f_str, b_str = str(f.flatten()[:3]), str(b.flatten()[:3])
+            print(f"{k + ':':<20} {f_str:<24} | {b_str}")
+
+        if fresh_fields != bench_fields:
+            report("OOO -> Triadic benchmark", FAIL,
+                    f"field sets differ (columns skipped?): {fresh_fields.symmetric_difference(bench_fields)}")
+            return
+
+        problems = []
+        for k in sorted(fresh_fields):
+            f, b = fresh[k], bench[k]
+            if f.dtype.kind in ('U', 'S'):
+                f_sq, b_sq = f.squeeze(), b.squeeze()
+                match = ([str(s).strip() for s in f_sq] == [str(s).strip() for s in b_sq]
+                         if f_sq.ndim else str(f_sq) == str(b_sq))
+            else:
+                match = np.array_equal(f, b)
+            if not match:
+                problems.append(k)
+
+        if problems:
+            report("OOO -> Triadic benchmark", FAIL, f"fields differ from frozen benchmark: {problems}")
+        else:
+            report("OOO -> Triadic benchmark", PASS, f"fresh run matches frozen benchmark exactly ({len(fresh_fields)} fields)")
+
+
 def check_choice_roundtrip(choice_path):
     print("\n=== 2. Choice file: mat -> npy -> mat round trip ===")
     if not os.path.exists(choice_path):
@@ -222,6 +275,7 @@ if __name__ == '__main__':
         triadic_path = args.triadic or ask("Path to converted triadic file", DEFAULT_TRIADIC, interactive)
         print(f"\nTesting: {ooo_path}  ->  {triadic_path}")
         check_ooo_to_triadic(ooo_path, triadic_path)
+        check_ooo_benchmark(ooo_path, triadic_path)
 
     if which in ('choice', 'all'):
         choice_path = args.choice or ask("Path to choice file", DEFAULT_CHOICE, interactive)
