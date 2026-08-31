@@ -56,7 +56,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - global (struct): likelihood analysis for symmetry and ultrametric
 %     inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields ??
 %
-%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion; fields are identical to su.global
+%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion; other than 'a' and 'ah', fields are identical to su.global
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
@@ -213,6 +213,10 @@ su.dirichlet.h_fixlist=h_fixlist;
 %
 %Dirichlet fits, for fixed values of h and also h fitted
 %code modified from psg_umi_triplike_demo, adapted for if_fixa=0, and rs_dirfit_choicedata
+%
+%Note that here and in private fits, values of a may differ slightly e.g., 0.01) from those obtained by psg_umi_triplike_demo
+%This is because here, optimization uses loglik_beta_discrete, which adds a quadratic cost when h<0,
+%while in psg_umi_triplike_demo, loptimization uses oglik_beta, which does not add a cost, but values of h<0 are replaced by the best fit with h>=0
 %
 aux_dirfit=struct;
 for k=1:length(dirfit_opts)
@@ -402,44 +406,36 @@ for ipg=ipg_min:2 %private and global
                     su.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
                     %compute private best-fitting a and h
                     data_use=[reshape(ncloser(triplets_use,:),3*ntriplets_use,1) reshape(ntrials(triplets_use,:),3*ntriplets_use,1)];
-%                     %fit with assuming fixed values of h
-%                     for ihfix=1:nhfix
-%                         if (if_fixa==0)
-%                             [fit_a,nll_a,exitflag_a]=fminbnd(@(x) -loglik_beta(x,data_use,setfield(opts_loglik,'hvec',h_fixlist(ihfix))),...
-%                                 a_limits(1),a_limits(2)); %optimize assuming discrete part
-%                         else
-%                             fit_a=a_fixval;
-%                             nll_a=-loglik_beta(fit_a,data_use,setfield(opts_loglik,'hvec',h_fixlist(ihfix)));
-%                         end
-%                         r.su.private.a{ithr_type}(ithr,:,ihfix)=[fit_a,-nll_a/ntrials_use];
-%                     end
-%                     ah_init=[r.su.private.a{ithr_type}(ithr,1,1);h_init]; %optimize with discrete part, using a_only fit as starting point
-%                     [fit_ah,nll_ah,exitflag_ah,output_ah]=fminsearch(@(x) -loglik_beta(x(1),data_use,setfield(opts_loglik,'hvec',x(2))),ah_init);
-%                     if fit_ah(2)>=0
-%                         r.su.private.ah{ithr_type}(ithr,:)=[fit_ah(:)',-nll_ah/ntrials_use];
-%                     else
-%                         r.su.private.ah{ithr_type}(ithr,:)=[fit_a,0,-nll_a/ntrials_use];
-%                     end
-%                     %
-%                     %fast global option:calculate probabilities for all triplets and later select
-%                     %
-%                     if if_fast~=0 & ipg==2
-%                         loglik_rat_sym=loglik_rat_sym_all(triplets_use,:);
-%                         loglik_rat_umi=loglik_rat_umi_all(triplets_use,:);
-%                         loglik_rat_sym_hfixed=loglik_rat_sym_hfixed_all(triplets_use,:,:);
-%                         loglik_rat_umi_hfixed=loglik_rat_umi_hfixed_all(triplets_use,:,:);
-%                     else %if_fast==0
-%                         if (ipg==1) %private
-%                             ah=r.su.private.ah{ithr_type}(ithr,:); %a and h both fitted
-%                             ah_fixed=[squeeze(r.su.private.a{ithr_type}(ithr,1,:)),h_fixlist(:)]; %a fitted, h fixed
-%                         else %global
-%                             ah=r.su.global.ah;
-%                             ah_fixed=[squeeze(r.dirichlet.a(1,1,:)),h_fixlist(:)];
-%                         end
-%                         loglik_rat_sym=zeros(ntriplets_use,nflips);
-%                         loglik_rat_umi=zeros(ntriplets_use,nflips);
-%                         loglik_rat_sym_hfixed=zeros(ntriplets_use,nflips,nhfix);
-%                         loglik_rat_umi_hfixed=zeros(ntriplets_use,nflips,nhfix);
+                    if (ipg==1)
+                        %private fits, assuming fixed values of h
+                        for ihfix=1:nhfix
+                            aux_dirfit_a.opts_dirfit.fixed_h=h_fixlist(ihfix);
+                            [dirfit_a,aux_dirfit_out_a]=rs_dirfit_choicedata(data_use,aux_dirfit_a);
+                            su.private.a{ithr_type}(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
+                        end
+                        %private fit for a and h
+                        [dirfit_ah,aux_dirfit_out_ah]=rs_dirfit_choicedata(data_use,aux_dirfit_ah);
+                        if dirfit_ah.ah.val(2)>=0 %ensure h >=0
+                            su.private.ah{ithr_type}(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
+                        else
+                            su.private.ah{ithr_type}(ithr,:)=[dirfit_a.a.val,0,dirfit_ah.ah.llnat_per_trial];
+                        end
+                    end
+                    %
+                    %fast global option:calculate probabilities for all triplets and later select
+                    %
+                    if ipg==2
+                         loglik_rat_sym=loglik_rat_sym_all(triplets_use,:);
+                         loglik_rat_umi=loglik_rat_umi_all(triplets_use,:);
+                         loglik_rat_sym_hfixed=loglik_rat_sym_hfixed_all(triplets_use,:,:);
+                         loglik_rat_umi_hfixed=loglik_rat_umi_hfixed_all(triplets_use,:,:);
+                    else %if_fast==0
+                        ah=su.private.ah{ithr_type}(ithr,:); %a and h both fitted
+                        ah_fixed=[squeeze(su.private.a{ithr_type}(ithr,1,:)),h_fixlist(:)]; %a fitted, h fixed
+                        loglik_rat_sym=zeros(ntriplets_use,nflips);
+                        loglik_rat_umi=zeros(ntriplets_use,nflips);
+                        loglik_rat_sym_hfixed=zeros(ntriplets_use,nflips,nhfix);
+                        loglik_rat_umi_hfixed=zeros(ntriplets_use,nflips,nhfix);
 %                         for itriplet=1:ntriplets_use %accumulate likelihood ratios from each set of triplets
 %                             obs_orig(:,1)=ncloser(triplets_use(itriplet),:)';
 %                             obs_orig(:,2)=ntrials(triplets_use(itriplet),:)';
@@ -463,7 +459,7 @@ for ipg=ipg_min:2 %private and global
 %                                 end
 %                             end %iflip
 %                         end
-%                     end %if_fast
+                      end %ipg
 %                     %do statistics
 %                     for isurr=1:nsurr+nconform
 %                         if (isurr<=nsurr)
