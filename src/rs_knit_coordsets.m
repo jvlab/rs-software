@@ -398,7 +398,7 @@ end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
     %
-    %do dimension heuristics
+    %do dimension heuristics if more than one dataset
     %
     overlaps=1-coords_isnan;
     if nsets>1
