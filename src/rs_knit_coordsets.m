@@ -401,11 +401,15 @@ if aux_out.warn_bad==0
     %do dimension heuristics
     %
     overlaps=1-coords_isnan;
-    h=overlap_heuristics(overlaps);
-    if h.dmax<max(aux.opts_knit.dim_list_out)
-        if_hbad=1;
+    if nsets>1
+        h=overlap_heuristics(overlaps);
+        if h.dmax<max(aux.opts_knit.dim_list_out)
+            if_hbad=1;
+        else
+            if_hbad=0;
+        end
     else
-        if_hbad=0;
+        if_hbad=0; %dimension heuristics always ok if only one set
     end
     if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
         disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
