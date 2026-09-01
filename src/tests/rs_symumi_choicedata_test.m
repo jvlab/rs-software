@@ -42,8 +42,8 @@ auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{2}=struct;
 aux_symumis{2}.opts_symumi.h_fixlist=[0 0.01 0.1];
 %
-test_descs{3}='triadic choice file, bgca, include private, reduce h_fixlist, ntriplets_min=40';
-filenames_examples{3}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
+test_descs{3}='triadic choice file, bc, include private, reduce h_fixlist, ntriplets_min=40';
+filenames_examples{3}={'./samples/bwtextures/bc6pt_choices_MC_sess01_10.mat'};
 auxs{3}=auxs_force;
 auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{3}=struct;
