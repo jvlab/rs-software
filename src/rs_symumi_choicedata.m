@@ -277,7 +277,6 @@ nthr_types=length(thr_types);
 %
 su.meta=struct;
 su.global=struct;
-su.private=struct;
 su.meta.thr_types=thr_types;
 su.meta.columns_tallies={'thr','ntriplets','ntrials'};
 su.meta.columns_a={'a','loglike_per_trial'}; %values of a and h determined from the selected trials
@@ -297,13 +296,16 @@ if su.dirichlet.ah(1,2)>=0 %use full fit if h>=0
 else %otherwise use best fit with h=0
     su.global.ah=[su.dirichlet.a(1,1,1),0];
 end
-% compute these later using private a and h, to go in r.su.private.[a|ah]{ithr_type}
-su.private.a=cell(1,nthr_types); 
-su.private.ah=cell(1,nthr_types);
+if aux.opts_symumi.if_private % compute these later using private a and h, to go in r.su.private.[a|ah]{ithr_type}
+    su.private=struct;
+    su.private.a=cell(1,nthr_types); 
+    su.private.ah=cell(1,nthr_types);
+end
 %
 su.meta.global_private_d1={'mean of sum','variance of sum'};
 su.meta.global_private_d2={'threshold type'};
-for ipg=1:npg
+ipg_min=2-aux.opts_symumi.if_private;
+for ipg=ipg_min:npg
     su.(ipg_strings{ipg}).sym=cell(2,nthr_types);
     su.(ipg_strings{ipg}).umi=cell(2,nthr_types);
     su.(ipg_strings{ipg}).sym_hfixed=cell(2,nthr_types);
@@ -320,9 +322,6 @@ su.meta.llr_d3={'hfixed'};
 su.meta.nsurr=length(su.meta.surr_types);
 nsurr=length(su.meta.llr_d2); %three kinds of surrogates: native, flip all, flip any
 %
-% nconform=0;
-% if_fast=1;
-% %
 llr_sym=cell(nsurr,2); %summed log likelihood ratio across trials, and summed variance of total 
 llr_umi=cell(nsurr,2);
 llr_sym_hfixed=cell(nsurr,2);
@@ -372,8 +371,8 @@ end %itriplet
 if aux.opts_symumi.if_log
     disp(sprintf('symmetry and ultrametric global calculations done'));
 end
-ipg_min=2-aux.opts_symumi.if_private;
-for ipg=ipg_min:2 %private and global
+%
+for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo with nconform=0, if_fast=1
     if aux.opts_symumi.if_log
         disp(sprintf('%10s calculations',ipg_strings{ipg}));
     end
@@ -384,7 +383,7 @@ for ipg=ipg_min:2 %private and global
         if aux.opts_symumi.if_log
             disp(sprintf('analyzing for symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
         end
-       nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
+        nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
         while (if_ok)
             switch thr_types{ithr_type}
                 case 'min'
@@ -429,116 +428,90 @@ for ipg=ipg_min:2 %private and global
                          loglik_rat_umi=loglik_rat_umi_all(triplets_use,:);
                          loglik_rat_sym_hfixed=loglik_rat_sym_hfixed_all(triplets_use,:,:);
                          loglik_rat_umi_hfixed=loglik_rat_umi_hfixed_all(triplets_use,:,:);
-                    else %if_fast==0
+                    else % ipg=1 (private)
                         ah=su.private.ah{ithr_type}(ithr,:); %a and h both fitted
                         ah_fixed=[squeeze(su.private.a{ithr_type}(ithr,1,:)),h_fixlist(:)]; %a fitted, h fixed
                         loglik_rat_sym=zeros(ntriplets_use,nflips);
                         loglik_rat_umi=zeros(ntriplets_use,nflips);
                         loglik_rat_sym_hfixed=zeros(ntriplets_use,nflips,nhfix);
                         loglik_rat_umi_hfixed=zeros(ntriplets_use,nflips,nhfix);
-%                         for itriplet=1:ntriplets_use %accumulate likelihood ratios from each set of triplets
-%                             obs_orig(:,1)=ncloser(triplets_use(itriplet),:)';
-%                             obs_orig(:,2)=ntrials(triplets_use(itriplet),:)';
-%                             obs_orig_flip=obs_orig(:,2)-obs_orig(:,1); 
-%                             %
-%                             for iflip=1:nflips %each surrogate
-%                                 obs=obs_orig;
-%                                 whichflip=find(flipconfigs(iflip,:)==1);
-%                                 obs(whichflip,1)=obs_orig_flip(whichflip);
-%                                 params.a=ah(1);
-%                                 params.h=ah(2);
-%                                 likrat=psg_umi_triplike(params,obs,opts_triplike);
-%                                 loglik_rat_sym(itriplet,iflip)=log(likrat.sym);
-%                                 loglik_rat_umi(itriplet,iflip)=log(likrat.umi_trans);
-%                                 for ihfix=1:nhfix
-%                                     params.a=ah_fixed(ihfix,1);
-%                                     params.h=ah_fixed(ihfix,2);
-%                                     likrat=psg_umi_triplike(params,obs,opts_triplike);
-%                                     loglik_rat_sym_hfixed(itriplet,iflip,ihfix)=log(likrat.sym);
-%                                     loglik_rat_umi_hfixed(itriplet,iflip,ihfix)=log(likrat.umi_trans);
-%                                 end
-%                             end %iflip
-%                         end
-                      end %ipg
-%                     %do statistics
-%                     for isurr=1:nsurr+nconform
-%                         if (isurr<=nsurr)
-%                             surr_sel=surr_list{isurr}; %for isurr=1, this is just the original data (1)
-%                             llr_sym{isurr,1}=sum(mean(loglik_rat_sym(:,surr_sel),2),1);
-%                             llr_umi{isurr,1}=sum(mean(loglik_rat_umi(:,surr_sel),2),1);
-%                             llr_sym_hfixed{isurr,1}=reshape(sum(mean(loglik_rat_sym_hfixed(:,surr_sel,:),2),1),[1 1 nhfix]);
-%                             llr_umi_hfixed{isurr,1}=reshape(sum(mean(loglik_rat_umi_hfixed(:,surr_sel,:),2),1),[1 1 nhfix]);
-%                             if (isurr>1)
-%                                 %each triplet contributes independently to the variance
-%                                 %variance for each triplet is normalized by N not N-1, since we have all the values
-%                                 llr_sym{isurr,2}=sum(var(loglik_rat_sym(:,surr_sel),1,2),1);
-%                                 llr_umi{isurr,2}=sum(var(loglik_rat_umi(:,surr_sel),1,2),1);
-%                                 llr_sym_hfixed{isurr,2}=reshape(sum(var(loglik_rat_sym_hfixed(:,surr_sel,:),1,2),1),[1 1 nhfix]);
-%                                 llr_umi_hfixed{isurr,2}=reshape(sum(var(loglik_rat_umi_hfixed(:,surr_sel,:),1,2),1),[1 1 nhfix]);
-%                             else %isurr=1: original data. Here, goal is for psg_umi_triplike_plota to compute standard error of the mean
-%                                 %which is sqrt(var)/ntriplets_use, but
-%                                 %psg_umi_triplike_plota will find square root and then divide by ntriplets_use
-%                                 %so here we just compute var, normalized by N-1 since it is a sample
-%                                 %here, surr_sel=1
-%                                 llr_sym{isurr,2}=var(loglik_rat_sym(:,surr_sel),0,1);
-%                                 llr_umi{isurr,2}=var(loglik_rat_umi(:,surr_sel),0,1);
-%                                 llr_sym_hfixed{isurr,2}=reshape(var(loglik_rat_sym_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
-%                                 llr_umi_hfixed{isurr,2}=reshape(var(loglik_rat_umi_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
-%                             end
-%                         else %do conform
-%                             %select the appropriate flip for each triplet
-%                             loglik_rat_sym_conform=zeros(ntriplets_use,1);
-%                             loglik_rat_umi_conform=zeros(ntriplets_use,1);
-%                             loglik_rat_sym_hfixed_conform=zeros(ntriplets_use,nhfix);
-%                             loglik_rat_umi_hfixed_conform=zeros(ntriplets_use,nhfix);
-%                             for itptr=1:ntriplets_use
-%                                 it=triplets_use(itptr);
-%                                 loglik_rat_sym_conform(itptr)=loglik_rat_sym(itptr,which_flip_conform.sym(it));
-%                                 loglik_rat_umi_conform(itptr)=loglik_rat_umi(itptr,which_flip_conform.umi(it));
-%                                 loglik_rat_sym_hfixed_conform(itptr,:)=reshape(loglik_rat_sym_hfixed(itptr,which_flip_conform.sym(it),:),[1 nhfix]);
-%                                 loglik_rat_umi_hfixed_conform(itptr,:)=reshape(loglik_rat_umi_hfixed(itptr,which_flip_conform.umi(it),:),[1 nhfix]);
-%                             end
-%                             llr_sym{isurr,1}=sum(loglik_rat_sym_conform);
-%                             llr_umi{isurr,1}=sum(loglik_rat_umi_conform);
-%                             llr_sym_hfixed{isurr,1}=reshape(sum(loglik_rat_sym_hfixed_conform),[1 1 nhfix]);
-%                             llr_umi_hfixed{isurr,1}=reshape(sum(loglik_rat_umi_hfixed_conform),[1 1 nhfix]);
-%                             %variances are calculated as for original data, but surr_sel must be set
-%                             surr_sel=1;
-%                             llr_sym{isurr,2}=var(loglik_rat_sym(:,surr_sel),0,1);
-%                             llr_umi{isurr,2}=var(loglik_rat_umi(:,surr_sel),0,1);
-%                             llr_sym_hfixed{isurr,2}=reshape(var(loglik_rat_sym_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
-%                             llr_umi_hfixed{isurr,2}=reshape(var(loglik_rat_umi_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
-%                         end
-%                         %
-%                         for imv=1:2% mean and variance
-%                             r.su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
-%                         end %imv
-%                     end %isurr
-                 else
+                        for itriplet=1:ntriplets_use %accumulate likelihood ratios from each set of triplets
+                            obs_orig(:,1)=ncloser(triplets_use(itriplet),:)';
+                            obs_orig(:,2)=ntrials(triplets_use(itriplet),:)';
+                            obs_orig_flip=obs_orig(:,2)-obs_orig(:,1); 
+                            %
+                            for iflip=1:nflips %each surrogate
+                                obs=obs_orig;
+                                whichflip=find(flipconfigs(iflip,:)==1);
+                                obs(whichflip,1)=obs_orig_flip(whichflip);
+                                params.a=ah(1);
+                                params.h=ah(2);
+                                likrat=psg_umi_triplike(params,obs,opts_triplike);
+                                loglik_rat_sym(itriplet,iflip)=log(likrat.sym);
+                                loglik_rat_umi(itriplet,iflip)=log(likrat.umi_trans);
+                                for ihfix=1:nhfix
+                                    params.a=ah_fixed(ihfix,1);
+                                    params.h=ah_fixed(ihfix,2);
+                                    likrat=psg_umi_triplike(params,obs,opts_triplike);
+                                    loglik_rat_sym_hfixed(itriplet,iflip,ihfix)=log(likrat.sym);
+                                    loglik_rat_umi_hfixed(itriplet,iflip,ihfix)=log(likrat.umi_trans);
+                                end
+                            end %iflip
+                        end %itriplet
+                     end %ipg
+%                    %do statistics
+                     for isurr=1:nsurr
+                         surr_sel=surr_list{isurr}; %for isurr=1, this is just the original data (1)
+                         llr_sym{isurr,1}=sum(mean(loglik_rat_sym(:,surr_sel),2),1);
+                         llr_umi{isurr,1}=sum(mean(loglik_rat_umi(:,surr_sel),2),1);
+                         llr_sym_hfixed{isurr,1}=reshape(sum(mean(loglik_rat_sym_hfixed(:,surr_sel,:),2),1),[1 1 nhfix]);
+                         llr_umi_hfixed{isurr,1}=reshape(sum(mean(loglik_rat_umi_hfixed(:,surr_sel,:),2),1),[1 1 nhfix]);
+                         if (isurr>1)
+                             %each triplet contributes independently to the variance
+                             %variance for each triplet is normalized by N not N-1, since we have all the values
+                             llr_sym{isurr,2}=sum(var(loglik_rat_sym(:,surr_sel),1,2),1);
+                             llr_umi{isurr,2}=sum(var(loglik_rat_umi(:,surr_sel),1,2),1);
+                             llr_sym_hfixed{isurr,2}=reshape(sum(var(loglik_rat_sym_hfixed(:,surr_sel,:),1,2),1),[1 1 nhfix]);
+                             llr_umi_hfixed{isurr,2}=reshape(sum(var(loglik_rat_umi_hfixed(:,surr_sel,:),1,2),1),[1 1 nhfix]);
+                         else %isurr=1: original data. Here, goal is for psg_umi_triplike_plota to compute standard error of the mean
+                             %which is sqrt(var)/ntriplets_use, but
+                             %psg_umi_triplike_plota will find square root and then divide by ntriplets_use
+                             %so here we just compute var, normalized by N-1 since it is a sample
+                             %here, surr_sel=1
+                             llr_sym{isurr,2}=var(loglik_rat_sym(:,surr_sel),0,1);
+                             llr_umi{isurr,2}=var(loglik_rat_umi(:,surr_sel),0,1);
+                             llr_sym_hfixed{isurr,2}=reshape(var(loglik_rat_sym_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
+                             llr_umi_hfixed{isurr,2}=reshape(var(loglik_rat_umi_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
+                         end
+                         %
+                         for imv=1:2% mean and variance
+                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
+                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
+                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
+                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
+                         end %imv
+                     end %isurr
+                else %change in threshold does not change which triplets are included
                      did_or_skipped='skp';
                      su.tallies{ithr_type}(ithr,:)=su.tallies{ithr_type}(ithr-1,:);
                      su.tallies{ithr_type}(ithr,1)=thr_val; %threshold is new
-%                     if (ipg==1)
-%                         r.su.private.a{ithr_type}(ithr,:,:)=r.su.private.a{ithr_type}(ithr-1,:,:);
-%                         r.su.private.ah{ithr_type}(ithr,:)=r.su.private.ah{ithr_type}(ithr-1,:);
-%                     end
-%                     for isurr=1:nsurr+nconform
-%                         for imv=1:2% mean and variance
-%                             r.su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-%                             r.su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
-%                         end %imv
-%                     end %isurr
+                     if (ipg==1)
+                        su.private.a{ithr_type}(ithr,:,:)=su.private.a{ithr_type}(ithr-1,:,:);
+                        su.private.ah{ithr_type}(ithr,:)=su.private.ah{ithr_type}(ithr-1,:);
+                     end
+                     for isurr=1:nsurr
+                         for imv=1:2% mean and variance
+                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
+                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
+                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
+                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
+                         end %imv
+                     end %isurr
                  end %nuse_prev
-                 disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f',...
-                    did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use));
-
-%                 disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f size(loglik_rat_sym) %6.0f %4.0f size(loglik_rat_sym_hfixed) %6.0f %4.0f %4.0f',...
-%                     did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use,size(loglik_rat_sym),size(loglik_rat_sym_hfixed)));
+                 if aux.opts_symumi.if_log
+                     disp(sprintf('%s ipg %3.0f ithr_type %3.0f ithr %3.0f thr %3.0f ntriplets_use %6.0f size(loglik_rat_sym) %6.0f %4.0f size(loglik_rat_sym_hfixed) %6.0f %4.0f %4.0f',...
+                         did_or_skipped,ipg,ithr_type,ithr,thr,ntriplets_use,size(loglik_rat_sym),size(loglik_rat_sym_hfixed)));
+                 end
                  thr=thr+1; %threshold
                  ithr=ithr+1; %pointer
              else
