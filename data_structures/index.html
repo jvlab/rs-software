@@ -1,0 +1,1476 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://jvlab.github.io/rs-software/data_structures/">
+      
+      
+        <link rel="prev" href="../file-formats/">
+      
+      
+        <link rel="next" href="../domains/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Data structures - Representational spaces</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-structures" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Representational spaces" class="md-header__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Representational spaces
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data structures
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jvlab/rs-software" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../rs-py-overview/" class="md-tabs__link">
+          
+  
+  
+  Creating RS from perceptual judgments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../rs-ml-overview/" class="md-tabs__link">
+          
+  
+  
+  Manipulating RS
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../file-formats/" class="md-tabs__link">
+          
+  
+  
+  File formats, data structures, and domains
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../python-matlab-octave/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Python - MATLAB/Octave
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../python_tools/" class="md-tabs__link">
+          
+  
+  
+  Streamlit
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Representational spaces" class="md-nav__button md-logo" aria-label="Representational spaces" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Representational spaces
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jvlab/rs-software" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating RS from perceptual judgments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Creating RS from perceptual judgments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Demos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-demo1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo 1 - Raw Rankings → Detailed Choice File
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-demo2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo 2 - Detailed Choice File → Combined Choice File
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-demo3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo 3 - Combined Choice File → Geometric model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-py-scripts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Run Scripts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../function-index-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manipulating RS
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manipulating RS
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-ml-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rs-ml-installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demos (MATLAB)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../function-index-matlab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File formats, data structures, and domains
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    File formats, data structures, and domains
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data structures
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dataset structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stimulus-metadata-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimulus metadata structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-metadata-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set metadata structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coordinate-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coordinate structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stimulus-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimulus coordinates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ray-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ray structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadratic-form-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quadratic form models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transformation-structures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transformation structures
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domains
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-matlab-octave/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python - MATLAB/Octave
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streamlit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Streamlit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web_ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web-based interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="data-structures">Data structures</h1>
+<h2 id="dataset-structure">Dataset structure</h2>
+<p>A <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> is a container for representational spaces to be analyzed in parallel -- for example, determining a consensus between them via <a href="/rs-software/function-index-matlab/#rs_knit_coordsets"><code>rs_knit_coordsets</code></a>, visualizing them via <a href="/rs-software/function-index-matlab/#rs_disp_coordsets"><code>rs_disp_coordsets</code></a>, or transforming them via <a href="/rs-software/function-index-matlab/#rs_xform_apply"><code>rs_xform_apply</code></a>. </p>
+<p>It consists of three components: </p>
+<ul>
+<li>a <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a> ('sas'), and </li>
+<li>a <a href="/rs-software/data_structures/#set-metadata-structure"><code>set metadata structure</code></a> ('sets')</li>
+<li>a <a href="/rs-software/data_structures/#coordinate-structure"><code>coordinate structure</code></a> ('ds'), </li>
+</ul>
+<p>each of which is a MATLAB cell array with the same number of records.  A single record contains the coordinates and metadata for a representational space models of one or more dimensions, all derived from a common dataset.</p>
+<p>Typically a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> is created by reading one or more <a href="/rs-software/file-formats/#coordinate-file"><code>coordinate files</code></a> via <a href="/rs-software/function-index-matlab/#rs_get_coordsets"><code>rs_get_coordsets</code></a>, a single <a href="/rs-software/file-formats/#coordinate-file"><code>coordinate file</code></a> via <a href="/rs-software/function-index-matlab/#rs_read_coorddata"><code>rs_read_coorddata</code></a>, or imported from coordinate arrays with user-supplied metadata via <a href="/rs-software/function-index-matlab/#rs_import_coordsets"><code>rs_import_coordsets</code></a>.</p>
+<h3 id="stimulus-metadata-structure">Stimulus metadata structure</h3>
+<p>This contains the metadata that defines the stimulus set, and, optionally, data related to the analysis of 'choice files'.  For each record, 'sas{irec}' has the following fields:</p>
+<ul>
+<li>nstims: number of stimuli</li>
+<li>typenames: a 1-D cell array of stimulus labels. Entries correspond to 'stim_labels' in the <a href="/rs-software/file-formats/#coordinate-file"><code>coordinate file</code></a> is used to create the <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a>.  This field is used to identify unique stimuli when merging datasets and records; matching is case-sensitive. The allowed characters are a-z, A-Z ,0-9, and '-'. </li>
+<li>type_coords: a 2-D array of <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, if the domain has a priori coordinates; typically empty if not. See <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a> for further details.</li>
+<li>the optional variables *LL* and metadata from a <a href="/rs-software/file-formats/#coordinate-file"><code>coordinate file</code></a></li>
+</ul>
+<h3 id="set-metadata-structure">Set metadata structure</h3>
+<p>This describe the source of the dataset. For each record, 'sets{irec}' has the following fields:</p>
+<ul>
+<li>dim_list: list of available dimensions in ds{irec}</li>
+<li>nstims: number of stimuli</li>
+<li>label_long: long file name, typically full file name and path</li>
+<li>label: shortened file name, suitable for display</li>
+<li>type: typically 'data'</li>
+<li>paradigm_type: typically the domain name, e.g, 'opposites' or 'transport' as examples of generic domains; demos also use 'btc' for the <a href="/rs-software/domains/#binary-texture-domain"><code>binary texture domain</code></a> and 'animals' for the <a href="/rs-software/domains/#animal-domain"><code>animal domain</code></a></li>
+<li>paradigm_name: can be the same as paradigm_type or used to designate a subset or rendering within paradigm_type </li>
+<li>subj_ID: unique subject identifier</li>
+<li>subj_ID_short: short form of subject identifier, suitable for display</li>
+<li>pipeline: structure describing the processing stages leading to this record</li>
+</ul>
+<p>For an example of a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> with one record and without <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, run the demo <a href="/rs-software/function-index-matlab/#rs_read_coorddata_demo_cars"><code>rs_read_coorddata_demo_cars</code></a> and look at 'data_out'.
+For an example of a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> with three records and with <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, run the demo <a href="/rs-software/function-index-matlab/#rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a> and look at 'data_out'.</p>
+<h3 id="coordinate-structure">Coordinate structure</h3>
+<p>For each record, 'ds{irec}', is a cell array in which 'd{irec}{k}' contains the coordinates for the k-dimensional model, as contained in the <a href="/rs-software/file-formats/#coordinate-file"><code>coordinate file</code></a>. d{irec}{k} may be empty ('[]') if no model is available. </p>
+<h2 id="stimulus-coordinates">Stimulus coordinates</h2>
+<p>Some domains may be structured by an a priori set of coordinates for the stimuli -- for example, colors can be given coordinates according to their R, G, and B components.  Another example is the domain of adjectives, many of which come in opposite pairs. Specifying stimulus coordinates is optional, and for many domains -- for example, cars, or musical instruments -- it may not be appropriate. To use stimulus coordinates, specify them as a numerical array in the 'stimulus metadata structure`.  The rows of the array correspond to the stimuli  (in the order of 'sas{irec}.typenames'), and each column is a dimension.</p>
+<ul>
+<li>For generic domains, stimulus coordinates are in the <code>type_coords</code> field of the <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a>.  They can be set directly or specified at the time of reading or importing via auxiliary inputs in  <a href="/rs-software/function-index-matlab/#rs_get_coordsets"><code>rs_get_coordsets</code></a>, <a href="/rs-software/function-index-matlab/#rs_read_coorddata"><code>rs_read_coorddata</code></a>, or <a href="/rs-software/function-index-matlab/#rs_import_coordsets"><code>rs_import_coordsets</code></a>.</li>
+<li>For <a href="/rs-software/domains/#binary-texture-domain"><code>binary texture</code></a> and <a href="/rs-software/domains/#mpi-faces-domain"><code>MPI faces</code></a> domains, these values are specified in the <a href="/rs-software/file-formats/#setup-metadata"><code>setup metadata</code></a> and are in the <code>btc_specoords</code> and <code>btc_augcoords</code> fields of the <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a>, with priority given to <code>btc_augcoords</code> if both are specified.</li>
+<li>In either case, stimulus coordinates are applied to each record of the 'dataset structure', so they need to need to be listed in each record of the <a href="/rs-software/data_structures/#stimulus-metadata-structure"><code>stimulus metadata structure</code></a>, i.e., in 'sas{irec}.type_coords', or 'sas{irec}.btc_augcoords'.</li>
+</ul>
+<p><a href="/rs-software/data_structures/#stimulus-coordinates"><code>Stimulus coordinates</code></a> may be used to:</p>
+<ul>
+<li>To create a <a href="/rs-software/data_structures/#ray-structure"><code>ray structure</code></a>, to enhance visualization of representational spaces via <a href="/rs-software/function-index-matlab/#rs_disp_enh_coordsets"><code>rs_disp_enh_coordsets</code></a> (demo: run <a href="/rs-software/function-index-matlab/#rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a>, then <a href="/rs-software/function-index-matlab/#rs_disp_coordsets_demo_opposites"><code>rs_disp_coordsets_demo_opposites</code></a>)</li>
+<li>To create <a href="/rs-software/data_structures/#quadratic-form-models"><code>quadratic form models</code></a> for representational spaces via <a href="/rs-software/function-index-matlab/#rs_get_coordsets"><code>rs_get_coordsets</code></a> (demo: run <a href="/rs-software/function-index-matlab/#rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a>, option 3)</li>
+</ul>
+<h2 id="ray-structure">Ray structure</h2>
+<p>When the stimulus domain is structured with <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, a <a href="/rs-software/data_structures/#ray-structure"><code>ray structure</code></a> identifies simple relationships among the stimuli:</p>
+<ul>
+<li>stimuli that lie on rays (points on approximate straight lines from the origin)</li>
+<li>stimuli that lie on rings (coplanar points at approximately equal distances from the origin)</li>
+<li>nearest neighbors</li>
+</ul>
+<p>The <a href="/rs-software/data_structures/#ray-structure"><code>ray structure</code></a> is created by <a href="/rs-software/function-index-matlab/#rs_findrays"><code>rs_findrays</code></a>, and its auxiliary inputs may be used to set the minimum number of points needed to form a ray, the tolerances for collinearity, etc. </p>
+<h2 id="quadratic-form-models">Quadratic form models</h2>
+<p>A quadratic form model is a model applicable to a domain with <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>. For stimulus coordinates with N dimensions, the quadratic metric is a symmetric positive-definite N x N matrix Q (i.e., a quadratic form) with elements q<sub>i,j</sub>.  </p>
+<p>In the quadratic form model, the distance D between stimuli X (a row vector with N elements x<sub>i</sub>) and Y (a row vector with N elements y<sub>i</sub>) is given by D<sup>2</sup>=XQY<sup>T</sup>=<span class="arithmatex">\(\Sigma\)</span>q<sub>i,j</sub>(x<sub>i</sub>-y<sub>i</sub>)(x<sub>j</sub>-y<sub>j</sub>)</p>
+<p>To create representational spaces from a quadratic form model and a set of <a href="/rs-software/data_structures/#stimulus-coordinates"><code>stimulus coordinates</code></a>, use <a href="/rs-software/function-index-matlab/#rs_get_coordsets"><code>rs_get_coordsets</code></a> with input_type=2 to generate a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a>. Q is then taken from a specified file which contains one or more such matrices stored as r{k}.results.qfit. An example file is in demos/opposites_qform_example.mat, and <a href="/rs-software/function-index-matlab/#rs_read_coorddata_demo_opposites"><code>rs_read_coorddata_demo_opposites</code></a>, option 3, demonstrates this process for the 'opposites' domain.  Additional files that specify quadratic form models may be found in <code>samples/bwtextures/btc_allraysfixedb_*.mat</code>; these contain many additional fields that are not required.</p>
+<p>This will generate a record in a <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structure</code></a> whose <a href="/rs-software/data_structures/#coordinate-structure"><code>coordinate structure</code></a> 'ds{irec}' has N components.  The component ds{irec}{idim} (idim running from 1 to N) is an array of idim columns, whose kth row has the coordinates of stimulus k in the best idim-dimensional fit to the quadratic form model.  These calculations are performed in psg_qformpred.  Note that the coordinates are not unique; the model is unchanged by translation and orthogonal transformation.</p>
+<p>For a dataset that used a quadratic form model the <code>type</code> field of the <a href="/rs-software/data_structures/#set-metadata-structure"><code>set metadata structure</code></a> is set to <code>qform</code>.</p>
+<h2 id="transformation-structures">Transformation structures</h2>
+<p><a href="/rs-software/data_structures/#transformation-structures"><code>Transformation structures</code></a> specify geometric transformations, including linear transformations and several generalizations.</p>
+<p>Transformations can be applied to <a href="/rs-software/data_structures/#dataset-structure"><code>dataset structures</code></a> by <a href="/rs-software/function-index-matlab/#rs_xform_apply"><code>rs_xform_apply</code></a>.</p>
+<p>Transformations can be specified directly by the fields below, or can be constructed in several ways:</p>
+<ul>
+<li><a href="/rs-software/function-index-matlab/#rs_xform_specify"><code>rs_xform_specify</code></a>: Creates transformations that translate and rotate a dataset, using model class 'affine'.</li>
+<li><a href="/rs-software/function-index-matlab/#rs_knit_coordsets"><code>rs_knit_coordsets</code></a>: Creates transformations that align one dataset with another, using model class 'affine'.</li>
+<li><a href="/rs-software/function-index-matlab/#rs_geofit"><code>rs_geofit</code></a>: Finds transformations that fit the relationship between one dataset and another, using transformations of the model classes 'mean', <a href="/rs-software/function-index-matlab/#procrustes"><code>procrustes</code></a>, <code>affine</code>, <code>projective</code>, and <code>pwaffine</code> (fitting of <code>pwprojective</code> (piecewise projective) transformations are not currently supported).</li>
+</ul>
+<p>The diagram below shows the available geometric transformations. Note that some transformations are special cases of others, i.e., nested within a more general transformation.  These relationships are indicated by the green arrows in the diagram. The more general transformation will always provide a fit that is at least as good as one that is nested in it, but at a cost of having more parameters.  <a href="/rs-software/function-index-matlab/#rs_geofit"><code>rs_geofit</code></a> provides statistics for model comparison and selection between such pairs of nested models.  See demos??</p>
+<p><img alt="Geometric models and their relationships" src="../images/geometric_models_mean_classes.png"></p>
+<figcaption>Geometric transformations and their grouping into model classes (pale green and right column). Green arrows indicate nesting relationships:  the transformation at the beginning of the arrow is a more general version of the transformation at the end. </figcaption>
+
+<p>For transformations on a representational space of dimension k, a <a href="/rs-software/data_structures/#transformation-structures"><code>transformation structure</code></a> has the following fields:</p>
+<ul>
+<li>b: a scalar multiplier</li>
+<li>T: a square array of size [k k] or (for 'pwaffine' and 'pwprojective', a stack of such arrays, see below)</li>
+<li>c: a vector of size [1 k] or (for 'pwaffine' and 'pwprojective', a stack of such vectors, see below)</li>
+<li>
+<p>additional arguments, depending on 'class'</p>
+<ul>
+<li>For class='projective' (a projective transformation): p is a vector of size [k 1]</li>
+<li>For class='pwaffine' (a piecewise affine transformation with ncuts cuts): c is [ncuts k], T is a 3D array of size [k k 2<sup>ncuts</sup>], acut is [ncuts 1], and vcut is [ncuts k]</li>
+<li>For class='pwprojective' (a piecewise projective transformation with ncuts cuts): the parameters in 'projective' and 'pwaffine', with p an array of size [k 2<sup>ncuts</sup>]</li>
+</ul>
+</li>
+</ul>
+<p>To allow for compatibility with transformations produced by <a href="/rs-software/function-index-matlab/#procrustes"><code>procrustes</code></a> (a MATLAB built-in), or <a href="/rs-software/function-index-matlab/#procrustes_consensus"><code>procrustes_consensus</code></a>, the following alternative names are allowed: b -&gt; scaling, T -&gt; orthog, c -&gt; translation</p>
+<p>The transformation applied to a row vector x produces a row vector y as follows:</p>
+<ul>
+<li>'affine','procrustes','mean': These are linear transformations with an optional offset component, y=b*xT+c. (Note, for 'procrustes', abs(det(T)) should equal 1, and for 'mean', T should equal 0.)</li>
+<li>'projective':  This is a projective (or perspective) transformation. An array T<sup>aug</sup> of size [k+1 k+1] is formed with b*T in its upper left, p in its upper right, c in its lower left, and 1 in its lower right. x<sup>aug</sup> is created by adjoining a 1 to the right of x. Then y<sup>aug</sup>=x<sup>aug</sup>*T<sup>aug</sup> is computed, and y is the first k elements of y<sup>aug</sup> divided by its last.  For p=0, this reduces to an affine transformation.</li>
+<li>
+<p>'pwaffine': This is a piecewise affine transformation.  There are ncuts hyperplanes, each defined by their normal vectors given in vcut.  To determine the component of the space that x lies in, s=sign(x*vcut<sup>T</sup>-acut) is computed. The affine transformation used ('ipw') is determined by the entries in s: s=[+1 +1 ... +1] corresponds to ipw=1, [-1 +1 ... +1] corresponds to ipw=2, [+1 -1 ... +1] corresponds to ipw=3,..., and [-1 -1 ... -1] corresponds to ipw=2<sup>ncuts</sup>. Then T(:,:,ipw) and c(ipw,:) are used to compute the transformation, as in 'affine' above.  Notes:</p>
+<ul>
+<li>The same value of b is used for all components. </li>
+<li>For transformations created by <a href="/rs-software/function-index-matlab/#rs_geofit"><code>rs_geofit</code></a>, the pieces of the transformation are continuous where they meet at their boundaries.</li>
+</ul>
+</li>
+<li>
+<p>'pwprojective':  The component is determined as in 'pwaffine', and the transformation is carried out as in 'projective', with p(:,ipw)</p>
+</li>
+</ul>
+<p>Note that the same transformation can be expressed in many ways -- for example, the scale factor b can be absorbed into T, and the cutplanes of a piecewise transformation can be permuted.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.integrate", "navigation.tabs", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
