@@ -33,22 +33,20 @@ filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{1}=struct;
-aux_symumis{1}.opts_symumi.h_fixlist=[0 0.01 0.1];
 %
 test_descs{2}='triadic choice file, bgca';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
 auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{2}=struct;
-aux_symumis{2}.opts_symumi.h_fixlist=[0 0.01 0.1];
 %
 test_descs{3}='triadic choice file, bc, include private, reduce h_fixlist, ntriplets_min=40';
 filenames_examples{3}={'./samples/bwtextures/bc6pt_choices_MC_sess01_10.mat'};
 auxs{3}=auxs_force;
 auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_symumis{3}=struct;
-aux_symumis{3}.opts_symumi.h_fixlist=[0 0.01];
 aux_symumis{3}.opts_symumi.if_private=1;
+aux_symumis{3}.opts_symumi.h_fixlist=[0 0.001 0.01];
 aux_symumis{3}.opts_symumi.ntriplets_min=40;
 %
 fns=cell(1,ntests);
