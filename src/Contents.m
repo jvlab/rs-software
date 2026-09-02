@@ -1,19 +1,15 @@
 % rs: Representational space software
 %
-% Data input and output
+% Input and output: coordinates
 %   rs_get_coordsets: get one or more dataset structures (coordinates and metadata) from a file
 %   rs_import_coordsets: import a dataset structure from coordinates
-%   rs_read_choicedata: read choices from a file
 %   rs_read_coorddata: read one dataset structure from a file
 %   rs_save_figs: save one or more figure files
 %   rs_save_mat: save a mat file
 %   rs_showpipeline: show the processing pipeline for a coordinate dataset
 %   rs_write_coordsets: write a coordinate dataset
 %
-% Data processing: choices
-%   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
-%
-% Data processing: coordinates
+% Analysis: coordinates
 %   rs_align_coordsets: align multiple coordinate files with non-identical stimuli
 %   rs_check_coordsets: check consistency of a dataset structure
 %   rs_concat_coordsets: concatenate dataset structures
@@ -24,6 +20,13 @@
 %   rs_xform_apply: apply a transformation from rs_xform_specify
 %   rs_vara_coordsets: calculate statitics of consensus within groups
 % 
+% Input and output: choices
+%   rs_read_choicedata: read choices from a file
+%
+% Analysis: choices
+%   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
+%   rs_symumi_choicedata: analyze triads for consistency with symmetry and ultrametric inequality
+%
 % Visualization
 %   rs_disp_coordsets: display one or more sets of coordinates
 %   rs_disp_enh_coordsets: display coordinate sets, enhanced by coloring rays, rings, etc.

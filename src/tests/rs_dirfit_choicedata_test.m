@@ -14,7 +14,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=7;
+ntests=9;
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -26,58 +26,85 @@ auxs=cell(1,ntests);
 choices=cell(1,ntests);
 dirfits=cell(1,ntests);
 aux_dirfits=cell(1,ntests);
+aux_dirfit_outs=cell(1,ntests);
 %
-add_disc=[3 6 7]; %test examples with an added discrete part
+add_disc=zeros(1,ntests);
 %
-test_descs{1}='reading triadic choice file, animal-domain, with discrete part';
+test_descs{1}='reading triadic choice file, animal-domain, fit ah, no stats';
 filenames_examples{1}={'./samples/animals/image_choices_S3.mat'};
 auxs{1}=auxs_force;
 auxs{1}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{1}=struct;
-aux_dirfits{1}.opts_dirfit.if_discrete=1;
+aux_dirfits{1}.opts_dirfit.if_fit_ah=1;
 %
-test_descs{2}='reading triadic choice file, bgca stimulus set';
+test_descs{2}='reading triadic choice file, bgca, default opts';
 filenames_examples{2}={'./samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'};
 auxs{2}=auxs_force;
 auxs{2}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
 aux_dirfits{2}=struct;
 %
-test_descs{3}='reading triadic choice file, bgca stimulus set, with stats, modified for p=0.5 mass, 50 jackknifes';
+test_descs{3}='reading triadic choice file, bgca, add p=0.5 mass, 50 jackknifes';
 filenames_examples{3}=filenames_examples{2};
+add_disc(3)=1; %add discrete part
 auxs{3}=auxs{2};
 aux_dirfits{3}=struct;
 aux_dirfits{3}.opts_dirfit.if_stats=1;
 aux_dirfits{3}.opts_dirfit.njacks_max=50;
 %
-test_descs{4}='reading triadic choice file, bgca stimulus set, fit with discrete part';
+test_descs{4}='reading triadic choice file, bgca, fit ah, no stats';
 filenames_examples{4}=filenames_examples{2};
 auxs{4}=auxs{2};
 aux_dirfits{4}=struct;
-aux_dirfits{4}.opts_dirfit.if_discrete=1;
+aux_dirfits{4}.opts_dirfit.if_fit_ah=1;
 %
-test_descs{5}='reading triadic choice file, bgca stimulus set, fit with discrete part and stats, 50 jackknifes';
+test_descs{5}='reading triadic choice file, bgca, fit ah, 50 jackknifes';
 filenames_examples{5}=filenames_examples{2};
 auxs{5}=auxs{2};
 aux_dirfits{5}=struct;
-aux_dirfits{5}.opts_dirfit.if_discrete=1;
+aux_dirfits{5}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{5}.opts_dirfit.if_stats=1;
 aux_dirfits{5}.opts_dirfit.njacks_max=50;
 %
-test_descs{6}='reading triadic choice file, bgca stimulus set, fit discrete part and stats, modified for p=0.5 mass, 50 jackknifes';
+test_descs{6}='reading triadic choice file, bgca, add p=0.5 mass, fit ah, 50 jackknifes';
 filenames_examples{6}=filenames_examples{2};
+add_disc(6)=1; %add discrete part
 auxs{6}=auxs{2};
 aux_dirfits{6}=struct;
-aux_dirfits{6}.opts_dirfit.if_discrete=1;
+aux_dirfits{6}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{6}.opts_dirfit.if_stats=1;
 aux_dirfits{6}.opts_dirfit.njacks_max=50;
 %
-test_descs{7}='reading triadic choice file, bgca stimulus set, fit discrete part and stats, modified for p=0.5 mass, 500 jackknifes';
+test_descs{7}='reading triadic choice file, bgca, add p=0.5 mass, fit ah, fit a with h=0.1, 50 jackknifes';
 filenames_examples{7}=filenames_examples{2};
 auxs{7}=auxs{2};
+add_disc(7)=1; %add discrete part
 aux_dirfits{7}=struct;
-aux_dirfits{7}.opts_dirfit.if_discrete=1;
+aux_dirfits{7}.opts_dirfit.fixed_h=0.1;
+aux_dirfits{7}.opts_dirfit.if_fit_ah=1;
 aux_dirfits{7}.opts_dirfit.if_stats=1;
-aux_dirfits{7}.opts_dirfit.njacks_max=500;
+aux_dirfits{7}.opts_dirfit.njacks_max=50;
+%
+test_descs{8}='reading triadic choice file, bgca, add p=0.5 mass, fit ah, do not fit a, fit h with a=0.3, 50 jackknifes';
+filenames_examples{8}=filenames_examples{2};
+auxs{8}=auxs{2};
+add_disc(8)=1; %add discrete part
+aux_dirfits{8}=struct;
+aux_dirfits{8}.opts_dirfit.fixed_a=0.3;
+aux_dirfits{8}.opts_dirfit.if_fit_a=0;
+aux_dirfits{8}.opts_dirfit.if_fit_h=1;
+aux_dirfits{8}.opts_dirfit.if_fit_ah=1;
+aux_dirfits{8}.opts_dirfit.if_stats=1;
+aux_dirfits{8}.opts_dirfit.njacks_max=50;
+%
+test_descs{9}='reading triadic choice file, bgca, fadd p=0.5 mass, only fit ah, no stats'; 
+filenames_examples{9}=filenames_examples{2};
+auxs{9}=auxs{2};
+add_disc(9)=1; %add discrete part
+aux_dirfits{9}=struct;
+aux_dirfits{9}.opts_dirfit.if_fit_a=0;
+aux_dirfits{9}.opts_dirfit.if_fit_h=0;
+aux_dirfits{9}.opts_dirfit.if_fit_ah=1;
+aux_dirfits{9}.opts_dirfit.if_stats=0;
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
@@ -85,7 +112,7 @@ for itest=1:ntests
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [data_comps{itest},aux_reads{itest}]=rs_read_choicedata(filenames_examples{itest},auxs{itest});
     choices{itest}=data_comps{itest}(:,[end-1:end]);
-    if ismember(itest,add_disc)
+    if add_disc(itest)
         choices{itest}(1:10:end,1)=round(choices{itest}(1:10:end,2)/2);
     end
     [dirfits{itest},aux_dirfit_outs{itest}]=rs_dirfit_choicedata(choices{itest},aux_dirfits{itest});

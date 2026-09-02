@@ -5,7 +5,7 @@ function [loglik,opts_used]=loglik_beta_discrete(ab,obs,opts)
 % Args:
 %   ab (int 1-D array): Dirichlet parameters a=ab(1), b=ab(2), or a=b=ab(1) if scalar; a and b must be >0
 %
-%   obs (int 2-D array: a vector of observations where obs(:,1) is successes and obs(:,2) is total tries
+%   obs (int 2-D array): a vector of observations where obs(:,1) is successes and obs(:,2) is total tries
 %
 %   opts (struct): options, with fields
 %
@@ -16,7 +16,7 @@ function [loglik,opts_used]=loglik_beta_discrete(ab,obs,opts)
 %   loglik (float): log likelihood (natural log)
 %   opts_used (struct): option values used
 %
-%   See also:  LOGLIK_BETA, BETALN, FILLDEFAULT.
+% See also: LOGLIK_BETA, BETALN, FILLDEFAULT.
 %
 if (nargin<3)
     opts=struct();

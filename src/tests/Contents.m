@@ -13,6 +13,7 @@
 % rs_plot_style_test: test test rs_plot_style
 % rs_read_choicedata_test: test rs_read_choicedata
 % rs_read_coorddata_test: test rs_read_coorddata
+% rs_symumi_choicedata_test: test rs_rs_symumi_choicedata
 % rs_vara_coordsets_test: test rs_vara_coordsets
 % rs_xform_specify_apply_test: test rs_xform_specify and rs_xform_apply
 % rs_xform_specify_test: test rs_xform_specify

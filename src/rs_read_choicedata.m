@@ -25,7 +25,7 @@ function [data_comp,aux_out]=rs_read_choicedata(fullname,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 % Returns:
-%   data_comp (int 2-D array): Each row contains the data from a single kind of comparison
+%   data_comp (int 2-D array): Choice data, with each row containing the data from a single kind of comparison
 %
 %      - first 3 or 4 columns: indexes into the stimuli used for the comparison
 % 
