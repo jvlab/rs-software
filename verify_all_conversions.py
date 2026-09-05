@@ -31,7 +31,9 @@ DEFAULT_OOO = 'src/samples/brightness/brightness_choices-ooo_GA2.mat'
 DEFAULT_TRIADIC = 'src/samples/brightness/brightness_choices-triadic_GA2.mat'
 DEFAULT_CHOICE = 'src/samples/bwtextures/bgca3pt_choices_MC_sess01_10.mat'
 DEFAULT_COORDS = 'src/samples/bwtextures/bdce3pt_coords_SN_sess01_10.mat'  # rich file: has bestModelLL/biasEstimate/debiasedRelativeLL/metadata, per JV's request to test with rich coord files
-DEFAULT_COORDS_BENCHMARK = 'src/samples/brightness/brightness_ooo_GA2_coords_BENCHMARK.mat'
+DEFAULT_COORDS_BENCHMARK = 'benchmarks/brightness_ooo_GA2_coords_BENCHMARK.mat'  # kept outside src/samples/ per JV's request -- samples/ is already used for demos and other benchmarks
+DEFAULT_BDCE3PT_CHOICES = 'src/samples/bwtextures/bdce3pt_choices_SN_sess01_10.mat'
+DEFAULT_BDCE3PT_BENCHMARK = 'benchmarks/bdce3pt_SN_sess01_10_coords_BENCHMARK.mat'
 
 PASS = "PASS"
 FAIL = "FAIL"
@@ -173,19 +175,31 @@ DISPARITY_THRESHOLD = 0.1   # ~5-10x normal run-to-run variance (observed ~0.01-
 LL_THRESHOLD = 0.05         # ~5-10x normal run-to-run variance (observed ~0.004-0.012)
 
 
-def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3000):
+def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3000, if_frozen=1, label=None):
     """Benchmark strategy (per JV) for choices -> coordinates: since MDS starts
     from a random position, a fresh correct run won't be byte-identical to a
     frozen benchmark even when nothing is wrong. So this checks two different
     things with two different standards:
       - structure (field names/shapes, i.e. "columns aren't skipped"): exact
         match, since that has nothing to do with randomness.
-      - the coordinate values themselves: Procrustes disparity + LL, within a
-        tolerance calibrated from real run-to-run variance, not byte-exact.
+      - every value field, one at a time: Procrustes disparity for coordinates,
+        plain difference for every LL/bias field, each reported on its own row
+        so it's clear exactly which variable deviates and by how much (per
+        JV's request -- the old table only reported dim-level numbers and
+        left bestModelLL/randModelLL/biasEstimate/debiasedRelativeLL
+        unchecked beyond "is the field present").
+
+    if_frozen controls the RNG seed used for the MDS starting point (see
+    rng_control.py): 1 = same seed every run, so re-running this with the same
+    triadic input and max_iter should reproduce closely comparable numbers
+    each time, not just "close enough by luck".
     """
-    print("\n=== 2b. Choices -> Coordinates: fresh fit vs. frozen benchmark ===")
+    check_name = f"Choices -> Coordinates benchmark ({label})" if label else "Choices -> Coordinates benchmark"
+    print(f"\n=== 2b. Choices -> Coordinates: fresh fit vs. frozen benchmark ({label or triadic_path}) ===")
+    print(f"Starting choice file: {triadic_path}")          # per JV: log needs to state which file was converted, to check against an old computation
+    print(f"Compared against benchmark: {benchmark_path}")
     if not (os.path.exists(triadic_path) and os.path.exists(benchmark_path)):
-        report("Choices -> Coordinates benchmark", SKIP, f"missing file(s): {triadic_path} / {benchmark_path}")
+        report(check_name, SKIP, f"missing file(s): {triadic_path} / {benchmark_path}")
         return
 
     from fit_brightness_ooo import run_mds_single_dim, build_mat_output
@@ -193,20 +207,30 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
     from src.rs_py.utils.config import CONFIG
     import src.rs_py.choices.choice_likelihoods as an
     from rs_tools.compare import procrustes_disparity
+    from rng_control import initialize_random_state
 
     resp, rep, _, stim_list = load_choices(triadic_path)
     total_triads = sum(rep.values())
     DEFAULTS = CONFIG['inputs']['model_fit']
+    dims = list(dims)
 
     coords_by_dim = {}
     lls_by_dim = {}
     for dim in dims:
+        initialize_random_state(if_frozen)  # reseed right before the random MDS start point is drawn
         coords, ll, _ = run_mds_single_dim(
             resp, rep, len(stim_list), dim, DEFAULTS['sigma'], max_iter,
             DEFAULTS['tolerance'], DEFAULTS['learning_rate'], DEFAULTS['minimization']
         )
         coords_by_dim[dim] = coords
         lls_by_dim[dim] = -ll / total_triads
+
+    ll_best, _ = an.best_model_ll(resp, rep)
+    ll_random, _ = an.random_choice_ll(resp, rep)
+    lls_by_dim['best'] = ll_best / total_triads
+    lls_by_dim['random'] = ll_random / total_triads
+
+    fresh = build_mat_output(coords_by_dim, lls_by_dim, stim_list, dims)
 
     bench = loadmat(benchmark_path)
     bench_fields = {k for k in bench if not k.startswith('__')}
@@ -216,31 +240,59 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
     # --- structure check: exact, no tolerance ---
     missing = expected_fields - bench_fields
     if missing:
-        report("Choices -> Coordinates benchmark", FAIL, f"benchmark file missing expected fields: {missing}")
+        report(check_name, FAIL, f"benchmark file missing expected fields: {missing}")
         return
 
     bench_stims = [s.strip() for s in bench['stim_list']]
     bench_rawLLs = np.atleast_1d(bench['rawLLs']).squeeze()
+    bench_bias = np.atleast_1d(bench['biasEstimate']).squeeze()
+    bench_debiased = np.atleast_1d(bench['debiasedRelativeLL']).squeeze()
+    bench_best = float(np.atleast_1d(bench['bestModelLL']).squeeze())
+    bench_random = float(np.atleast_1d(bench['randModelLL']).squeeze())
 
-    print(f"\n{'dim':<6}{'Procrustes disparity':<24}{'fresh LL':<14}{'benchmark LL':<14}{'LL diff'}")
+    print(f"\nRNG: if_frozen={if_frozen}, max_iter={max_iter}")
+    print(f"\n{'variable':<26}{'fresh':<16}{'benchmark':<16}{'deviation'}")
     problems = []
+
     for i, dim in enumerate(dims):
-        if f'dim{dim}' not in bench_fields:
-            problems.append(f"dim{dim} missing from benchmark")
-            continue
-        disparity, n_shared = procrustes_disparity(coords_by_dim[dim], stim_list, bench[f'dim{dim}'], bench_stims)
-        ll_diff = abs(lls_by_dim[dim] - bench_rawLLs[i])
-        print(f"{dim:<6}{disparity:<24.5f}{lls_by_dim[dim]:<14.5f}{bench_rawLLs[i]:<14.5f}{ll_diff:.5f}")
+        disparity, _ = procrustes_disparity(coords_by_dim[dim], stim_list, bench[f'dim{dim}'], bench_stims)
+        print(f"{'dim' + str(dim) + ' (Procrustes disp.)':<26}{disparity:<16.5f}{'--':<16}{disparity:.5f}")
         if disparity > DISPARITY_THRESHOLD:
             problems.append(f"dim{dim} Procrustes disparity {disparity:.5f} exceeds threshold {DISPARITY_THRESHOLD}")
-        if ll_diff > LL_THRESHOLD:
-            problems.append(f"dim{dim} LL diff {ll_diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    for i, dim in enumerate(dims):
+        diff = abs(lls_by_dim[dim] - bench_rawLLs[i])
+        print(f"{'rawLL dim' + str(dim):<26}{lls_by_dim[dim]:<16.5f}{bench_rawLLs[i]:<16.5f}{diff:.5f}")
+        if diff > LL_THRESHOLD:
+            problems.append(f"rawLL dim{dim} diff {diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    diff = abs(lls_by_dim['best'] - bench_best)
+    print(f"{'bestModelLL':<26}{lls_by_dim['best']:<16.5f}{bench_best:<16.5f}{diff:.5f}")
+    if diff > LL_THRESHOLD:
+        problems.append(f"bestModelLL diff {diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    diff = abs(lls_by_dim['random'] - bench_random)
+    print(f"{'randModelLL':<26}{lls_by_dim['random']:<16.5f}{bench_random:<16.5f}{diff:.5f}")
+    if diff > LL_THRESHOLD:
+        problems.append(f"randModelLL diff {diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    for i, dim in enumerate(dims):
+        diff = abs(fresh['biasEstimate'][i] - bench_bias[i])
+        print(f"{'biasEstimate dim' + str(dim):<26}{fresh['biasEstimate'][i]:<16.5f}{bench_bias[i]:<16.5f}{diff:.5f}")
+        if diff > LL_THRESHOLD:
+            problems.append(f"biasEstimate dim{dim} diff {diff:.5f} exceeds threshold {LL_THRESHOLD}")
+
+    for i, dim in enumerate(dims):
+        diff = abs(fresh['debiasedRelativeLL'][i] - bench_debiased[i])
+        print(f"{'debiasedRelativeLL dim' + str(dim):<26}{fresh['debiasedRelativeLL'][i]:<16.5f}{bench_debiased[i]:<16.5f}{diff:.5f}")
+        if diff > LL_THRESHOLD:
+            problems.append(f"debiasedRelativeLL dim{dim} diff {diff:.5f} exceeds threshold {LL_THRESHOLD}")
 
     if problems:
-        report("Choices -> Coordinates benchmark", FAIL, "; ".join(problems))
+        report(check_name, FAIL, f"[{triadic_path}] " + "; ".join(problems))
     else:
-        report("Choices -> Coordinates benchmark", PASS,
-                f"structure exact match, values within tolerance (disparity <= {DISPARITY_THRESHOLD}, LL diff <= {LL_THRESHOLD})")
+        report(check_name, PASS,
+                f"[{triadic_path}] structure exact match, every value field within tolerance (disparity <= {DISPARITY_THRESHOLD}, LL/bias diff <= {LL_THRESHOLD})")
 
 
 def check_coords_roundtrip(coords_path):
@@ -361,7 +413,8 @@ if __name__ == '__main__':
         coords_path = args.coords or ask("Path to coordinate file", DEFAULT_COORDS, interactive)
         print(f"\nTesting: {coords_path}")
         check_coords_roundtrip(coords_path)
-        check_coords_benchmark(DEFAULT_TRIADIC, DEFAULT_COORDS_BENCHMARK)
+        check_coords_benchmark(DEFAULT_TRIADIC, DEFAULT_COORDS_BENCHMARK, label='brightness GA2')
+        check_coords_benchmark(DEFAULT_BDCE3PT_CHOICES, DEFAULT_BDCE3PT_BENCHMARK, label='bdce3pt SN')
 
     print("\n" + "=" * 60)
     print("SUMMARY")
