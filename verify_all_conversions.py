@@ -173,6 +173,48 @@ def check_choice_roundtrip(choice_path):
 
 DISPARITY_THRESHOLD = 0.1   # ~5-10x normal run-to-run variance (observed ~0.01-0.02)
 LL_THRESHOLD = 0.05         # ~5-10x normal run-to-run variance (observed ~0.004-0.012)
+DISTANCE_CORR_THRESHOLD = 0.99  # pairwise distances should be nearly perfectly correlated if the fits agree up to rotation/reflection
+
+
+def plot_distance_heatmap(fresh_coords, bench_coords, label, dim, out_dir='heatmaps'):
+    """Per JV: prove two coordinate sets represent the same shape (just possibly
+    rotated/mirrored/translated) by comparing pairwise stimulus-to-stimulus
+    distances, not raw coordinates -- distances don't change under rotation,
+    reflection, or translation, so if the fit is correct these should agree
+    almost exactly even though the coordinates themselves don't line up.
+    Saves a side-by-side heatmap image and returns the correlation between the
+    two distance matrices (1.0 = identical shape).
+    """
+    from scipy.spatial.distance import pdist, squareform
+    import matplotlib
+    matplotlib.use('Agg')  # no display needed, just saving to file
+    import matplotlib.pyplot as plt
+
+    d_fresh = squareform(pdist(fresh_coords))
+    d_bench = squareform(pdist(bench_coords))
+
+    # off-diagonal entries only -- the diagonal is always 0 (distance to self)
+    # and would artificially inflate the correlation
+    n = d_fresh.shape[0]
+    off_diag = ~np.eye(n, dtype=bool)
+    corr = np.corrcoef(d_fresh[off_diag], d_bench[off_diag])[0, 1]
+
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{label.replace(' ', '_')}_dim{dim}_distance_heatmap.png")
+
+    vmax = max(d_fresh.max(), d_bench.max())
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.5))
+    for ax, mat, title in zip(axes, [d_fresh, d_bench], ['Fresh fit', 'Benchmark']):
+        im = ax.imshow(mat, cmap='viridis', vmin=0, vmax=vmax)
+        ax.set_title(title)
+        ax.set_xlabel('stimulus index')
+        ax.set_ylabel('stimulus index')
+    fig.colorbar(im, ax=axes, shrink=0.8, label='pairwise distance')
+    fig.suptitle(f"{label} -- dim{dim} pairwise distances (correlation: {corr:.5f})")
+    fig.savefig(out_path, dpi=120, bbox_inches='tight')
+    plt.close(fig)
+
+    return corr, out_path
 
 
 def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3000, if_frozen=1, label=None):
@@ -259,6 +301,17 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
         print(f"{'dim' + str(dim) + ' (Procrustes disp.)':<26}{disparity:<16.5f}{'--':<16}{disparity:.5f}")
         if disparity > DISPARITY_THRESHOLD:
             problems.append(f"dim{dim} Procrustes disparity {disparity:.5f} exceeds threshold {DISPARITY_THRESHOLD}")
+
+        # per JV: also prove the shapes agree via pairwise distances (rotation/
+        # reflection-invariant), not just Procrustes disparity, with a heatmap
+        # to inspect visually
+        dist_corr, heatmap_path = plot_distance_heatmap(
+            coords_by_dim[dim], bench[f'dim{dim}'], label or triadic_path, dim
+        )
+        print(f"{'dim' + str(dim) + ' (distance corr.)':<26}{dist_corr:<16.5f}{'1.00000':<16}{1 - dist_corr:.5f}")
+        print(f"       heatmap saved: {heatmap_path}")
+        if dist_corr < DISTANCE_CORR_THRESHOLD:
+            problems.append(f"dim{dim} pairwise-distance correlation {dist_corr:.5f} below threshold {DISTANCE_CORR_THRESHOLD}")
 
     for i, dim in enumerate(dims):
         diff = abs(lls_by_dim[dim] - bench_rawLLs[i])
