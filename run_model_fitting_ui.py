@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rs-
                 if 'rs-software' not in os.getcwd() else '.')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rs_ui import convergence_plot
+from rng_control import initialize_random_state
 
 from src.rs_py.utils.util import load_choices
 from src.rs_py.utils.config import CONFIG
@@ -173,6 +174,34 @@ print_every = st.sidebar.number_input(
 
 st.sidebar.markdown("---")
 
+# Random seed control -- the MDS fit starts from a random position, so this
+# controls whether that starting point is random, fixed, or a fixed-plus-offset
+# (see rng_control.py for the exact if_frozen convention)
+st.sidebar.subheader("Random seed")
+seed_mode = st.sidebar.radio(
+    "Starting position",
+    ["Random each run", "Same every run (reproducible)", "Custom offset"],
+    index=0, disabled=use_defaults,
+    help="Random each run: normal use, a fresh random starting point every time. "
+         "Same every run: forces the exact same starting point, so re-running gives "
+         "identical results -- useful for verification/benchmarking. "
+         "Custom offset: same starting seed, but skips ahead N draws first."
+)
+if use_defaults:
+    seed_mode = "Random each run"
+
+if seed_mode == "Random each run":
+    if_frozen = 0
+elif seed_mode == "Same every run (reproducible)":
+    if_frozen = 1
+else:
+    seed_offset = st.sidebar.number_input(
+        "Offset (draws to skip)", min_value=1, max_value=1000, value=3, step=1
+    )
+    if_frozen = -int(seed_offset)
+
+st.sidebar.markdown("---")
+
 # Subject / experiment metadata for output filename
 st.sidebar.subheader("Output labels (optional)")
 subject_label = st.sidebar.text_input("Subject ID", value="S1")
@@ -219,7 +248,7 @@ else:
     name = os.path.basename(path_direct).replace('_suniyya.mat', '').replace('.mat', '')
 
 st.subheader(name)
-st.caption(f"Dims {model_dimensions} · {max_iter} max iterations · sigma={sigma}")
+st.caption(f"Dims {model_dimensions} · {max_iter} max iterations · sigma={sigma} · seed: {seed_mode}")
 
 # --- load ---
 with st.spinner("Loading file..."):
@@ -243,6 +272,7 @@ status_text  = st.empty()
 
 for i, dim in enumerate(model_dimensions):
     status_text.text(f"Fitting {dim}D model ({i+1}/{len(model_dimensions)})...")
+    initialize_random_state(if_frozen)  # reseed right before the random MDS start point is drawn
     coords, ll, residuals = run_mds_single_dim(
         responses, repeats, n_stim, dim, sigma, max_iter, tolerance,
         DEFAULT_LEARNING_RATE, DEFAULT_MINIMIZATION,

@@ -284,6 +284,34 @@ else:
     surrogate_max_iter = max_iterations
     n_surr_conv = 0
 
+# Random seed for the real dataset A/B fits. The surrogates already seed
+# deterministically per-surrogate (seed = surrogate index), so they don't need
+# this control -- this only governs the real-data fit, decoupled from the
+# surrogate pool per JV's request.
+st.sidebar.markdown("**Random seed** (real data fit)")
+_c1, _c2 = st.sidebar.columns([3, 1])
+seed_mode = _c1.radio(
+    "Starting position", ["Random each run", "Same every run (reproducible)", "Custom offset"],
+    index=2, horizontal=False,
+    help="Random each run: a fresh random starting point every time. Same every run: forces "
+         "the exact same starting point, for verification/benchmarking. Custom offset: same "
+         "starting seed, but skips ahead N draws first. Doesn't apply when using pooled warm "
+         "start above, since that fixes the starting point directly."
+)
+if _c2.button("↺", key="d_seed", help="Reset to default"):
+    seed_mode = "Custom offset"
+
+if seed_mode == "Random each run":
+    real_if_frozen = 0
+elif seed_mode == "Same every run (reproducible)":
+    real_if_frozen = 1
+else:
+    _c1, _c2 = st.sidebar.columns([3, 1])
+    seed_offset = _c1.number_input("Offset (draws to skip)", min_value=1, max_value=1000, value=1, step=1)
+    if _c2.button("↺", key="d_seed_offset", help="Reset to default"):
+        seed_offset = 1
+    real_if_frozen = -int(seed_offset)
+
 st.sidebar.markdown("---")
 
 # Use all defaults — at the bottom so users see all parameters first
@@ -293,6 +321,7 @@ if st.sidebar.button("Use all defaults", use_container_width=True):
     max_iterations = DEFAULT_MAX_ITER
     learning_rate  = DEFAULT_LEARNING_RATE
     print_every    = 0
+    real_if_frozen = -1
 
 st.sidebar.markdown("---")
 run_btn = st.sidebar.button("Run analysis", type="primary", use_container_width=True)
@@ -692,7 +721,7 @@ with tab_analysis:
         name2 = os.path.basename(path2).replace('_suniyya.mat', '').replace('.mat', '')
 
     st.subheader(f"{name1}  vs  {name2}")
-    st.caption(f"{dim}D · {n_surrogates} surrogates · {max_iterations} max iterations · learning rate {learning_rate} · {resample_method.replace('_', ' ')}")
+    st.caption(f"{dim}D · {n_surrogates} surrogates · {max_iterations} max iterations · learning rate {learning_rate} · {resample_method.replace('_', ' ')} · seed: {seed_mode if not show_pooled else 'pooled warm start'}")
 
     # load files
     with st.spinner("Loading files..."):
@@ -743,12 +772,14 @@ with tab_analysis:
 
     with st.spinner(f"Running {dim}D MDS on dataset 1..."):
         real_coords1, real_ll1, residuals1 = run_mds(
-            resp1, rep1, stims1, dim, max_iterations, learning_rate, log_every=1, label=name1, start_points=start1)
+            resp1, rep1, stims1, dim, max_iterations, learning_rate, log_every=1, label=name1,
+            start_points=start1, if_frozen=real_if_frozen)
     prog.progress(50, text="Dataset 1 done...")
 
     with st.spinner(f"Running {dim}D MDS on dataset 2..."):
         real_coords2, real_ll2, residuals2 = run_mds(
-            resp2, rep2, stims2, dim, max_iterations, learning_rate, log_every=1, label=name2, start_points=start2)
+            resp2, rep2, stims2, dim, max_iterations, learning_rate, log_every=1, label=name2,
+            start_points=start2, if_frozen=real_if_frozen)
     prog.progress(100, text="Real data done.")
 
     real_disparity = compute_disparity(real_coords1, real_coords2, stims1, stims2)
