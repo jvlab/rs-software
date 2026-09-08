@@ -199,6 +199,11 @@ def plot_distance_heatmap(fresh_coords, bench_coords, label, dim, out_dir='heatm
     off_diag = ~np.eye(n, dtype=bool)
     corr = np.corrcoef(d_fresh[off_diag], d_bench[off_diag])[0, 1]
 
+    # per JV: correlation alone is "very hard to judge from the color map" --
+    # add the single largest discrepancy between any one fresh-vs-benchmark
+    # pairwise distance, as a plain number, same style as the other variables
+    max_discrepancy = float(np.max(np.abs(d_fresh - d_bench)[off_diag]))
+
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, f"{label.replace(' ', '_')}_dim{dim}_distance_heatmap.png")
 
@@ -210,11 +215,12 @@ def plot_distance_heatmap(fresh_coords, bench_coords, label, dim, out_dir='heatm
         ax.set_xlabel('stimulus index')
         ax.set_ylabel('stimulus index')
     fig.colorbar(im, ax=axes, shrink=0.8, label='pairwise distance')
-    fig.suptitle(f"{label} -- dim{dim} pairwise distances (correlation: {corr:.5f})")
+    fig.suptitle(f"{label} -- dim{dim} pairwise distances\n"
+                 f"correlation: {corr:.5f}   |   max discrepancy: {max_discrepancy:.5f}")
     fig.savefig(out_path, dpi=120, bbox_inches='tight')
     plt.close(fig)
 
-    return corr, out_path
+    return corr, max_discrepancy, out_path
 
 
 def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3000, if_frozen=1, label=None):
@@ -304,11 +310,13 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
 
         # per JV: also prove the shapes agree via pairwise distances (rotation/
         # reflection-invariant), not just Procrustes disparity, with a heatmap
-        # to inspect visually
-        dist_corr, heatmap_path = plot_distance_heatmap(
+        # to inspect visually -- plus a plain numerical max discrepancy, since
+        # the color map alone is "very hard to judge" (JV's words)
+        dist_corr, max_discrepancy, heatmap_path = plot_distance_heatmap(
             coords_by_dim[dim], bench[f'dim{dim}'], label or triadic_path, dim
         )
         print(f"{'dim' + str(dim) + ' (distance corr.)':<26}{dist_corr:<16.5f}{'1.00000':<16}{1 - dist_corr:.5f}")
+        print(f"{'dim' + str(dim) + ' (max discrepancy)':<26}{max_discrepancy:<16.5f}{'0.00000':<16}{max_discrepancy:.5f}")
         print(f"       heatmap saved: {heatmap_path}")
         if dist_corr < DISTANCE_CORR_THRESHOLD:
             problems.append(f"dim{dim} pairwise-distance correlation {dist_corr:.5f} below threshold {DISTANCE_CORR_THRESHOLD}")
