@@ -44,13 +44,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 % Returns:
 %   su (struct): analysis results, a structure with fields
 %
-%     - counts (struct): summary tallies, a structure with fields
-%
-%         - ntrials_found (int): number of individual judgments
-%         - ntriads_found (int): number of distinct triads judged
-%         - nstims_found (int): number of different stimuli
-%         - unique_stims (int 1-D array): list of unique stimuli
-%
+%     - **Dirichlet fits**
 %     - dirichlet (struct): Dirichlet fits with a range of thresholds for number of trials in a triad, with fields
 % 
 %         - tallies (int 2-D array): tallies(:,1) is threshold number of trials in a triad; tallies(:,2) is number of triads meeting the threshold; tallies(:,3) is number of trials in those triads
@@ -67,8 +61,15 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
-%     - tallies (cell 1-D array): tallies{ithr_type} tallies the data used for each calculation (ithr_type=1: min, 2: max, 3: avg), where su.tallies{ithr_type}(ithr,:) is [threshold value, number of triplets used, number of trials used]
-% 
+%     - counts (struct): summary of the input data, a structure with fields
+%
+%         - ntrials_found (int): number of individual judgments
+%         - ntriads_found (int): number of distinct triads judged
+%         - nstims_found (int): number of different stimuli
+%         - unique_stims (int 1-D array): list of unique stimuli
+%
+%     - tallies (cell 1-D array): summary of the data used for each calculation in global and private, where tallies{ithr_type}(ithr,:) is [threshold pointer, number of triplets used, number of trials used] for threshold type itype (1: min, 2: max, 3: avg); the threshold value corresonding to ithr is dirichlet.tallies(ithr,1)
+%
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
 %     - warnings (char): warnings generated during consistency check
@@ -78,6 +79,12 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_dirfit_a (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameter 'a'
 %     - opts_dirfit_ah (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameters 'a' and 'h'
 %     - opts_triplike (struct): options used for `psg_umi_triplike`
+%
+% Note: Note regarding types of thresholds ??
+%     - There are three threshold types
+%
+% Note: Triads, trials, and triplets ??
+%     - These terms mean
 %
 % See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
 %
