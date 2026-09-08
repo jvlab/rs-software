@@ -51,8 +51,16 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - nstims_found (int): number of different stimuli
 %         - unique_stims (int 1-D array): list of unique stimuli
 %
-%     - dirichlet (struct): Dirichlet fits, with fields ??
-%
+%     - dirichlet (struct): Dirichlet fits with a range of thresholds for number of trials in a triad, with fields
+% 
+%         - tallies (int 2-D array): tallies(:,1) is threshold number of trials in a triad; tallies(:,2) is number of triads meeting the threshold; tallies(:,3) is number of trials in those triads
+%         - columns_tallies (cell 1-D array): labels for columns of tallies
+%         - h_fixlist (float 1-D array): list of values assumed for the discrete component, first element is 0
+%         - a (int 3-D array): a(ithr,1,ih) is fitted value of Dirichlet shape parameter 'a' for triads meeting threshold of tallies(ithr,1) and assuming h=h_fixlist(ih); a(ithr,2,ih) is corresopnding log likelihood per trial
+%         - columns_a (cell 1-D array): labels for columns of a
+%         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threhsold of tallies(ithr,1); ah(ithr,3) is corresonding log likelihoood per trial
+%         - columns_ah (cell 1-D array): labels for columns of ah
+% 
 %     - global (struct): likelihood analysis for symmetry and ultrametric
 %     inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields ??
 %
