@@ -68,27 +68,34 @@ extra_css:
   
 nav:
   - Home: index.md
+  - Installation:
+    - Python tools for creating RS: rs-py-installation.md
+    - Python tools for comparing RS and file conversion: install-comparing-conversion.md
+    - MATLAB/Octave tools for manipulating and analyzing RS: rs-ml-installation.md
   - Creating RS from perceptual judgments:
     - Overview: rs-py-overview.md
-    - Installation: rs-py-installation.md
     - Demos:
       - Demo 1 - Raw Rankings → Detailed Choice File: rs-py-demo1.md
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
       - How to Run Scripts: rs-py-scripts.md
-    - Function index: function-index-python.md 
-  - Manipulating RS:
+    - Function index: function-index-python.md
+  - Manipulating and analyzing RS:
     - Overview: rs-ml-overview.md
-    - Installation: rs-ml-installation.md
     - Demos (MATLAB): demos.md
     - Function index: function-index-matlab.md
-  - File formats, data structures, and domains: 
+  - Comparing RS:
+    - Python option: comparing-rs-python.md
+    - Streamlit option: comparing-rs-streamlit.md
+    - Function reference: function-index-python.md
+  - File conversion:
+    - Python option: file-conversion-python.md
+    - Streamlit option: file-conversion-streamlit.md
+    - Function reference: function-index-python.md
+  - File formats, data structures, and domains:
     - File formats: file-formats.md
     - Data structures: data_structures.md
     - Domains: domains.md
   - Python - MATLAB/Octave: python-matlab-octave.md
-  - Streamlit:
-    - Python Tools: python_tools.md
-    - Web-based interfaces: web_ui.md
 
 not_in_nav: mfiles/*
