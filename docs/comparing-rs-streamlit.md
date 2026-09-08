@@ -6,7 +6,7 @@ A browser-based interface for the Surrogate MDS comparison — no installation r
 
 | App | URL |
 |---|---|
-| Surrogate MDS Analysis | *TODO: paste the app.py deployment URL here once confirmed* |
+| Surrogate MDS Analysis | *Live link coming soon — run locally in the meantime (below)* |
 
 > Note: the app may be asleep if inactive — click the link and wait a moment for it to wake up.
 
