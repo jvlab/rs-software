@@ -8,6 +8,7 @@ standalone app.
 | App | URL | File |
 |---|---|---|
 | Convert .mat → NumPy | [mds-app-matnpy.streamlit.app](https://mds-app-matnpy.streamlit.app) | `app_matnpy.py` |
+| Convert NumPy → .mat | [appnumpytomatpy-dcahmfdqvuqdzyyza3ddyy.streamlit.app](https://appnumpytomatpy-dcahmfdqvuqdzyyza3ddyy.streamlit.app/) | `app_numpy_to_mat.py` |
 | OOO → Triadic | [ooo-triadic.streamlit.app](https://ooo-triadic.streamlit.app) | `app_ooo.py` |
 | Choice → Coordinates | [choice2coord.streamlit.app](https://choice2coord.streamlit.app/) | `run_model_fitting_ui.py` |
 
@@ -18,7 +19,7 @@ standalone app.
 ```bash
 cd rs-software
 pip install streamlit plotly pandas matplotlib scikit-learn
-streamlit run app_matnpy.py       # or app_ooo.py, or run_model_fitting_ui.py
+streamlit run app_matnpy.py       # or app_numpy_to_mat.py, app_ooo.py, run_model_fitting_ui.py
 ```
 
 ---
@@ -32,6 +33,21 @@ Convert a `.mat` triadic choice file to a 5-column NumPy array.
 1. Upload a `.mat` choice file
 2. Preview the array in the browser
 3. Download as `.npy`
+
+---
+
+## Convert NumPy → .mat
+
+Convert a 5-column NumPy choice array back into a `.mat` choice file — the reverse of the
+tool above.
+
+**Input columns:** `ref, s1, s2, N(s1 chosen), N_repeats` (1-indexed)
+
+1. Upload a `.npy` choice array
+2. Optionally provide stimulus names (typed, uploaded as a text file, or skipped — falls
+   back to generic names like `stim_01`)
+3. Preview the array in the browser
+4. Download as `.mat`
 
 ---
 
