@@ -61,10 +61,9 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threhsold of tallies(ithr,1); ah(ithr,3) is corresonding log likelihoood per trial
 %         - columns_ah (cell 1-D array): labels for columns of ah
 % 
-%     - global (struct): likelihood analysis for symmetry and ultrametric
-%     inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields ??
+%     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields ??
 %
-%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion; other than 'a' and 'ah', fields are identical to su.global
+%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion; ?? other than 'a' and 'ah', fields are identical to su.global
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
