@@ -6,7 +6,7 @@ A browser-based interface for the Surrogate MDS comparison — no installation r
 
 | App | URL |
 |---|---|
-| Surrogate MDS Analysis | *Live link coming soon — run locally in the meantime (below)* |
+| Surrogate MDS Analysis | [eih27-rs-software-app-streamlit-ui-n69iyq.streamlit.app](https://eih27-rs-software-app-streamlit-ui-n69iyq.streamlit.app/) |
 
 > Note: the app may be asleep if inactive — click the link and wait a moment for it to wake up.
 
