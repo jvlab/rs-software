@@ -9,7 +9,7 @@ standalone app.
 |---|---|---|
 | Convert .mat → NumPy | [mds-app-matnpy.streamlit.app](https://mds-app-matnpy.streamlit.app) | `app_matnpy.py` |
 | OOO → Triadic | [ooo-triadic.streamlit.app](https://ooo-triadic.streamlit.app) | `app_ooo.py` |
-| Choice → Coordinates | *Live link coming soon — run locally in the meantime (below)* | `run_model_fitting_ui.py` |
+| Choice → Coordinates | [choice2coord.streamlit.app](https://choice2coord.streamlit.app/) | `run_model_fitting_ui.py` |
 
 > Note: apps may be asleep if inactive — click the link and wait a moment for them to wake up.
 
