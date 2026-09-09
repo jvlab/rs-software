@@ -1,10 +1,10 @@
 function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
-% [su,aux_out]=rs_symumi_choicedata(data_comp,aux) analyzes a set of triadic choices for consistency with symmetry and the ultrametric inequality
-% as described in Ordinal Characterization of Similarity Judgments on [arXiv](https://arxiv.org/abs/2310.07543)
+% [su,aux_out]=rs_symumi_choicedata(data_comp,aux) analyzes a set of triadic choices to determine the symmetry index and the ultrametric index
+% (measures of consistency with symmetry and the ultrametric inequality) as described in Ordinal Characterization of Similarity Judgments on [arXiv](https://arxiv.org/abs/2310.07543)
 % and [Mathematical Neuroscience and Applications](https://mna.episciences.org/16310/pdf)
 %
 % The analysis is carried out for a range of criteria for the triads to include, and for Dirichlet fits to the choice probability distribution
-% based on all triads (in 'su.global'), or only the triads that meet threshold criteria (in 'su.private').
+% based on all triads (in 'su.global'), or only the triads that meet threshold criteria (in 'su.private').  See note below regarding threshold criteria and global vs. private analyses.
 %
 % Args:
 %   data_comp (int 2-D array): Triadic choice data, with each row containing the data from a single kind of comparison
@@ -18,7 +18,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_symumi (struct): options for analysis, with fields
 %
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1
-%         - h_fixlist (float 1-D array): values for discrete component, should include zero, default is [0 0.001 0.01 0.1]
+%         - h_fixlist (float 1-D array): values for discrete component 'h', should include zero and be in ascending order, default is [0 0.001 0.01 0.1]
 %         - ntriplets_min (int): minimum number of triplets for an analysis, default is 3
 %         - if_private (int): 1 to also do calculations with Dirichlet fits only to the triads that meet threshold criteria, 0 to omit; default is 0
 % 
@@ -50,14 +50,29 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - tallies (int 2-D array): tallies(:,1) is threshold number of trials in a triad; tallies(:,2) is number of triads meeting the threshold; tallies(:,3) is number of trials in those triads
 %         - columns_tallies (cell 1-D array): labels for columns of tallies
 %         - h_fixlist (float 1-D array): list of values assumed for the discrete component, first element is 0
-%         - a (int 3-D array): a(ithr,1,ih) is fitted value of Dirichlet shape parameter 'a' for triads meeting threshold of tallies(ithr,1) and assuming h=h_fixlist(ih); a(ithr,2,ih) is corresopnding log likelihood per trial
+%         - a (int 3-D array): a(ithr,1,ih) is fitted value of Dirichlet shape parameter 'a' for triads meeting threshold of tallies(ithr,1) and assuming h=h_fixlist(ih); a(ithr,2,ih) is corresponding log likelihood per trial
 %         - columns_a (cell 1-D array): labels for columns of a
-%         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threhsold of tallies(ithr,1); ah(ithr,3) is corresonding log likelihoood per trial
+%         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threshold of tallies(ithr,1); ah(ithr,3) is corresponding log likelihoood per trial
 %         - columns_ah (cell 1-D array): labels for columns of ah
 % 
-%     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields ??
+%     - **Symmetry and ultrametric indices**
+%     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields
 %
-%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion; ?? other than 'a' and 'ah', fields are identical to su.global
+%         - a (int 3-D array): a(1,1,ih) is the fitted Dirichlet shape parameter 'a' assuming h=h_fixlist(ih)
+%         - ah (int 2-D array): ah(1,:) are the jointly fitted Dirichlet parameters 'a' and 'h'
+%         - sym_hfixed (cell 2-D array): sym_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - sym (cell 2-D array): sym{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+%         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - umi (cell 2-D array): umi{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+% 
+%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion, with fields
+%
+%         - a (cell 1-D array): a{ithr_type}(ithr,1:2,ih) are the fitted Dirichlet shape parameter 'a' and log likelihood per trial for threshold type and threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - ah (cell 1-D array): ah{ithr_type}(ithr,1:3,ih) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold type ithr_type and threshold value dirichlet.tallies(ithr,1)
+%         - sym_hfixed (cell 2-D array): sym_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - sym (cell 2-D array): sym{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+%         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - umi (cell 2-D array): umi{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
@@ -68,7 +83,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - nstims_found (int): number of different stimuli
 %         - unique_stims (int 1-D array): list of unique stimuli
 %
-%     - tallies (cell 1-D array): summary of the data used for each calculation in global and private, where tallies{ithr_type}(ithr,:) is [threshold pointer, number of triplets used, number of trials used] for threshold type itype (1: min, 2: max, 3: avg); the threshold value corresonding to ithr is dirichlet.tallies(ithr,1)
+%     - tallies (cell 1-D array): summary of the data used for each calculation in global and private, where tallies{ithr_type}(ithr,:) is [threshold pointer, number of triplets used, number of trials used] for threshold type ithr_type (1: min, 2: max, 3: avg, see note below regarding thresholds); the threshold value corresponding to ithr is dirichlet.tallies(ithr,1)
 %
 %   aux_out (struct): auxiliary outputs and parameter values used, with fields
 %
@@ -80,12 +95,19 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_dirfit_ah (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameters 'a' and 'h'
 %     - opts_triplike (struct): options used for `psg_umi_triplike`
 %
-% Note: Note regarding types of thresholds ??
-%     - There are three threshold types
-%
-% Note: Triads, trials, and triplets ??
-%     - These terms mean
-%
+% Note: Note regarding thresholds and global vs. private analyses
+%     - Triplets are screened by a threshold criterion based on the number of trials before inclusion in the calculation of the symmetry and ultrametric indices.
+%     - The criterion is applied three ways:  to the minimum numnber of trials of the three triads in a triplet, the maximum number, and the average number
+%     - For the 'global' analysis, the selected triplets are used to calculate the symmetry and ultrametric indices, but all triads are used to calculate the Dirichlet parameters
+%     - For the 'private' analysis, the selected triplets are used to calculate the symmetry and ultrametric indices and also to calculate the Dirichlet parameters 
+%     - The 'private' analysis is substantially slower than the 'global' analysis, and values are of the indices are typically similar; it is only enabled by setting opts_symumi.if_private=1
+% 
+% Note: Triads, trials, and triplets
+%     - A triad is a set of three stimuli used in a triadic judgment: one stimulus is the reference, and the other two are the comparison stimuli
+%     - A trial is a single judgment of similarity for a given triad
+%     - A triplet is a set of three triads built out of the same three stimuli, in which each stimulus in turn serves as the reference
+%     - The number of trials in a triplet is the sum of the number of trials in its three triads
+% 
 % See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
 %
 if (nargin<=1)
