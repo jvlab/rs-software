@@ -54,7 +54,7 @@ Optional variables (produced by the modeling of choice data by this package but 
 * biasEstimate: overfitting bias estimate
 * metadata: summary of the above description
 
-See `samples/animals/image_coords_S*.mat` for examples that contain these optional variables, and `samples/bwtextures/bgca3pt_cooords_*_sess01_10.mat` for examples that do not.
+See `samples/animals/image_coords_S*.mat` for examples that contain these optional variables, and `samples/bwtextures/bgca3pt_coords_*_sess01_10.mat` for examples that do not.
 
 
 
