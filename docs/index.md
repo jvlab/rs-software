@@ -14,7 +14,7 @@ For creation of representational spaces, implementations are provided in Python 
 
 For manipulation and visualization of representational spaces, implementations are available in Matlab ?? or via a Python wrapper over Matlab code ??.
 
-In addition, routines are available for analysis of the choice files directly.  These include a comparison of the choice files via the representational spaces they generate (??link to comparison page) and analyses of statistics of triadic judgments (Matlab ?? or via a Python wrapper ??)
+In addition, routines are available for analysis of the perceptual judgments directly.  These include a comparison of the perceptual judgments via the representational spaces they generate (??link to comparison page) and analyses of statistics of triadic judgments (Matlab ?? or via a Python wrapper ??)
 
 
 ![Workflow diagram](./images/overview_09Jun26.png)
@@ -58,7 +58,7 @@ Key demos are ??
 
 This component is written in MATLAB and is Octave-compatible.  MATLAB routines are in `rs`; many of these are primarily wrappers around routines in `psg` that carry out the numerics.  MATLAB code may be accessed from a Python environment as shown here ??
 
-## Tools for analyzing choice files
+## Tools for analyzing perceptual judgments
 
 With a starting point of a single `choice file` of triadic judgments, one may
 
