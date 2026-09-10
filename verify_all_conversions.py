@@ -282,8 +282,9 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
 
     bench = loadmat(benchmark_path)
     bench_fields = {k for k in bench if not k.startswith('__')}
+    # coords files use 'stim_labels' (per JV); choice files use 'stim_list'
     expected_fields = {f'dim{d}' for d in dims} | {'rawLLs', 'bestModelLL', 'randModelLL',
-                                                     'biasEstimate', 'debiasedRelativeLL', 'stim_list'}
+                                                     'biasEstimate', 'debiasedRelativeLL', 'stim_labels'}
 
     # --- structure check: exact, no tolerance ---
     missing = expected_fields - bench_fields
@@ -291,7 +292,7 @@ def check_coords_benchmark(triadic_path, benchmark_path, dims=(2, 3), max_iter=3
         report(check_name, FAIL, f"benchmark file missing expected fields: {missing}")
         return
 
-    bench_stims = [s.strip() for s in bench['stim_list']]
+    bench_stims = [s.strip() for s in bench['stim_labels']]
     bench_rawLLs = np.atleast_1d(bench['rawLLs']).squeeze()
     bench_bias = np.atleast_1d(bench['biasEstimate']).squeeze()
     bench_debiased = np.atleast_1d(bench['debiasedRelativeLL']).squeeze()

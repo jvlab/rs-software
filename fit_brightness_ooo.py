@@ -74,7 +74,8 @@ def build_mat_output(coords_by_dim, lls_by_dim, stim_list, model_dimensions):
     data['biasEstimate'] = bias_estimates
     data['debiasedRelativeLL'] = debiased
     max_len = max(len(s) for s in stim_list)
-    data['stim_list'] = np.array(stim_list, dtype=f'S{max_len}')
+    # per JV: coords files use 'stim_labels' (choice files keep 'stim_list')
+    data['stim_labels'] = np.array(stim_list, dtype=f'S{max_len}')
     data['readme'] = (
         "README\n\n"
         "rawLLs[i] is the raw model LL for model with i dimensions\n"
