@@ -256,7 +256,7 @@ aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 if aux.opts_knit.if_stats
     aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',500);
 else
-    aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',0);
+    aux.opts_knit.nshuffs=0;
 end
 aux.opts_knit=filldefault(aux.opts_knit,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
 %
