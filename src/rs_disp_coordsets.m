@@ -19,7 +19,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - **Data selection**
 %         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
 %         - dim_select (int): dimension to show (>=2); i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
-%         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available)
+%         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available,3)
 %         - coord_group_method (char): method of selecting coordinates
 %
 %             - 'all': (default) plot all combinations
