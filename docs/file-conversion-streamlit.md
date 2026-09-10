@@ -88,7 +88,7 @@ Fit an MDS perceptual map from a choice file and download the result as a coordi
 | `randModelLL` | 1 × 1 | Log-likelihood of random-choice model |
 | `biasEstimate` | 1 × N | Median bias estimate per dimension |
 | `debiasedRelativeLL` | 1 × N | `rawLLs + biasEstimate - bestModelLL` |
-| `stim_list` | n_stim | Stimulus names |
+| `stim_labels` | n_stim | Stimulus names (coords files use `stim_labels`; choice files use `stim_list`) |
 
 **Random seed:** choose "Random each run" for normal use, or "Same every run" / "Custom offset"
 for a reproducible result — useful when checking output against a benchmark.
