@@ -169,6 +169,10 @@ end
 %
 dirfit=struct;
 dirfit.nchoices=nchoices;
+if any(choices(:,1)>choices(:,2))
+    wmsg=sprintf('some choices are greater than the number of trials');
+    aux_out=rs_warning(wmsg,1,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+end
 %
 % enough data? at least two choices needed to fit a, three choices for a and h, and one extra if doing jackknifes
 %
