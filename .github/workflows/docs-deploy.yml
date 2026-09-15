@@ -48,4 +48,27 @@ jobs:
         with:
           command: addpath('capture/matlab'); run_all('build/capture')
       - run: mkdocs build
-      - run: mkdocs gh-deploy --force
+      - name: Publish to gh-pages, preserving branch previews
+        # Not "mkdocs gh-deploy": that rewrites the whole gh-pages tree, which
+        # would delete preview/ and take down the previews of every branch whose
+        # pull request is still open. This replaces the production site at the
+        # root, so pages deleted from the docs really disappear, while leaving
+        # preview/ untouched.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch gh-pages \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages-out
+          cd gh-pages-out
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name preview -exec rm -rf {} +
+          cp -a ../site/. .
+          touch .nojekyll
+          git add --all
+          if git diff --cached --quiet; then
+            echo "site unchanged, nothing to publish"
+            exit 0
+          fi
+          git commit -m "docs for ${GITHUB_SHA}"
+          git push origin gh-pages

@@ -1,5 +1,9 @@
 site_name: "Representational spaces"
-site_url: https://jvlab.github.io/rs-software/
+# SITE_URL lets a branch preview build declare where it is actually published.
+# docs/hook_site_config.py turns this into the prefix that hooks.py and
+# hook_format_nested_args.py put on the links they generate, so a preview served
+# from a subdirectory links within itself instead of back to the production site.
+site_url: !ENV [SITE_URL, 'https://jvlab.github.io/rs-software/']
 repo_url: https://github.com/jvlab/rs-software
 theme:
   name: material
@@ -88,3 +92,12 @@ nav:
   - Python - MATLAB/Octave: python-matlab-octave.md
 
 not_in_nav: mfiles/*
+
+# The build hooks, their tests and their bytecode live in docs/, and mkdocs copies
+# everything under docs_dir into the site verbatim, so without this they are all
+# published. Excluding them here does not affect the "hooks:" entries above, which
+# are loaded from disk by path rather than from the built site.
+exclude_docs: |
+  *.py
+  __pycache__/
+  .pytest_cache/

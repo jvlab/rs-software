@@ -8,7 +8,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write   # branch pushes publish a preview into the gh-pages branch
 
 concurrency:
   group: docs-build-${{ github.ref }}
@@ -46,4 +46,33 @@ jobs:
         timeout-minutes: 20
         with:
           command: addpath('capture/matlab'); run_all('build/capture')
+      - name: Work out where a branch preview will live
+        # Only pushes publish. A pull_request build just checks that the site
+        # compiles, and keeps the production site_url so links are checked as
+        # they will really be.
+        if: github.event_name == 'push'
+        run: |
+          slug=$(printf '%s' "$GITHUB_REF_NAME" | tr '/' '-' | tr -cd '[:alnum:]._-')
+          echo "PREVIEW_SLUG=$slug" >> "$GITHUB_ENV"
+          echo "SITE_URL=https://jvlab.github.io/rs-software/preview/$slug/" >> "$GITHUB_ENV"
+
       - run: mkdocs build
+
+      - name: Publish branch preview
+        if: github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          destination_dir: preview/${{ env.PREVIEW_SLUG }}
+          # Never remove anything already on gh-pages: the production site lives
+          # at the root of that branch, and previews of other branches live
+          # alongside this one.
+          keep_files: true
+          commit_message: "docs preview for ${{ github.ref_name }} at ${{ github.sha }}"
+
+      - name: Report the preview URL
+        if: github.event_name == 'push'
+        run: |
+          echo "::notice title=Documentation preview::$SITE_URL"
+          echo "[documentation preview]($SITE_URL)" >> "$GITHUB_STEP_SUMMARY"

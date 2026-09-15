@@ -1,0 +1,107 @@
+name: docs-preview-cleanup
+
+# Branch previews are published to gh-pages under preview/<slug>/ by docs-build.yml.
+# Nothing there removes them, so without this they accumulate for every branch that has
+# ever been pushed. Two ways in:
+#
+#   delete            a branch was deleted, so drop its preview
+#   workflow_dispatch prune every preview whose branch no longer exists, which also
+#                     catches previews created before this workflow existed
+#
+# Note that GitHub runs "delete" event workflows from the default branch only, so this
+# file has no effect until it is merged to main.
+#
+# Removing a preview shrinks the published site and the gh-pages checkout, but not the
+# repository: the blobs stay reachable from the commit that added them. See the note at
+# the end of this file.
+
+on:
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-write
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Git Credentials
+        run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Remove previews that no longer have a branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DELETED_REF: ${{ github.event.ref }}
+        run: |
+          set -euo pipefail
+
+          # Must match the slug rule in docs-build.yml, or previews will not be matched
+          # to their branches.
+          slugify() { printf '%s' "$1" | tr '/' '-' | tr -cd '[:alnum:]._-'; }
+
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git clone --depth 1 --branch gh-pages --quiet "$remote" gh-pages-out
+          cd gh-pages-out
+
+          if [ ! -d preview ]; then
+            echo "no preview directory on gh-pages, nothing to do"
+            exit 0
+          fi
+
+          if [ "${GITHUB_EVENT_NAME}" = "delete" ]; then
+            target=$(slugify "$DELETED_REF")
+            echo "branch '$DELETED_REF' was deleted, removing preview/$target"
+            if [ ! -d "preview/$target" ]; then
+              echo "no preview published for that branch"
+              exit 0
+            fi
+            git rm -r --quiet "preview/$target"
+          else
+            # Keep only previews whose branch still exists on the remote.
+            git ls-remote --heads "$remote" \
+              | sed 's|.*refs/heads/||' \
+              | while read -r branch; do slugify "$branch"; echo; done \
+              | sort -u > /tmp/live-slugs
+            for dir in preview/*/; do
+              [ -d "$dir" ] || continue
+              name=$(basename "$dir")
+              if grep -qxF "$name" /tmp/live-slugs; then
+                echo "keeping   preview/$name"
+              else
+                echo "removing  preview/$name (no such branch)"
+                git rm -r --quiet "preview/$name"
+              fi
+            done
+          fi
+
+          if git diff --cached --quiet; then
+            echo "nothing to remove"
+            exit 0
+          fi
+          git commit -m "remove stale documentation previews"
+          git push origin gh-pages
+
+# Reclaiming the space
+#
+# Deleting a preview does not make the repository smaller. Git blobs stay reachable from
+# the commit that introduced them, so gh-pages keeps every byte of every preview ever
+# published, even after the files are gone from the tip. Only rewriting the branch without
+# that history reclaims it, and gh-pages history has no value because it is all build
+# output. When the branch gets heavy:
+#
+#   git clone --branch gh-pages --single-branch <repo> ghp && cd ghp
+#   git checkout --orphan fresh
+#   git commit -m "documentation site as of $(date +%F)"
+#   git push --force origin fresh:gh-pages
+#
+# Everything currently on the branch, the production site and any live previews, is kept,
+# because the orphan commit is made from the existing working tree. Only the history goes.
+# New clones are immediately small; GitHub reclaims its own storage on its next gc.
