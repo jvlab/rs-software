@@ -90,6 +90,40 @@ jobs:
           git commit -m "remove stale documentation previews"
           git push origin gh-pages
 
+      - name: Report how much history gh-pages carries
+        # Read-only: the number to watch when deciding whether to run the recipe at the
+        # end of this file. Needs a full clone, since a shallow one has no history to
+        # measure. A failure here says nothing about the cleanup, so it does not fail
+        # the job.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Suggest reclaiming once the history passes this. GitHub starts warning
+          # about repositories over 1 GB, and gh-pages shares that budget with main.
+          WARN_MIB: 500
+        run: |
+          set -euo pipefail
+
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git clone --bare --single-branch --branch gh-pages --quiet "$remote" gh-pages-history
+          cd gh-pages-history
+
+          # Both sizes are bytes as stored in git, so they compare like with like.
+          history_bytes=$(git rev-list --disk-usage --objects gh-pages)
+          tip_bytes=$(git rev-list --disk-usage --objects --no-walk gh-pages)
+          commits=$(git rev-list --count gh-pages)
+          mib() { awk -v b="$1" 'BEGIN { printf "%.1f", b / 1048576 }'; }
+
+          summary="gh-pages history: $(mib "$history_bytes") MiB over $commits commits; current site and previews: $(mib "$tip_bytes") MiB; reclaimable by a rewrite: about $(mib $((history_bytes - tip_bytes))) MiB"
+          echo "$summary"
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$history_bytes" -gt $((WARN_MIB * 1048576)) ]; then
+            echo "::warning title=gh-pages is heavy::history is over ${WARN_MIB} MiB; see 'Reclaiming the space' at the end of docs-preview-cleanup.yml"
+          else
+            echo "::notice title=gh-pages size::$summary"
+          fi
+
 # Reclaiming the space
 #
 # Deleting a preview does not make the repository smaller. Git blobs stay reachable from
