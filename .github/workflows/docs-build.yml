@@ -44,6 +44,11 @@ jobs:
         run: python docs/build_demo_specs.py
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v3
+        with:
+          # Only base MATLAB is installed unless products are listed. The demos need
+          # this toolbox (procrustes, regress); without it they stop with "Undefined
+          # function" while the capture step still passes.
+          products: Statistics_and_Machine_Learning_Toolbox
       - name: Capture demo output and figures
         uses: matlab-actions/run-command@v3
         timeout-minutes: 20
