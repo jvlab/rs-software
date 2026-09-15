@@ -32,6 +32,20 @@ function run_capture(spec_path)
 %   text     captured console output for the group
 %   figures  filenames of images the group produced (bare names)
 %   error    empty if the group ran cleanly, otherwise the error message
+%
+% Figures are exported while the group runs, not only when it ends. A single
+% chunk can open dozens of figures (rs_toygeom_scenarioA opens 72 in one), and
+% holding all of them until the end exhausted the graphics resources of a CI
+% runner, which killed the job. A figure is exported and closed once
+% CLOSE_LAG_FIGURES newer figures exist, so at most that many are ever open,
+% whatever the demo does. The lag is what keeps it safe: demos routinely come
+% back to a figure they created a moment ago, as rs_toygeom_disp does when it
+% annotates the figures of the fit it just displayed. Should a demo revisit a
+% figure that is already closed, figure(h) errors and the manifest records it,
+% so the failure is loud rather than a silently incomplete image.
+%
+% Figures are numbered in the order they were created, so <demo>_chunk03_fig1
+% is the first figure that chunk opened.
 
     spec = jsondecode(fileread(spec_path));
 
@@ -65,6 +79,9 @@ function run_capture(spec_path)
     chunks = spec.chunks;
     results = struct('id', {}, 'text', {}, 'figures', {}, 'error', {});
 
+    % Export figures as the demo creates them; see the note in the header.
+    restore_createfcn = onCleanup(@() local_stop_tracking()); %#ok<NASGU>
+
     acc = '';                                       % code of the current group
     group_start_figs = findall(groot, 'Type', 'figure');
 
@@ -86,6 +103,7 @@ function run_capture(spec_path)
         % swallowed by evalc, so this is the only feedback the console gets.
         fprintf('    chunk %d/%d ... ', c, numel(chunks));
         chunk_timer = tic;
+        local_start_tracking(spec.name, spec.fig_dir, c);
         try
             captured = evalc('evalin(''base'', acc)');
         catch e
@@ -103,9 +121,7 @@ function run_capture(spec_path)
         fprintf('%.1f s\n', toc(chunk_timer));
 
         drawnow;        % force pending draws so figures are complete
-        after = findall(groot, 'Type', 'figure');
-        new_figs = local_new_figures(group_start_figs, after);
-        fig_names = local_export_figures(new_figs, spec.name, spec.fig_dir, c);
+        fig_names = local_stop_tracking(group_start_figs);
 
         results(end + 1).id = chunks(c).id;   %#ok<AGROW>
         results(end).text = captured;
@@ -147,25 +163,121 @@ function tf = local_is_incomplete(e)
 end
 
 
-function new_figs = local_new_figures(before, after)
-% Figures present in after but not in before, compared by handle identity.
-    new_figs = gobjects(0);
-    for f = reshape(after, 1, [])
-        if ~any(before == f)
+function local_start_tracking(demo_name, fig_dir, chunk_idx)
+% Begin exporting figures as the current group creates them.
+%
+% State lives in groot's application data rather than in a variable, because the
+% figure-creation callback runs outside this function's workspace. A group that
+% is still accumulating an open control block never executes, so restarting the
+% tracking on each attempt cannot lose figures: the successful attempt is the
+% one that runs, and its chunk index is the one the images are named after.
+    state = struct('demo', demo_name, 'fig_dir', fig_dir, 'chunk', chunk_idx, ...
+                   'names', {{}}, 'tracked', gobjects(1, 0), 'busy', false);
+    setappdata(groot, 'RS_CAPTURE_STATE', state);
+    set(groot, 'DefaultFigureCreateFcn', @local_figure_created);
+end
+
+
+function names = local_stop_tracking(group_start_figs)
+% Stop tracking, export whatever the group left open, and return every image
+% name it produced, in creation order.
+%
+% Figures still open here are the newest ones, the ones the lag deliberately
+% keeps available. They are exported but NOT closed, because a later chunk may
+% still draw into them, which is how rs_toygeom_sim builds up one figure per
+% paradigm across several chunks. Closing them is the next demo's "close all".
+    set(groot, 'DefaultFigureCreateFcn', '');
+    names = {};
+    if ~isappdata(groot, 'RS_CAPTURE_STATE')
+        return
+    end
+    state = getappdata(groot, 'RS_CAPTURE_STATE');
+    rmappdata(groot, 'RS_CAPTURE_STATE');
+    if nargin < 1
+        return      % cleanup path: the group errored, names are not needed
+    end
+
+    open_figs = state.tracked(isvalid(state.tracked));
+
+    % A demo that passes its own CreateFcn to figure() overrides the default and
+    % is never tracked, so pick up anything else the group opened as well.
+    extra = local_new_figures(group_start_figs, state.tracked, ...
+                              findall(groot, 'Type', 'figure'));
+    for f = [open_figs, extra]
+        state = local_export_one(state, f);
+    end
+    names = state.names;
+end
+
+
+function local_figure_created(new_fig, ~)
+% Default CreateFcn for every figure a tracked group opens: remember the new
+% figure, then export and close any that are now more than CLOSE_LAG_FIGURES
+% old. The lag is generous because demos revisit the figures of the display
+% call they just made; it only has to bound how many stay open at once.
+    CLOSE_LAG_FIGURES = 20;
+
+    if ~isappdata(groot, 'RS_CAPTURE_STATE')
+        return
+    end
+    state = getappdata(groot, 'RS_CAPTURE_STATE');
+    if state.busy
+        return      % a figure opened by exportgraphics itself; not the demo's
+    end
+
+    state.tracked = [state.tracked(isvalid(state.tracked)), new_fig];
+    while numel(state.tracked) > CLOSE_LAG_FIGURES
+        oldest = state.tracked(1);
+        state.tracked = state.tracked(2:end);
+        state = local_export_one(state, oldest);
+        delete(oldest);     % delete, not close: CloseRequestFcn must not block
+    end
+    setappdata(groot, 'RS_CAPTURE_STATE', state);
+end
+
+
+function state = local_export_one(state, fig)
+% Export one figure and record its name. Never lets an export failure reach the
+% demo: an image that cannot be written is worth less than the rest of the run.
+    if ~isvalid(fig)
+        return
+    end
+    state.busy = true;      % suppress tracking of anything exportgraphics opens
+    setappdata(groot, 'RS_CAPTURE_STATE', state);
+    fname = sprintf('%s_chunk%02d_fig%d.png', state.demo, state.chunk, ...
+                    numel(state.names) + 1);
+    try
+        local_export_figure(fig, fullfile(state.fig_dir, fname));
+        state.names{end + 1} = fname;
+    catch e
+        fprintf(2, '\n    figure export failed (%s): %s\n', fname, e.message);
+    end
+    state.busy = false;
+    setappdata(groot, 'RS_CAPTURE_STATE', state);
+end
+
+
+function new_figs = local_new_figures(before, tracked, after)
+% Figures in after that are neither in before nor already tracked, oldest first.
+% findall returns figures newest first, hence the flip.
+    new_figs = gobjects(1, 0);
+    for f = reshape(flip(after), 1, [])
+        if ~any(before == f) && ~any(tracked == f)
             new_figs(end + 1) = f; %#ok<AGROW>
         end
     end
 end
 
 
-function names = local_export_figures(figs, demo_name, fig_dir, chunk_idx)
-% Export each figure to a deterministic PNG and return the bare filenames.
-    names = {};
-    for j = 1:numel(figs)
-        fname = sprintf('%s_chunk%02d_fig%d.png', demo_name, chunk_idx, j);
-        exportgraphics(figs(j), fullfile(fig_dir, fname), 'Resolution', 150);
-        names{end + 1} = fname; %#ok<AGROW>
-    end
+function local_export_figure(fig, path)
+% Write one figure to a PNG.
+%
+% 96 dpi rather than 150: each render needs about 2.4 times fewer pixels, which
+% matters on CI runners where software rendering of many figures ran out of
+% graphics resources, and the PNGs come out about half the size. Figures stay
+% legible, though dense stimulus-label clusters get tight.
+    EXPORT_DPI = 96;
+    exportgraphics(fig, path, 'Resolution', EXPORT_DPI);
 end
 
 
