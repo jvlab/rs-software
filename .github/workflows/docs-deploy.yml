@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,10 +23,6 @@ jobs:
         with:
           repository: jvlab/perceptual_space_geometry
           path: perceptual_space_geometry
-      - name: Configure Git Credentials
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -48,6 +44,30 @@ jobs:
         with:
           command: addpath('capture/matlab'); run_all('build/capture')
       - run: mkdocs build
+      - name: Hand the built site to the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+          retention-days: 1
+
+  publish:
+    # Serialized with every other write to gh-pages; see the publish job in
+    # docs-build.yml for why the group is shared and why it uses queue: max.
+    needs: build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: gh-pages-write
+      queue: max
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - name: Configure Git Credentials
+        run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Publish to gh-pages, preserving branch previews
         # Not "mkdocs gh-deploy": that rewrites the whole gh-pages tree, which
         # would delete preview/ and take down the previews of every branch whose

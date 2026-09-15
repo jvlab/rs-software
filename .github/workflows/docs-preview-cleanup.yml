@@ -22,14 +22,15 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: gh-pages-write
-  cancel-in-progress: false
-
 jobs:
   cleanup:
     if: github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
+    # Serialized with every other write to gh-pages; see the publish job in
+    # docs-build.yml for why the group is shared and why it uses queue: max.
+    concurrency:
+      group: gh-pages-write
+      queue: max
     steps:
       - name: Configure Git Credentials
         run: |

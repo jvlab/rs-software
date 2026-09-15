@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      preview_slug: ${{ steps.preview.outputs.slug }}
+      site_url: ${{ steps.preview.outputs.site_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Check out perceptual_space_geometry
@@ -50,16 +53,48 @@ jobs:
         # Only pushes publish. A pull_request build just checks that the site
         # compiles, and keeps the production site_url so links are checked as
         # they will really be.
+        id: preview
         if: github.event_name == 'push'
         run: |
           slug=$(printf '%s' "$GITHUB_REF_NAME" | tr '/' '-' | tr -cd '[:alnum:]._-')
-          echo "PREVIEW_SLUG=$slug" >> "$GITHUB_ENV"
-          echo "SITE_URL=https://jvlab.github.io/rs-software/preview/$slug/" >> "$GITHUB_ENV"
+          site_url="https://jvlab.github.io/rs-software/preview/$slug/"
+          echo "SITE_URL=$site_url" >> "$GITHUB_ENV"
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+          echo "site_url=$site_url" >> "$GITHUB_OUTPUT"
 
       - run: mkdocs build
 
-      - name: Publish branch preview
+      - name: Hand the built site to the publish job
         if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+          retention-days: 1
+
+  publish:
+    # Separate from build so that only the write to gh-pages is serialized. Every
+    # workflow that writes to that branch (docs-build, docs-deploy,
+    # docs-preview-cleanup) does it in a job in the gh-pages-write group, so they
+    # queue behind each other instead of racing, while the slow builds still run in
+    # parallel. queue: max keeps every waiting write; with the default, a newly
+    # queued job cancels the one already pending, and that write would be lost.
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: gh-pages-write
+      queue: max
+    env:
+      PREVIEW_SLUG: ${{ needs.build.outputs.preview_slug }}
+      SITE_URL: ${{ needs.build.outputs.site_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Publish branch preview
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -72,7 +107,6 @@ jobs:
           commit_message: "docs preview for ${{ github.ref_name }} at ${{ github.sha }}"
 
       - name: Report the preview URL
-        if: github.event_name == 'push'
         run: |
           echo "::notice title=Documentation preview::$SITE_URL"
           echo "[documentation preview]($SITE_URL)" >> "$GITHUB_STEP_SUMMARY"
