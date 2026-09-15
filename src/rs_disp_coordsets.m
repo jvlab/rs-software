@@ -14,12 +14,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_disp (struct): options for display, with fields
+%     - opts_disp (struct): options for display, with fields to contol
 %
 %         - **Data selection**
 %         - set_select (int 1-D array): list of records to show; defaults is [1:length(data_in.ds)]
 %         - dim_select (int): dimension to show (>=2); i.e., dim_select=k results in display of the coordinates in data_in.ds{set_select}{k}; default is 3 unless only two dimensions are available; must be at least 2
-%         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available)
+%         - coord_group_size (int): number of coordinates to display together, in range [2 3]; default is min(dim_select,number of dimensions available,3)
 %         - coord_group_method (char): method of selecting coordinates
 %
 %             - 'all': (default) plot all combinations
@@ -27,9 +27,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %             - 'keepone': keep one dimension and step the rest;        [dim_select,coord_group_size]=[5,3] yields [1 2 3],[1 2 4],[1 2 5],[1 3 4],[1 3 5],[1 4 5]
 %             - 'rolling': rolling contiguous subsets;                  [dim_select,coord_group_size]=[5,3] yields [1 2 3],[2 3 4],[3 4 5],[4 5 1],[5 1 2]
 %             - 'onlylowest': only the lowest dimensions;               [dim_select,coord_group_size]=[5,3] yields [1 2 3]
-%             - 'list': specify a list in opts_disp.coord_groups, as an
-%             array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the
-%             first, {1,4,5} in the second, {1,6,7} in the third
+%             - 'list': specify a list in opts_disp.coord_groups, as an array with coord_group_size columns, e.g., opts_disp.coord_groups=[1 2 3;1 4 5;1 6 7] creates three subplots, with coordinates {1,2,3} in the first, {1,4,5} in the second, {1,6,7} in the third
 %
 %         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
@@ -117,8 +115,8 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %              - 'margin_amount' puts a margin of set_offsets_margin_amount between each dataset and the next
 %              - 'margin_fraction' puts a fractional margin of set_offsets_margin_fraction * average span of adjacent sets
 %
-%         - set_offsets_margin_amount (float): absolute margin between datasets if set_offsets='margin_amount; defaults to ones(1,dim_select); can be 0 or negative, truncated or padded to dim_select
-%         - set_offsets_margin_fraction (float): fractional margin between datasets if set_offsets='margin_fraction; defaults to zeros(1,dim_select); can be 0 or negative, truncated or padded to dim_select
+%         - set_offsets_margin_amount (float 1-D array): absolute margin between datasets if set_offsets='margin_amount; defaults to ones(1,dim_select); can be 0 or negative, truncated or padded to dim_select
+%         - set_offsets_margin_fraction (float 1-D array): fractional margin between datasets if set_offsets='margin_fraction; defaults to zeros(1,dim_select); can be 0 or negative, truncated or padded to dim_select
 %         - set_offsets_coordchoices (int or char or cell array of char): if set_offsets='margin_amount' or 'margin_fraction', this specifies which coordinate is offset; can be 'first','last','all', or a subset of [1:dim_select]; can also be a cell array of subsets
 %
 %         - **Formatting: perpendiculars from points to walls**

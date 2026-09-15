@@ -17,7 +17,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %   aux (struct): auxiliary inputs, may be omitted, with fields
 %
-%     - opts_knit (struct): options for knitting and consistency checking, with fields
+%     - opts_knit (struct): options for knitting and consistency checking, with fields to control
 %
 %         - **Transformations**
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
@@ -29,8 +29,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - **Statistics and shuffles**
 %         - if_stats (int): 1 to do statistics of variance explained, 0 does not; default is 0
 %         - nshuffs (int): number of shuffles for calculating statistics; default is 500 if if_stats=1, 0 if if_stats=0; see note below regarding statistics and plots
-%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; 
-%         default is 1; see notes below regarding statistics and Procrustes consensus algorithm
+%         - if_frozen (int): random number control for shuffles and initialization; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1; see notes below regarding statistics and Procrustes consensus algorithm
 %
 %         - **Dimension selection**
 %         - dim_max_in (int): maximum dimension of data_in.ds to use; default is maximum available across all datasets
@@ -257,7 +256,7 @@ aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 if aux.opts_knit.if_stats
     aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',500);
 else
-    aux.opts_knit=filldefault(aux.opts_knit,'nshuffs',0);
+    aux.opts_knit.nshuffs=0;
 end
 aux.opts_knit=filldefault(aux.opts_knit,'shuff_quantiles',[0.01 0.05 0.5 0.95 0.99]);
 %
@@ -399,14 +398,18 @@ end
 aux_out.opts_check=aux.opts_check;
 if aux_out.warn_bad==0
     %
-    %do dimension heuristics
+    %do dimension heuristics if more than one dataset
     %
     overlaps=1-coords_isnan;
-    h=overlap_heuristics(overlaps);
-    if h.dmax<max(aux.opts_knit.dim_list_out)
-        if_hbad=1;
+    if nsets>1
+        h=overlap_heuristics(overlaps);
+        if h.dmax<max(aux.opts_knit.dim_list_out)
+            if_hbad=1;
+        else
+            if_hbad=0;
+        end
     else
-        if_hbad=0;
+        if_hbad=0; %dimension heuristics always ok if only one set
     end
     if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
         disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...

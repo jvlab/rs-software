@@ -16,10 +16,10 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %
 %   aux (struct): a structure, can be omitted, with fields 
 %
-%     - nsets (int): number of records to read, if zero (default), then requested at console
+%     - nsets (int): number of records to read, if zero (default), then requested at console, with console option to switch to gui
 %     - opts_read (struct): can be omitted, with fields listed below
 %
-%        - if_gui (int): 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console; see note below regarding customization
+%        - if_gui (int): 1 to use graphical interface to get files if file names are not supplied (default), 0 to use console; ignored if nsets=0; see note below regarding customization
 %        - if_log (int): 1 to log progress, 0 to omit; default is 1; see note below regarding customization
 %        - if_auto (int): 1 not to ask for confirmations, 0 to ask; default is 0; see note below regarding customization
 %        - nfiles_max (int): maximum number of files to read; default is 100
