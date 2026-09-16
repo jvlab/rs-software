@@ -61,6 +61,12 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   `matlab -batch "addpath('capture/matlab'); run_capture_test"`.
 - **On Linux and macOS** the capture runs with `-nodisplay`. Without it MATLAB tries
   hardware OpenGL in batch mode and exports solid black images without failing.
+- **On Windows** the capture runs with `-wait` instead, because the `matlab` command
+  otherwise returns to the shell before MATLAB has finished, and the pages would be
+  rendered from the previous capture. Pages, the index and the specs are written with
+  Unix line endings, and demo sources are hashed with line endings normalized, so a
+  capture made on Windows matches one made on Linux or macOS. This path has not been
+  run on Windows yet; say so if it misbehaves.
 - **A demo that errors** is still captured: the error appears on its page where it
   happened, and in the index. Three demos error today, which is tracked separately.
 - Re-capturing rewrites that demo's PNGs, and every version stays in git history.

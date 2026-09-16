@@ -43,10 +43,11 @@ def test_matlab_argv_adds_nodisplay_on_macos():
     assert "-nodisplay" in matlab_argv("matlab", platform="darwin")
 
 
-def test_matlab_argv_omits_nodisplay_on_windows():
-    # Windows MATLAB rejects -nodisplay, and renders correctly without it.
+def test_matlab_argv_waits_and_omits_nodisplay_on_windows():
+    # Windows MATLAB rejects -nodisplay and renders correctly without it, but
+    # the matlab command returns before the capture finishes without -wait.
     assert matlab_argv("matlab.exe", "run_all('x')", platform="win32") == [
-        "matlab.exe", "-batch", "run_all('x')"
+        "matlab.exe", "-wait", "-batch", "run_all('x')"
     ]
 
 

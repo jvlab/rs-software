@@ -43,8 +43,22 @@ INDEX_PATH = REPO_ROOT / "capture" / "demo_capture_index.json"
 
 
 def source_hash(demo_path):
-    """Return the SHA-256 of a demo source file, as a hex string."""
-    return hashlib.sha256(Path(demo_path).read_bytes()).hexdigest()
+    """
+    Return the SHA-256 of a demo source file, as a hex string.
+
+    Line endings are normalized to \n first, so the hash describes the content
+    and not the checkout. Git for Windows converts to CRLF by default, and
+    without this a capture made on one platform would mark every demo stale on
+    another.
+
+    Args:
+        demo_path: path of the demo source file.
+
+    Returns:
+        str: the hex digest.
+    """
+    content = Path(demo_path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
 
 
 def figure_pattern(demo_name):
@@ -86,7 +100,8 @@ def save_index(index, index_path=INDEX_PATH):
     path = Path(index_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     ordered = {name: index[name] for name in sorted(index)}
-    path.write_text(json.dumps(ordered, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(ordered, indent=2) + "\n", encoding="utf-8",
+                    newline="\n")
 
 
 def index_entry(demo_path, manifest, captured_at=None):
@@ -137,7 +152,7 @@ def render_demo(demo_path, registry, page_dir=PAGE_DIR, build_dir=BUILD_DIR):
 
     page_path = Path(page_dir) / f"{demo_path.stem}.md"
     page_path.parent.mkdir(parents=True, exist_ok=True)
-    page_path.write_text(markdown, encoding="utf-8")
+    page_path.write_text(markdown, encoding="utf-8", newline="\n")
     return page_path, manifest
 
 

@@ -47,6 +47,43 @@ def test_source_hash_changes_when_the_demo_changes(tmp_path):
     assert source_hash(demo) != before
 
 
+def test_source_hash_ignores_line_endings(tmp_path):
+    # A Windows checkout has CRLF where Linux and macOS have LF, and the same
+    # demo must hash the same either way, or the freshness gate fires on every
+    # demo after a capture made on the other platform.
+    lf = tmp_path / "lf.m"
+    crlf = tmp_path / "crlf.m"
+    lf.write_bytes(DEMO_SOURCE.encode())
+    crlf.write_bytes(DEMO_SOURCE.replace("\n", "\r\n").encode())
+
+    assert source_hash(crlf) == source_hash(lf)
+
+
+def test_source_hash_still_sees_a_real_edit_in_a_crlf_file(tmp_path):
+    original = tmp_path / "a.m"
+    edited = tmp_path / "b.m"
+    original.write_bytes(DEMO_SOURCE.replace("\n", "\r\n").encode())
+    edited.write_bytes((DEMO_SOURCE + "disp('x')\n").replace("\n", "\r\n").encode())
+
+    assert source_hash(edited) != source_hash(original)
+
+
+def test_pages_and_index_are_written_with_unix_line_endings(tmp_path):
+    demo = tmp_path / "my_demo.m"
+    demo.write_text(DEMO_SOURCE)
+    build_dir = tmp_path / "build"
+    write_manifest(build_dir, "my_demo", [
+        {"id": 0, "text": "one\n", "figures": [], "error": ""},
+    ])
+    index_path = tmp_path / "index.json"
+
+    page_path, _ = render_demo(demo, {}, tmp_path / "pages", build_dir)
+    save_index({"my_demo": {"figures": 0}}, index_path)
+
+    assert b"\r\n" not in page_path.read_bytes()
+    assert b"\r\n" not in index_path.read_bytes()
+
+
 def test_figure_pattern_matches_this_demo_only():
     pattern = figure_pattern("rs_knit_coordsets_demo")
     assert pattern == "rs_knit_coordsets_demo_chunk*_fig*.png"

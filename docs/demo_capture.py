@@ -89,7 +89,8 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
 
     spec_path = Path(spec_path)
     spec_path.parent.mkdir(parents=True, exist_ok=True)
-    spec_path.write_text(json.dumps(spec, indent=2), encoding="utf-8")
+    spec_path.write_text(json.dumps(spec, indent=2), encoding="utf-8",
+                         newline="\n")
     return spec
 
 

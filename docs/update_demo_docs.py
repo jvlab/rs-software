@@ -67,14 +67,22 @@ def matlab_argv(matlab_executable, command=MATLAB_CAPTURE_COMMAND,
     Args:
         matlab_executable: the MATLAB binary to run.
         command: the MATLAB command to pass to -batch.
-        platform: sys.platform value to decide on -nodisplay; Windows MATLAB
-            does not accept that flag and does not need it.
+        platform: sys.platform value to pick the platform-specific flags.
 
     Returns:
         The argument list, as a list of str.
+
+    Notes:
+        - Off Windows: -nodisplay, or figures export as solid black.
+        - On Windows: -wait. The matlab command there starts MATLAB and returns
+          to the caller immediately, so without it this script would render
+          pages from the previous capture while the new one is still running.
+          Windows MATLAB neither accepts nor needs -nodisplay.
     """
     argv = [matlab_executable]
-    if platform != "win32":
+    if platform == "win32":
+        argv.append("-wait")        # otherwise matlab returns before it is done
+    else:
         argv.append("-nodisplay")   # otherwise figures export as solid black
     argv.extend(["-batch", command])
     return argv
