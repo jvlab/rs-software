@@ -2,19 +2,18 @@
 
 The demo pages in the documentation show what each demo prints and the figures it
 draws. Producing that needs MATLAB, so it happens **locally, on demand**, and the
-result is committed. The documentation build itself, here and in CI, needs nothing
-but Python.
+result is committed. The documentation build itself needs only Python.
 
 ## When to run it
 
 Whenever you change a file in `src/demos`, or change code that alters what a demo
-prints or plots. `docs/test_demo_captures_current.py` fails if you do not, naming
-the demos that drifted, so CI will tell you.
+prints or plots, the test `docs/test_demo_captures_current.py` will fail, indicating that
+you need to re-run the capture.
 
 ## How to run it
 
 From the repository root, with MATLAB on `PATH` (or `MATLAB` set to its full path)
-and `perceptual_space_geometry` findable (see `run_all.m`):
+and `perceptual_space_geometry` already in MATLAB's path, run:
 
 ```bash
 python docs/update_demo_docs.py rs_knit_coordsets_demo   # one demo, seconds to minutes
@@ -68,6 +67,6 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   capture made on Windows matches one made on Linux or macOS. This path has not been
   run on Windows yet; say so if it misbehaves.
 - **A demo that errors** is still captured: the error appears on its page where it
-  happened, and in the index. Three demos error today, which is tracked separately.
+  happened, and in the index.
 - Re-capturing rewrites that demo's PNGs, and every version stays in git history.
-  Capture only the demos you changed, and the repository stays small.
+  Capture only the demos you changed, so that the repository stays small.
