@@ -6,7 +6,6 @@ Two sets of hooks, pre-build and post-build
 
 Pre-build: executed before calling mkdocs. Here python scripts are run which
 - create dummy markdown files for each function
-- create the demo markdown page listing all available demos
 
 Demo pages are not built here: they are rendered by docs/render_demo_pages.py
 when the demos are captured locally, and the pages and figures are committed.
@@ -36,8 +35,7 @@ import hook_site_config as site_config
 import function_registry
 from function_links import FUNCTION_LINKS
 
-scripts = ["docs/create_function_md_files.py",
-           "docs/list_demos.py"]
+scripts = ["docs/create_function_md_files.py"]
            
 log = logging.getLogger("mkdocs.hooks.seealso")
 

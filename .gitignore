@@ -18,7 +18,6 @@ site/
 # docs/mfiles/demos are NOT: they are rendered when a demo is captured locally
 # and committed, because the documentation build has no MATLAB.
 docs/mfiles/*.md
-docs/demos.md
 *.pyc
 
 # capture scratch: specs and manifests of the last local run

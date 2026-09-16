@@ -3,5 +3,4 @@
 # mfiles/demos is NOT listed: those pages are committed content, rendered when a
 # demo is captured, so a re-render should trigger a rebuild while serving.
 mfiles/*.md
-demos.md
 
