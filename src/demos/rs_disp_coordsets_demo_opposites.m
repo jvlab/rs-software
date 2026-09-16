@@ -1,9 +1,18 @@
 %rs_disp_coordsets_demo_opposites:  display datasets in a structured domain (stimulus coordinates and rays)
 %
-% run after rs_read_coorddata_demo_opposites
+% Normally 'data_out', 'aux_out' and 'nfiles' are already in the workspace, having been
+% created by rs_read_coorddata_demo_opposites. If they are not, that demo is run first,
+% reading the three built-in coordinate files, so that this script can also be run
+% standalone.
 %
-% See also:  RS_DISP_COORDSETS
+% See also:  RS_DISP_COORDSETS, RS_READ_COORDDATA_DEMO_OPPOSITES.
 %
+if ~exist('data_out') | ~exist('aux_out') | ~exist('nfiles')
+    disp('no data found; running rs_read_coorddata_demo_opposites');
+    which_read=1; %read the three coordinate files sequentially
+    if_builtin=1; %use the built-in file names
+    rs_read_coorddata_demo_opposites;
+end
 dim_list=getinp('dimension list','d',[2 3],3);  %#demo-input: 3
 aux_disp=struct;
 for ifile=1:nfiles %label each dataset by subject ID

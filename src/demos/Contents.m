@@ -5,7 +5,7 @@
 %
 %   rs_disp_coordsets_demo: displahy of single coordinate sets
 %   rs_disp_coordsets_demo_cars: display a demo unstructured coordinate set
-%   rs_disp_coordsets_demo_oppositees: display a demo structured coordinate set, 3 dimensions, with and without alignment
+%   rs_disp_coordsets_demo_opposites: display a demo structured coordinate set, 3 dimensions, with and without alignment
 %
 %   rs_knit_coordsets_demo: knitting together sets with partially overlapping stimuli
 %
