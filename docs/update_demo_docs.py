@@ -2,13 +2,18 @@
 """
 Update the demo documentation capture.
 
-Builds the capture specs and runs the local MATLAB capture, so the demo pages
-have fresh console output and figures. It does NOT build or serve the site; run
-mkdocs yourself afterwards (for example "mkdocs serve") to view the result.
+Builds the capture specs, runs the local MATLAB capture, and renders the demo
+pages from the result. It does NOT build or serve the site; run mkdocs yourself
+afterwards (for example "mkdocs serve") to view the result.
 
 Stages:
     1. build the capture specs   (docs/build_demo_specs.py)
     2. run the MATLAB capture    (capture/matlab/run_all.m)
+    3. render the demo pages     (docs/render_demo_pages.py)
+
+The pages and figures it writes are committed, because the documentation build
+has no MATLAB. Commit them together with the demo you changed; the tests in
+docs/test_demo_captures_current.py fail when they drift apart.
 
 Usage, from the repository root:
 
@@ -28,9 +33,8 @@ create a GL context in batch mode, and exports every figure as a solid black
 image without failing. -nodisplay renders in software instead, which is also
 what a headless CI runner does.
 
-This is for local use. In CI the same two stages run as separate workflow
-steps, using matlab-actions instead of a local MATLAB, so this script is not
-called there.
+This is for local use only: CI has no MATLAB, and builds the site from the pages
+and figures committed here. See capture/README.md.
 
 @author: G. Aguilar - Feb 2026
 """
@@ -39,6 +43,10 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_demo_specs import demo_paths  # noqa: E402
+from render_demo_pages import clear_figures, render  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SPEC_SCRIPT = "docs/build_demo_specs.py"
@@ -77,6 +85,25 @@ def build_specs(demos=()):
     subprocess.run(specs_argv(demos=demos), cwd=REPO_ROOT, check=True)
 
 
+def clear_stale_figures(demos=()):
+    """
+    Delete the figures of the demos about to be captured.
+
+    A demo that now draws fewer figures would otherwise leave images of its
+    previous capture behind, and those would be committed along with the rest.
+
+    Args:
+        demos: demo names to clear; empty means every demo.
+
+    Returns:
+        The number of image files removed.
+    """
+    removed = sum(clear_figures(Path(demo).stem) for demo in demo_paths(demos))
+    if removed:
+        print(f"[update-demo-docs] removed {removed} figure(s) of a previous capture")
+    return removed
+
+
 def run_capture(matlab_executable):
     """Run the MATLAB capture; return the process exit code (nonzero on failure)."""
     print(f"[update-demo-docs] running MATLAB capture with '{matlab_executable}' ...")
@@ -98,12 +125,18 @@ def run_capture(matlab_executable):
 def main(argv=None):
     demos = list(sys.argv[1:] if argv is None else argv)
     build_specs(demos)
+    clear_stale_figures(demos)
     exit_code = run_capture(os.environ.get("MATLAB", "matlab"))
-    if exit_code == 0:
-        print("[update-demo-docs] done. Run 'mkdocs serve' to preview the pages.")
-    else:
+    if exit_code != 0:
         print("[update-demo-docs] capture finished with problems; see output above.")
-    return exit_code
+        return exit_code
+
+    # Render even when a demo errored: the manifest records the error, and the
+    # page shows it where it happened, which is how the failure stays visible.
+    render(demos)
+    print("[update-demo-docs] done. Commit the demo pages and figures, then run "
+          "'mkdocs serve' to preview them.")
+    return 0
 
 
 if __name__ == "__main__":
