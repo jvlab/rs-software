@@ -51,7 +51,6 @@ from render_demo_pages import clear_figures, render  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SPEC_SCRIPT = "docs/build_demo_specs.py"
 MATLAB_CAPTURE_COMMAND = "addpath('capture/matlab'); run_all('build/capture')"
-CAPTURE_TIMEOUT_SECONDS = 30 * 60
 
 
 def specs_argv(python_executable=sys.executable, demos=()):
@@ -113,19 +112,21 @@ def clear_stale_figures(demos=()):
 
 
 def run_capture(matlab_executable):
-    """Run the MATLAB capture; return the process exit code (nonzero on failure)."""
+    """
+    Run the MATLAB capture; return the process exit code (nonzero on failure).
+
+    The capture is left to run for as long as it takes. A demo with statistics can
+    take half an hour on its own, and this runs locally and attended, so a wall
+    clock limit would only ever cut a healthy run short. Interrupt it with Ctrl-C
+    if it goes wrong. A prompt with no demo-input directive does not hang: the
+    input() shadow raises democapture:tooFewAnswers when its answers run out.
+    """
     print(f"[update-demo-docs] running MATLAB capture with '{matlab_executable}' ...")
     try:
-        result = subprocess.run(
-            matlab_argv(matlab_executable),
-            cwd=REPO_ROOT, timeout=CAPTURE_TIMEOUT_SECONDS,
-        )
+        result = subprocess.run(matlab_argv(matlab_executable), cwd=REPO_ROOT)
     except FileNotFoundError:
         print(f"[update-demo-docs] MATLAB executable '{matlab_executable}' not "
               "found. Set the MATLAB env var to its full path.")
-        return 1
-    except subprocess.TimeoutExpired:
-        print("[update-demo-docs] MATLAB capture timed out.")
         return 1
     return result.returncode
 
