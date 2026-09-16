@@ -4,7 +4,7 @@
 %
 % See also:  RS_DISP_COORDSETS
 %
-dim_list=getinp('dimension list','d',[2 3],3);
+dim_list=getinp('dimension list','d',[2 3],3);  %#demo-input: 3
 aux_disp=struct;
 for ifile=1:nfiles %label each dataset by subject ID
     aux_disp.opts_disp.set_labels{ifile}=data_out.sets{ifile}.subj_id;
