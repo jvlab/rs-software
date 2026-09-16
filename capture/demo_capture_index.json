@@ -18,16 +18,16 @@
     "error": null
   },
   "rs_disp_coordsets_demo_cars": {
-    "source_sha256": "1ea3a212dc4d7e378a40861910a3398720f65ca3fb767ef4f5862de0fbd24013",
-    "captured_at": "2026-09-16T00:34:50+00:00",
-    "figures": 0,
-    "error": "Unable to resolve the name 'data_out.sets'."
+    "source_sha256": "7ddece7b7f3bc126e413cd2c61de028813938d4add1d672bdeaa95676b1c446c",
+    "captured_at": "2026-09-16T01:00:31+00:00",
+    "figures": 3,
+    "error": null
   },
   "rs_disp_coordsets_demo_opposites": {
-    "source_sha256": "5d27825858e0694c2fffbb7b6e457be2b78926f18e17d498b54c3e6baa7ac3f4",
-    "captured_at": "2026-09-16T00:34:50+00:00",
-    "figures": 0,
-    "error": "Unrecognized function or variable 'nfiles'."
+    "source_sha256": "278bfe295519b8ce295f1260911668ce08660c577de1008e9eec0edccb41b766",
+    "captured_at": "2026-09-16T01:00:31+00:00",
+    "figures": 9,
+    "error": null
   },
   "rs_knit_coordsets_demo": {
     "source_sha256": "ed8fa1f12f94dbffb958f166154dff58f70d4fa440e0bf297bd282c1ec5572f9",
@@ -37,13 +37,13 @@
   },
   "rs_read_coorddata_demo_cars": {
     "source_sha256": "8f8cfbc032c13b3bf5e767a7203c272cf7a6c0b8e04c358b0a85f6c18cff796d",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-16T01:00:31+00:00",
     "figures": 0,
     "error": null
   },
   "rs_read_coorddata_demo_opposites": {
-    "source_sha256": "cdab0f82adb62a066d93197073d20a255bfd065468fe2633e42913528daccd41",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "source_sha256": "4f7ba20fe8cd7d218a882576217d150e84f030b6be137f4a79e020d3c7735bab",
+    "captured_at": "2026-09-16T01:00:31+00:00",
     "figures": 0,
     "error": null
   },

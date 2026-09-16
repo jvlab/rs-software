@@ -5,6 +5,10 @@ data file: 16 stimuli, 3 pairs of opposites
 also demonstrates interactive choice of files
 also demonstates quadratic form model
 
+'which_read' and 'if_builtin' are read from the workspace when they are already defined,
+and requested at the console otherwise. That is how rs_disp_coordsets_demo_opposites runs
+this script unattended when it needs the data.
+
 See also:  [rs_read_coorddata](rs_read_coorddata.md), [rs_get_coordsets](rs_get_coordsets.md), [rs_concat_coordsets](rs_concat_coordsets.md)
 
 ```matlab
@@ -32,8 +36,8 @@ disp('1-> read data files sequentially with rs_read_coorddata');
 disp('2-> read several data files at once with rs_get_coordsets');
 disp('3-> read several datasets created with quadratic form models with rs_get_coordsets');
 disp('4-> read mix of data files and datasets created with quadratic form models with rs_get_coordsets');
-which_read=getinp('choice','d',[1 4],1);
-if_builtin=getinp('1 for built-in file names, 0 to specify via gui','d',[0 1],1);
+if ~exist('which_read') which_read=getinp('choice','d',[1 4],1); end
+if ~exist('if_builtin') if_builtin=getinp('1 for built-in file names, 0 to specify via gui','d',[0 1],1); end
 ```
 
 Output:
