@@ -64,8 +64,6 @@ _ANCHOR_RE   = re.compile(r'<a\b[^>]*>.*?</a>', re.DOTALL)
 
 
 def on_config(config):
-    site_config.update_site_prefix(config)
-
     FUNCTION_REGISTRY.clear()
     function_registry.build(registry=FUNCTION_REGISTRY)
     for source_root in function_registry.SOURCE_ROOTS:
@@ -80,51 +78,55 @@ def on_page_content(html, page, config, files):
     if not FUNCTION_REGISTRY and not FUNCTION_LINKS:
         return html
 
+    # Every link below is built relative to this page, so the site works wherever
+    # it is served; see hook_site_config.
+    prefix = site_config.root_relative_prefix(page)
+
     # Linkify <code>funcname</code> anywhere on the page
-    html = _linkify_code_in_content(html)
+    html = _linkify_code_in_content(html, prefix)
     
     # Likify "See also"
     html = _DETAILS_SEEALSO_RE.sub(
-        lambda m: _linkify_block(m.group(1)), html
+        lambda m: _linkify_block(m.group(1), prefix), html
     )
     html = _INLINE_SEEALSO_RE.sub(
-        lambda m: _linkify_block(m.group(1)), html
+        lambda m: _linkify_block(m.group(1), prefix), html
     )
     
     return html
 
 
-def _linkify_block(block_html: str) -> str:
+def _linkify_block(block_html: str, prefix: str) -> str:
     # Only process text inside <p> tags, leave all other HTML untouched
     return re.sub(
         r'(<p>)(.*?)(</p>)',
-        lambda m: m.group(1) + _linkify_text(m.group(2)) + m.group(3),
+        lambda m: m.group(1) + _linkify_text(m.group(2), prefix) + m.group(3),
         block_html,
         flags=re.DOTALL,
     )
 
 
-def _linkify_text(text: str) -> str:
+def _linkify_text(text: str, prefix: str) -> str:
     # Split on HTML tags, only process text nodes (even-indexed parts)
     parts = re.split(r'(<[^>]+>)', text)
     result = []
     for i, part in enumerate(parts):
         if i % 2 == 0:
             # Text node — apply identifier replacement
-            result.append(_IDENTIFIER_RE.sub(lambda m: _make_link(m.group(1)), part))
+            result.append(_IDENTIFIER_RE.sub(lambda m: _make_link(m.group(1), prefix), part))
         else:
             # HTML tag — leave untouched
             result.append(part)
     return "".join(result)
 
 
-def _make_link(name: str) -> str:
+def _make_link(name: str, prefix: str) -> str:
     lower = name.lower()
     
     # Your own functions take priority
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
+        url = f"{prefix}function-index-matlab/#{full_id}"
         return f'<a href="{url}">{full_id}</a>'
 
     # Fall back to MATLAB builtin
@@ -135,31 +137,32 @@ def _make_link(name: str) -> str:
     return name
 
 
-def _linkify_code_in_content(html: str) -> str:
+def _linkify_code_in_content(html: str, prefix: str) -> str:
     """
     Wrap <code>funcname</code> with a link for any function name found
     in FUNCTION_REGISTRY. Skips occurrences already inside an <a> tag.
     """
+    replace = lambda match: _replace_code_tag(match, prefix)
     result = []
     last = 0
     for anchor in _ANCHOR_RE.finditer(html):
         # Process the segment *before* this <a>…</a> block
         segment = html[last:anchor.start()]
-        result.append(_CODE_TAG_RE.sub(_replace_code_tag, segment))
+        result.append(_CODE_TAG_RE.sub(replace, segment))
         # Keep the <a>…</a> block completely untouched
         result.append(anchor.group(0))
         last = anchor.end()
     # Remaining tail after the last <a>
-    result.append(_CODE_TAG_RE.sub(_replace_code_tag, html[last:]))
+    result.append(_CODE_TAG_RE.sub(replace, html[last:]))
     return "".join(result)
 
 
-def _replace_code_tag(match: re.Match) -> str:
+def _replace_code_tag(match: re.Match, prefix: str) -> str:
     name  = match.group(1)
     lower = name.lower()
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
+        url = f"{prefix}function-index-matlab/#{full_id}"
         return f'<a href="{url}"><code>{name}</code></a>'
     return match.group(0)   # leave unchanged
     

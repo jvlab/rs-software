@@ -10,7 +10,6 @@ theme:
 #    - navigation.sections
 
 hooks:
-  - docs/hook_site_config.py
   - docs/hooks.py
   - docs/hook_ignore.py
   - docs/hook_format_nested_args.py
