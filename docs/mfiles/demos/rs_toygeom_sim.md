@@ -2,14 +2,12 @@
 Geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
 
 This illustrates fitting of geometric models via creation of simulated coordinate set structures.
-The defaults below are deliberately small, so that this script runs standalone in a
-reasonable time: two transforms, two paradigms, and model fitting without statistics.
-Any of the parameters may be set in the workspace before running, in which case the
-default is not applied; rs_toygeom_scenario*.m does exactly that, supplying richer
-parameter sets, and then calls this script.
+It is intended that several of the parameters, especially paradigm_names, transform_names, are edited,
+or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.
 
-Because parameters are taken from the workspace when they are already defined, run this
-from a clear workspace unless you intend to supply parameters yourself.
+Any of the parameters may be set in the workspace before running, in which case the default
+is not applied; that is what rs_toygeom_scenario*.m does. So run this from a clear workspace
+unless you intend to supply parameters yourself.
 
 Constructs several transformations, designated by the strings in transform_names:
     null: the identity
@@ -46,14 +44,14 @@ See also:  [rs_import_coordsets](rs_import_coordsets.md), [rs_disp_coordsets](rs
 these are the main simulation parameters that may be edited, or have values set before running
 
 ```matlab
-if ~exist('transform_names') transform_names={'procrustes','affine'}; end %a small default set; available names are in transform_names_avail below
+if ~exist('transform_names') transform_names={'null','procrustes','affine','projective','pwaffine'}; end %some may be deleted
 if ~exist('affine_mag') affine_mag=0.5; end %magnitude of distortion in affine transforms
 if ~exist('projective_mag') projective_mag=0.1; end %controls amount of distortion in projective transform
 if ~exist('pwaffine_mag') pwaffine_mag=0.25; end %controls difference in linear transforms of piecewise affine
 ```
 
 ```matlab
-if ~exist('paradigm_names') paradigm_names={'Axes','Random'}; end %a small default set; others are Rings_C12, Rings_C13, Rings_C23, RandomAndAxisEnds
+if ~exist('paradigm_names') paradigm_names={'Axes','Rings_C12','Rings_C13','Rings_C23','Random','RandomAndAxisEnds'}; end %some may be deleted
 if ~exist('axis_samples') axis_samples=[2 4 6 8]; end %sample points in each direction along each axis
 if ~exist('ring_radii') ring_radii=[4 6 8]; end %radii for the rings
 if ~exist('ring_angles') ring_angles=8; end %number of sample points in a ring
@@ -206,7 +204,7 @@ disp(sprintf(' %2.0f transforms set up, on %3.0f coordinates.',ntransforms,ncoor
 Output:
 
 ```text
-  2 transforms set up, on   3 coordinates.
+  5 transforms set up, on   3 coordinates.
 ```
 
 define the number of subjects and levels of noise for each
@@ -357,7 +355,11 @@ Output:
 
 ```text
 coordinate sets created for paradigm Axes
+coordinate sets created for paradigm Rings_C12
+coordinate sets created for paradigm Rings_C13
+coordinate sets created for paradigm Rings_C23
 coordinate sets created for paradigm Random
+coordinate sets created for paradigm RandomAndAxisEnds
 ```
 
 create the type names, e.g., conceptual coordinate [-3 0 4] -> 'am3 cp4'
@@ -420,7 +422,11 @@ Output:
 
 ```text
 ray structure created for paradigm Axes
+ray structure created for paradigm Rings_C12
+ray structure created for paradigm Rings_C13
+ray structure created for paradigm Rings_C23
 ray structure skipped for paradigm Random
+ray structure skipped for paradigm RandomAndAxisEnds
 ```
 
 set up a page for each paradigm, with space for multiple subplots,
@@ -476,6 +482,14 @@ end
 ![rs_toygeom_sim_chunk35_fig1](../../images/demos/rs_toygeom_sim_chunk35_fig1.png)
 
 ![rs_toygeom_sim_chunk35_fig2](../../images/demos/rs_toygeom_sim_chunk35_fig2.png)
+
+![rs_toygeom_sim_chunk35_fig3](../../images/demos/rs_toygeom_sim_chunk35_fig3.png)
+
+![rs_toygeom_sim_chunk35_fig4](../../images/demos/rs_toygeom_sim_chunk35_fig4.png)
+
+![rs_toygeom_sim_chunk35_fig5](../../images/demos/rs_toygeom_sim_chunk35_fig5.png)
+
+![rs_toygeom_sim_chunk35_fig6](../../images/demos/rs_toygeom_sim_chunk35_fig6.png)
 
 apply each subject's transform to the stimuli in each stimulus set, and display
 
@@ -572,10 +586,36 @@ end
 Output:
 
 ```text
+dataspace created for paradigm                 Axes and transform null
 dataspace created for paradigm                 Axes and transform procrustes
 dataspace created for paradigm                 Axes and transform affine
+dataspace created for paradigm                 Axes and transform projective
+dataspace created for paradigm                 Axes and transform pwaffine
+dataspace created for paradigm            Rings_C12 and transform null
+dataspace created for paradigm            Rings_C12 and transform procrustes
+dataspace created for paradigm            Rings_C12 and transform affine
+dataspace created for paradigm            Rings_C12 and transform projective
+dataspace created for paradigm            Rings_C12 and transform pwaffine
+dataspace created for paradigm            Rings_C13 and transform null
+dataspace created for paradigm            Rings_C13 and transform procrustes
+dataspace created for paradigm            Rings_C13 and transform affine
+dataspace created for paradigm            Rings_C13 and transform projective
+dataspace created for paradigm            Rings_C13 and transform pwaffine
+dataspace created for paradigm            Rings_C23 and transform null
+dataspace created for paradigm            Rings_C23 and transform procrustes
+dataspace created for paradigm            Rings_C23 and transform affine
+dataspace created for paradigm            Rings_C23 and transform projective
+dataspace created for paradigm            Rings_C23 and transform pwaffine
+dataspace created for paradigm               Random and transform null
 dataspace created for paradigm               Random and transform procrustes
 dataspace created for paradigm               Random and transform affine
+dataspace created for paradigm               Random and transform projective
+dataspace created for paradigm               Random and transform pwaffine
+dataspace created for paradigm    RandomAndAxisEnds and transform null
+dataspace created for paradigm    RandomAndAxisEnds and transform procrustes
+dataspace created for paradigm    RandomAndAxisEnds and transform affine
+dataspace created for paradigm    RandomAndAxisEnds and transform projective
+dataspace created for paradigm    RandomAndAxisEnds and transform pwaffine
 ```
 
 optinally align and knit the stimuli across paradigms
@@ -649,7 +689,7 @@ paradigms_all=fieldnames(sims); %includes original paradigms and knitted
 if ~exist('opts_geof') opts_geof=struct; end
 opts_geof=filldefault(opts_geof,'model_list',model_list);
 opts_geof=filldefault(opts_geof,'dimpairs_method','all');
-opts_geof=filldefault(opts_geof,'if_stats',0); %statistics are slow; the scenarios that need them set this to 1
+opts_geof=filldefault(opts_geof,'if_stats',1);
 opts_geof=filldefault(opts_geof,'nshuffs',20);
 opts_geof=filldefault(opts_geof,'if_nestbymodel',-1);
 opts_geof=filldefault(opts_geof,'if_nestbydim',-1);
@@ -687,11 +727,40 @@ Output:
 
 ```text
  
+modeling transform                 null from stimulus space to subject space with paradigm                 Axes
+modeling transform                 null from stimulus space to subject space with paradigm            Rings_C12
+modeling transform                 null from stimulus space to subject space with paradigm            Rings_C13
+modeling transform                 null from stimulus space to subject space with paradigm            Rings_C23
+modeling transform                 null from stimulus space to subject space with paradigm               Random
+modeling transform                 null from stimulus space to subject space with paradigm    RandomAndAxisEnds
+ 
 modeling transform           procrustes from stimulus space to subject space with paradigm                 Axes
+modeling transform           procrustes from stimulus space to subject space with paradigm            Rings_C12
+modeling transform           procrustes from stimulus space to subject space with paradigm            Rings_C13
+modeling transform           procrustes from stimulus space to subject space with paradigm            Rings_C23
 modeling transform           procrustes from stimulus space to subject space with paradigm               Random
+modeling transform           procrustes from stimulus space to subject space with paradigm    RandomAndAxisEnds
  
 modeling transform               affine from stimulus space to subject space with paradigm                 Axes
+modeling transform               affine from stimulus space to subject space with paradigm            Rings_C12
+modeling transform               affine from stimulus space to subject space with paradigm            Rings_C13
+modeling transform               affine from stimulus space to subject space with paradigm            Rings_C23
 modeling transform               affine from stimulus space to subject space with paradigm               Random
+modeling transform               affine from stimulus space to subject space with paradigm    RandomAndAxisEnds
+ 
+modeling transform           projective from stimulus space to subject space with paradigm                 Axes
+modeling transform           projective from stimulus space to subject space with paradigm            Rings_C12
+modeling transform           projective from stimulus space to subject space with paradigm            Rings_C13
+modeling transform           projective from stimulus space to subject space with paradigm            Rings_C23
+modeling transform           projective from stimulus space to subject space with paradigm               Random
+modeling transform           projective from stimulus space to subject space with paradigm    RandomAndAxisEnds
+ 
+modeling transform             pwaffine from stimulus space to subject space with paradigm                 Axes
+modeling transform             pwaffine from stimulus space to subject space with paradigm            Rings_C12
+modeling transform             pwaffine from stimulus space to subject space with paradigm            Rings_C13
+modeling transform             pwaffine from stimulus space to subject space with paradigm            Rings_C23
+modeling transform             pwaffine from stimulus space to subject space with paradigm               Random
+modeling transform             pwaffine from stimulus space to subject space with paradigm    RandomAndAxisEnds
 ```
 
 ```matlab

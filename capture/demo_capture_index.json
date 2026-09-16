@@ -78,9 +78,9 @@
     "error": null
   },
   "rs_toygeom_sim": {
-    "source_sha256": "5a6ffe7adeca0cf23496dc219d7bfe47502ce0f557dccefc05039e4f374f06fc",
-    "captured_at": "2026-09-16T00:34:50+00:00",
-    "figures": 2,
+    "source_sha256": "8f02ed6863a8d6053013644b4e2694ef726f7d2a15aafd81f33bd19d41e9527e",
+    "captured_at": "2026-09-16T12:09:14+00:00",
+    "figures": 6,
     "error": null
   },
   "rs_xform_coordsets_demo": {
