@@ -46,6 +46,6 @@ result = compare(resp1, rep1, stims1, resp2, rep2, stims2,
 By default each surrogate seeds deterministically from its own index, so re-running with the same
 `n_surrogates` reproduces the same surrogate set. For the real-data fit specifically, control the
 starting point with `rng_control.initialize_random_state(if_frozen)` before calling `compare` — see
-[Comparing RS → Streamlit option](comparing-rs-streamlit.md) for what each `if_frozen` value means.
+[Comparing RS → Python tools UI](comparing-rs-streamlit.md) for what each `if_frozen` value means.
 
 For the full function reference, see [Comparing RS → Function reference](function-index-python.md).

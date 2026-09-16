@@ -1,7 +1,7 @@
-# File conversion — Streamlit option
+# File conversion — Python tools UI (web-based)
 
-Browser-based converters — no installation required. Each conversion tool is now its own
-standalone app.
+Browser-based converters — no installation required to use the hosted versions below. Each
+conversion tool is its own standalone app.
 
 ## Live apps
 
@@ -13,8 +13,12 @@ standalone app.
 | Choice → Coordinates | [choicetocoord.streamlit.app](https://choicetocoord.streamlit.app/) | `run_model_fitting_ui.py` |
 
 > Note: apps may be asleep if inactive — click the link and wait a moment for them to wake up.
+> The hosted versions run on limited, shared resources — best for small datasets and a quick
+> look, not a final fit.
 
 ## Running locally
+
+Faster than the hosted versions, and not limited by their shared resources:
 
 ```bash
 cd rs-software
@@ -93,4 +97,4 @@ Fit an MDS perceptual map from a choice file and download the result as a coordi
 **Random seed:** choose "Random each run" for normal use, or "Same every run" / "Custom offset"
 for a reproducible result — useful when checking output against a benchmark.
 
-For the equivalent Python functions, see [File conversion → Python option](file-conversion-python.md).
+For the equivalent Python functions, see [File conversion → Python](file-conversion-python.md).

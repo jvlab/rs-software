@@ -85,12 +85,14 @@ nav:
     - Demos (MATLAB): demos.md
     - Function index: function-index-matlab.md
   - Comparing RS:
-    - Python option: comparing-rs-python.md
-    - Streamlit option: comparing-rs-streamlit.md
+    - Python:
+      - Script: comparing-rs-python.md
+      - Python tools UI (web-based): comparing-rs-streamlit.md
     - Function reference: function-index-python.md
   - File conversion:
-    - Python option: file-conversion-python.md
-    - Streamlit option: file-conversion-streamlit.md
+    - Python:
+      - Script: file-conversion-python.md
+      - Python tools UI (web-based): file-conversion-streamlit.md
     - Function reference: function-index-python.md
   - File formats, data structures, and domains:
     - File formats: file-formats.md

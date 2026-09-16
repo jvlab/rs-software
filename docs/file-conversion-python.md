@@ -47,6 +47,6 @@ print(f"{len(resp)} triadic trials from OOO data")
 
 Fits an MDS perceptual map from a choice file. See `fit_brightness_ooo.run_mds_single_dim` and
 `build_mat_output` for the underlying functions, or
-[File conversion → Streamlit option](file-conversion-streamlit.md) for the no-code version.
+[File conversion → Python tools UI](file-conversion-streamlit.md) for the no-code version.
 
 For the full function reference, see [File conversion → Function reference](function-index-python.md).

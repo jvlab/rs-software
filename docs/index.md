@@ -10,7 +10,7 @@ A "representational space" is a construct in which elements in a domain are poin
 
 The package has two main components that may be used together or independently. One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. Each of the two components of the package has its own set of installation instructions, demos and samples. As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel.
 
-For creation of representational spaces, implementations are provided in Python ??, via a Matlab wrapper over Python code ??, and web-based via Streamlit (no installation needed).
+For creation of representational spaces, implementations are provided in Python ??, via a Matlab wrapper over Python code ??, and web-based via the Python tools UI (no installation needed for the hosted version).
 
 For manipulation and visualization of representational spaces, implementations are available in Matlab ?? or via a Python wrapper over Matlab code ??.
 

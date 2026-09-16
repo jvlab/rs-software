@@ -1,18 +1,13 @@
 ## Installation and Set-up
 
 These tools cover comparing representational spaces (Surrogate MDS analysis) and converting between
-file formats (OOO ↔ triadic, `.mat` ↔ NumPy, choices → coordinates). They're available two ways:
-as importable Python functions, or as browser-based Streamlit apps that need no installation at all.
+file formats (OOO ↔ triadic, `.mat` ↔ NumPy, choices → coordinates). They're all part of the Python
+toolkit, available two ways: as importable functions in your own scripts, or through the **Python
+tools UI** — a browser-based version of the same tools.
 
-### Option 1: Streamlit apps (no installation)
+## Python
 
-The fastest way to use these tools — nothing to install, runs in your browser. See
-[Comparing RS → Streamlit option](comparing-rs-streamlit.md) and
-[File conversion → Streamlit option](file-conversion-streamlit.md) for the live links.
-
-### Option 2: Python package
-
-If you want to call these tools directly from your own Python scripts:
+### Install the package
 
 ```bash
 pip install jvlab-rs
@@ -26,9 +21,18 @@ cd rs-software
 pip install -e .
 ```
 
-### Option 3: Run the Streamlit apps locally
+Use this if you want to call these tools directly from your own Python scripts. See
+[Comparing RS → Python](comparing-rs-python.md) and [File conversion → Python](file-conversion-python.md).
 
-If you'd rather run the same apps on your own machine instead of the hosted versions:
+### Python tools UI (web-based)
+
+The same tools, running in your browser. See
+[Comparing RS → Python tools UI](comparing-rs-streamlit.md) and
+[File conversion → Python tools UI](file-conversion-streamlit.md) for the live links.
+
+**The hosted version needs no installation** — just open a link and use it. Running it on your own
+machine instead is faster and isn't limited by the hosted version's shared resources, at the cost
+of one extra setup step:
 
 ```bash
 cd rs-software
@@ -37,5 +41,5 @@ streamlit run app.py
 ```
 
 Then open `http://localhost:8501` in your browser. Each conversion tool is also its own standalone
-app — see [File conversion → Streamlit option](file-conversion-streamlit.md) for the individual
+app — see [File conversion → Python tools UI](file-conversion-streamlit.md) for the individual
 filenames (`app_ooo.py`, `app_matnpy.py`, `run_model_fitting_ui.py`) if you only need one.

@@ -1,6 +1,7 @@
-# Comparing RS — Streamlit option
+# Comparing RS — Python tools UI (web-based)
 
-A browser-based interface for the Surrogate MDS comparison — no installation required.
+A browser-based interface for the Surrogate MDS comparison — no installation required to use the
+hosted version below.
 
 ## Live app
 
@@ -9,8 +10,12 @@ A browser-based interface for the Surrogate MDS comparison — no installation r
 | Surrogate MDS Analysis | [eih27-rs-software-app-streamlit-ui-n69iyq.streamlit.app](https://eih27-rs-software-app-streamlit-ui-n69iyq.streamlit.app/) |
 
 > Note: the app may be asleep if inactive — click the link and wait a moment for it to wake up.
+> The hosted version runs on limited, shared resources — it's meant for small datasets and a
+> quick look, not a final fit.
 
 ## Running locally
+
+Faster than the hosted version, and not limited by its shared resources:
 
 ```bash
 cd rs-software
@@ -48,4 +53,4 @@ statistically meaningful.
 (surrogates are already seeded deterministically per-surrogate) — choose "Random each run" for
 normal use, or "Same every run" / "Custom offset" for a reproducible result.
 
-For the equivalent Python function, see [Comparing RS → Python option](comparing-rs-python.md).
+For the equivalent Python function, see [Comparing RS → Python](comparing-rs-python.md).
