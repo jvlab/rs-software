@@ -45,6 +45,19 @@ def test_source_files_skips_demos_and_tests(tmp_path):
     assert "rs_geofit_test.m" not in names
 
 
+def test_source_files_skips_excluded_folders_whatever_their_case(tmp_path):
+    # Windows keeps the case a folder was created with, and matching is case
+    # insensitive there, so a checkout could present "Demos" rather than "demos".
+    src = tmp_path / "src"
+    (src / "Demos").mkdir(parents=True)
+    (src / "TESTS").mkdir()
+    (src / "rs_geofit.m").write_text("function rs_geofit()\n")
+    (src / "Demos" / "rs_toygeom_sim.m").write_text("% a demo\n")
+    (src / "TESTS" / "rs_geofit_test.m").write_text("% a test\n")
+
+    assert [p.name for p in source_files(src)] == ["rs_geofit.m"]
+
+
 def test_source_files_skips_contents_files(tmp_path):
     src = build_src(tmp_path)
     assert not any(p.stem.lower() == "contents" for p in source_files(src))

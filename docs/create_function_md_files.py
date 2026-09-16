@@ -26,7 +26,8 @@ from pathlib import Path
 SRC_DIR = Path("src")
 OUTPUT_DIR = Path("docs", "mfiles")
 
-# Folders under src whose .m files get no function page.
+# Folders under src whose .m files get no function page. Compared in lower case,
+# since Windows preserves whatever case the folder was created with.
 EXCLUDE_DIRS = ("demos", "tests")
 
 # Files that document a folder or the project rather than a function.
@@ -49,7 +50,7 @@ def source_files(src_dir=SRC_DIR, exclude_dirs=EXCLUDE_DIRS, exclude_stems=EXCLU
     src_dir = Path(src_dir)
     found = list(src_dir.glob("*.m"))
     for subfolder in sorted(p for p in src_dir.glob("*") if p.is_dir()):
-        if subfolder.name in exclude_dirs:
+        if subfolder.name.lower() in exclude_dirs:
             continue
         found.extend(subfolder.glob("*.m"))
 
