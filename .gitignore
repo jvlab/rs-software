@@ -14,9 +14,18 @@ junk*.*
 *.asv
 site/
 *__pycache__*
-docs/mfiles
-docs/mfiles/demos
+# Function pages are generated on every build. The demo pages under
+# docs/mfiles/demos are NOT: they are rendered when a demo is captured locally
+# and committed, because the documentation build has no MATLAB.
+docs/mfiles/*.md
 docs/demos.md
 *.pyc
+
+# capture scratch: specs and manifests of the last local run
+build/
+
+# a perceptual_space_geometry checkout placed inside the repository;
+# run_all.m picks it up from here
+perceptual_space_geometry
 
 

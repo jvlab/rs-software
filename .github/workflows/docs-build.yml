@@ -29,5 +29,11 @@ jobs:
           path: ~/.cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python
+      - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python pytest
+      - name: Check the documentation helpers and the committed demo captures
+        # Demos are captured locally, because they need MATLAB, and their
+        # pages and figures are committed. test_demo_captures_current.py is
+        # what stops a demo being edited without a fresh capture. Scoped to
+        # docs/ because src/rs_py has a failing test unrelated to the docs.
+        run: python -m pytest docs
       - run: mkdocs build
