@@ -43,10 +43,10 @@ resp, rep, stim_list = ooo_to_triadic("ooo_choices.mat", out_path="triadic_choic
 print(f"{len(resp)} triadic trials from OOO data")
 ```
 
-## Choices → Coordinates
+## Choice → Coordinates has moved
 
-Fits an MDS perceptual map from a choice file. See `fit_brightness_ooo.run_mds_single_dim` and
-`build_mat_output` for the underlying functions, or
-[File conversion → Python tools UI](file-conversion-streamlit.md) for the no-code version.
+Fitting a geometric model from a choice file (choices → coordinates) is now documented under
+[Creating RS → Choice → Coordinates](rs-py-choice-to-coords.md), alongside the other ways to
+create a representational space from perceptual judgments.
 
 For the full function reference, see [File conversion → Function reference](function-index-python.md).

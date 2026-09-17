@@ -79,6 +79,10 @@ nav:
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
       - How to Run Scripts: rs-py-scripts.md
+    - Choice → Coordinates:
+      - Python:
+        - Script: rs-py-choice-to-coords.md
+        - Python tools UI (web-based): rs-py-choice-to-coords-streamlit.md
     - Function index: function-index-python.md
   - Manipulating and analyzing RS:
     - Overview: rs-ml-overview.md
@@ -89,7 +93,7 @@ nav:
       - Script: comparing-rs-python.md
       - Python tools UI (web-based): comparing-rs-streamlit.md
     - Function reference: function-index-python.md
-  - File conversion:
+  - File conversion utilities:
     - Python:
       - Script: file-conversion-python.md
       - Python tools UI (web-based): file-conversion-streamlit.md

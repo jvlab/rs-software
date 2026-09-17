@@ -41,5 +41,7 @@ streamlit run app.py
 ```
 
 Then open `http://localhost:8501` in your browser. Each conversion tool is also its own standalone
-app — see [File conversion → Python tools UI](file-conversion-streamlit.md) for the individual
-filenames (`app_ooo.py`, `app_matnpy.py`, `run_model_fitting_ui.py`) if you only need one.
+app — see [File conversion → Python tools UI](file-conversion-streamlit.md) for the file
+conversion filenames (`app_ooo.py`, `app_matnpy.py`), or
+[Creating RS → Choice → Coordinates](rs-py-choice-to-coords-streamlit.md) for `run_model_fitting_ui.py`,
+if you only need one.
