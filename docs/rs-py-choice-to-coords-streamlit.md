@@ -43,7 +43,7 @@ Then open `http://localhost:8501` in your browser.
 | `debiasedRelativeLL` | 1 × N | `rawLLs + biasEstimate - bestModelLL` |
 | `stim_labels` | n_stim | Stimulus names (coords files use `stim_labels`; choice files use `stim_list`) |
 
-**Random seed:** choose "Random each run" for normal use, or "Same every run" / "Custom offset"
+**Random seed:** choose "Random each run" for normal use, or "Same every run" / "Custom random seed"
 for a reproducible result — useful when checking output against a benchmark.
 
 For the equivalent Python functions, see [Choice → Coordinates → Python](rs-py-choice-to-coords.md).

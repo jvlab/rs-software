@@ -51,6 +51,6 @@ statistically meaningful.
 
 **Random seed:** the sidebar has a "Random seed" control for the real-data fit specifically
 (surrogates are already seeded deterministically per-surrogate) — choose "Random each run" for
-normal use, or "Same every run" / "Custom offset" for a reproducible result.
+normal use, or "Same every run" / "Custom random seed" for a reproducible result.
 
 For the equivalent Python function, see [Comparing RS → Python](comparing-rs-python.md).
