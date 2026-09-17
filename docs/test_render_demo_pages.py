@@ -14,6 +14,7 @@ from render_demo_pages import (
     figure_pattern,
     index_entry,
     load_index,
+    render,
     render_demo,
     save_index,
     source_hash,
@@ -189,3 +190,70 @@ def test_render_demo_reports_an_error_from_the_capture(tmp_path):
     page_path, _ = render_demo(demo, {}, tmp_path / "pages", build_dir)
 
     assert "Undefined function 'foo'." in page_path.read_text()
+
+
+def fake_demo(tmp_path, monkeypatch, name="my_demo"):
+    """Write one demo and make render() see that demo and nothing else."""
+    import render_demo_pages
+
+    demo = tmp_path / f"{name}.m"
+    demo.write_text(DEMO_SOURCE)
+    monkeypatch.setattr(render_demo_pages, "demo_paths", lambda names=(): [str(demo)])
+    monkeypatch.setattr(render_demo_pages, "build_registry", lambda: {})
+    return demo
+
+
+def test_render_keeps_an_existing_page_when_the_manifest_is_missing(tmp_path,
+                                                                    monkeypatch):
+    # The failure this guards against: rendering runs before the capture has
+    # written its manifests, as it does when MATLAB is still running in the
+    # background, and every page loses the output captured for it earlier.
+    fake_demo(tmp_path, monkeypatch)
+    page_dir = tmp_path / "pages"
+    page_dir.mkdir()
+    page = page_dir / "my_demo.md"
+    page.write_text("# my_demo\n\nOutput:\n\n```text\nfrom an earlier capture\n```")
+    index_path = tmp_path / "index.json"
+    save_index({"my_demo": {"figures": 2}}, index_path)
+
+    pages = render(page_dir=page_dir, build_dir=tmp_path / "build",
+                   index_path=index_path)
+
+    assert pages == []
+    assert "from an earlier capture" in page.read_text()
+    assert load_index(index_path)["my_demo"]["figures"] == 2
+
+
+def test_render_writes_a_code_only_page_for_a_demo_never_captured(tmp_path,
+                                                                  monkeypatch):
+    fake_demo(tmp_path, monkeypatch)
+    page_dir = tmp_path / "pages"
+    index_path = tmp_path / "index.json"
+
+    pages = render(page_dir=page_dir, build_dir=tmp_path / "build",
+                   index_path=index_path)
+
+    assert len(pages) == 1
+    assert "disp('one')" in (page_dir / "my_demo.md").read_text()
+    assert "my_demo" not in load_index(index_path)
+
+
+def test_render_replaces_an_existing_page_when_a_manifest_is_there(tmp_path,
+                                                                   monkeypatch):
+    fake_demo(tmp_path, monkeypatch)
+    page_dir = tmp_path / "pages"
+    page_dir.mkdir()
+    (page_dir / "my_demo.md").write_text("stale page")
+    build_dir = tmp_path / "build"
+    write_manifest(build_dir, "my_demo", [
+        {"id": 0, "text": "fresh output\n", "figures": [], "error": ""},
+    ])
+    index_path = tmp_path / "index.json"
+
+    pages = render(page_dir=page_dir, build_dir=build_dir, index_path=index_path)
+
+    assert len(pages) == 1
+    page = (page_dir / "my_demo.md").read_text()
+    assert "fresh output" in page
+    assert "stale page" not in page
+    assert load_index(index_path)["my_demo"]["figures"] == 0

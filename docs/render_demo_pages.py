@@ -163,6 +163,11 @@ def render(names=(), page_dir=PAGE_DIR, build_dir=BUILD_DIR, index_path=INDEX_PA
     Demos outside 'names' keep their existing index entries, so capturing one
     demo does not disturb the record of the others.
 
+    A demo with no manifest but with a page already on disk is left untouched.
+    Rewriting it would replace captured output with code only, silently undoing
+    a good capture, which is what happens when rendering runs before the capture
+    has written its manifests.
+
     Args:
         names: demo names to render; empty means every demo.
         page_dir: directory the pages are written to.
@@ -177,10 +182,17 @@ def render(names=(), page_dir=PAGE_DIR, build_dir=BUILD_DIR, index_path=INDEX_PA
     pages = []
 
     for demo_path in demo_paths(names):
+        name = Path(demo_path).stem
+        manifest = load_manifest(Path(build_dir) / f"{name}.manifest.json")
+
+        if not manifest and (Path(page_dir) / f"{name}.md").exists():
+            print(f"[render-demo-pages] {name}: no capture found, keeping the page "
+                  "that is already there")
+            continue
+
         page_path, manifest = render_demo(demo_path, registry, page_dir, build_dir)
         pages.append(page_path)
 
-        name = Path(demo_path).stem
         if manifest:
             index[name] = index_entry(demo_path, manifest)
             status = index[name]["error"] or f"{index[name]['figures']} figure(s)"
