@@ -14,6 +14,13 @@ function run_all(spec_dir, repo_root)
 % Specs are matched by the pattern *.spec.json. Each demo's figure and
 % manifest paths are absolute (written by the Python spec builder), so the
 % working-directory change each demo makes does not affect where output lands.
+%
+% A marker file, run_all.done, is deleted at the start and written in spec_dir
+% at the end. It is how the Python driver knows the capture really finished,
+% rather than trusting that the process it started waited for MATLAB. On
+% Windows the matlab command returns to the caller while MATLAB is still
+% running, and without this marker the pages would be rendered from manifests
+% that are not there yet, leaving demo pages with code and no output.
 
     if nargin < 2 || isempty(repo_root)
         repo_root = pwd;
@@ -46,6 +53,13 @@ function run_all(spec_dir, repo_root)
     listing = dir(fullfile(spec_dir, '*.spec.json'));
     spec_paths = fullfile({listing.folder}, {listing.name});
 
+    % Clear the marker of a previous run, so that its presence at the end can
+    % only mean that this run reached the end.
+    done_file = local_done_file(spec_dir);
+    if isfile(done_file)
+        delete(done_file);
+    end
+
     local_check_dependencies();   % ... and rather than capture nothing but errors
     local_check_graphics();       % fail fast rather than capture black images
 
@@ -65,6 +79,33 @@ function run_all(spec_dir, repo_root)
     end
     fprintf('run_all: finished %d demo(s) in %.1f s\n', ...
         numel(spec_paths), toc(all_timer));
+
+    local_write_done(done_file, numel(spec_paths));
+end
+
+
+function done_file = local_done_file(spec_dir)
+% Absolute path of the completion marker, resolved before any demo changes
+% directory, so writing it at the end lands in spec_dir whatever the demos did.
+    listing = dir(spec_dir);
+    if isempty(listing)
+        error('run_all:noSpecDir', 'spec directory not found: %s', spec_dir);
+    end
+    done_file = fullfile(listing(1).folder, 'run_all.done');
+end
+
+
+function local_write_done(done_file, ndemos)
+% Write the completion marker. Its contents are for a human reading the folder;
+% the Python driver only checks that the file is there.
+    fid = fopen(done_file, 'w');
+    if fid < 0
+        fprintf(2, 'run_all: cannot write the completion marker %s\n', done_file);
+        return
+    end
+    fprintf(fid, 'run_all finished %d demo(s) at %s\n', ndemos, ...
+        datestr(now, 'yyyy-mm-ddTHH:MM:SS')); %#ok<TNOW1,DATST>
+    fclose(fid);
 end
 
 

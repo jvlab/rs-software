@@ -10,10 +10,15 @@ argument list.
 import sys
 
 from update_demo_docs import (
+    DONE_NAME,
     MATLAB_CAPTURE_COMMAND,
     SPEC_SCRIPT,
+    capture_finished,
+    clear_done,
+    done_path,
     matlab_argv,
     specs_argv,
+    wait_for_capture,
 )
 
 
@@ -73,3 +78,50 @@ def test_specs_argv_appends_demo_names():
 def test_specs_argv_keeps_demo_order():
     demos = ["rs_toygeom_scenarioA", "rs_knit_coordsets_demo"]
     assert specs_argv("python3", demos)[2:] == demos
+
+
+def test_done_path_sits_next_to_the_manifests(tmp_path):
+    assert done_path(tmp_path) == tmp_path / DONE_NAME
+
+
+def test_capture_finished_follows_the_marker(tmp_path):
+    assert not capture_finished(tmp_path)
+    done_path(tmp_path).write_text("run_all finished 1 demo(s)\n")
+    assert capture_finished(tmp_path)
+
+
+def test_clear_done_removes_the_marker_of_a_previous_run(tmp_path):
+    done_path(tmp_path).write_text("old run\n")
+
+    assert clear_done(tmp_path) is True
+    assert not capture_finished(tmp_path)
+
+
+def test_clear_done_with_no_marker_reports_nothing_removed(tmp_path):
+    assert clear_done(tmp_path) is False
+
+
+def test_wait_for_capture_returns_at_once_when_already_finished(tmp_path):
+    done_path(tmp_path).write_text("done\n")
+    calls = []
+
+    polls = wait_for_capture(tmp_path, sleep=calls.append)
+
+    assert polls == 0
+    assert calls == []
+
+
+def test_wait_for_capture_polls_until_the_marker_appears(tmp_path):
+    # This is the Windows case: MATLAB is still running, and rendering now would
+    # write pages with code and no output.
+    calls = []
+
+    def sleep(seconds):
+        calls.append(seconds)
+        if len(calls) == 3:
+            done_path(tmp_path).write_text("done\n")
+
+    polls = wait_for_capture(tmp_path, poll_seconds=0.5, sleep=sleep)
+
+    assert polls == 3
+    assert calls == [0.5, 0.5, 0.5]
