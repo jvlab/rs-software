@@ -14,7 +14,7 @@ For creation of representational spaces, implementations are provided in Python 
 
 For manipulation and visualization of representational spaces, implementations are available in Matlab ?? or via a Python wrapper over Matlab code ??.
 
-In addition, routines are available for analysis of the perceptual judgments directly.  These include a comparison of the perceptual judgments via the representational spaces they generate (??link to comparison page) and analyses of statistics of triadic judgments (Matlab ?? or via a Python wrapper ??)
+In addition, routines are available for analysis of the perceptual judgments directly.  These include a [comparison of the perceptual judgments via the representational spaces they generate](comparing-rs-python.md) and analyses of statistics of triadic judgments (Matlab ?? or via a Python wrapper ??)
 
 
 ![Workflow diagram](./images/overview_09Jun26.png)
@@ -26,7 +26,7 @@ The starting point is a set of perceptual judgments and the associated metadata,
 
 * "triadic" judgments:  is A or B more similar to S?
 * "tetradic" judgments: which is more similar: A and B, or C and D?
-* "odd one out" judgments:  of A, B, and C, which is the most different?  To use judgments for these paradigms, first convert odd-one-out choice files to triadic judgment choice files via the conversion tool here??.
+* "odd one out" judgments:  of A, B, and C, which is the most different?  To use judgments for these paradigms, first convert odd-one-out choice files to triadic judgment choice files via [the conversion tool here](file-conversion-streamlit.md).
 
 The main outputs are `coordinate files`, which contain coordinates of the points in a representational space and the associated metadata, and with statistics to assess how well these coordinates account for the similarity judgments.
 
@@ -67,7 +67,7 @@ With a starting point of a single `choice file` of triadic judgments, one may
 
 With a starting point of a two `choice files` of triadic judgments, one may
 
-  * determine whether the representational spaces they generate are significantly different via ??
+  * [determine whether the representational spaces they generate are significantly different](comparing-rs-python.md)
 
 
 ## Credits and feedback
