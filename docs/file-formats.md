@@ -56,7 +56,7 @@ Optional variables (produced by the modeling of choice data by this package but 
 
 See `samples/animals/image_coords_S*.mat` for examples that contain these optional variables, and `samples/bwtextures/bgca3pt_coords_*_sess01_10.mat` for examples that do not.
 
-
+To work with a `choice file` or `coordinate file` in Python without MATLAB, convert it to a NumPy array — see [File conversion → Python tools UI](file-conversion-streamlit.md) (no installation needed) or [File conversion → Python](file-conversion-python.md).
 
 ## Setup metadata file
 
