@@ -6,13 +6,10 @@ Two sets of hooks, pre-build and post-build
 
 Pre-build: executed before calling mkdocs. Here python scripts are run which
 - create dummy markdown files for each function
-- create the demo markdown page listing all available demos
 
-Then call to parse_all_demos_to_markdown(), which
-creates .md files corresponding to demo files. These demo files
-are MATLAB code (.m files) in which 
-- comments (starting with the sign %) gets parsed as Markdown text
-- code (all other lines) are parsed as blocks of code.
+Demo pages are not built here: they are rendered by docs/render_demo_pages.py
+when the demos are captured locally, and the pages and figures are committed.
+That keeps MATLAB out of the documentation build. See capture/README.md.
 
 
 Post-build: after HTML rendering by mkdocs.
@@ -35,11 +32,10 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import hook_site_config as site_config
+import function_registry
 from function_links import FUNCTION_LINKS
-from matlab_to_markdown import parse_matlab_to_markdown
 
-scripts = ["docs/create_function_md_files.py",
-           "docs/list_demos.py"]
+scripts = ["docs/create_function_md_files.py"]
            
 log = logging.getLogger("mkdocs.hooks.seealso")
 
@@ -68,118 +64,69 @@ _ANCHOR_RE   = re.compile(r'<a\b[^>]*>.*?</a>', re.DOTALL)
 
 
 def on_config(config):
-    site_config.update_site_prefix(config)
-
     FUNCTION_REGISTRY.clear()
-    for source_root in _get_matlab_paths(config):
-        root = Path(source_root)
-        if root.exists():
-            _scan_directory(root, root)
-        else:
-            log.warning(f"[seealso] Path not found: {root}")
+    function_registry.build(registry=FUNCTION_REGISTRY)
+    for source_root in function_registry.SOURCE_ROOTS:
+        if not Path(source_root).is_dir():
+            log.warning(f"[seealso] Path not found: {source_root}")
 
     log.info(f"[seealso] Registered {len(FUNCTION_REGISTRY)} project functions.")
     return config
-
-
-def _get_matlab_paths(config) -> list[str]:
-    return ["src"]  # ← hardcoded source path
-
-
-def _scan_directory(directory: Path, root: Path):
-    for entry in directory.iterdir():
-        if entry.is_dir():
-            _scan_directory(entry, root)
-        elif entry.suffix == ".m":
-            _register_matlab_file(entry, root)
-
-
-def matlab_identifier(relative_path: Path) -> str:
-    """
-    Compute the dotted MATLAB identifier for a source file, given its path
-    relative to a source root.
-
-    Only path parts beginning with "+" or "@" become namespace components, with
-    the leading marker stripped. Plain folder parts are dropped.
-
-    Args:
-        relative_path (Path): path of the .m file relative to the source root,
-            for example Path("utils/grmscmdt.m"), Path("rs_geofit.m"), or
-            Path("+pkg/foo.m").
-
-    Returns:
-        str: the dotted identifier, for example "grmscmdt", "rs_geofit", or
-        "pkg.foo".
-    """
-    namespace_parts = []
-    for part in relative_path.parts[:-1]:
-        if part.startswith(("+", "@")):
-            namespace_parts.append(part[1:])
-    namespace_parts.append(relative_path.stem)
-    return ".".join(namespace_parts)
-
-
-def _register_matlab_file(filepath: Path, root: Path):
-    stem = filepath.stem
-
-    # Skip utility/demo files
-    if stem.lower() in ("contents", "readme"):
-        return
-
-    full_id = matlab_identifier(filepath.relative_to(root))
-    FUNCTION_REGISTRY[stem.lower()] = full_id
-    FUNCTION_REGISTRY[full_id.lower()] = full_id
 
 
 def on_page_content(html, page, config, files):
     if not FUNCTION_REGISTRY and not FUNCTION_LINKS:
         return html
 
+    # Every link below is built relative to this page, so the site works wherever
+    # it is served; see hook_site_config.
+    prefix = site_config.root_relative_prefix(page)
+
     # Linkify <code>funcname</code> anywhere on the page
-    html = _linkify_code_in_content(html)
+    html = _linkify_code_in_content(html, prefix)
     
     # Likify "See also"
     html = _DETAILS_SEEALSO_RE.sub(
-        lambda m: _linkify_block(m.group(1)), html
+        lambda m: _linkify_block(m.group(1), prefix), html
     )
     html = _INLINE_SEEALSO_RE.sub(
-        lambda m: _linkify_block(m.group(1)), html
+        lambda m: _linkify_block(m.group(1), prefix), html
     )
     
     return html
 
 
-def _linkify_block(block_html: str) -> str:
+def _linkify_block(block_html: str, prefix: str) -> str:
     # Only process text inside <p> tags, leave all other HTML untouched
     return re.sub(
         r'(<p>)(.*?)(</p>)',
-        lambda m: m.group(1) + _linkify_text(m.group(2)) + m.group(3),
+        lambda m: m.group(1) + _linkify_text(m.group(2), prefix) + m.group(3),
         block_html,
         flags=re.DOTALL,
     )
 
 
-def _linkify_text(text: str) -> str:
+def _linkify_text(text: str, prefix: str) -> str:
     # Split on HTML tags, only process text nodes (even-indexed parts)
     parts = re.split(r'(<[^>]+>)', text)
     result = []
     for i, part in enumerate(parts):
         if i % 2 == 0:
             # Text node — apply identifier replacement
-            result.append(_IDENTIFIER_RE.sub(lambda m: _make_link(m.group(1)), part))
+            result.append(_IDENTIFIER_RE.sub(lambda m: _make_link(m.group(1), prefix), part))
         else:
             # HTML tag — leave untouched
             result.append(part)
     return "".join(result)
 
 
-def _make_link(name: str) -> str:
+def _make_link(name: str, prefix: str) -> str:
     lower = name.lower()
     
     # Your own functions take priority
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
+        url = f"{prefix}function-index-matlab/#{full_id}"
         return f'<a href="{url}">{full_id}</a>'
 
     # Fall back to MATLAB builtin
@@ -190,61 +137,37 @@ def _make_link(name: str) -> str:
     return name
 
 
-def _linkify_code_in_content(html: str) -> str:
+def _linkify_code_in_content(html: str, prefix: str) -> str:
     """
     Wrap <code>funcname</code> with a link for any function name found
     in FUNCTION_REGISTRY. Skips occurrences already inside an <a> tag.
     """
+    replace = lambda match: _replace_code_tag(match, prefix)
     result = []
     last = 0
     for anchor in _ANCHOR_RE.finditer(html):
         # Process the segment *before* this <a>…</a> block
         segment = html[last:anchor.start()]
-        result.append(_CODE_TAG_RE.sub(_replace_code_tag, segment))
+        result.append(_CODE_TAG_RE.sub(replace, segment))
         # Keep the <a>…</a> block completely untouched
         result.append(anchor.group(0))
         last = anchor.end()
     # Remaining tail after the last <a>
-    result.append(_CODE_TAG_RE.sub(_replace_code_tag, html[last:]))
+    result.append(_CODE_TAG_RE.sub(replace, html[last:]))
     return "".join(result)
 
 
-def _replace_code_tag(match: re.Match) -> str:
+def _replace_code_tag(match: re.Match, prefix: str) -> str:
     name  = match.group(1)
     lower = name.lower()
     if lower in FUNCTION_REGISTRY:
         full_id = FUNCTION_REGISTRY[lower]
-        url = f"{site_config.SITE_PREFIX}/function-index-matlab/#{full_id}"
+        url = f"{prefix}function-index-matlab/#{full_id}"
         return f'<a href="{url}"><code>{name}</code></a>'
     return match.group(0)   # leave unchanged
     
 #######################################################################
 ### PRE-BUILD HOOKS
-def parse_all_demos_to_markdown():
-     
-    # list of m-files inside demos
-    list_mfiles = glob('src/demos/*.m')
-
-    for f in list_mfiles:
-        input_path = Path(f)
-        output_path = (Path('docs', 'mfiles', 'demos') / input_path.name).with_suffix(".md")
-       
-        if 'Contents' in str(input_path.name):
-            continue
-        
-        # reads source code file as text
-        matlab_code = input_path.read_text(encoding="utf-8")
-        
-        # parse
-        markdown = parse_matlab_to_markdown(matlab_code, FUNCTION_REGISTRY)
-        
-        # make sure the output directory exists before writing
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # writes parsed text as markdown file
-        output_path.write_text(markdown, encoding="utf-8")
-        print(f"File {input_path} parsed to {output_path}")
-    
 def run_scripts(script_paths: list[str]) -> None:
     print(f"[PRE-BUILD] running pre-build custom python scripts.")
     for script in script_paths:
@@ -269,7 +192,10 @@ def run_scripts(script_paths: list[str]) -> None:
             print(f"[FAIL] '{script}' exited with code {result.returncode}.")
 
 def on_pre_build(config):
-    parse_all_demos_to_markdown()
+    # Demo pages are NOT generated here. They are rendered by
+    # docs/render_demo_pages.py when a demo is captured locally, and the result
+    # is committed, so that a build without MATLAB still publishes the console
+    # output and figures of the last capture. See capture/README.md.
     run_scripts(scripts)           
     
 #######################################################################

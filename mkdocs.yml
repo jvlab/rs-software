@@ -10,7 +10,6 @@ theme:
 #    - navigation.sections
 
 hooks:
-  - docs/hook_site_config.py
   - docs/hooks.py
   - docs/hook_ignore.py
   - docs/hook_format_nested_args.py
@@ -105,3 +104,12 @@ nav:
   - Python - MATLAB/Octave: python-matlab-octave.md
 
 not_in_nav: mfiles/*
+
+# The build hooks, their tests and their bytecode live in docs/, and mkdocs copies
+# everything under docs_dir into the site verbatim, so without this they are all
+# published. Excluding them here does not affect the "hooks:" entries above, which
+# are loaded from disk by path rather than from the built site.
+exclude_docs: |
+  *.py
+  __pycache__/
+  .pytest_cache/

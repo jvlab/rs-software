@@ -5,9 +5,9 @@
 %
 %  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
 %
-verbosity=getinp('pipeline display verbosity','d',[0 2],0);
-if_write=getinp('1 to write the knitted sets','d',[0 1]);
-nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);
+verbosity=getinp('pipeline display verbosity','d',[0 2],0);        %#demo-input: 0
+if_write=getinp('1 to write the knitted sets','d',[0 1]);          %#demo-input: 0
+nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);  %#demo-input: 10
 %
 %section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
 if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
