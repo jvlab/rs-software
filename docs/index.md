@@ -16,7 +16,7 @@ The package has two main components that may be used together or independently.
 
 *  In addition, tools are available for analysis of the perceptual judgments directly. These include a comparison of the perceptual judgments via the representational spaces they generate, and analyses of statistics of triadic judgments.
 
-Each of the two components of the package has its own set of demos and samples. Installation instructions may be found ??here for Matlab and ??here for Python.
+Each components of the package has its own set of demos. Installation instructions may be found ??here for Matlab and ??here for Python.
 
 
 ![Workflow diagram](./images/overview_18Sep26.png)
