@@ -23,7 +23,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - if_private (int): 1 to also do calculations with Dirichlet fits only to the triads that meet threshold criteria, 0 to omit; default is 0
 %
 %         - **Plotting and replotting**
-%         - if_plot (int): 1 for basic plot, 2 for basic and detailed plot, 0 to omit; default is 1
+%         - if_plot (int): 1 for basic plot and statistical summary, 2 for detailed plot, 0 to omit; default is 1
 %         - plot_label (char): string for plot label, default is 'ordinal analysis'
 %         - su (struct): include to replot a previous analysis; otherwise omit
 % 
@@ -99,7 +99,20 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_dirfit_a (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameter 'a'
 %     - opts_dirfit_ah (struct): options used for `rs_dirfit_choicedata` for fitting Dirichlet parameters 'a' and 'h'
 %     - opts_triplike (struct): options used for `psg_umi_triplike`
-%     - fig_handles (cell 1-D array): handles to figures created (present only if if_plot>0)
+%     - fig_handles (cell 1-D array): handles to figures for summary plot ((present only if if_plot>=1)
+%     - fig_handle_detailed (handle): handle to figure for detailed plot (present only if if_plot=2)
+%     - summary (cell 1-D array): statistical summary organized by fraction of triplets retained (only if if_plot>=1), summary{1} is analysis with fixed value of 'h', summary{2} is analysis with 'h' fitted; summary{1}.sym, summary{2}.sym, and summary{1}.umi contain the following subfields
+%
+%         - params (struct): params.a and params.h are the Dirichlet parameters
+%         - apriori_vals (float): a priori value of the index
+%         - ah_llr (float): log likelihood ratio for the Dirichlet fit to the choice probability distribution
+%         - thr_type (cell 1-D array): statistics for threshold type 1 (min), 2 (max), 3 (avg)
+%
+%             - tally_table (int 2-D array): tally_table(ithr,[1 2 3]) is the threshold, count of triads, count of trials
+%             - means_per_set_adj (float 2-D array): means_per_set_adj(ithr,[1 2 3]) is the mean index for each threshold type, adjusted by log(h) for umi index
+%             - eb_stds (float 2-D array): 1 s.d. error bar size
+%             - frac_keep_list (float 1-d array): fraction of triplets to keep
+%             - thr_ptr_use (int 1-D array): pointers into thresholds (tally_table(:,1)), corresponding to values in frac_keep_list
 %
 % Note: Note regarding thresholds and global vs. private analyses
 %     - Triplets are screened by a threshold criterion based on the number of trials before inclusion in the calculation of the symmetry and ultrametric indices.
@@ -146,9 +159,11 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-if isfield(aux,'su') & aux.opts_symumi.if_plot>0
-    aux_out.fig_handles=rs_symumi_plot(data_comp,aux.su,aux);
-    su=aux.su;
+if isfield(aux.opts_symumi,'su') 
+    if aux.opts_symumi.if_plot>0
+        [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_symumi_plot(data_comp,aux.opts_symumi.su,aux);
+    end
+    su=aux.opts_symumi.su;
     return
 end
 dirfit_opts={'a_limits','a_optimset','ah_optimset','if_frozen','if_log'}; %options to transfer from aux.opts_symumi to aux_dirfit.opts_dirfit
@@ -572,18 +587,16 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
 end %ipg
 %
 if aux.opts_symumi.if_plot>0
-    aux_out.fig_handles=rs_symumi_plot(data_comp,su,aux);
+    [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_symumi_plot(data_comp,su,aux);
 end
 return
 end
 
-function fig_handles=rs_symumi_plot(data_comp,su,aux)
+function [fig_handles,fig_handle_detailed,summary]=rs_symumi_plot(data_comp,su,aux)
 %wrapper for psg_umi_triplike_plot and psg_umi_triplike_plota
 %
-fig_handles=cell(0);
-%
 if isfield(su,'private')
-    ipg_min=1;
+    ipg_min=1; %private and global
 else
     ipg_min=2; %only global
 end
@@ -607,13 +620,12 @@ if isfield(su,'private')
     r.su.private=su.private;
 end
 %
-if aux.opts_symumi.if_plot==2
-    [opts_plot_used_det,figh_det]=psg_umi_triplike_plot(r,plot_opts);
-    fig_handles{1}=figh_det;
-end
-if aux.opts_symumi.if_plot>=1
-    [opts_plot_used,figh]=psg_umi_triplike_plota(r,plot_opts);
-    fig_handles{end+1}=figh;
+[opts_plot_used,fig_handles,summary]=psg_umi_triplike_plota(r,plot_opts);
+%
+if aux.opts_symumi.if_plot==2 %detailed plot
+    [opts_plot_used_det,fig_handle_detailed]=psg_umi_triplike_plot(r,plot_opts);
+else
+    fig_handle_detailed=[];
 end
 return
 end
