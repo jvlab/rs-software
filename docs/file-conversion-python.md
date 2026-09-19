@@ -49,4 +49,4 @@ Fitting a geometric model from a choice file (choices → coordinates) is now do
 [Creating RS → Choice → Coordinates](rs-py-choice-to-coords.md), alongside the other ways to
 create a representational space from perceptual judgments.
 
-For the full function reference, see [File conversion → Function reference](function-index-python.md).
+For the full function reference, see [Python function index](function-index-python.md).

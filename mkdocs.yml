@@ -83,21 +83,20 @@ nav:
       - Python:
         - Script: rs-py-choice-to-coords.md
         - Python tools UI (web-based): rs-py-choice-to-coords-streamlit.md
-    - Function index: function-index-python.md
   - Manipulating and analyzing RS:
     - Overview: rs-ml-overview.md
     - Demos (MATLAB): demos.md
-    - Function index: function-index-matlab.md
   - Comparing RS:
     - Python:
       - Script: comparing-rs-python.md
       - Python tools UI (web-based): comparing-rs-streamlit.md
-    - Function reference: function-index-python.md
   - File conversion utilities:
     - Python:
       - Script: file-conversion-python.md
       - Python tools UI (web-based): file-conversion-streamlit.md
-    - Function reference: function-index-python.md
+  - Function Index:
+    - Python function index: function-index-python.md
+    - MATLAB function index: function-index-matlab.md
   - File formats, data structures, and domains:
     - File formats: file-formats.md
     - Data structures: data_structures.md

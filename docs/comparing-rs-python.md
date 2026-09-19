@@ -48,4 +48,4 @@ By default each surrogate seeds deterministically from its own index, so re-runn
 starting point with `rng_control.initialize_random_state(if_frozen)` before calling `compare` — see
 [Comparing RS → Python tools UI](comparing-rs-streamlit.md) for what each `if_frozen` value means.
 
-For the full function reference, see [Comparing RS → Function reference](function-index-python.md).
+For the full function reference, see [Python function index](function-index-python.md).
