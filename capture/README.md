@@ -56,8 +56,13 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   prompts; an empty answer means "press enter for the default". A missing directive
   makes the capture hang or fail.
 - **Figures** are exported at 96 dpi as they are created, keeping at most 20 open at
-  once; `capture/matlab/run_capture_test.m` checks that. Run it with
-  `matlab -batch "addpath('capture/matlab'); run_capture_test"`.
+  once; `capture/matlab/run_capture_test.m` checks that, and the snapshot directive described next. Run it
+  with `matlab -batch "addpath('capture/matlab'); run_capture_test"`. A figure is saved once, when
+  the code block that opened it ends. To save it again after a later block draws on
+  it, end a code line of that block with `%#demo-snapshot` (the current figure) or
+  `%#demo-snapshot: all` (every figure still open from earlier blocks).
+- **Directives** (`%#demo-input:`, `%#demo-snapshot`) count only at the end of a code
+  line or alone on a line; inside a prose comment they are plain text.
 - **On Linux and macOS** the capture runs with `-nodisplay`. Without it MATLAB tries
   hardware OpenGL in batch mode and exports solid black images without failing.
 - **On Windows** the capture runs with `-wait` instead, because the `matlab` command

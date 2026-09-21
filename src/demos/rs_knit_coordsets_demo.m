@@ -63,6 +63,9 @@ end
 %
 figure;
 spy(aux_knit.coords_havedata');
+%
+% GA: added this line to test if figure saving works... a partial figure should be plotted before this line
+%
 nstims=data_knit.sas{1}.nstims;
 typenames=data_knit.sas{1}.typenames;
 xlabel('stimuli');
@@ -71,7 +74,7 @@ set(gca,'XTickLabel',typenames);
 ylabel('paradigms');
 set(gca,'YTick',[1:nsets]);
 set(gca,'YTickLabel',paradigm_names);
-drawnow;
+drawnow; %#demo-snapshot
 %
 %retrieve and plot convergence and scaling
 %

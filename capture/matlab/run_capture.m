@@ -12,8 +12,10 @@ function run_capture(spec_path)
 %   answers   scripted input() answers, in call order (cell / string array)
 %   seed      optional rng seed for reproducible runs; omit to skip seeding
 %   chunks    array of structs, each with:
-%               id    identifier echoed back in the manifest (the chunk index)
-%               code  MATLAB source of the display chunk
+%               id        identifier echoed back in the manifest (the chunk index)
+%               code      MATLAB source of the display chunk
+%               snapshot  optional: '' for none, 'current' or 'all', from a
+%                         %#demo-snapshot directive in the chunk
 %
 % Two things make this robust:
 %
@@ -46,6 +48,14 @@ function run_capture(spec_path)
 %
 % Figures are numbered in the order they were created, so <demo>_chunk03_fig1
 % is the first figure that chunk opened.
+%
+% Snapshots. A figure is exported once, when the group that opened it ends, so
+% drawing on it in a later chunk does not reach the page. A chunk with a
+% %#demo-snapshot directive exports figures again when its group ends: the
+% current figure for 'current', every figure left open by earlier groups for
+% 'all'. Only figures that existed before the group started are re-exported,
+% since the group's own figures have just been exported anyway. The new images
+% are listed after the group's own, and numbered on from them.
 
     spec = jsondecode(fileread(spec_path));
 
@@ -83,6 +93,7 @@ function run_capture(spec_path)
     restore_createfcn = onCleanup(@() local_stop_tracking()); %#ok<NASGU>
 
     acc = '';                                       % code of the current group
+    group_snapshot = '';                            % strongest snapshot asked
     group_start_figs = findall(groot, 'Type', 'figure');
 
     for c = 1:numel(chunks)
@@ -92,6 +103,8 @@ function run_capture(spec_path)
         else
             acc = sprintf('%s\n%s', acc, chunks(c).code);
         end
+        group_snapshot = local_stronger_snapshot(group_snapshot, ...
+                                                 local_chunk_snapshot(chunks(c)));
 
         captured = '';
         err_msg = '';
@@ -122,6 +135,8 @@ function run_capture(spec_path)
 
         drawnow;        % force pending draws so figures are complete
         fig_names = local_stop_tracking(group_start_figs);
+        fig_names = [fig_names, local_snapshot(group_snapshot, spec.name, ...
+            spec.fig_dir, c, numel(fig_names), group_start_figs)]; %#ok<AGROW>
 
         results(end + 1).id = chunks(c).id;   %#ok<AGROW>
         results(end).text = captured;
@@ -129,6 +144,7 @@ function run_capture(spec_path)
         results(end).error = err_msg;
 
         acc = '';   % group closed; start a fresh group at the next chunk
+        group_snapshot = '';
 
         if ~isempty(err_msg)
             break;   % a real error stops the demo; the manifest records why
@@ -159,6 +175,61 @@ function tf = local_is_incomplete(e)
     if ~tf && ~isempty(e.identifier)
         idl = lower(e.identifier);
         tf = contains(idl, 'endmissing') || contains(idl, 'incomplete');
+    end
+end
+
+
+function mode = local_chunk_snapshot(chunk)
+% The snapshot mode a chunk asks for, '' when none. Specs written before the
+% directive existed have no snapshot field at all.
+    mode = '';
+    if isfield(chunk, 'snapshot') && ischar(chunk.snapshot)
+        mode = chunk.snapshot;
+    end
+end
+
+
+function mode = local_stronger_snapshot(first, second)
+% Combine the requests of the chunks in one group: 'all' > 'current' > ''.
+    order = {'', 'current', 'all'};
+    rank = @(m) find(strcmp(order, m), 1);
+    if isempty(rank(second)) || rank(first) >= rank(second)
+        mode = first;
+    else
+        mode = second;
+    end
+end
+
+
+function names = local_snapshot(mode, demo_name, fig_dir, chunk_idx, nprior, before)
+% Export figures again at the end of a group, as a %#demo-snapshot asked.
+%
+% before holds the figures open when the group started, as findall returned
+% them (newest first). Only those are candidates: a figure the group opened
+% itself was exported moments ago by local_stop_tracking. Images are numbered
+% on from the nprior the group already produced.
+    names = {};
+    switch mode
+        case 'current'
+            figs = get(groot, 'CurrentFigure');
+        case 'all'
+            figs = flip(before);                    % oldest first
+        otherwise
+            return
+    end
+
+    for f = reshape(figs, 1, [])
+        if ~isvalid(f) || ~any(before == f)
+            continue    % closed since, or opened by this group
+        end
+        fname = sprintf('%s_chunk%02d_fig%d.png', demo_name, chunk_idx, ...
+                        nprior + numel(names) + 1);
+        try
+            local_export_figure(f, fullfile(fig_dir, fname));
+            names{end + 1} = fname; %#ok<AGROW>
+        catch e
+            fprintf(2, '\n    snapshot export failed (%s): %s\n', fname, e.message);
+        end
     end
 end
 

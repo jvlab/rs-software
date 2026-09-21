@@ -1,6 +1,7 @@
 function run_capture_test()
 % run_capture_test  Check that run_capture exports every figure while keeping
-%                   only a bounded number of them open.
+%                   only a bounded number of them open, and that the
+%                   %#demo-snapshot modes export figures again as documented.
 %
 % Run it from the repository root, with capture/matlab on the path:
 %
@@ -75,7 +76,66 @@ function run_capture_test()
                 MAX_OPEN_ALLOWED, max_open));
 
     close all;
+    local_test_snapshots(work);
+    close all;
     fprintf('run_capture_test: all checks passed\n');
+end
+
+
+function local_test_snapshots(work)
+% Check the %#demo-snapshot modes. Chunk 1 opens two figures. Chunk 2 draws on
+% one of them without a snapshot, chunk 3 with 'current', chunk 4 with 'all'.
+% Only chunks 3 and 4 may produce images, and each image is a re-export of a
+% figure opened in chunk 1, so the expected names follow from counting.
+    fig_dir = fullfile(work, 'snapfigs');
+    spec = struct( ...
+        'name', 'snap', ...
+        'workdir', work, ...
+        'fig_dir', fig_dir, ...
+        'manifest', fullfile(work, 'snap.manifest.json'), ...
+        'answers', {{}}, ...
+        'chunks', struct( ...
+            'id', {0, 1, 2, 3}, ...
+            'code', {'fa=figure; plot(1:3); fb=figure; plot(3:-1:1);', ...
+                     'figure(fa); hold on; plot([1 3],[2 2]);', ...
+                     'figure(fa); plot([2 2],[1 3]);', ...
+                     'figure(fb); title(''b, annotated'');'}, ...
+            'snapshot', {'', '', 'current', 'all'}));
+
+    spec_path = fullfile(work, 'snap.spec.json');
+    fid = fopen(spec_path, 'w');
+    fwrite(fid, jsonencode(spec));
+    fclose(fid);
+
+    run_capture(spec_path);
+    manifest = jsondecode(fileread(spec.manifest));
+    figs = @(k) local_as_cell(manifest(k).figures);
+
+    local_check(isequal(figs(1), {'snap_chunk01_fig1.png', 'snap_chunk01_fig2.png'}), ...
+        'the chunk that opens two figures exports both');
+    local_check(isempty(figs(2)), ...
+        'drawing on an earlier figure without a directive exports nothing');
+    local_check(isequal(figs(3), {'snap_chunk03_fig1.png'}), ...
+        'a current snapshot exports the current figure once');
+    local_check(isequal(figs(4), {'snap_chunk04_fig1.png', 'snap_chunk04_fig2.png'}), ...
+        'an all snapshot exports every earlier figure, oldest first');
+    for k = 1:4
+        names = figs(k);
+        for j = 1:numel(names)
+            local_check(exist(fullfile(fig_dir, names{j}), 'file') == 2, ...
+                sprintf('image file %s exists', names{j}));
+        end
+    end
+end
+
+
+function c = local_as_cell(value)
+% jsondecode gives [] for an empty list and a cellstr for a non-empty one.
+    if isempty(value)
+        c = {};
+    else
+        c = reshape(cellstr(value), 1, []);
+    end
 end
 
 

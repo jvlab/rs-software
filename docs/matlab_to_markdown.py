@@ -25,17 +25,82 @@ import re
 import sys
 from pathlib import Path
 
-# A demo-input directive is a trailing (or whole-line) comment that drives
-# capture. It must never appear in the rendered code, so it is stripped from
-# every source line before the line is classified as comment or code. The
-# answers themselves are read from the raw source by demo_capture, so removing
-# the directive here does not lose them.
-_DEMO_INPUT_INLINE = re.compile(r"\s*%#demo-input:.*$")
+# Capture directives are trailing (or whole-line) comments that drive capture:
+#
+#   %#demo-input: <answer>    the answer to a scripted input() or getinp() call
+#   %#demo-snapshot           export the current figure again after this chunk
+#   %#demo-snapshot: all      export every figure left open by earlier chunks
+#
+# A directive counts only at the end of a code line or alone on its own line. In
+# a prose comment ("% add %#demo-snapshot to ...") it is just text, so that a
+# demo can explain the directives without triggering them.
+#
+# They must never appear in the rendered code, so they are stripped from every
+# source line before the line is classified as comment or code. Input answers
+# are read from the raw source by demo_capture, and snapshot requests are
+# recorded on the code block by parse_blocks, so removing them loses nothing.
+_DIRECTIVE_INLINE = re.compile(r"\s*%#demo-(?:input:|snapshot\b).*$")
+_SNAPSHOT = re.compile(r"%#demo-snapshot\b(?::(.*))?$")
+
+# Snapshot modes, as written into the capture spec. An empty string means the
+# chunk asks for no snapshot.
+SNAPSHOT_NONE = ""
+SNAPSHOT_CURRENT = "current"
+SNAPSHOT_ALL = "all"
+
+
+def is_prose_comment(line: str) -> bool:
+    """
+    True for a comment line that is prose, where directives are plain text.
+
+    A line starting with "%" is prose unless it starts with a directive, which
+    is how a whole-line directive is written.
+    """
+    stripped = line.lstrip()
+    return stripped.startswith("%") and not stripped.startswith("%#demo-")
 
 
 def _strip_demo_directive(line: str) -> str:
-    """Remove a %#demo-input directive from a source line."""
-    return _DEMO_INPUT_INLINE.sub("", line)
+    """Remove a capture directive (%#demo-input, %#demo-snapshot) from a line."""
+    if is_prose_comment(line):
+        return line
+    return _DIRECTIVE_INLINE.sub("", line)
+
+
+def snapshot_mode(line: str, line_number: int = 0) -> str:
+    """
+    Return the snapshot mode requested on one source line.
+
+    Args:
+        line: a raw source line.
+        line_number: its 1-based number, only used in the error message.
+
+    Returns:
+        SNAPSHOT_NONE when the line has no %#demo-snapshot directive,
+        SNAPSHOT_CURRENT for a bare directive, SNAPSHOT_ALL for ": all".
+
+    Raises:
+        ValueError: for any other argument, so a typo fails the capture instead
+            of silently exporting nothing.
+    """
+    match = None if is_prose_comment(line) else _SNAPSHOT.search(line)
+    if not match:
+        return SNAPSHOT_NONE
+    argument = (match.group(1) or "").strip().lower()
+    if argument == "":
+        return SNAPSHOT_CURRENT
+    if argument == SNAPSHOT_ALL:
+        return SNAPSHOT_ALL
+    raise ValueError(
+        f"line {line_number}: unknown %#demo-snapshot argument {argument!r}; "
+        "use '%#demo-snapshot' or '%#demo-snapshot: all'"
+    )
+
+
+def _stronger_snapshot(first: str, second: str) -> str:
+    """Combine two snapshot requests on one chunk: all > current > none."""
+    order = (SNAPSHOT_NONE, SNAPSHOT_CURRENT, SNAPSHOT_ALL)
+    return max(first, second, key=order.index)
 
 
 def process_first_line(line: str) -> str:
@@ -89,33 +154,53 @@ def parse_blocks(matlab_code):
     Split MATLAB source into an ordered list of blocks.
 
     Each block is a dict with:
-        kind   "text" for comment runs, "code" for code runs
-        lines  the raw lines of the block, in order (blank lines kept). For
-               text blocks the leading "% " has already been stripped; for
-               code blocks the original source lines are kept verbatim.
+        kind      "text" for comment runs, "code" for code runs
+        lines     the raw lines of the block, in order (blank lines kept). For
+                  text blocks the leading "% " has already been stripped; for
+                  code blocks the original source lines are kept verbatim.
+        snapshot  code blocks only: the snapshot mode requested by any
+                  %#demo-snapshot directive in the block, SNAPSHOT_NONE if none
 
     The splitting mirrors the original single-pass state machine: a run of
     comment lines becomes one text block, a run of code lines (including any
     interleaved blank lines) becomes one code block, and blank lines outside
     any run are dropped.
+
+    Raises:
+        ValueError: for a %#demo-snapshot directive with an unknown argument,
+            or one that is not inside a run of code, where it would have no
+            chunk to attach to.
     """
     blocks = []
     code_buffer = []
     comment_buffer = []
+    code_snapshot = SNAPSHOT_NONE
 
     def flush_code():
+        nonlocal code_snapshot
         if code_buffer:
-            blocks.append({"kind": "code", "lines": list(code_buffer)})
+            blocks.append({"kind": "code", "lines": list(code_buffer),
+                           "snapshot": code_snapshot})
             code_buffer.clear()
+        code_snapshot = SNAPSHOT_NONE
 
     def flush_comments():
         if comment_buffer:
             blocks.append({"kind": "text", "lines": list(comment_buffer)})
             comment_buffer.clear()
 
-    for raw in matlab_code.splitlines():
+    for line_number, raw in enumerate(matlab_code.splitlines(), start=1):
+        mode = snapshot_mode(raw, line_number)
         line = _strip_demo_directive(raw)
         stripped = line.strip()
+
+        if mode != SNAPSHOT_NONE:
+            if stripped == "" and not code_buffer:
+                raise ValueError(
+                    f"line {line_number}: %#demo-snapshot must follow code in the "
+                    "same run, not a comment; put it at the end of a code line"
+                )
+            code_snapshot = _stronger_snapshot(code_snapshot, mode)
 
         if stripped == "":
             if comment_buffer:
@@ -153,6 +238,20 @@ def code_chunk_texts(blocks):
         if stripped:
             chunks.append(stripped)
     return chunks
+
+
+def code_chunk_snapshots(blocks):
+    """
+    Return the snapshot mode of each chunk, aligned with code_chunk_texts().
+
+    Uses the same filter as code_chunk_texts (a code block that is blank once
+    stripped is not a chunk), so the two lists always have the same length.
+    """
+    return [
+        block.get("snapshot", SNAPSHOT_NONE)
+        for block in blocks
+        if block["kind"] == "code" and "\n".join(block["lines"]).strip()
+    ]
 
 
 def render_capture(entry) -> str:

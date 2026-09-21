@@ -328,6 +328,13 @@ show which paradigms contain which stimuli
 ```matlab
 figure;
 spy(aux_knit.coords_havedata');
+```
+
+![rs_knit_coordsets_demo_chunk11_fig1](../../images/demos/rs_knit_coordsets_demo_chunk11_fig1.png)
+
+GA: added this line to test if figure saving works... a partial figure should be plotted before this line
+
+```matlab
 nstims=data_knit.sas{1}.nstims;
 typenames=data_knit.sas{1}.typenames;
 xlabel('stimuli');
@@ -339,7 +346,7 @@ set(gca,'YTickLabel',paradigm_names);
 drawnow;
 ```
 
-![rs_knit_coordsets_demo_chunk11_fig1](../../images/demos/rs_knit_coordsets_demo_chunk11_fig1.png)
+![rs_knit_coordsets_demo_chunk12_fig1](../../images/demos/rs_knit_coordsets_demo_chunk12_fig1.png)
 
 retrieve and plot convergence and scaling
 
@@ -392,7 +399,7 @@ end
 drawnow;
 ```
 
-![rs_knit_coordsets_demo_chunk13_fig1](../../images/demos/rs_knit_coordsets_demo_chunk13_fig1.png)
+![rs_knit_coordsets_demo_chunk14_fig1](../../images/demos/rs_knit_coordsets_demo_chunk14_fig1.png)
 
 do statistics?
 
@@ -526,7 +533,7 @@ knitting  37 stimuli across   3 datasets, dimensions   1  2  3  4  5  6  7
  creating Procrustes consensus from dim  7 to dim  7 based on component datasets, iterations:  220, final total rms dev per coordinate:  0.37148
 ```
 
-![rs_knit_coordsets_demo_chunk25_fig1](../../images/demos/rs_knit_coordsets_demo_chunk25_fig1.png)
+![rs_knit_coordsets_demo_chunk26_fig1](../../images/demos/rs_knit_coordsets_demo_chunk26_fig1.png)
 
 write datasets if requested
 

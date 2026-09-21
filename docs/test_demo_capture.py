@@ -141,3 +141,34 @@ def test_load_manifest_skips_malformed_id(tmp_path):
     loaded = load_manifest(manifest)
     assert set(loaded.keys()) == {0, 2}
     assert loaded[2]["text"] == "also ok"
+
+
+def test_build_spec_gives_every_chunk_a_snapshot_field(tmp_path):
+    # Every chunk carries the field, even when empty, so MATLAB's jsondecode
+    # reads the chunk list as one struct array.
+    demo = _write_demo(
+        tmp_path,
+        "% mydemo: snapshots\n"
+        "figure; plot(1:3);\n"
+        "%\n"
+        "hold on; plot(3:-1:1);   %#demo-snapshot\n"
+        "%\n"
+        "title('t');   %#demo-snapshot: all\n",
+    )
+    spec = build_spec(
+        demo,
+        fig_dir=tmp_path / "figs",
+        spec_path=tmp_path / "mydemo.spec.json",
+        manifest_path=tmp_path / "mydemo.manifest.json",
+    )
+
+    assert [c["snapshot"] for c in spec["chunks"]] == ["", "current", "all"]
+    assert all("demo-snapshot" not in c["code"] for c in spec["chunks"])
+
+
+def test_directive_mentioned_in_prose_is_not_an_answer():
+    source = (
+        "% add %#demo-input: 3 at the end of the line that prompts\n"
+        "n = getinp('choice', 'd', [1 3], 1);   %#demo-input: 2\n"
+    )
+    assert extract_demo_inputs(source) == ["2"]

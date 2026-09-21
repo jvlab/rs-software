@@ -229,8 +229,7 @@ def main(argv=None):
     # Render even when a demo errored: the manifest records the error, and the
     # page shows it where it happened, which is how the failure stays visible.
     render(demos)
-    print("[update-demo-docs] done. Commit the demo pages and figures, then run "
-          "'mkdocs serve' to preview them.")
+    print("[update-demo-docs] done. Run "'mkdocs serve'" to preview the changes.")
     return exit_code
 
 

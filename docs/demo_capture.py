@@ -16,8 +16,26 @@ scripted getinp()/input() call, so interactive demos run unattended:
     verbosity = getinp('display verbosity', 'd', [0 2], 0);   %#demo-input: 0
 
 An empty answer (nothing after the colon) means "press enter for the default".
+A directive written inside a prose comment is text, not a directive, so a demo
+can mention one in its explanations.
 Answers are collected in source order, which is the order the prompts are
 reached during linear execution.
+
+A demo-snapshot directive asks the capture to export a figure again at the end
+of its chunk, after the chunk has drawn on a figure that an earlier chunk
+created. Without it, a figure is exported only once, at the end of the chunk
+that opened it:
+
+    plot(x, fit, 'r-');   %#demo-snapshot
+
+exports the current figure again, and
+
+    title('final');       %#demo-snapshot: all
+
+exports every figure left open by earlier chunks.
+
+The parsing lives in matlab_to_markdown.parse_blocks, which records the mode on
+each code block; build_spec writes it into the spec as each chunk's "snapshot".
 
 @author: G. Aguilar - Feb 2026
 """
@@ -26,9 +44,14 @@ import json
 import re
 from pathlib import Path
 
-from matlab_to_markdown import parse_blocks, code_chunk_texts
+from matlab_to_markdown import (
+    code_chunk_snapshots,
+    code_chunk_texts,
+    is_prose_comment,
+    parse_blocks,
+)
 
-_DIRECTIVE = re.compile(r"%#demo-input:(.*)$", re.MULTILINE)
+_DIRECTIVE = re.compile(r"%#demo-input:(.*)$")
 
 # Demos reference data files by paths relative to the src folder, e.g.
 # load('demos/opposites_coords_FG'), so they must run with src as the working
@@ -47,7 +70,14 @@ def extract_demo_inputs(source):
         A list of answer strings, one per directive, in source order. An empty
         string represents "press enter for the default".
     """
-    return [match.group(1).strip() for match in _DIRECTIVE.finditer(source)]
+    answers = []
+    for line in source.splitlines():
+        if is_prose_comment(line):
+            continue    # a directive mentioned in prose is only text
+        match = _DIRECTIVE.search(line)
+        if match:
+            answers.append(match.group(1).strip())
+    return answers
 
 
 def build_spec(demo_path, fig_dir, spec_path, manifest_path,
@@ -58,6 +88,10 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
     The spec lists the demo's code chunks (using the same segmentation the
     renderer uses, so chunk ids line up with manifest keys), the scripted
     answers, and where the MATLAB driver should write figures and the manifest.
+    Each chunk carries a "snapshot" field: "" for none, "current" or "all", as
+    requested by a %#demo-snapshot directive in that chunk. It is present on
+    every chunk, even when empty, so that jsondecode turns the chunk list into
+    a struct array rather than a cell array of mismatched structs.
 
     Args:
         demo_path: path to the demo .m file.
@@ -73,7 +107,9 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
     """
     demo_path = Path(demo_path)
     source = demo_path.read_text(encoding="utf-8")
-    chunks = code_chunk_texts(parse_blocks(source))
+    blocks = parse_blocks(source)
+    chunks = code_chunk_texts(blocks)
+    snapshots = code_chunk_snapshots(blocks)
     answers = extract_demo_inputs(source)
 
     spec = {
@@ -82,7 +118,10 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
         "fig_dir": str(fig_dir),
         "manifest": str(manifest_path),
         "answers": answers,
-        "chunks": [{"id": index, "code": code} for index, code in enumerate(chunks)],
+        "chunks": [
+            {"id": index, "code": code, "snapshot": snapshot}
+            for index, (code, snapshot) in enumerate(zip(chunks, snapshots))
+        ],
     }
     if seed is not None:
         spec["seed"] = seed

@@ -30,9 +30,9 @@
     "error": null
   },
   "rs_knit_coordsets_demo": {
-    "source_sha256": "ed8fa1f12f94dbffb958f166154dff58f70d4fa440e0bf297bd282c1ec5572f9",
-    "captured_at": "2026-09-16T00:34:50+00:00",
-    "figures": 3,
+    "source_sha256": "7781e4215bbf8f9cf4ce0a66cf81f526344561a2d9fbf2652e86ba5f9e6a3c11",
+    "captured_at": "2026-09-21T16:24:15+00:00",
+    "figures": 4,
     "error": null
   },
   "rs_read_coorddata_demo_cars": {
