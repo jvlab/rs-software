@@ -35,7 +35,7 @@ opts_used=cell(1,ntests);
 data_comps=cell(1,ntests);
 auxs=cell(1,ntests);
 choices=cell(1,ntests);
-sus=cell(1,ntests);
+ads=cell(1,ntests);
 aux_addtrees=cell(1,ntests);
 aux_addtree_outs=cell(1,ntests);
 %
@@ -57,11 +57,11 @@ nfigs_all=0;
 for itest=1:ntests
     nfigs=0;
     if if_replot(itest)>0
-        aux_addtrees{itest}.opts_addtree.su=sus{if_replot(itest)};
+        aux_addtrees{itest}.opts_addtree.ad=ads{if_replot(itest)};
     end
     disp(sprintf('testing rs_%s: %s',rs_module,test_descs{itest}));
     [data_comps{itest},aux_reads{itest}]=rs_read_choicedata(filenames_examples{itest},auxs{itest});
-    [sus{itest},aux_addtree_outs{itest}]=rs_addtree_choicedata(data_comps{itest},aux_addtrees{itest});
+    [ads{itest},aux_addtree_outs{itest}]=rs_addtree_choicedata(data_comps{itest},aux_addtrees{itest});
     %
     if isfield(aux_addtree_outs{itest},'fig_handles')
         for k=1:length(aux_addtree_outs{itest}.fig_handles)
@@ -79,7 +79,7 @@ for itest=1:ntests
     s=struct;
     s.data_out=data_comps{itest};
     s.aux_out=aux_reads{itest};
-    s.addtree=sus{itest};
+    s.addtree=ads{itest};
     s.aux_addtree_out=aux_addtree_outs{itest};
     if nfigs>0
         if if_save_and_close

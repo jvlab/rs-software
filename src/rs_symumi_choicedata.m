@@ -248,8 +248,9 @@ if aux.opts_symumi.if_log
     disp(sprintf('number of triads found: %6.0f',ntriads_found));
 end
 %
-triplets=nchoosek([1:nstims],3); %triplets: unordered subsets of 3
-ntriplets=nchoosek(nstims,3); %ntriplets: number of unordered subsets of 3
+nt=3; %number of points in a triangle
+triplets=nchoosek([1:nstims],nt); %triplets: unordered subsets of 3
+ntriplets=nchoosek(nstims,nt); %ntriplets: number of unordered subsets of 3
 %
 % ncloser: [ntriplets,3]: N(d(a,b)<d(a,c)), N(d(b,c)<d(b,a)), N(d(c,a)<d(c,b))
 % ntrials: [ntriplets,3]: total trials in above

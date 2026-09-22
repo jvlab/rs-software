@@ -1,11 +1,11 @@
-function [su,aux_out]=rs_addtree_choicedata(data_comp,aux)
-% [su,aux_out]=rs_addtree_choicedata(data_comp,aux) analyzes a set of triadic choices to determine the addtree index
+function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
+% [ad,aux_out]=rs_addtree_choicedata(data_comp,aux) analyzes a set of triadic choices to determine the addtree index
 % (a measures of consistency with the four-point inequality, a necessary condition for distances to be consistent with an additive tree).
 % Thi is described in Ordinal Characterization of Similarity Judgments on [arXiv](https://arxiv.org/abs/2310.07543)
 % and [Mathematical Neuroscience and Applications](https://mna.episciences.org/16310/pdf)
 %
 % The analysis is carried out for a range of criteria for the triads to include, and for Dirichlet fits to the choice probability distribution
-% based on all triads (in 'su.global'), or only the triads that meet threshold criteria (in 'su.private').  See note below regarding threshold criteria and global vs. private analyses.
+% based on all triads (in 'ad.global'), or only the triads that meet threshold criteria (in 'ad.private').  See note below regarding threshold criteria and global vs. private analyses.
 %
 % Args:
 %   data_comp (int 2-D array): Triadic choice data, with each row containing the data from a single kind of comparison
@@ -26,7 +26,7 @@ function [su,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %         - **Plotting and replotting**
 %         - if_plot (int): 1 for basic plot and statistical summary, 2 for detailed plot, 0 to omit; default is 1
 %         - plot_label (char): string for plot label, default is 'ordinal analysis'
-%         - su (struct): include to replot a previous analysis; otherwise omit
+%         - ad (struct): include to replot a previous analysis; otherwise omit
 % 
 %         - **Options for statistics and shuffles**
 %         - if_frozen (int): random number control; 1 for same numbers every run, 0 for different random numbers each run, negative integer for a fixed seed each run, default is 1
@@ -48,7 +48,7 @@ function [su,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %         - if_warn (int): 1 to show warnings, 0 to suppress; default is 1
 %
 % Returns:
-%   su (struct): analysis results, a structure with fields
+%   ad (struct): analysis results, a structure with fields
 %
 %     - **Dirichlet fits**
 %     - dirichlet (struct): Dirichlet fits with a range of thresholds for number of trials in a triad, with fields
@@ -80,7 +80,7 @@ function [su,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
 %         - umi (cell 2-D array): umi{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
 % 
-%     - meta (struct): labels for dimensions of the variables in su.global and su.private
+%     - meta (struct): labels for dimensions of the variables in ad.global and ad.private
 %
 %     - counts (struct): summary of the input data, a structure with fields
 %
@@ -160,11 +160,11 @@ aux_out=struct;
 aux_out.warnings=[];
 aux_out.warn_bad=0;
 %
-if isfield(aux.opts_addtree,'su') 
+if isfield(aux.opts_addtree,'ad') 
     if aux.opts_addtree.if_plot>0
-        [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_addtree_plot(data_comp,aux.opts_addtree.su,aux);
+        [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_addtree_plot(data_comp,aux.opts_addtree.ad,aux);
     end
-    su=aux.opts_addtree.su;
+    ad=aux.opts_addtree.ad;
     return
 end
 dirfit_opts={'a_limits','a_optimset','ah_optimset','if_frozen','if_log'}; %options to transfer from aux.opts_addtree to aux_dirfit.opts_dirfit
@@ -182,7 +182,7 @@ else
     rng('shuffle');
 end
 %
-su=struct;
+ad=struct;
 %
 % triadic?
 %
@@ -219,6 +219,25 @@ if aux_out.warn_bad>0
     return
 end
 %
+ineq_logic_types={'exclude_addtree_trans','exclude_trans_tent'};
+nineq=length(ineq_logic_types);
+%
+ncomps=6; %six rank choice probabilities to be compared
+%
+partitions=cell(0);
+for ineq=1:nineq
+    partitions{ineq}=psg_ineq_logic(ncomps,ineq_logic_types{ineq},setfield([],'if_log',1));
+    if aux.opts_addtree.if_log
+        disp(sprintf('created inequality logic for %s',ineq_logic_types{ineq}));
+    end
+end
+permutes=psg_permutes_logic(ncomps,'flip_each');
+nflips=size(permutes,2);
+if aux.opts_addtree.if_log
+    disp('creating permutation logic for surrogates')
+    disp(sprintf(' size is %3.0f x %3.0f',size(permutes)));
+end
+%
 %report number of stimulus types
 %
 data_nz=data_comp(choices_nz,:); %ignore choices with no trials
@@ -229,11 +248,11 @@ ntriads_found=size(data_nz,1);
 ustims_found=unique(reshape(data_nz(:,[1:3]),[3*ntriads_found,1]));
 nstims_found=length(ustims_found);
 %
-su.counts=struct;
-su.counts.ntrials_found=ntrials_found;
-su.counts.ntriads_found=ntriads_found;
-su.counts.nstims_found=nstims_found;
-su.counts.unique_stims_found=ustims_found;
+ad.counts=struct;
+ad.counts.ntrials_found=ntrials_found;
+ad.counts.ntriads_found=ntriads_found;
+ad.counts.nstims_found=nstims_found;
+ad.counts.unique_stims_found=ustims_found;
 %
 nstims=nstims_found;
 %
@@ -249,33 +268,43 @@ if aux.opts_addtree.if_log
     disp(sprintf('number of triads found: %6.0f',ntriads_found));
 end
 %
-triplets=nchoosek([1:nstims],3); %triplets: unordered subsets of 3
-ntriplets=nchoosek(nstims,3); %ntriplets: number of unordered subsets of 3
+nt=3; %number of points in a triangle
+triplets=nchoosek([1:nstims],nt); %triplets: unordered subsets of 3
+ntriplets=nchoosek(nstims,nt); %ntriplets: number of unordered subsets of 3
 %
-% ncloser: [ntriplets,3]: N(d(a,b)<d(a,c)), N(d(b,c)<d(b,a)), N(d(c,a)<d(c,b))
-% ntrials: [ntriplets,3]: total trials in above
-[ncloser,ntrials]=psg_triplet_choices(nstims,data); %extract triplets and sort
+% ncloser_triplets: [ntriplets,3]: N(d(a,b)<d(a,c)), N(d(b,c)<d(b,a)), N(d(c,a)<d(c,b))
+% ntrials_triplets: [ntriplets,3]: total trials in above
+[ncloser_triplets,ntrials_triplets,abc_list]=psg_triplet_choices(nstims,data); %extract triplets and sort
 %
 if aux.opts_addtree.if_log
-    disp(sprintf('number of trials   after sorting: %6.0f',sum(ntrials(:)))) 
-    disp(sprintf('number of triads   after sorting: %6.0f',sum(ntrials(:)>0)));
-    disp(sprintf('number of triplets after sorting: %6.0f',sum(sum(ntrials,2)>0)));
-    disp(sprintf('number of trials per triad range from %6.0f to %6.0f',min(ntrials(:)),max(ntrials(:))));
+    disp(sprintf('number of trials   after sorting: %6.0f',sum(ntrials_triplets(:)))) 
+    disp(sprintf('number of triads   after sorting: %6.0f',sum(ntrials_triplets(:)>0)));
+    disp(sprintf('number of triplets after sorting: %6.0f',sum(sum(ntrials_triplets,2)>0)));
+    disp(sprintf('number of trials per triad range from %6.0f to %6.0f',min(ntrials_triplets(:)),max(ntrials_triplets(:))));
 end
-if (sum(ntrials(:))~=ntrials_found)
-    wmsg=sprintf('mismatch of number of trials in data before sorting (%5.0f) vs after sorting (%5.0f)',ntrials_found,sum(ntrials(:)));
+if (sum(ntrials_triplets(:))~=ntrials_found)
+    wmsg=sprintf('mismatch of number of trials in data before sorting (%5.0f) vs after sorting (%5.0f)',ntrials_found,sum(ntrials_triplets(:)));
     aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
 end
+if aux.opts_addtree.if_log
+    disp('creating tents from triplets');
+end
+%
+%now create tents from the triplets
+%
+[ncloser,ntrials]=psg_tent_choices(nstims,data,ncloser_triplets,ntrials_triplets,1);
+ntriplets_exclude=nchoosek(nstims-1,nt); %number of triplets that exclude a given stimulus
+ntents=nstims*ntriplets_exclude;
 %
 h_fixlist=aux.opts_addtree.h_fixlist;
 h_fixlist=unique([0 h_fixlist(:)']);
 nhfix=length(h_fixlist);
 %
-su.dirichlet=struct();
-su.dirichlet.columns_tallies={'min_trials_per_triad','ntriads','ntrials'};
-su.dirichlet.columns_a={'a','loglike_per_trial'};
-su.dirichlet.columns_ah={'a','h','loglike_per_trial'};
-su.dirichlet.h_fixlist=h_fixlist;
+ad.dirichlet=struct();
+ad.dirichlet.columns_tallies={'min_trials_per_triad','ntriads','ntrials'};
+ad.dirichlet.columns_a={'a','loglike_per_trial'};
+ad.dirichlet.columns_ah={'a','h','loglike_per_trial'};
+ad.dirichlet.h_fixlist=h_fixlist;
 %
 %Dirichlet fits, for fixed values of h and also h fitted
 %code modified from psg_umi_triplike_demo, adapted for if_fixa=0, and rs_dirfit_choicedata
@@ -316,18 +345,18 @@ for thr=min(ntrials(:)):max(ntrials(:))
     ntrials_use=sum(ntrials(triads_use));
     if (ntriads_use>=aux.opts_addtree.ntriplets_min)
         ithr=ithr+1;
-        su.dirichlet.tallies(ithr,:)=[thr,ntriads_use,ntrials_use];
+        ad.dirichlet.tallies(ithr,:)=[thr,ntriads_use,ntrials_use];
         data_use=[ncloser(triads_use) ntrials(triads_use)];
         %fixed  values of h
         for ihfix=1:nhfix
             %
             aux_dirfit_a.opts_dirfit.fixed_h=h_fixlist(ihfix);
             [dirfit_a,aux_dirfit_out_a]=rs_dirfit_choicedata(data_use,aux_dirfit_a);
-            su.dirichlet.a(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
+            ad.dirichlet.a(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
         end
         %fit a and h
         [dirfit_ah,aux_dirfit_out_ah]=rs_dirfit_choicedata(data_use,aux_dirfit_ah);
-        su.dirichlet.ah(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
+        ad.dirichlet.ah(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
     end
 end
 %
@@ -341,52 +370,53 @@ nthr_types=length(thr_types);
 %global analyses: Dirichlet fits not adjusted based on which triads are used
 %private analyses: Dirichlet fits are private to the triads used
 %
-su.meta=struct;
-su.global=struct;
-su.meta.thr_types=thr_types;
-su.meta.columns_tallies={'thr','ntriplets','ntrials'};
-su.meta.columns_a={'a','loglike_per_trial'}; %values of a and h determined from the selected trials
-su.meta.columns_ah={'a','h','loglike_per_trial'}; %values of a and h determined from the selected trials
-su.meta.columns_sym={'llr_sym_vs_sym+notsym'}; %from likrat.sym of psg_umi_triplike
-su.meta.columns_umi={'llr_umi_trans_vs_trans'}; %from likrat.umi_trans of psg_umi_triplike
-su.meta.columns_sym_hfixed=su.meta.columns_sym; %from likrat.sym of psg_umi_triplike
-su.meta.columns_umi_hfixed=su.meta.columns_umi; %from likrat.umi_trans of psg_umi_triplike
-su.meta.thr_types=thr_types;
-su.meta.ipg_strings=ipg_strings;
-su.meta.surr_types={'orig data','flip_all','flip_any'};
+ad.meta=struct;
+ad.global=struct;
+ad.meta.thr_types=thr_types;
+ad.meta.columns_tallies={'thr','ntriplets','ntrials'};
+ad.meta.columns_a={'a','loglike_per_trial'}; %values of a and h determined from the selected trials
+ad.meta.columns_ah={'a','h','loglike_per_trial'}; %values of a and h determined from the selected trials
+ad.meta.columns_sym={'llr_sym_vs_sym+notsym'}; %from likrat.sym of psg_umi_triplike
+ad.meta.columns_umi={'llr_umi_trans_vs_trans'}; %from likrat.umi_trans of psg_umi_triplike
+ad.meta.columns_sym_hfixed=ad.meta.columns_sym; %from likrat.sym of psg_umi_triplike
+ad.meta.columns_umi_hfixed=ad.meta.columns_umi; %from likrat.umi_trans of psg_umi_triplike
+ad.meta.thr_types=thr_types;
+ad.meta.ipg_strings=ipg_strings;
+ad.meta.surr_types={'orig data','flip_all','flip_any'};
 %
-su.global.a=su.dirichlet.a(1,1,:); % values with h fixed
-%compute using global a and h from unthresholded Dirichlet and save in r.su.global.ah
-if su.dirichlet.ah(1,2)>=0 %use full fit if h>=0
-    su.global.ah=su.dirichlet.ah(1,1:2);
+ad.global.a=ad.dirichlet.a(1,1,:); % values with h fixed
+%compute using global a and h from unthresholded Dirichlet and save in r.ad.global.ah
+if ad.dirichlet.ah(1,2)>=0 %use full fit if h>=0
+    ad.global.ah=ad.dirichlet.ah(1,1:2);
 else %otherwise use best fit with h=0
-    su.global.ah=[su.dirichlet.a(1,1,1),0];
+    ad.global.ah=[ad.dirichlet.a(1,1,1),0];
 end
-if aux.opts_addtree.if_private % compute these later using private a and h, to go in r.su.private.[a|ah]{ithr_type}
-    su.private=struct;
-    su.private.a=cell(1,nthr_types); 
-    su.private.ah=cell(1,nthr_types);
+if aux.opts_addtree.if_private % compute these later using private a and h, to go in r.ad.private.[a|ah]{ithr_type}
+    ad.private=struct;
+    ad.private.a=cell(1,nthr_types); 
+    ad.private.ah=cell(1,nthr_types);
 end
 %
-su.meta.global_private_d1={'mean of sum','variance of sum'};
-su.meta.global_private_d2={'threshold type'};
+ad.meta.global_private_d1={'mean of sum','variance of sum'};
+ad.meta.global_private_d2={'threshold type'};
 ipg_min=2-aux.opts_addtree.if_private;
 for ipg=ipg_min:npg
-    su.(ipg_strings{ipg}).sym=cell(2,nthr_types);
-    su.(ipg_strings{ipg}).umi=cell(2,nthr_types);
-    su.(ipg_strings{ipg}).sym_hfixed=cell(2,nthr_types);
-    su.(ipg_strings{ipg}).umi_hfixed=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).sym=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).umi=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).sym_hfixed=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).umi_hfixed=cell(2,nthr_types);
 end
 %
+%%%%%%%%%%%%this will need to be changed
 ncomps=3;
 flipconfigs=int2nary([0:2^ncomps-1]',2);  %rows are [0 0 0;1 0 0;0 1 0;1 1 0; 0 0 1;1 0 1;0 1 1;1 1 1];
 nflips=size(flipconfigs,1); %2^8
 %
-su.meta.llr_d1={'threshold value'};
-su.meta.llr_d2=su.meta.surr_types;
-su.meta.llr_d3={'hfixed'};
-su.meta.nsurr=length(su.meta.surr_types);
-nsurr=length(su.meta.llr_d2); %three kinds of surrogates: native, flip all, flip any
+ad.meta.llr_d1={'threshold value'};
+ad.meta.llr_d2=ad.meta.surr_types;
+ad.meta.llr_d3={'hfixed'};
+ad.meta.nsurr=length(ad.meta.surr_types);
+nsurr=length(ad.meta.llr_d2); %three kinds of surrogates: native, flip all, flip any
 %
 llr_sym=cell(nsurr,2); %summed log likelihood ratio across trials, and summed variance of total 
 llr_umi=cell(nsurr,2);
@@ -399,8 +429,8 @@ loglik_rat_sym_all=zeros(ntriplets,nflips);
 loglik_rat_umi_all=zeros(ntriplets,nflips);
 loglik_rat_sym_hfixed_all=zeros(ntriplets,nflips,nhfix);
 loglik_rat_umi_hfixed_all=zeros(ntriplets,nflips,nhfix);
-ah=su.global.ah;
-ah_fixed=[squeeze(su.dirichlet.a(1,1,:)),h_fixlist(:)];
+ah=ad.global.ah;
+ah_fixed=[squeeze(ad.dirichlet.a(1,1,:)),h_fixlist(:)];
 %
 opts_triplike=struct;
 for k=1:length(triplike_opts)
@@ -468,7 +498,7 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                     did_or_skipped='did'; %have to calculate
                     nuse_prev=ntriplets_use;
                     ntrials_use=sum(sum(ntrials(triplets_use,:)));
-                    su.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
+                    ad.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
                     %compute private best-fitting a and h
                     data_use=[reshape(ncloser(triplets_use,:),3*ntriplets_use,1) reshape(ntrials(triplets_use,:),3*ntriplets_use,1)];
                     if (ipg==1)
@@ -476,14 +506,14 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                         for ihfix=1:nhfix
                             aux_dirfit_a.opts_dirfit.fixed_h=h_fixlist(ihfix);
                             [dirfit_a,aux_dirfit_out_a]=rs_dirfit_choicedata(data_use,aux_dirfit_a);
-                            su.private.a{ithr_type}(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
+                            ad.private.a{ithr_type}(ithr,:,ihfix)=[dirfit_a.a.val,dirfit_a.a.llnat_per_trial];
                         end
                         %private fit for a and h
                         [dirfit_ah,aux_dirfit_out_ah]=rs_dirfit_choicedata(data_use,aux_dirfit_ah);
                         if dirfit_ah.ah.val(2)>=0 %ensure h >=0
-                            su.private.ah{ithr_type}(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
+                            ad.private.ah{ithr_type}(ithr,:)=[dirfit_ah.ah.val',dirfit_ah.ah.llnat_per_trial];
                         else
-                            su.private.ah{ithr_type}(ithr,:)=[dirfit_a.a.val,0,dirfit_ah.ah.llnat_per_trial];
+                            ad.private.ah{ithr_type}(ithr,:)=[dirfit_a.a.val,0,dirfit_ah.ah.llnat_per_trial];
                         end
                     end
                     %
@@ -495,8 +525,8 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                          loglik_rat_sym_hfixed=loglik_rat_sym_hfixed_all(triplets_use,:,:);
                          loglik_rat_umi_hfixed=loglik_rat_umi_hfixed_all(triplets_use,:,:);
                     else % ipg=1 (private)
-                        ah=su.private.ah{ithr_type}(ithr,:); %a and h both fitted
-                        ah_fixed=[squeeze(su.private.a{ithr_type}(ithr,1,:)),h_fixlist(:)]; %a fitted, h fixed
+                        ah=ad.private.ah{ithr_type}(ithr,:); %a and h both fitted
+                        ah_fixed=[squeeze(ad.private.a{ithr_type}(ithr,1,:)),h_fixlist(:)]; %a fitted, h fixed
                         loglik_rat_sym=zeros(ntriplets_use,nflips);
                         loglik_rat_umi=zeros(ntriplets_use,nflips);
                         loglik_rat_sym_hfixed=zeros(ntriplets_use,nflips,nhfix);
@@ -551,26 +581,26 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                          end
                          %
                          for imv=1:2% mean and variance
-                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
+                             ad.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
+                             ad.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
+                             ad.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
+                             ad.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
                          end %imv
                      end %isurr
                 else %change in threshold does not change which triplets are included
                      did_or_skipped='skp';
-                     su.tallies{ithr_type}(ithr,:)=su.tallies{ithr_type}(ithr-1,:);
-                     su.tallies{ithr_type}(ithr,1)=thr_val; %threshold is new
+                     ad.tallies{ithr_type}(ithr,:)=ad.tallies{ithr_type}(ithr-1,:);
+                     ad.tallies{ithr_type}(ithr,1)=thr_val; %threshold is new
                      if (ipg==1)
-                        su.private.a{ithr_type}(ithr,:,:)=su.private.a{ithr_type}(ithr-1,:,:);
-                        su.private.ah{ithr_type}(ithr,:)=su.private.ah{ithr_type}(ithr-1,:);
+                        ad.private.a{ithr_type}(ithr,:,:)=ad.private.a{ithr_type}(ithr-1,:,:);
+                        ad.private.ah{ithr_type}(ithr,:)=ad.private.ah{ithr_type}(ithr-1,:);
                      end
                      for isurr=1:nsurr
                          for imv=1:2% mean and variance
-                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
+                             ad.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
+                             ad.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
+                             ad.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
+                             ad.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
                          end %imv
                      end %isurr
                  end %nuse_prev
@@ -588,15 +618,15 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
 end %ipg
 %
 if aux.opts_addtree.if_plot>0
-    [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_addtree_plot(data_comp,su,aux);
+    [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_addtree_plot(data_comp,ad,aux);
 end
 return
 end
 
-function [fig_handles,fig_handle_detailed,summary]=rs_addtree_plot(data_comp,su,aux)
+function [fig_handles,fig_handle_detailed,summary]=rs_addtree_plot(data_comp,ad,aux)
 %wrapper for psg_umi_triplike_plot and psg_umi_triplike_plota
 %
-if isfield(su,'private')
+if isfield(ad,'private')
     ipg_min=1; %private and global
 else
     ipg_min=2; %only global
@@ -605,20 +635,20 @@ plot_opts=struct;
 plot_opts.ipg_min=ipg_min;
 plot_opts.data_fullname=aux.opts_addtree.plot_label;
 plot_opts.nconform=0;
-%plot_opts.nsurr=size(su.global.sym{1,1},2);
-plot_opts.llr_field='su';
+%plot_opts.nsurr=size(ad.global.sym{1,1},2);
+plot_opts.llr_field='ad';
 %
 %reorganize for compatibility with psg plotting
-r=su;
-r.h_fixlist=su.dirichlet.h_fixlist;
-r.su.thr_types=su.meta.thr_types;
-r.su.llr_d1=su.meta.llr_d1;
-r.su.llr_d2=su.meta.llr_d2;
-r.su.llr_d3=su.meta.llr_d3;
-r.su.tallies=su.tallies;
-r.su.global=su.global;
-if isfield(su,'private')
-    r.su.private=su.private;
+r=ad;
+r.h_fixlist=ad.dirichlet.h_fixlist;
+r.ad.thr_types=ad.meta.thr_types;
+r.ad.llr_d1=ad.meta.llr_d1;
+r.ad.llr_d2=ad.meta.llr_d2;
+r.ad.llr_d3=ad.meta.llr_d3;
+r.ad.tallies=ad.tallies;
+r.ad.global=ad.global;
+if isfield(ad,'private')
+    r.ad.private=ad.private;
 end
 %
 [opts_plot_used,fig_handles,summary]=psg_umi_triplike_plota(r,plot_opts);
