@@ -307,9 +307,9 @@ ad.dirichlet.columns_ah={'a','h','loglike_per_trial'};
 ad.dirichlet.h_fixlist=h_fixlist;
 %
 %Dirichlet fits, for fixed values of h and also h fitted
-%code modified from psg_umi_triplike_demo, adapted for if_fixa=0, and rs_dirfit_choicedata
+%code modified from psg_tentlike_demo, adapted for if_fixa=0, and rs_dirfit_choicedata
 %
-%Note that here and in private fits, values of a may differ slightly e.g., 0.01) from those obtained by psg_umi_triplike_demo
+%Note that here and in private fits, values of a may differ slightly e.g., 0.01) from those obtained by psg_tentlike_demo
 %This is because here, optimization uses loglik_beta_discrete, which adds a quadratic cost when h<0,
 %while in psg_umi_triplike_demo, loptimization uses oglik_beta, which does not add a cost, but values of h<0 are replaced by the best fit with h>=0
 %
