@@ -360,7 +360,7 @@ for thr=min(ntrials(:)):max(ntrials(:))
     end
 end
 %
-%analyze for ultrametric inequality and symmetry, via strategy of psg_umi_triplike_demo with conform=0 and if_fast=1
+%analyze for consistency with addtree
 %
 ipg_strings={'private','global'};
 npg=length(ipg_strings);
@@ -401,16 +401,9 @@ ad.meta.global_private_d1={'mean of sum','variance of sum'};
 ad.meta.global_private_d2={'threshold type'};
 ipg_min=2-aux.opts_addtree.if_private;
 for ipg=ipg_min:npg
-    ad.(ipg_strings{ipg}).sym=cell(2,nthr_types);
-    ad.(ipg_strings{ipg}).umi=cell(2,nthr_types);
-    ad.(ipg_strings{ipg}).sym_hfixed=cell(2,nthr_types);
-    ad.(ipg_strings{ipg}).umi_hfixed=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).adt=cell(2,nthr_types);
+    ad.(ipg_strings{ipg}).adt_hfixed=cell(2,nthr_types);
 end
-%
-%%%%%%%%%%%%this will need to be changed
-ncomps=3;
-flipconfigs=int2nary([0:2^ncomps-1]',2);  %rows are [0 0 0;1 0 0;0 1 0;1 1 0; 0 0 1;1 0 1;0 1 1;1 1 1];
-nflips=size(flipconfigs,1); %2^8
 %
 ad.meta.llr_d1={'threshold value'};
 ad.meta.llr_d2=ad.meta.surr_types;
@@ -418,13 +411,27 @@ ad.meta.llr_d3={'hfixed'};
 ad.meta.nsurr=length(ad.meta.surr_types);
 nsurr=length(ad.meta.llr_d2); %three kinds of surrogates: native, flip all, flip any
 %
-llr_sym=cell(nsurr,2); %summed log likelihood ratio across trials, and summed variance of total 
-llr_umi=cell(nsurr,2);
-llr_sym_hfixed=cell(nsurr,2);
+llr_adt=cell(nsurr,2); %summed log likelihood ratio across trials, and summed variance of total 
+llr_adt_hfixed=cell(nsurr,2);
 llr_umi_hfixed=cell(nsurr,2);
 surr_list={1,[1 nflips],[1:nflips]};
 %
 %if_fast=1: calculate probabilities for all triplets
+ah=ad.global.ah;
+ah_fixed=[squeeze(ad.dirichlet.a(1,1,:)),h_fixlist(:)];
+obs_all=[reshape(ncloser',[ncomps 1 ntents]),reshape(ntrials',[ncomps 1 ntents])];
+params.a=ah(1);
+params.h=ah(2);
+liks_all=psg_ineq_apply(params,obs_all,partitions,permutes);
+liks_hfixed_all=zeros(nineq,nflips,ntents,nhfix);
+for ihfix=1:nhfix
+    params.a=ah_fixed(ihfix,1);
+    params.h=ah_fixed(ihfix,2);
+    liks_hfixed_all(:,:,:,ihfix)=psg_ineq_apply(params,obs_all,partitions,permutes);
+end
+disp(sprintf(' global calculations done.'));
+
+
 loglik_rat_sym_all=zeros(ntriplets,nflips);
 loglik_rat_umi_all=zeros(ntriplets,nflips);
 loglik_rat_sym_hfixed_all=zeros(ntriplets,nflips,nhfix);
