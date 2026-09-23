@@ -1,8 +1,12 @@
-% rs_toygeom_demo: geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
+% rs_toygeom_sim: geometric modeling with toy simulated datasets; used by rs_toygeom_scenario*
 %
 % This illustrates fitting of geometric models via creation of simulated coordinate set structures. 
 % It is intended that several of the parameters, especially paradigm_names, transform_names, are edited, 
 % or that rs_toygeom_scenario*.m is run first; running as is will be very time-consuming.
+%
+% Any of the parameters may be set in the workspace before running, in which case the default
+% is not applied; that is what rs_toygeom_scenario*.m does. So run this from a clear workspace
+% unless you intend to supply parameters yourself.
 %
 % Constructs several transformations, designated by the strings in transform_names:
 %     null: the identity
@@ -527,4 +531,4 @@ sims.noise_add_subj=noise_add_subj;
 sims.noise_add=noise_add;
 sims.model_list=model_list;
 %
-disp('consider saving the structure ''sims'', and using rs_toygeom_demo to display results')
+disp('consider saving the structure ''sims'', and using rs_toygeom_disp to display results')
