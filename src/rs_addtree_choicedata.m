@@ -21,6 +21,7 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %         - if_log (int): 1 to log progress, 0 to omit; default is 1
 %         - h_fixlist (float 1-D array): values for discrete component 'h', should include zero and be in ascending order, default is [0 0.001 0.01 0.1]
 %         - ntriplets_min (int): minimum number of triplets for an analysis, default is 3
+%         - ntents_min (int): minimum number of tents for an analysis, default is 3
 %         - if_private (int): 1 to also do calculations with Dirichlet fits only to the triads that meet threshold criteria, 0 to omit; default is 0
 %
 %         - **Plotting and replotting**
@@ -122,11 +123,12 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %     - For the 'private' analysis, the selected triplets are used to calculate the symmetry and ultrametric indices and also to calculate the Dirichlet parameters 
 %     - The 'private' analysis is substantially slower than the 'global' analysis, and values are of the indices are typically similar; it is only enabled by setting opts_addtree.if_private=1
 % 
-% Note: Triads, trials, and triplets
+% Note: Triads, trials, triplets, and tents
 %     - A triad is a set of three stimuli used in a triadic judgment: one stimulus is the reference, and the other two are the comparison stimuli
 %     - A trial is a single judgment of similarity for a given triad
 %     - A triplet is a set of three triads built out of the same three stimuli, in which each stimulus in turn serves as the reference
 %     - The number of trials in a triplet is the sum of the number of trials in its three triads
+%     - A tent is a set of six triads built out of four stimuli.  Three of the triads are a triplet built from the first three stimuil; the other three triads are triads built from the fourth stimulus and two of the first three.
 % 
 % See also: RS_DIRFIT_CHOICEDATA, RS_SYMUMI_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE, PSG_TENTLIKE_DEMO.
 %
@@ -137,6 +139,7 @@ aux=filldefault(aux,'opts_addtree',struct);
 aux.opts_addtree=filldefault(aux.opts_addtree,'if_log',1);
 aux.opts_addtree=filldefault(aux.opts_addtree,'h_fixlist',[0 0.001 0.01 0.1]);
 aux.opts_addtree=filldefault(aux.opts_addtree,'ntriplets_min',3);
+aux.opts_addtree=filldefault(aux.opts_addtree,'ntents_min',3);
 aux.opts_addtree=filldefault(aux.opts_addtree,'if_private',0);
 %
 aux.opts_addtree=filldefault(aux.opts_addtree,'if_frozen',1);
@@ -456,20 +459,20 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
         while (if_ok)
             switch thr_types{ithr_type}
                 case 'min'
-                    triplets_use=find(min(ntrials,[],2)>=thr);
+                    tents_use=find(min(ntrials,[],2)>=thr);
                     thr_val=thr;
                 case 'max'
-                    triplets_use=find(max(ntrials,[],2)>=thr);
+                    tents_use=find(max(ntrials,[],2)>=thr);
                     thr_val=thr;
                 case 'avg'
-                    triplets_use=find(sum(ntrials,2)>=thr);
+                    tents_use=find(sum(ntrials,2)>=thr);
                     thr_val=thr/3; %average not total
             end
-            if (length(triplets_use)>=aux.opts_addtree.ntriplets_min)
-                ntriplets_use=length(triplets_use);
-                if ntriplets_use~=nuse_prev
+            if (length(tents_use)>=aux.opts_addtree.ntents_min)
+                ntents_use=length(tents_use);
+                if ntents_use~=nuse_prev
                     did_or_skipped='did'; %have to calculate
-                    nuse_prev=ntriplets_use;
+                    nuse_prev=ntents_use;
                     ntrials_use=sum(sum(ntrials(triplets_use,:)));
                     ad.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
                     %compute private best-fitting a and h
