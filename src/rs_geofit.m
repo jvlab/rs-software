@@ -118,7 +118,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %
 %    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
 %    - To determine the model class (see `transformation structures`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
-%    - To determine the models nested in model type mt:  m=psg_models_define; getfield(m.(mt),'nested') [?? how to indicate code snippet]
+%    - To determine the models nested in model type mt:  `m=psg_models_define; getfield(m.(mt),'nested')`
 %    - See `transformation structures` for further details on how the models are parameterized and nesting
 %
 % Note: Note regarding customization
