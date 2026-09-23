@@ -477,8 +477,8 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                     ntrials_use=sum(sum(ntrials(tents_use,:)));
                     ad.tallies{ithr_type}(ithr,:)=[thr_val ntents_use ntrials_use]; %threshold, number of tents, number of trials
                     %compute private best-fitting a and h
-                    data_use=[reshape(ncloser(tents_use,:),ncomps*ntents_use,1) reshape(ntrials(tents_use,:),ncomps*ntents_use,1)];
                     if (ipg==1)
+                        data_use=[reshape(ncloser(tents_use,:),ncomps*ntents_use,1) reshape(ntrials(tents_use,:),ncomps*ntents_use,1)];
                         %private fits, assuming fixed values of h
                         for ihfix=1:nhfix
                             aux_dirfit_a.opts_dirfit.fixed_h=h_fixlist(ihfix);
