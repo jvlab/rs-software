@@ -237,26 +237,34 @@ for it=1:length(transform_names_avail)
         transforms_noisy{is}.(transform_name).b=1; %scale factor unchanged; redundant with T and it will disrupt pwaffine continuity
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 adjustment for procrustes to ensure that the transform is isotropic
 
+</div>
+
 ```matlab
-if strcmp(transform_name,'procrustes')
+        if strcmp(transform_name,'procrustes')
             [Torth,Torthonormal]=grmscmdt(transforms_noisy{is}.procrustes.T);
             transforms_noisy{is}.procrustes.T=Torthonormal;
         end
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 adjustments for pwaffine to ensure continuity at boundary
 
+</div>
+
 ```matlab
-if strcmp(transform_name,'pwaffine')
+        if strcmp(transform_name,'pwaffine')
             pw_vcut=transforms_noisy{is}.pwaffine.vcut;
             pw_acut=transforms_noisy{is}.pwaffine.acut;
             pw_h=transforms_noisy{is}.pwaffine.h;
 ```
 
 ```matlab
-pw_vcut=pw_vcut./sqrt(pw_vcut*pw_vcut'); %random direction of unit normal to cutplane
+            pw_vcut=pw_vcut./sqrt(pw_vcut*pw_vcut'); %random direction of unit normal to cutplane
             Tcut=pw_vcut'*pw_h; %if x*pw_vcut'=pw_acut, then x*Tcut=a*pw_h
             transforms_noisy{is}.pwaffine.T=repmat((1-pwaffine_mag)*transforms_noisy{is}.affine.T,[1 1 2])+pwaffine_mag*cat(3,Tcut,-Tcut);
             transforms_noisy{is}.pwaffine.c=pwaffine_mag*pw_acut*[-pw_h;pw_h]+repmat(transforms_noisy{is}.pwaffine.c_off,2,1);
@@ -330,10 +338,14 @@ for ip=1:length(paradigm_names)
             if if_axend
 ```
 
+<div class="demo-indent" style="margin-left: 16ch" markdown="1">
+
 make the samples at the ends of the axes
 
+</div>
+
 ```matlab
-coord_ptr=nrandom;
+                coord_ptr=nrandom;
                 for ic=1:ncoords
                     for isign=-1:2:1
                         coord_ptr=coord_ptr+1;
@@ -390,7 +402,7 @@ for ip=1:length(paradigm_names)
 ```
 
 ```matlab
-aux_stimspace=struct;
+    aux_stimspace=struct;
     aux_stimspace.opts_import.nstims=sim.nstims;
     aux_stimspace.opts_import.typenames=typenames;
     aux_stimspace.opts_import.type_coords=sim.type_coords;
@@ -407,7 +419,7 @@ aux_stimspace=struct;
 ```
 
 ```matlab
-if sim.if_findrays
+    if sim.if_findrays
         [sim.stimspace_rays,wmsg,sim.stimspace_findrays_auxout]=rs_findrays(sim.stimspace.sas{1},[],ray_opts);
         disp(sprintf('ray structure created for paradigm %s',paradigm_name));
     else
@@ -442,7 +454,7 @@ for ip=1:length(paradigm_names)
 ```
 
 ```matlab
-if if_disp_coordsets %set up a page for each paradigm name
+    if if_disp_coordsets %set up a page for each paradigm name
         figure;
         set(gcf,'Position',[100 100 1400 800]);
         set(gcf,'NumberTitle','off');
@@ -450,7 +462,7 @@ if if_disp_coordsets %set up a page for each paradigm name
 ```
 
 ```matlab
-aux_stimdisp.opts_disp.fig_handle=gcf;
+        aux_stimdisp.opts_disp.fig_handle=gcf;
         aux_stimdisp.opts_disp.fig_name=paradigm_name;
         aux_stimdisp.opts_disp.axis_range='list';
         aux_stimdisp.opts_disp.axis_range_list=[-1 1]*(1+random_max);
@@ -462,7 +474,7 @@ aux_stimdisp.opts_disp.fig_handle=gcf;
 ```
 
 ```matlab
-if sim.if_findrays
+        if sim.if_findrays
             aux_stimdisp.opts_disp_enh.if_rings=sim.if_rings;
             aux_stimdisp.opts_disp_enh.if_points=1; %so legends are set labels
             aux_stimdisp.opts_disp.data_show_method='last'; %last point is random; plotting a point allows rs_disp_enh_coordsets to make simple legend
@@ -500,7 +512,7 @@ for ip=1:length(paradigm_names)
 ```
 
 ```matlab
-for it=1:ntransforms
+    for it=1:ntransforms
         transform_name=transform_names{it};
         xform_subj=cell(1,nsubjs);
         for is=1:nsubjs
@@ -511,19 +523,27 @@ for it=1:ntransforms
             xform_subj{is}=rs_xform_apply(sim.stimspace,xforms,setfield(struct,'opts_xform',opts_xform));
 ```
 
+<div class="demo-indent" style="margin-left: 12ch" markdown="1">
+
 fill in lower and higher dimensions and add noise
 
+</div>
+
 ```matlab
-for ic=1:ncoords_tot
+            for ic=1:ncoords_tot
                 xform_subj{is}.ds{1}{ic}=noise_add(is)*randn(sim.nstims,ic)+...
                     [xform_subj{is}.ds{1}{ncoords}(:,1:min(ic,ncoords)),zeros(sim.nstims,max(0,ic-ncoords))];
             end
 ```
 
+<div class="demo-indent" style="margin-left: 12ch" markdown="1">
+
 adjust metadata
 
+</div>
+
 ```matlab
-sets=xform_subj{is}.sets{1};
+            sets=xform_subj{is}.sets{1};
             sets.dim_list=[1:ncoords_tot]; %since we added lower and higher dimensions
             sets.subj_id=sprintf('%s%s','subject ',zpad(is,2));
             sets.subj_id_short=sprintf('%s%s','s',zpad(is,2));
@@ -533,42 +553,54 @@ sets=xform_subj{is}.sets{1};
         end
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 concatenate datasets aross subjects
 
+</div>
+
 ```matlab
-dataspace=xform_subj{1};
+        dataspace=xform_subj{1};
         for is=2:nsubjs
             dataspace=rs_concat_coordsets(dataspace,xform_subj{is});
         end
         sim.dataspace.(transform_name)=dataspace;
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 plot
 
+</div>
+
 ```matlab
-aux_datadisp=struct;
+        aux_datadisp=struct;
         if if_disp_coordsets
             for is_ptr=1:length(subjs_disp)
                 is=subjs_disp(is_ptr);
                 aux_datadisp.opts_disp=sim.stimspace_disp_auxout.opts_disp; %starting point for plot is how the transforms were plotted
 ```
 
+<div class="demo-indent" style="margin-left: 15ch" markdown="1">
+
 aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it)}; %show each transform in a separate column
 
+</div>
+
 ```matlab
-aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
+                aux_datadisp.opts_disp=rmfield(aux_datadisp.opts_disp,'axis_labels'); %use default labels
                 aux_datadisp.opts_disp.set_labels=sprintf('subj %1.0f %s',is,transform_name);
                 aux_datadisp.opts_disp.set_select=is; %just show this subject
                 aux_datadisp.opts_disp.set_colors={'k'}; %black
 ```
 
 ```matlab
-figure(aux_datadisp.opts_disp.fig_handle); %activate the figure for this paradigm type
+                figure(aux_datadisp.opts_disp.fig_handle); %activate the figure for this paradigm type
                 aux_datadisp.opts_disp.axis_handles={subplot(fig_rows,fig_cols,it+is_ptr*fig_cols)}; %show each transform in a separate column
 ```
 
 ```matlab
-if sim.if_findrays %setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout
+                if sim.if_findrays %setups for which points to label, etc, are inherited from sim.xformspace_disp_auxout
                     aux_datadisp.opts_disp_enh=sim.stimspace_disp_auxout.opts_disp_enh; %had if_rings info
                     sim.dataspace_disp_auxout.(transform_name){is}=rs_disp_enh_coordsets(dataspace,aux_datadisp,sim.stimspace_rays);
                 else
@@ -631,7 +663,7 @@ if if_knit
 ```
 
 ```matlab
-disp(' ');
+    disp(' ');
     for ip=1:length(paradigm_names)
         paradigm_name=paradigm_names{ip};
         stim_data=sims.(paradigm_name).stimspace;
@@ -648,10 +680,14 @@ disp(' ');
     sims.knitted.stimspace=knitted;
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 for each transformation and subject, align and knit the data across paradigms
 
+</div>
+
 ```matlab
-sims.knitted.dataspace=struct();
+    sims.knitted.dataspace=struct();
     for it=1:ntransforms
         transform_name=transform_names{it};
         concat_knitted=struct;

@@ -368,6 +368,9 @@ for idim=dim_list
         end
     end
 end
+```
+
+```matlab
 figure;
 set(gcf,'Position',[100 100 1200 900]);
 ncols=3;
@@ -376,7 +379,7 @@ for idim=dim_list
 ```
 
 ```matlab
-for ias=1:2
+    for ias=1:2
         subplot(max(dim_list),3,ncols*(idim-1)+ias)
         plot(rmsdev{ias,idim}');
         xlabel('iter');
@@ -399,7 +402,7 @@ end
 drawnow;
 ```
 
-![rs_knit_coordsets_demo_chunk14_fig1](../../images/demos/rs_knit_coordsets_demo_chunk14_fig1.png)
+![rs_knit_coordsets_demo_chunk15_fig1](../../images/demos/rs_knit_coordsets_demo_chunk15_fig1.png)
 
 do statistics?
 
@@ -411,30 +414,42 @@ if nshuffs>0
 ```
 
 ```matlab
-aux_stats.opts_knit.if_stats=1;
+    aux_stats.opts_knit.if_stats=1;
     aux_stats.opts_knit.nshuffs=nshuffs;
     aux_stats.opts_knit.if_plot=0; %plot locally
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 knit and compute stats without allowing scaling between sets
 
+</div>
+
 ```matlab
-[data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats);
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats);
 ```
+
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
 
 knit and compute stats, allow scaling between sets;
 
+</div>
+
 ```matlab
-aux_allowscale_stats=aux_stats;
+    aux_allowscale_stats=aux_stats;
     aux_allowscale_stats.opts_knit.allow_scale=1;
     aux_allowscale_stats.opts_knit.if_normscale=1;
     [data_knit_allowscale_stats,aux_knit_allowscale_stats]=rs_knit_coordsets(data_align,aux_allowscale_stats);
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 make a combined plot
 
+</div>
+
 ```matlab
-fig_handle=figure;
+    fig_handle=figure;
     set(gcf,'Position',[100 100 1400 750]);
     set(gcf,'NumberTitle','off');
     knit_stats_setup=aux_knit_stats.knit_stats_setup;
@@ -445,18 +460,22 @@ fig_handle=figure;
     end
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 plot non-rescaled analysis
 
+</div>
+
 ```matlab
-aux_stats_replot=aux_stats;
+    aux_stats_replot=aux_stats;
 ```
 
 ```matlab
-aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
+    aux_stats_replot.knit_stats=aux_knit_stats.knit_stats;
 ```
 
 ```matlab
-aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
+    aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
     aux_stats_replot.knit_stats_setup.fig_handle=fig_handle;
     aux_stats_replot.knit_stats_setup.dataset_labels=paradigm_names;
     aux_stats_replot.knit_stats_setup.stimulus_labels=knit_stats_setup.stimulus_labels;
@@ -465,22 +484,26 @@ aux_stats_replot.knit_stats_setup=aux_knit_stats.knit_stats_setup;
     [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_replot);
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 plot rescaled analysis
 
+</div>
+
 ```matlab
-aux_stats_allowscale_replot=aux_stats_replot;
+    aux_stats_allowscale_replot=aux_stats_replot;
 ```
 
 ```matlab
-aux_stats_allowscale_replot.knit_stats=aux_knit_allowscale_stats.knit_stats;
+    aux_stats_allowscale_replot.knit_stats=aux_knit_allowscale_stats.knit_stats;
 ```
 
 ```matlab
-aux_stats_allowscale_replot.knit_stats_setup.row=2;
+    aux_stats_allowscale_replot.knit_stats_setup.row=2;
 ```
 
 ```matlab
-[data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_allowscale_replot);
+    [data_knit_stats,aux_knit_stats]=rs_knit_coordsets(data_align,aux_stats_allowscale_replot);
 end %nshuffs
 ```
 
@@ -533,7 +556,7 @@ knitting  37 stimuli across   3 datasets, dimensions   1  2  3  4  5  6  7
  creating Procrustes consensus from dim  7 to dim  7 based on component datasets, iterations:  220, final total rms dev per coordinate:  0.37148
 ```
 
-![rs_knit_coordsets_demo_chunk26_fig1](../../images/demos/rs_knit_coordsets_demo_chunk26_fig1.png)
+![rs_knit_coordsets_demo_chunk27_fig1](../../images/demos/rs_knit_coordsets_demo_chunk27_fig1.png)
 
 write datasets if requested
 
@@ -545,7 +568,7 @@ if if_write
 ```
 
 ```matlab
-aux_allowscale.opts_write=struct;
+    aux_allowscale.opts_write=struct;
     aux_allowscale.opts_write.if_gui=0;
     aux_allowscale_out_write=rs_write_coorddata('./demos/gbcdea3pt_coords_MC_scale',data_knit_allowscale,aux_allowscale);
 end

@@ -82,10 +82,14 @@ for ipara=1:nparas
     if (if_ok)
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 align data, rotate to consensus, and rotate consensus into pca coords
 
+</div>
+
 ```matlab
-aux_align_def=auxs_force.opts_align;
+        aux_align_def=auxs_force.opts_align;
         aux_align_def.opts_align.if_log=0;
         [data_align,aux_align]=rs_align_coordsets(data_read,aux_align_def);
         aux_knit_def=auxs_force.opts_knit;
@@ -96,10 +100,14 @@ aux_align_def=auxs_force.opts_align;
         rays_use=aux_knit.rayss{1};
 ```
 
+<div class="demo-indent" style="margin-left: 8ch" markdown="1">
+
 choose datapoints to label:  only if stim name is <=6 chars
 
+</div>
+
 ```matlab
-data_label_list=[];
+        data_label_list=[];
         nstims=data_disp.sas{1}.nstims;
         for istim=1:nstims
             if length(data_disp.sas{1}.typenames{istim})<=label_maxlength
@@ -109,7 +117,7 @@ data_label_list=[];
 ```
 
 ```matlab
-hfig=figure;
+        hfig=figure;
         for icgp=1:ncgps+1
             for icol=1:nenh+1
                 haxes_all{icgp,icol}=subplot(ncgps+1,1+nenh,icol+(icgp-1)*(nenh+1));
@@ -135,7 +143,7 @@ hfig=figure;
 ```
 
 ```matlab
-opts_disp2=opts_disp;
+        opts_disp2=opts_disp;
         opts_disp2.fig_position=[50 80 1400 800];
         opts_disp2.set_offsets='margin_fraction';
         opts_disp2.set_offsets_margin_fraction=ones(1,opts_disp.dim_select);

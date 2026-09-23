@@ -1,91 +1,91 @@
 {
   "rs_align_disp_coordsets_demo": {
     "source_sha256": "7833d6a0918d9ba4f8da212c192c02117d0806562a75ada9fa920a4f1075f2f6",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 2,
     "error": null
   },
   "rs_align_disp_enh_coordsets_demo": {
     "source_sha256": "8acadd7e1c43fb08ac5f03239a1cc49b2692a9d559e390113f407ebea38ecb35",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 1,
     "error": "Undefined function 'btc_exptname' for input arguments of type 'struct'."
   },
   "rs_disp_coordsets_demo": {
     "source_sha256": "de7d532a0821de240446afe1a63951e0b22d432b329d4fecb09f271c34dea78d",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 9,
     "error": null
   },
   "rs_disp_coordsets_demo_cars": {
     "source_sha256": "7ddece7b7f3bc126e413cd2c61de028813938d4add1d672bdeaa95676b1c446c",
-    "captured_at": "2026-09-16T01:00:31+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 3,
     "error": null
   },
   "rs_disp_coordsets_demo_opposites": {
     "source_sha256": "278bfe295519b8ce295f1260911668ce08660c577de1008e9eec0edccb41b766",
-    "captured_at": "2026-09-16T01:00:31+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 9,
     "error": null
   },
   "rs_knit_coordsets_demo": {
-    "source_sha256": "7781e4215bbf8f9cf4ce0a66cf81f526344561a2d9fbf2652e86ba5f9e6a3c11",
-    "captured_at": "2026-09-21T16:24:15+00:00",
+    "source_sha256": "eb7b8692905f36d89ca33f1a9dec5f9393d1eafe98fea19ab40c896cfbfb42e1",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 4,
     "error": null
   },
   "rs_read_coorddata_demo_cars": {
     "source_sha256": "8f8cfbc032c13b3bf5e767a7203c272cf7a6c0b8e04c358b0a85f6c18cff796d",
-    "captured_at": "2026-09-16T01:00:31+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 0,
     "error": null
   },
   "rs_read_coorddata_demo_opposites": {
     "source_sha256": "4f7ba20fe8cd7d218a882576217d150e84f030b6be137f4a79e020d3c7735bab",
-    "captured_at": "2026-09-16T01:00:31+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 0,
     "error": null
   },
   "rs_toygeom_disp": {
     "source_sha256": "bfb8c8ee1ab9e3f0a2abed1f3688b3e1e8990c2c2186805c61d3324519c14155",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 9,
     "error": null
   },
   "rs_toygeom_scenarioA": {
     "source_sha256": "90a60fde0d56b40a1ed524e58fecd4426d5b0e95899b0316b5dca391e3698cff",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 74,
     "error": null
   },
   "rs_toygeom_scenarioB": {
     "source_sha256": "ca2d6696e32a655608c5f8286f65d00dc9874846e574616abfc6c88dfc2d6e2f",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 10,
     "error": null
   },
   "rs_toygeom_scenarioC": {
     "source_sha256": "e2b4be076ac9c97f12059b58539d2e6fc85f292478b36b09548bb07d3cefe60f",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 7,
     "error": null
   },
   "rs_toygeom_scenarioD": {
     "source_sha256": "f28c5745e773706ba3954785f5a74595c08452ad8405ff2e826b9ac736a5b234",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 11,
     "error": null
   },
   "rs_toygeom_sim": {
     "source_sha256": "8f02ed6863a8d6053013644b4e2694ef726f7d2a15aafd81f33bd19d41e9527e",
-    "captured_at": "2026-09-16T12:09:14+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 6,
     "error": null
   },
   "rs_xform_coordsets_demo": {
     "source_sha256": "d6b6663160e1ad53e10adf85687a89d6cb506bd217253be33ab2f0f85345aa7d",
-    "captured_at": "2026-09-16T00:34:50+00:00",
+    "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 8,
     "error": null
   }

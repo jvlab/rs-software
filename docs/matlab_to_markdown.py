@@ -149,6 +149,16 @@ def process_see_also(line, FUNCTION_REGISTRY) -> str:
     return prefix + ", ".join(links)
 
 
+def comment_indent(line: str) -> int:
+    """
+    Return the indentation of a source line, in columns.
+
+    Tabs count as 4 columns, the MATLAB editor default.
+    """
+    expanded = line.expandtabs(4)
+    return len(expanded) - len(expanded.lstrip())
+
+
 def parse_blocks(matlab_code):
     """
     Split MATLAB source into an ordered list of blocks.
@@ -160,11 +170,17 @@ def parse_blocks(matlab_code):
                   code blocks the original source lines are kept verbatim.
         snapshot  code blocks only: the snapshot mode requested by any
                   %#demo-snapshot directive in the block, SNAPSHOT_NONE if none
+        indent    text blocks only: the indentation of the comment lines, in
+                  columns, so the renderer can indent the prose to match
 
     The splitting mirrors the original single-pass state machine: a run of
     comment lines becomes one text block, a run of code lines (including any
     interleaved blank lines) becomes one code block, and blank lines outside
-    any run are dropped.
+    any run are dropped. A comment line with text at a different indentation
+    from the text before it starts a new text block, so each block has one
+    indentation. Empty comment lines ("%" alone, used as separators) take the
+    indentation of the block they fall in. Text blocks never affect how code
+    is split into chunks.
 
     Raises:
         ValueError: for a %#demo-snapshot directive with an unknown argument,
@@ -174,6 +190,7 @@ def parse_blocks(matlab_code):
     blocks = []
     code_buffer = []
     comment_buffer = []
+    comment_block_indent = None     # indentation of the buffered comment text
     code_snapshot = SNAPSHOT_NONE
 
     def flush_code():
@@ -185,9 +202,12 @@ def parse_blocks(matlab_code):
         code_snapshot = SNAPSHOT_NONE
 
     def flush_comments():
+        nonlocal comment_block_indent
         if comment_buffer:
-            blocks.append({"kind": "text", "lines": list(comment_buffer)})
+            blocks.append({"kind": "text", "lines": list(comment_buffer),
+                           "indent": comment_block_indent or 0})
             comment_buffer.clear()
+        comment_block_indent = None
 
     for line_number, raw in enumerate(matlab_code.splitlines(), start=1):
         mode = snapshot_mode(raw, line_number)
@@ -212,6 +232,11 @@ def parse_blocks(matlab_code):
         if stripped.startswith("%"):
             flush_code()
             comment_text = re.sub(r"^%\s?", "", stripped)
+            if comment_text.strip():
+                indent = comment_indent(line)
+                if comment_block_indent is not None and indent != comment_block_indent:
+                    flush_comments()
+                comment_block_indent = indent
             comment_buffer.append(comment_text)
         else:
             flush_comments()
@@ -222,9 +247,21 @@ def parse_blocks(matlab_code):
     return blocks
 
 
+def code_block_text(lines):
+    """
+    Join the lines of a code block into the text shown in its fence.
+
+    Blank lines at either end and trailing whitespace are dropped, but the
+    indentation of the first line is kept. A plain strip() would remove it,
+    and a block that starts inside a loop (because a comment split the loop)
+    would show its first line flush left and the rest indented.
+    """
+    return "\n".join(lines).strip("\n").rstrip()
+
+
 def code_chunk_texts(blocks):
     """
-    Return the non-empty, stripped code strings in order.
+    Return the non-empty code strings in order, as code_block_text() gives them.
 
     This is the definition of a "chunk": the exact text that appears inside a
     ```matlab fence. The capture spec builder and the renderer both derive
@@ -234,9 +271,9 @@ def code_chunk_texts(blocks):
     for block in blocks:
         if block["kind"] != "code":
             continue
-        stripped = "\n".join(block["lines"]).strip()
-        if stripped:
-            chunks.append(stripped)
+        text = code_block_text(block["lines"])
+        if text.strip():
+            chunks.append(text)
     return chunks
 
 
@@ -252,6 +289,21 @@ def code_chunk_snapshots(blocks):
         for block in blocks
         if block["kind"] == "code" and "\n".join(block["lines"]).strip()
     ]
+
+
+def indent_prose(text: str, indent: int) -> str:
+    """
+    Indent a paragraph of prose by 'indent' columns on the page.
+
+    Markdown has no indented prose: leading spaces make a code block. So the
+    text goes in an HTML block with a left margin in "ch", the width of one
+    character, and markdown="1" keeps it rendered as markdown (md_in_html is
+    enabled in mkdocs.yml). Unindented text is returned unchanged.
+    """
+    if indent <= 0:
+        return text
+    return (f'<div class="demo-indent" style="margin-left: {indent}ch" markdown="1">'
+            f"\n\n{text}\n\n</div>")
 
 
 def render_capture(entry) -> str:
@@ -306,11 +358,11 @@ def render_blocks(blocks, FUNCTION_REGISTRY, manifest=None) -> str:
                     processed.append(process_see_also(line, FUNCTION_REGISTRY))
             text = "\n".join(processed).strip()
             if text:
-                output.append(text)
+                output.append(indent_prose(text, block.get("indent", 0)))
         else:
-            stripped = "\n".join(block["lines"]).strip()
-            if stripped:
-                output.append(f"```matlab\n{stripped}\n```")
+            text = code_block_text(block["lines"])
+            if text.strip():
+                output.append(f"```matlab\n{text}\n```")
                 if manifest is not None:
                     entry = manifest.get(chunk_index)
                     if entry:

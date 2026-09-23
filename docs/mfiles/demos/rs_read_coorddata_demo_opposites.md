@@ -110,10 +110,14 @@ switch which_read
             [data_set{ifile},aux_out{ifile}]=rs_read_coorddata(fn,aux);
 ```
 
+<div class="demo-indent" style="margin-left: 12ch" markdown="1">
+
 concatenate
 
+</div>
+
 ```matlab
-if ifile==1
+            if ifile==1
                 data_out=data_set{ifile};
             else
                 data_out=rs_concat_coordsets(data_out,data_set{ifile});

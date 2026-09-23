@@ -199,10 +199,14 @@ for ixform=1:nxforms
     end
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 specify the transformation
 
+</div>
+
 ```matlab
-xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
+    xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ixform});
     if isempty(xform{ixform})
         [xform{ixform},aux_spec_outs{ixform}]=rs_xform_specify(data_use,setfield(auxs_force.opts_xform,'opts_xform',opts_xform));
         desc=sprintf('mode: %s (%s), centering specified by %s',opts_xform.mode,opts_xform.source,opts_xform.centering_specifier);
@@ -212,16 +216,24 @@ xform_name=sprintf('transformation %1.0f, starting with %s',ixform,data_start{ix
     end
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 do the transformations
 
+</div>
+
 ```matlab
-[data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},setfield(struct(),'opts_xform',auxs_force.opts_xform));
+    [data_xform{ixform},aux_xform_outs{ixform}]=rs_xform_apply(data_use,xform{ixform},setfield(struct(),'opts_xform',auxs_force.opts_xform));
 ```
+
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
 
 plot: top row is untransformed data, dims 2 and 3; bottom row is transfornmed data
 
+</div>
+
 ```matlab
-hfig=figure;
+    hfig=figure;
     haxes=cell(1,nds);
     for id=1:nds
         haxes{1,id}=subplot(1,nds,id);
@@ -251,7 +263,7 @@ hfig=figure;
 ```
 
 ```matlab
-if strcmp(data_start{ixform},'raw')
+    if strcmp(data_start{ixform},'raw')
         opts_disp_init.data_label_setsel_method='all';
         opts_disp_init.connect_sets_method='list';
         opts_disp_init.connect_sets_list=[1 3;2 4]; %connect each dataset with its transform

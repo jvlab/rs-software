@@ -82,10 +82,14 @@ for iex=1:nex
     end
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 read the coordinates and metadata
 
+</div>
+
 ```matlab
-[data_read{iex},aux_read{iex}]=rs_get_coordsets(filenames{iex},aux_in{iex});
+    [data_read{iex},aux_read{iex}]=rs_get_coordsets(filenames{iex},aux_in{iex});
     if ~isempty(paradigm_type_assert) %optionally assert paradigm type
         data_read{iex}.sets{1}.paradigm_type=paradigm_type_assert;
     end
@@ -97,16 +101,24 @@ read the coordinates and metadata
     opts_disp{iex}.set_labels=data_read{iex}.sets{1}.subj_id;
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 plot
 
+</div>
+
 ```matlab
-aux_out{iex}=rs_disp_coordsets(data_read{iex},setfield(struct,'opts_disp',opts_disp{iex})); %create the plot
+    aux_out{iex}=rs_disp_coordsets(data_read{iex},setfield(struct,'opts_disp',opts_disp{iex})); %create the plot
 ```
+
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
 
 enhanced plot
 
+</div>
+
 ```matlab
-if if_enh
+    if if_enh
         if isfield(opts_disp{iex},'perp_data_dims') %plot without dropped perps
             opts_disp_use=rmfield(opts_disp{iex},'perp_data_dims');
             aux_out_enh_noperp{iex}=rs_disp_enh_coordsets(data_read{iex},setfields(struct,{'opts_disp','opts_disp_enh'},{opts_disp_use,opts_disp_enh{iex}}),aux_read{iex}.rayss{1});

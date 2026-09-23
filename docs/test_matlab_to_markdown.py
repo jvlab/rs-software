@@ -9,8 +9,11 @@ from matlab_to_markdown import (
     SNAPSHOT_ALL,
     SNAPSHOT_CURRENT,
     SNAPSHOT_NONE,
+    code_block_text,
     code_chunk_snapshots,
     code_chunk_texts,
+    comment_indent,
+    indent_prose,
     is_prose_comment,
     parse_blocks,
     parse_matlab_to_markdown,
@@ -182,3 +185,86 @@ def test_is_prose_comment_tells_prose_from_whole_line_directives():
     assert is_prose_comment("   % indented prose with %#demo-snapshot inside")
     assert not is_prose_comment("%#demo-snapshot")
     assert not is_prose_comment("plot(x);   % a trailing comment")
+
+
+# --- indentation of code blocks -----------------------------------------
+
+def test_first_line_of_an_indented_block_keeps_its_indentation():
+    # A comment inside a loop splits it, so the second block starts indented.
+    source = (
+        "% t: d\n"
+        "for k=1:2\n"
+        "    x = k;\n"
+        "    % inside the loop\n"
+        "    y = k;\n"
+        "    z = k;\n"
+        "end\n"
+    )
+    md = parse_matlab_to_markdown(source, REG)
+    assert "```matlab\n    y = k;\n    z = k;\nend\n```" in md
+
+
+def test_chunk_texts_keep_the_indentation_the_page_shows():
+    source = "% t: d\nfor k=1:2\n    % c\n    y = k;\nend\n"
+    assert code_chunk_texts(parse_blocks(source)) == ["for k=1:2", "    y = k;\nend"]
+
+
+def test_code_block_text_drops_blank_lines_at_the_ends_only():
+    lines = ["", "    a = 1;", "", "    b = 2;   ", "", ""]
+    assert code_block_text(lines) == "    a = 1;\n\n    b = 2;"
+
+
+# --- indentation of comments --------------------------------------------
+
+def test_comment_indent_counts_spaces_and_tabs_as_four():
+    assert comment_indent("% top level") == 0
+    assert comment_indent("    % four spaces") == 4
+    assert comment_indent("\t% one tab") == 4
+    assert comment_indent("\t    % tab and four spaces") == 8
+
+
+def test_unindented_prose_is_left_as_plain_markdown():
+    assert indent_prose("some text", 0) == "some text"
+
+
+def test_indented_prose_goes_in_a_div_with_a_matching_margin():
+    html = indent_prose("**inside** the loop", 8)
+    assert html.startswith('<div class="demo-indent" style="margin-left: 8ch" markdown="1">')
+    assert "\n\n**inside** the loop\n\n</div>" in html
+
+
+def test_indented_comment_inside_a_loop_is_rendered_indented():
+    source = (
+        "% t: d\n"
+        "for k=1:2\n"
+        "    x = k;\n"
+        "    %\n"
+        "    % inside the loop\n"
+        "    %\n"
+        "    y = k;\n"
+        "end\n"
+    )
+    md = parse_matlab_to_markdown(source, REG)
+    assert '<div class="demo-indent" style="margin-left: 4ch" markdown="1">\n\ninside the loop' in md
+
+
+def test_a_change_of_indentation_starts_a_new_text_block():
+    source = "% t: d\nx = 1;\n% top level\n    % indented\n% top again\ny = 2;\n"
+    texts = [b for b in parse_blocks(source) if b["kind"] == "text"]
+    assert [(b["indent"], [l for l in b["lines"] if l]) for b in texts[1:]] == [
+        (0, ["top level"]), (4, ["indented"]), (0, ["top again"]),
+    ]
+
+
+def test_separator_lines_do_not_split_a_text_block():
+    # A bare "%" at another indentation belongs to the block it falls in.
+    source = "% t: d\nx = 1;\n    %\n    % indented\n%\ny = 2;\n"
+    texts = [b for b in parse_blocks(source) if b["kind"] == "text"]
+    assert len(texts) == 2
+    assert texts[1]["indent"] == 4
+
+
+def test_comment_indentation_does_not_change_the_code_chunks():
+    flat = "% t: d\nfor k=1:2\n% c\n    y = k;\nend\n"
+    indented = "% t: d\nfor k=1:2\n    % c\n    y = k;\nend\n"
+    assert code_chunk_texts(parse_blocks(flat)) == code_chunk_texts(parse_blocks(indented))

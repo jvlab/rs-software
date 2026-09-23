@@ -160,7 +160,7 @@ for plot_type=1:3
 ```
 
 ```matlab
-aux_disp2.opts_disp.dim_select=idim;
+        aux_disp2.opts_disp.dim_select=idim;
         aux_disp2.opts_disp.fig_name=sprintf('%s dim %1.0f: separate, connect one stim as a chain',prefix,idim);
         data_connect_ptrs=union(strmatch('hot',data_disp.sas{1}.typenames,'exact'),strmatch('cold',data_disp.sas{1}.typenames,'exact'));
         aux_disp2.opts_disp.connect_sets_data_list=data_connect_ptrs; %just connect the points labeled hot and cold
@@ -168,7 +168,7 @@ aux_disp2.opts_disp.dim_select=idim;
 ```
 
 ```matlab
-aux_disp3.opts_disp.dim_select=idim;
+        aux_disp3.opts_disp.dim_select=idim;
         aux_disp3.opts_disp.fig_name=sprintf('%s dim %1.0f: separate, show rays',prefix,idim);
         rs_disp_enh_coordsets(data_disp,aux_disp3,rays_disp); %enhanced plots with rays and rings
     end

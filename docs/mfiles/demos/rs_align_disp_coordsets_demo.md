@@ -139,10 +139,14 @@ haxes=cell(1,ngroups);
 for iset=1:nsets
 ```
 
+<div class="demo-indent" style="margin-left: 4ch" markdown="1">
+
 each call to rs_disp_coordsets will plot data from one subject, both coordinate groups
 
+</div>
+
 ```matlab
-for igroup=1:2 %set up subplots for this subject
+    for igroup=1:2 %set up subplots for this subject
         haxes{igroup}=subplot(ngroups,nsets,iset+(igroup-1)*nsets); %first row is first coord group, second row is second coord group
     end
     opts_disp_raw.axis_handles=haxes;
