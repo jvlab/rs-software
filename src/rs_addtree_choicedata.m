@@ -341,17 +341,18 @@ aux_dirfit_ah.opts_dirfit.if_fit_ah=1;
 aux_out.opts_dirfit_a=aux_dirfit_a.opts_dirfit;
 aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
-% fit Dirichlet parameters to triplets, using ntrials_triplets
-% (ntrials is organized by tents, which makes multiple use of each triplet)
+% fit Dirichlet parameters according to occurrences in tents
+% note that this weighs triplets more heavily if they occur in multiple tents
+%
 ithr=0;
 for thr=min(ntrials(:)):max(ntrials(:)) %ntrials_triplets is organized by triplets; ntrials is organized by tents, and trials are used more
-    triads_use=find((ntrials_triplets(:)>=thr));
+    triads_use=find((ntrials(:)>=thr));
     ntriads_use=length(triads_use);
-    ntrials_use=sum(ntrials_triplets(triads_use));
+    ntrials_use=sum(ntrials(triads_use));
     if (ntriads_use>=aux.opts_addtree.ntriplets_min)
         ithr=ithr+1;
         ad.dirichlet.tallies(ithr,:)=[thr,ntriads_use,ntrials_use];
-        data_use=[ncloser_triplets(triads_use) ntrials_triplets(triads_use)];
+        data_use=[ncloser(triads_use) ntrials(triads_use)];
         if aux.opts_addtree.if_log
             disp(sprintf('fitting Dirichlet params after thresholding triads by %3.0f trials',thr))
         end
@@ -466,17 +467,17 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                     thr_val=thr;
                 case 'avg'
                     tents_use=find(sum(ntrials,2)>=thr);
-                    thr_val=thr/3; %average not total
+                    thr_val=thr/ncomps; %average not total
             end
             if (length(tents_use)>=aux.opts_addtree.ntents_min)
                 ntents_use=length(tents_use);
                 if ntents_use~=nuse_prev
                     did_or_skipped='did'; %have to calculate
                     nuse_prev=ntents_use;
-                    ntrials_use=sum(sum(ntrials(triplets_use,:)));
-                    ad.tallies{ithr_type}(ithr,:)=[thr_val ntriplets_use ntrials_use]; %threshold, number of triplets, number of trials
+                    ntrials_use=sum(sum(ntrials(tents_use,:)));
+                    ad.tallies{ithr_type}(ithr,:)=[thr_val ntents_use ntrials_use]; %threshold, number of tents, number of trials
                     %compute private best-fitting a and h
-                    data_use=[reshape(ncloser(triplets_use,:),3*ntriplets_use,1) reshape(ntrials(triplets_use,:),3*ntriplets_use,1)];
+                    data_use=[reshape(ncloser(tents_use,:),ncomps*ntents_use,1) reshape(ntrials(tents_use,:),ncomps*ntents_use,1)];
                     if (ipg==1)
                         %private fits, assuming fixed values of h
                         for ihfix=1:nhfix
