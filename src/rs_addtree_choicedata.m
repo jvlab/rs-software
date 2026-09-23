@@ -65,8 +65,8 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %     - **Symmetry and ultrametric indices**
 %     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields
 %
-%         - a (int 3-D array): a(1,:,ih) is the fitted Dirichlet shape parameter 'a' and log likelihood per trial assuming h=h_fixlist(ih)
-%         - ah (int 2-D array): ah(1,:) are the jointly fitted Dirichlet parameters 'a' and 'h'
+%         - a (int 3-D array): a(1,1:2,ih) is the fitted Dirichlet shape parameter 'a' and log likelihood per trial assuming h=h_fixlist(ih)
+%         - ah (int 2-D array): ah(1,1:3) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold value dirichlet.tallies(ithr,1)
 %         - sym_hfixed (cell 2-D array): sym_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
 %         - sym (cell 2-D array): sym{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
 %         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
@@ -396,9 +396,9 @@ ad.meta.surr_types={'orig data','flip_all','flip_any'};
 ad.global.a=ad.dirichlet.a(1,:,:); % values with h fixed
 %compute using global a and h from unthresholded Dirichlet and save in r.ad.global.ah
 if ad.dirichlet.ah(1,2)>=0 %use full fit if h>=0
-    ad.global.ah=ad.dirichlet.ah(1,1:2);
+    ad.global.ah=ad.dirichlet.ah(1,:);
 else %otherwise use best fit with h=0
-    ad.global.ah=[ad.dirichlet.a(1,1,1),0];
+    ad.global.ah=[ad.dirichlet.a(1,1,1),0,ad.dirichlet.a(1,2,1)];
 end
 if aux.opts_addtree.if_private % compute these later using private a and h, to go in r.ad.private.[a|ah]{ithr_type}
     ad.private=struct;
