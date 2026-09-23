@@ -10,13 +10,13 @@ A "representational space" is a construct in which elements in a domain are poin
 
 The package has two main components that may be used together or independently. 
 
-*  One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. Implementations are provided in Python ??, via a Matlab wrapper over Python code ??.  Web-based access to the Python tools (no installation required) is also available.
+*  One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. Implementations are provided in [Python](rs-py-overview.md), via a [Matlab wrapper over Python code](python-matlab-octave.md#running-python-inside-matlab).  Web-based access to the Python tools (no installation required) is also available.
 
-*  A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel. Implementations are available in Matlab ?? or via a Python wrapper over Matlab code ??.
+*  A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel. Implementations are available in [Matlab](rs-ml-overview.md) or via a [Python wrapper over Matlab code](python-matlab-octave.md#running-matlab-inside-python).
 
 *  In addition, tools are available for analysis of the perceptual judgments directly. These include a comparison of the perceptual judgments via the representational spaces they generate, and analyses of statistics of triadic judgments.
 
-Each components of the package has its own set of demos. Installation instructions may be found ??here for Matlab and ??here for Python.
+Each components of the package has its own set of demos. Installation instructions may be found [here](rs-ml-installation.md) for Matlab and [here](rs-py-installation.md) for Python.
 
 
 ![Workflow diagram](./images/overview_18Sep26.png)
@@ -32,7 +32,7 @@ The starting point is a set of perceptual judgments and the associated metadata,
 
 The main outputs are `coordinate files`, which contain coordinates of the points in a representational space and the associated metadata, and with statistics to assess how well these coordinates account for the similarity judgments.
 
-Key demos are ??
+Key demos are [Demo 1](rs-py-demo1.md), [Demo 2](rs-py-demo2.md), and [Demo 3](rs-py-demo3.md).
 
 This component is written in Python.  It may be run from a MATLAB/Octave environment as shown here ??
 
@@ -56,7 +56,7 @@ The key operations performed are
 
 The main outputs are coordinate sets and the associated metadata, geometric models of transformations, graphics, and statistics. 
 
-Key demos are ??
+Key demos are in the [MATLAB demos](demos.md).
 
 This component is written in MATLAB and is Octave-compatible.  MATLAB routines are in `rs`; many of these are primarily wrappers around routines in `psg` that carry out the numerics.  MATLAB code may be accessed from a Python environment as shown here ??
 
@@ -67,9 +67,13 @@ With a starting point of a single `choice file` of triadic judgments, one may
   * analyze the statistics of the choice probabilities, via `rs_dirfit_choicedata`
   * characterize the ordinal relationships of the choice probabilities, with regard to compatibility with symmetry and the ultrametric inequality, via `rs_symumi_choicedata`, see  [Mathematical Neuroscience and Applications](https://mna.episciences.org/16310/pdf)
 
+Key demos for these routines are in preparation. In the meantime, see the general [MATLAB demos](demos.md) page.
+
 With a starting point of two `choice files`, one may
 
   * [determine whether the representational spaces they generate are significantly different](comparing-rs-python.md)
+
+Key demos are the [Python version](comparing-rs-python.md) and the [web version](comparing-rs-streamlit.md).
 
 
 ## Credits and feedback
