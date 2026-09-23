@@ -34,7 +34,7 @@ The main outputs are `coordinate files`, which contain coordinates of the points
 
 Key demos are [Demo 1](rs-py-demo1.md), [Demo 2](rs-py-demo2.md), and [Demo 3](rs-py-demo3.md).
 
-This component is written in Python.  It may be run from a MATLAB/Octave environment as shown here ??
+This component is written in Python.  It may be run from a MATLAB/Octave environment, as shown [here](python-matlab-octave.md#running-python-inside-matlab).
 
 ## Tools for manipulating representational spaces
 
@@ -58,7 +58,7 @@ The main outputs are coordinate sets and the associated metadata, geometric mode
 
 Key demos are in the [MATLAB demos](demos.md).
 
-This component is written in MATLAB and is Octave-compatible.  MATLAB routines are in `rs`; many of these are primarily wrappers around routines in `psg` that carry out the numerics.  MATLAB code may be accessed from a Python environment as shown here ??
+This component is written in MATLAB and is Octave-compatible.  MATLAB routines are in `rs`; many of these are primarily wrappers around routines in `psg` that carry out the numerics.  MATLAB code may be accessed from a Python environment, as shown [here](python-matlab-octave.md#running-matlab-inside-python).
 
 ## Tools for analyzing perceptual judgments
 
