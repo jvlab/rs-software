@@ -128,7 +128,7 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %     - A triplet is a set of three triads built out of the same three stimuli, in which each stimulus in turn serves as the reference
 %     - The number of trials in a triplet is the sum of the number of trials in its three triads
 % 
-% See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE, PSG_TENTLIKE_DEMO.
+% See also: RS_DIRFIT_CHOICEDATA, RS_SYMUMI_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE, PSG_TENTLIKE_DEMO.
 %
 if (nargin<=1)
     aux=struct;
@@ -226,7 +226,7 @@ ncomps=6; %six rank choice probabilities to be compared
 %
 partitions=cell(0);
 for ineq=1:nineq
-    partitions{ineq}=psg_ineq_logic(ncomps,ineq_logic_types{ineq},setfield([],'if_log',1));
+    partitions{ineq}=psg_ineq_logic(ncomps,ineq_logic_types{ineq},setfield([],'if_log',aux.opts_addtree.if_log));
     if aux.opts_addtree.if_log
         disp(sprintf('created inequality logic for %s',ineq_logic_types{ineq}));
     end
@@ -292,7 +292,7 @@ end
 %
 %now create tents from the triplets
 %
-[ncloser,ntrials]=psg_tent_choices(nstims,data,ncloser_triplets,ntrials_triplets,1);
+[ncloser,ntrials]=psg_tent_choices(nstims,data,ncloser_triplets,ntrials_triplets,aux.opts_addtree.if_log);
 ntriplets_exclude=nchoosek(nstims-1,nt); %number of triplets that exclude a given stimulus
 ntents=nstims*ntriplets_exclude;
 %
@@ -338,15 +338,20 @@ aux_dirfit_ah.opts_dirfit.if_fit_ah=1;
 aux_out.opts_dirfit_a=aux_dirfit_a.opts_dirfit;
 aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
+% fit Dirichlet parameters to triplets, using ntrials_triplets
+% (ntrials is organized by tents, which makes multiple use of each triplet)
 ithr=0;
-for thr=min(ntrials(:)):max(ntrials(:))
-    triads_use=find((ntrials(:)>=thr));
+for thr=min(ntrials(:)):max(ntrials(:)) %ntrials_triplets is organized by triplets; ntrials is organized by tents, and trials are used more
+    triads_use=find((ntrials_triplets(:)>=thr));
     ntriads_use=length(triads_use);
-    ntrials_use=sum(ntrials(triads_use));
+    ntrials_use=sum(ntrials_triplets(triads_use));
     if (ntriads_use>=aux.opts_addtree.ntriplets_min)
         ithr=ithr+1;
         ad.dirichlet.tallies(ithr,:)=[thr,ntriads_use,ntrials_use];
-        data_use=[ncloser(triads_use) ntrials(triads_use)];
+        data_use=[ncloser_triplets(triads_use) ntrials_triplets(triads_use)];
+        if aux.opts_addtree.if_log
+            disp(sprintf('fitting Dirichlet params after thresholding triads by %3.0f trials',thr))
+        end
         %fixed  values of h
         for ihfix=1:nhfix
             %
@@ -423,56 +428,17 @@ obs_all=[reshape(ncloser',[ncomps 1 ntents]),reshape(ntrials',[ncomps 1 ntents])
 params.a=ah(1);
 params.h=ah(2);
 liks_all=psg_ineq_apply(params,obs_all,partitions,permutes);
+if aux.opts_addtree.if_log
+    disp(sprintf('preliminary global calculations done for a fitted at %6.4f, h fitted at %6.4f',params.a,params.h));
+end   
 liks_hfixed_all=zeros(nineq,nflips,ntents,nhfix);
 for ihfix=1:nhfix
     params.a=ah_fixed(ihfix,1);
     params.h=ah_fixed(ihfix,2);
     liks_hfixed_all(:,:,:,ihfix)=psg_ineq_apply(params,obs_all,partitions,permutes);
-end
-disp(sprintf(' global calculations done.'));
-
-
-loglik_rat_sym_all=zeros(ntriplets,nflips);
-loglik_rat_umi_all=zeros(ntriplets,nflips);
-loglik_rat_sym_hfixed_all=zeros(ntriplets,nflips,nhfix);
-loglik_rat_umi_hfixed_all=zeros(ntriplets,nflips,nhfix);
-ah=ad.global.ah;
-ah_fixed=[squeeze(ad.dirichlet.a(1,1,:)),h_fixlist(:)];
-%
-opts_triplike=struct;
-for k=1:length(triplike_opts)
-    fn=triplike_opts{k};
-    if isfield(aux.opts_addtree,fn)
-        opts_triplike.(fn)=aux.opts_addtree.(fn);
-    end
-end
-aux_out.opts_triplike=opts_triplike;
-%
-for itriplet=1:ntriplets %accumulate likelihood ratios from each set of triplets   
-    obs_orig(:,1)=ncloser(itriplet,:)';
-    obs_orig(:,2)=ntrials(itriplet,:)';
-    obs_orig_flip=obs_orig(:,2)-obs_orig(:,1); 
-    %
-    for iflip=1:nflips %each surrogate
-        obs=obs_orig;
-        whichflip=find(flipconfigs(iflip,:)==1);
-        obs(whichflip,1)=obs_orig_flip(whichflip);
-        params.a=ah(1);
-        params.h=ah(2);
-        likrat=psg_umi_triplike(params,obs,opts_triplike);
-        loglik_rat_sym_all(itriplet,iflip)=log(likrat.sym);
-        loglik_rat_umi_all(itriplet,iflip)=log(likrat.umi_trans);
-        for ihfix=1:nhfix
-            params.a=ah_fixed(ihfix,1);
-            params.h=ah_fixed(ihfix,2);
-            likrat=psg_umi_triplike(params,obs,opts_triplike);
-            loglik_rat_sym_hfixed_all(itriplet,iflip,ihfix)=log(likrat.sym);
-            loglik_rat_umi_hfixed_all(itriplet,iflip,ihfix)=log(likrat.umi_trans);
-        end
-    end %iflip
-end %itriplet
-if aux.opts_addtree.if_log
-    disp(sprintf('symmetry and ultrametric global calculations done'));
+    if aux.opts_addtree.if_log
+        disp(sprintf('preliminary global calculations done for a fitted at %6.4f, h  fixed at %6.4f',params.a,params.h));
+    end   
 end
 %
 for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo with nconform=0, if_fast=1
@@ -484,7 +450,7 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
         thr=0; %threshold
         ithr=1; %threshold pointer
         if aux.opts_addtree.if_log
-            disp(sprintf('analyzing for symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
+            disp(sprintf('analyzing addtreee likelihood ratio for threshold type %s',thr_types{ithr_type}));
         end
         nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
         while (if_ok)

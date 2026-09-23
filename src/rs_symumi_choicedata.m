@@ -127,7 +127,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - A triplet is a set of three triads built out of the same three stimuli, in which each stimulus in turn serves as the reference
 %     - The number of trials in a triplet is the sum of the number of trials in its three triads
 % 
-% See also: RS_DIRFIT_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
+% See also: RS_DIRFIT_CHOICEDATA, RS_ADDTREE_CHOICEDATA, PSG_TRIPLET_CHOICES, LOGLIK_BETA_DISCRETE.
 %
 if (nargin<=1)
     aux=struct;
@@ -309,6 +309,7 @@ aux_dirfit_ah.opts_dirfit.if_fit_ah=1;
 aux_out.opts_dirfit_a=aux_dirfit_a.opts_dirfit;
 aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
+% fit Dirichlet parameters to triplets
 ithr=0;
 for thr=min(ntrials(:)):max(ntrials(:))
     triads_use=find((ntrials(:)>=thr));
@@ -318,6 +319,9 @@ for thr=min(ntrials(:)):max(ntrials(:))
         ithr=ithr+1;
         su.dirichlet.tallies(ithr,:)=[thr,ntriads_use,ntrials_use];
         data_use=[ncloser(triads_use) ntrials(triads_use)];
+        if aux.opts_symumi.if_log
+            disp(sprintf('fitting Dirichlet params after thresholding triads by %3.0f trials',thr))
+        end
         %fixed  values of h
         for ihfix=1:nhfix
             %
@@ -447,7 +451,7 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
         thr=0; %threshold
         ithr=1; %threshold pointer
         if aux.opts_symumi.if_log
-            disp(sprintf('analyzing for symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
+            disp(sprintf('analyzing symmetry and ultrametric likelihood ratio for threshold type %s',thr_types{ithr_type}));
         end
         nuse_prev=-1; %will allow for reuse if increasing the threshold doesn't change the number of triplets/tents used
         while (if_ok)
