@@ -50,7 +50,7 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %   su (struct): analysis results, a structure with fields
 %
 %     - **Dirichlet fits**
-%     - dirichlet (struct): Dirichlet fits with a range of thresholds for number of trials in a triad, with fields
+%     - dirichlet (struct): Dirichlet fits for lowest and highest thresholds for number of trials in a triad, with fields
 % 
 %         - tallies (int 2-D array): tallies(:,1) is threshold number of trials in a triad; tallies(:,2) is number of triads meeting the threshold; tallies(:,3) is number of trials in those triads
 %         - columns_tallies (cell 1-D array): labels for columns of tallies
@@ -310,8 +310,9 @@ aux_out.opts_dirfit_a=aux_dirfit_a.opts_dirfit;
 aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
 % fit Dirichlet parameters to triplets
+%
 ithr=0;
-for thr=min(ntrials(:)):max(ntrials(:))
+for thr=[min(ntrials(:)) max(ntrials(:))] %just compute extremes, and we only need min(ntrials(:)) for the index calculation below
     triads_use=find((ntrials(:)>=thr));
     ntriads_use=length(triads_use);
     ntrials_use=sum(ntrials(triads_use));

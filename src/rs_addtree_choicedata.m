@@ -52,7 +52,7 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %   ad (struct): analysis results, a structure with fields
 %
 %     - **Dirichlet fits**
-%     - dirichlet (struct): Dirichlet fits with a range of thresholds for number of trials in a triad, with fields
+%     - dirichlet (struct): Dirichlet fits for lowest and highest thresholds for number of trials in a triad, with fields
 % 
 %         - tallies (int 2-D array): tallies(:,1) is threshold number of trials in a triad; tallies(:,2) is number of triads meeting the threshold; tallies(:,3) is number of trials in those triads
 %         - columns_tallies (cell 1-D array): labels for columns of tallies
@@ -62,7 +62,7 @@ function [ad,aux_out]=rs_addtree_choicedata(data_comp,aux)
 %         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threshold of tallies(ithr,1); ah(ithr,3) is corresponding log likelihoood per trial
 %         - columns_ah (cell 1-D array): labels for columns of ah
 % 
-%     - **Symmetry and ultrametric indices**
+%     - **Addtree indices**
 %     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields
 %
 %         - a (int 3-D array): a(1,1:2,ih) is the fitted Dirichlet shape parameter 'a' and log likelihood per trial assuming h=h_fixlist(ih)
@@ -343,9 +343,10 @@ aux_out.opts_dirfit_ah=aux_dirfit_ah.opts_dirfit;
 %
 % fit Dirichlet parameters according to occurrences in tents
 % note that this weighs triplets more heavily if they occur in multiple tents
+% ntrials_triplets is organized by triplets; ntrials is organized by tents, and trials are used more
 %
 ithr=0;
-for thr=min(ntrials(:)):max(ntrials(:)) %ntrials_triplets is organized by triplets; ntrials is organized by tents, and trials are used more
+for thr=[min(ntrials(:)) max(ntrials(:))] %just compute extremes, and we only need min(ntrials(:)) for the index calculation below
     triads_use=find((ntrials(:)>=thr));
     ntriads_use=length(triads_use);
     ntrials_use=sum(ntrials(triads_use));
