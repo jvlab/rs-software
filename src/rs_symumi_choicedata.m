@@ -49,6 +49,38 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 % Returns:
 %   su (struct): analysis results, a structure with fields
 %
+%     - **Symmetry and ultrametric indices**
+%     - summary (cell 1-D array): summary of analysis of symmetry and ultrametric indices, organized by fraction of triplets retained; summary{1} is analysis with fixed value of 'h', summary{2} is analysis with 'h' fitted; summary{:}.sym and summary{1}.umi contain the following subfields
+%
+%         - params (struct): params.a and params.h are the Dirichlet parameters
+%         - apriori_vals (float): a priori value of the index
+%         - ah_llr (float): log likelihood ratio for the Dirichlet fit to the choice probability distribution
+%         - thr_type (cell 1-D array): statistics for threshold type 1 (min), 2 (max), 3 (avg)
+%
+%             - means_per_set_adj (float 2-D array): means_per_set_adj(ithr,[1 2 3]) is the mean index for each threshold type, adjusted by log(h) for umi index
+%             - eb_stds (float 2-D array): 1 s.d. error bar size
+%             - frac_keep_list (float 1-d array): fraction of triplets kept
+%             - tally_table (int 2-D array): tally_table(ithr,[1 2 3]) is the threshold, count of triads, count of trials
+%             - thr_ptr_use (int 1-D array): pointers into thresholds (tally_table(:,1)), corresponding to values in frac_keep_list
+%
+%     - global (struct): detailed likelihood analysis for symmetry and ultrametric indices, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields
+%
+%         - a (int 3-D array): a(1,1:2,ih) is the fitted Dirichlet shape parameter 'a' and log likelihood per trial assuming h=h_fixlist(ih)
+%         - ah (int 2-D array): ah(1,1:3) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold value dirichlet.tallies(ithr,1)
+%         - sym_hfixed (cell 2-D array): sym_hfixed{isv,ithr_type}(ithr,:,ih) is sum (isv=1) or the variance (isv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - sym (cell 2-D array): sym{isv,ithr_type}(ithr,:) is the sum (isv=1) or the variance (isv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+%         - umi_hfixed (cell 2-D array): umi_hfixed{isv,ithr_type}(ithr,:,ih) is the sum (isv=1) or the variance (isv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - umi (cell 2-D array): umi{isv,ithr_type}(ithr,:) is the sum (isv=1) or the variance (isv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+% 
+%     - private (struct): detailed likelihood analysis for symmetry and ultrametric indices, based on Dirichlet fits only to choice probabilities that meet the threshold criterion, with fields
+%
+%         - a (cell 1-D array): a{ithr_type}(ithr,1:2,ih) are the fitted Dirichlet shape parameter 'a' and log likelihood per trial for threshold type and threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - ah (cell 1-D array): ah{ithr_type}(ithr,1:3,ih) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold type ithr_type and threshold value dirichlet.tallies(ithr,1)
+%         - sym_hfixed (cell 2-D array): sym_hfixed{isv,ithr_type}(ithr,:,ih) is the sum (isv=1) or the variance (isv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - sym (cell 2-D array): sym{isv,ithr_type}(ithr,:) is the sum (isv=1) or the variance (isv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+%         - umi_hfixed (cell 2-D array): umi_hfixed{isv,ithr_type}(ithr,:,ih) is the sum (isv=1) or the variance (isv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
+%         - umi (cell 2-D array): umi{isv,ithr_type}(ithr,:) is the sum sum (isv=1) or the variance (isv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
+% 
 %     - **Dirichlet fits**
 %     - dirichlet (struct): Dirichlet fits for lowest and highest thresholds for number of trials in a triad, with fields
 % 
@@ -59,25 +91,6 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %         - columns_a (cell 1-D array): labels for columns of a
 %         - ah (int 2-D array): ah(ithr,1:2) are jointly fitted values of Dirichlet shape parameter 'a' and discrete parameter 'h' for triads meeting threshold of tallies(ithr,1); ah(ithr,3) is corresponding log likelihoood per trial
 %         - columns_ah (cell 1-D array): labels for columns of ah
-% 
-%     - **Symmetry and ultrametric indices**
-%     - global (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits to choice probabilities for all triadic judgments, with fields
-%
-%         - a (int 3-D array): a(1,1:2,ih) is the fitted Dirichlet shape parameter 'a' and log likelihood per trial assuming h=h_fixlist(ih)
-%         - ah (int 2-D array): ah(1,1:3) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold value dirichlet.tallies(ithr,1)
-%         - sym_hfixed (cell 2-D array): sym_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
-%         - sym (cell 2-D array): sym{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
-%         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
-%         - umi (cell 2-D array): umi{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
-% 
-%     - private (struct): likelihood analysis for symmetry and ultrametric inequality, based on Dirichlet fits only to choice probabilities that meet the threshold criterion, with fields
-%
-%         - a (cell 1-D array): a{ithr_type}(ithr,1:2,ih) are the fitted Dirichlet shape parameter 'a' and log likelihood per trial for threshold type and threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
-%         - ah (cell 1-D array): ah{ithr_type}(ithr,1:3,ih) are the jointly fitted Dirichlet parameters 'a' and 'h' and log likelihood per trial for threshold type ithr_type and threshold value dirichlet.tallies(ithr,1)
-%         - sym_hfixed (cell 2-D array): sym_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
-%         - sym (cell 2-D array): sym{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the symmetry index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
-%         - umi_hfixed (cell 2-D array): umi_hfixed{imv,ithr_type}(ithr,:,ih) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), assuming h=h_fixlist(ih)
-%         - umi (cell 2-D array): umi{imv,ithr_type}(ithr,:) is the mean (imv=1) or the variance (imv=2) of the ultrametric index, for threshold type ithr_type, threshold value dirichlet.tallies(ithr,1), with 'a' and 'h' jointly fitted
 % 
 %     - meta (struct): labels for dimensions of the variables in su.global and su.private
 %
@@ -101,18 +114,6 @@ function [su,aux_out]=rs_symumi_choicedata(data_comp,aux)
 %     - opts_triplike (struct): options used for `psg_umi_triplike`
 %     - fig_handles (cell 1-D array): handles to figures for summary plot ((present only if if_plot>=1)
 %     - fig_handle_detailed (handle): handle to figure for detailed plot (present only if if_plot=2)
-%     - summary (cell 1-D array): statistical summary organized by fraction of triplets retained (only if if_plot>=1), summary{1} is analysis with fixed value of 'h', summary{2} is analysis with 'h' fitted; summary{1}.sym, summary{2}.sym, and summary{1}.umi contain the following subfields
-%
-%         - params (struct): params.a and params.h are the Dirichlet parameters
-%         - apriori_vals (float): a priori value of the index
-%         - ah_llr (float): log likelihood ratio for the Dirichlet fit to the choice probability distribution
-%         - thr_type (cell 1-D array): statistics for threshold type 1 (min), 2 (max), 3 (avg)
-%
-%             - tally_table (int 2-D array): tally_table(ithr,[1 2 3]) is the threshold, count of triads, count of trials
-%             - means_per_set_adj (float 2-D array): means_per_set_adj(ithr,[1 2 3]) is the mean index for each threshold type, adjusted by log(h) for umi index
-%             - eb_stds (float 2-D array): 1 s.d. error bar size
-%             - frac_keep_list (float 1-d array): fraction of triplets to keep
-%             - thr_ptr_use (int 1-D array): pointers into thresholds (tally_table(:,1)), corresponding to values in frac_keep_list
 %
 % Note: Note regarding thresholds and global vs. private analyses
 %     - Triplets are screened by a threshold criterion based on the number of trials before inclusion in the calculation of the symmetry and ultrametric indices.
@@ -555,12 +556,12 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                              llr_umi_hfixed{isurr,2}=reshape(var(loglik_rat_umi_hfixed(:,surr_sel,:),0,1),[1 1 nhfix]);
                          end
                          %
-                         for imv=1:2% mean and variance
-                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
-                         end %imv
+                         for isv=1:2% mean and variance
+                             su.(ipg_strings{ipg}).sym{isv,ithr_type}(ithr,isurr)=llr_sym{isurr,isv};
+                             su.(ipg_strings{ipg}).umi{isv,ithr_type}(ithr,isurr)=llr_umi{isurr,isv};
+                             su.(ipg_strings{ipg}).sym_hfixed{isv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,isv};
+                             su.(ipg_strings{ipg}).umi_hfixed{isv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,isv};
+                         end %isv
                      end %isurr
                 else %change in threshold does not change which triplets are included
                      did_or_skipped='skp';
@@ -571,12 +572,12 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
                         su.private.ah{ithr_type}(ithr,:)=su.private.ah{ithr_type}(ithr-1,:);
                      end
                      for isurr=1:nsurr
-                         for imv=1:2% mean and variance
-                             su.(ipg_strings{ipg}).sym{imv,ithr_type}(ithr,isurr)=llr_sym{isurr,imv};
-                             su.(ipg_strings{ipg}).umi{imv,ithr_type}(ithr,isurr)=llr_umi{isurr,imv};
-                             su.(ipg_strings{ipg}).sym_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,imv};
-                             su.(ipg_strings{ipg}).umi_hfixed{imv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,imv};
-                         end %imv
+                         for isv=1:2% mean and variance
+                             su.(ipg_strings{ipg}).sym{isv,ithr_type}(ithr,isurr)=llr_sym{isurr,isv};
+                             su.(ipg_strings{ipg}).umi{isv,ithr_type}(ithr,isurr)=llr_umi{isurr,isv};
+                             su.(ipg_strings{ipg}).sym_hfixed{isv,ithr_type}(ithr,isurr,:)=llr_sym_hfixed{isurr,isv};
+                             su.(ipg_strings{ipg}).umi_hfixed{isv,ithr_type}(ithr,isurr,:)=llr_umi_hfixed{isurr,isv};
+                         end %isv
                      end %isurr
                  end %nuse_prev
                  if aux.opts_symumi.if_log
@@ -592,9 +593,7 @@ for ipg=ipg_min:2 %private and global, code modified from psg_umi_triplike_demo 
     end %thr_type
 end %ipg
 %
-if aux.opts_symumi.if_plot>0
-    [aux_out.fig_handles,aux_out.fig_handle_detailed,aux_out.summary]=rs_symumi_plot(data_comp,su,aux);
-end
+[aux_out.fig_handles,aux_out.fig_handle_detailed,su.summary]=rs_symumi_plot(data_comp,su,aux);
 return
 end
 
@@ -610,6 +609,7 @@ plot_opts=struct;
 plot_opts.ipg_min=ipg_min;
 plot_opts.data_fullname=aux.opts_symumi.plot_label;
 plot_opts.nconform=0;
+plot_opts.if_plot=aux.opts_symumi.if_plot;
 %plot_opts.nsurr=size(su.global.sym{1,1},2);
 plot_opts.llr_field='su';
 %

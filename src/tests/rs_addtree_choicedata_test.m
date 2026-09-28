@@ -14,7 +14,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=2;
+ntests=3;
 %
 if ~exist('if_save_and_close')
     if_save_and_close=0;
@@ -25,7 +25,7 @@ end
 if if_save_and_close
     close all;
 end
-if_replot=[0 1];
+if_replot=[0 1 0];
 %
 test_descs=cell(1,ntests);
 filenames_examples=cell(1,ntests);
@@ -50,6 +50,15 @@ test_descs{2}='first scenario, replotted';
 filenames_examples{2}=filenames_examples{1};
 auxs{2}=auxs{1};
 aux_addtrees{2}=struct;
+%
+test_descs{3}='triadic choice file, texture domain, bc, with private analysis but fewer h values';
+filenames_examples{3}={'./samples/bwtextures/bc6pt_choices_MC_sess01_10.mat'};
+auxs{3}=auxs_force;
+auxs{3}.opts_read=setfields(auxs_force.opts_read,{'if_log'},{1});
+aux_addtrees{3}=struct;
+aux_addtrees{3}.opts_addtree.if_private=1;
+aux_addtrees{3}.opts_addtree.h_fixlist=[0 0.01];
+aux_addtrees{3}.opts_addtree.if_plot=2; %detailed plots
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
