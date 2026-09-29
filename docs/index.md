@@ -8,18 +8,18 @@ This software package is a set of tools to construct and analyze representationa
 
 A "representational space" is a construct in which elements in a domain are points, and the distances between the points correspond to dis-similarity. Often, representational spaces are constructed for perceptual domains: for example, colors, animals, musical instruments, etc., and are then referred to as "perceptual spaces." Representational spaces may also be constructed from neural data, e.g., fMRI or multineuronal recordings.
 
-The package has two main components that may be used together or independently. 
+The package has two main components that may be used together or independently.
 
-*  One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. Implementations are provided in [Python](rs-py-overview.md), via a [Matlab wrapper over Python code](python-matlab-octave.md#running-python-inside-matlab).  Web-based access to the Python tools (no installation required) is also available.
-
-*  A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel. Implementations are available in [Matlab](rs-ml-overview.md) or via a [Python wrapper over Matlab code](python-matlab-octave.md#running-matlab-inside-python).
-
-*  In addition, tools are available for analysis of the perceptual judgments directly. These include a comparison of the perceptual judgments via the representational spaces they generate, and analyses of statistics of triadic judgments.
+* One component enables creation of representational spaces from similarity data; its output consists of coordinate sets, metadata, and statistics. Implementations are provided in [Python](rs-py-overview.md), via a [Matlab wrapper over Python code](python-matlab-octave.md#running-python-inside-matlab).  Web-based access to the Python tools (no installation required) is also available.
+* A second component of the software consists of tools to analyze, manipulate, and compare representational spaces.  While it is designed to operate on the outputs of the first component, it functions independently, and can readily import coordinate data and metadata from another source. As the appropriate number of dimensions for a representational space is typically unknown, the software is designed to process representations across a range of dimensions in parallel. Implementations are available in [Matlab](rs-ml-overview.md) or via a [Python wrapper over Matlab code](python-matlab-octave.md#running-matlab-inside-python).
+* In addition, tools are available for analysis of the perceptual judgments directly. These include a comparison of the perceptual judgments via the representational spaces they generate, and analyses of statistics of triadic judgments.
 
 Each components of the package has its own set of demos. Installation instructions may be found [here](rs-ml-installation.md) for Matlab and [here](rs-py-installation.md) for Python.
 
 
+
 ![Workflow diagram](./images/overview_18Sep26.png)
+
 <figcaption>Overview of workflow.</figcaption>
 
 ## Tools for creating representational spaces from perceptual judgments
@@ -40,21 +40,21 @@ This component is written in Python.  It may be run from a MATLAB/Octave environ
 
 The starting point is a representational space, read from a `coordinate file`, or, from another source. For example, representational spaces may also be
 
-  * inferred from perceptual judgments via other procedures, such as multidimensional scaling
-  * obtained in another way -- for example, from neural data via a dimension-reduction technique such as principal components analysis
+* inferred from perceptual judgments via other procedures, such as multidimensional scaling
+* obtained in another way -- for example, from neural data via a dimension-reduction technique such as principal components analysis
 
 The key operations performed are
 
-* Combining representational spaces across paradigms, stimulus sets, subjects, etc.  (`rs_knit_coordsets`)
+* combining representational spaces across paradigms, stimulus sets, subjects, etc.  (`rs_knit_coordsets`)
 
     * finding a consensus space across several sources
     * knitting together spaces with partially overlapping elements
 
-* Visualizations (`rs_disp_coordsets`)
-* Modeling transformations between representational spaces: affine, projective, piecewise affine (`rs_geofit`).  See `transformation structures` for descriptions of these transformations and their relationships.
-* Statistics related to these operations
+* visualizations (`rs_disp_coordsets`)
+* modeling transformations between representational spaces: affine, projective, piecewise affine (`rs_geofit`).  See `transformation structures` for descriptions of these transformations and their relationships.
+* statistics related to these operations
 
-The main outputs are coordinate sets and the associated metadata, geometric models of transformations, graphics, and statistics. 
+The main outputs are coordinate sets and the associated metadata, geometric models of transformations, graphics, and statistics.
 
 Key demos are in the [MATLAB demos](demos.md).
 
@@ -62,18 +62,23 @@ This component is written in MATLAB and is Octave-compatible.  MATLAB routines a
 
 ## Tools for analyzing perceptual judgments
 
-With a starting point of a single `choice file` of triadic judgments, one may 
+With a starting point of a single `choice file` of triadic judgments, one may
 
-  * analyze the statistics of the choice probabilities, via `rs_dirfit_choicedata`
-  * characterize the ordinal relationships of the choice probabilities, with regard to compatibility with symmetry and the ultrametric inequality, via `rs_symumi_choicedata`, see  [Mathematical Neuroscience and Applications](https://mna.episciences.org/16310/pdf)
+* analyze the statistics of the choice probabilities, via `rs_dirfit_choicedata`
+
+* characterize the ordinal relationships of the choice probabilities (see  [Mathematical Neuroscience and Applications](https://mna.episciences.org/16310/pdf))
+
+    * with regard to compatibility with symmetry and the ultrametric inequality, via `rs_symumi_choicedata`
+    * with regard to compatibility with an additive tree , via `rs_addtree_choicedata`
 
 Key demos for these routines are in preparation. In the meantime, see the general [MATLAB demos](demos.md) page.
 
 With a starting point of two `choice files`, one may
 
-  * [determine whether the representational spaces they generate are significantly different](comparing-rs-python.md)
+* [determine whether the representational spaces they generate are significantly different](comparing-rs-python.md)
 
 Key demos are the [Python version](comparing-rs-python.md) and the [web version](comparing-rs-streamlit.md).
+
 
 
 ## Credits and feedback
