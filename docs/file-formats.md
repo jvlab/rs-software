@@ -38,7 +38,17 @@ Two options are available for 'responses' and 'responses_colnames':
     * Column 6 of 'responses' is the number of times the tetrad is presented
     * 'responses_colnames' are text strings that label these columns
 
-See `samples/animals/image_choices_S*.mat` or `samples/bwtextures/bgca3pt_choices_*_sess01_10.mat` for examples of triadic comparisons, and see `samples/bwtextures/bgca3pt_choices_*-gp_sess01_20.mat` for examples of tetradic comparisons.
+* odd-one-out comparisons
+
+    * Columns 1-3 of 'responses' are the 1-based indices into stim\_list for the three stimuli s1, s2, and s3 shown together in the comparison
+    * Column 4 of 'responses' is the number of times s1 was picked as the "odd one out" (the one most different from the other two)
+    * Column 5 of 'responses' is the number of times s2 was picked as the odd one out
+    * Column 6 of 'responses' is the number of times s3 was picked as the odd one out
+    * 'responses_colnames' are text strings that label these columns
+
+    Odd-one-out files have the same number of columns as tetradic files (6), but the columns mean something different: there is no s4 index, and the three count columns each track a different stimulus being picked as the odd one out, rather than one combined dis-similarity count. To use an odd-one-out file with the rest of the toolkit, first convert it to triadic format with the [OOO → Triadic tool](file-conversion-streamlit.md).
+
+See `samples/animals/image_choices_S*.mat` or `samples/bwtextures/bgca3pt_choices_*_sess01_10.mat` for examples of triadic comparisons, `samples/bwtextures/bgca3pt_choices_*-gp_sess01_20.mat` for examples of tetradic comparisons, and `samples/brightness/brightness_choices-ooo_GA2.mat` for an example of odd-one-out comparisons.
 
 ## Coordinate file
 
