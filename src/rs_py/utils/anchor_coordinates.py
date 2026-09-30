@@ -7,6 +7,8 @@ translations are made redundant.
 This can also take into effect the noise parameter as we do not constrain where on the first axis, the second
 point lies.
 """
+import warnings
+
 import numpy as np
 
 
@@ -15,18 +17,36 @@ def choose_basis_vectors(M):
     Given a matrix of points M (m by n), where m is the number of dimensions and n is the number of points,
     choose m vectors that are linearly independent from each other.
 
-    Since the chosen submatrix would be m by m, a simple way to do this is by calculating the determinant.
-    If the determinant is 0, the vectors are not linearly independent
+    The chosen submatrix is the first m columns of M (m by m). If it has full rank, it is returned unchanged.
+
+    If it is rank-deficient, a warning is issued and a multiple of the identity matrix is added to it: q*2^h*I,
+    where q is the smallest nonzero absolute value in the submatrix and h is the smallest non-negative integer
+    for which the result has full rank. If the submatrix is all zeros, the identity matrix is returned.
     """
-    # first check if M has full rank
     n_dim, n_points = M.shape
-    if np.linalg.matrix_rank(M) < n_dim:
-        raise ValueError("Matrix is rank-deficient. Points lie in a subspace of rank smaller than {} dim".format(n_dim))
     submatrix = M[:, 0:n_dim]
-    if np.linalg.det(submatrix) == 0:
-        return NotImplementedError("Edge case not handled. Points will need reordering if other vectors"
-                                   "are selected.")
-    return submatrix
+    if np.linalg.matrix_rank(submatrix) >= n_dim:
+        return submatrix
+
+    warnings.warn(
+        "choose_basis_vectors: the {0}x{0} submatrix is rank-deficient (points lie in a subspace of rank "
+        "smaller than {0} dim); it will be augmented to give it full rank.".format(n_dim),
+        RuntimeWarning, stacklevel=2)
+
+    nonzero = np.abs(submatrix[submatrix != 0])
+    if nonzero.size == 0:
+        warnings.warn("choose_basis_vectors: the coordinates are all zero; using the identity matrix.",
+                      RuntimeWarning, stacklevel=2)
+        return np.eye(n_dim)
+
+    q = nonzero.min()
+    identity = np.eye(n_dim)
+    augmented = submatrix + q * identity
+    while np.linalg.matrix_rank(augmented) < n_dim:
+        q *= 2
+        augmented = submatrix + q * identity
+    print(f"choose_basis_vectors: added {q:g} * I to the {n_dim}x{n_dim} submatrix to make it full rank")
+    return augmented
 
 
 def gram_schmidt(B):
