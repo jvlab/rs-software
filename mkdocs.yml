@@ -86,9 +86,8 @@ nav:
     - Overview: rs-ml-overview.md
     - Demos (MATLAB): demos.md
   - Comparing RS:
-    - Python:
-      - Script: comparing-rs-python.md
-      - Python tools UI (web-based): comparing-rs-streamlit.md
+    - Python Script: comparing-rs-python.md
+    - Python UI: comparing-rs-streamlit.md
   - File conversion utilities:
     - Python:
       - Script: file-conversion-python.md
