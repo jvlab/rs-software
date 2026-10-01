@@ -51,7 +51,7 @@ def parse_click_sequence(row):
 
     Returns:
         - sequence (list[str]) - Ordered list of stimulus labels corresponding
-          to the clicked stimuli for that trial.
+            to the clicked stimuli for that trial.
 
     Notes:
         - Assumes data are being read in from csv files created by Waraich and Victor (2022) paradigm.
@@ -139,17 +139,17 @@ def process_subject_data(input_directory):
 
         Returns:
             - all_comparisons (list[dict]) - Flat list of comparison dictionaries, one
-              for each generated triadic comparison.
-              Each dictionary contains:
-                - trial
-                - s1
-                - s2
-                - operator
-                - s3
-                - s4
-                - judgment
+                for each generated triadic comparison.
+                Each dictionary contains:
+                    - trial
+                    - s1
+                    - s2
+                    - operator
+                    - s3
+                    - s4
+                    - judgment
             - stimuli (set) - Labels of all stimuli encountered across all processed
-              trials, including both reference and non-reference stimuli.
+                trials, including both reference and non-reference stimuli.
 
         Notes:
             - Trial numbering starts at 1 and increases sequentially across all files
@@ -214,13 +214,13 @@ def standardize_comparison_keys(comparisons, comparison_type='triadic'):
 
     Returns:
         - comparisons (list[dict]) - The same list of comparisons with field
-          names and comparison order standardized.
-          Each dictionary contains:
-            - s1
-            - s2
-            - s3
-            - s4
-            - judgment
+            names and comparison order standardized.
+            Each dictionary contains:
+                - s1
+                - s2
+                - s3
+                - s4
+                - judgment
 
     Notes:
         - If `(s2, s4)` appears in reverse order, the elements are swapped and
@@ -315,9 +315,9 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
 
         Returns:
             - comparisons (list[dict]) - The input list of comparison dictionaries
-              with stimulus labels replaced by integer stimulus IDs.
-              The mapping of IDs to stimuli is also returned or stored separately,
-              depending on downstream use.
+                with stimulus labels replaced by integer stimulus IDs.
+                The mapping of IDs to stimuli is also returned or stored separately,
+                depending on downstream use.
 
         Notes:
             - The function mutates the input `comparisons` list in place.
