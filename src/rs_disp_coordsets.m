@@ -47,6 +47,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - data_label_list (int 1-D array): list of data points to label, if data_label_method='list'
 %         - data_label_font_size (int): font size for data labels, default is axis_font_size
 %         - data_label_interpreter (char): interpreter for labeling data, [] (default) uses system default, alternatively 'none','tex','latex'
+%         - data_label_typenames_vary (int): allow typenames to vary across datasets; default is 0
 %         - callout_amount (float): moves the position of a label away from the data point, specified in units of rms deviation of data from centroid; default is 0
 %         - callout_colors (cell array of color specifiers): color for callout lines connecting labels and points; default is {'k'}; can also be 'set_colors' to match set_colors
 %         - callout_linestyles (cell array of char): line styles for above callout lines; default is {'-.'}
@@ -183,7 +184,25 @@ aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux_out=struct;
 %
-check=rs_check_coordsets(data_in,aux.opts_check);
+%prior to consistency checking, see if we need to allow for typenames to vary
+%
+data_label_typenames_vary=0;
+if isfield(aux,'opts_disp')
+    if isfield(aux.opts_disp,'data_label_typenames_vary')
+        data_label_typenames_vary=aux.opts_disp.data_label_typenames_vary;
+    end
+end
+data_in_check=data_in;
+if data_label_typenames_vary
+    for iset=1:length(data_in.sas)
+        for istim=1:length(data_in.sas{iset}.typenames)
+            data_in_check.sas{iset}.typenames{istim}=sprintf('stim_%1.0f',istim);
+        end
+    end
+end
+%
+check=rs_check_coordsets(data_in_check,aux.opts_check);
+%
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
 nsets=check.nsets;
@@ -235,6 +254,7 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_interpreter',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_typenames_vary',0);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'callout_amount',0);
 aux.opts_disp=filldefault(aux.opts_disp,'callout_colors',{'k'});
