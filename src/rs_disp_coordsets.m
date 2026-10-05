@@ -47,7 +47,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - data_label_list (int 1-D array): list of data points to label, if data_label_method='list'
 %         - data_label_font_size (int): font size for data labels, default is axis_font_size
 %         - data_label_interpreter (char): interpreter for labeling data, [] (default) uses system default, alternatively 'none','tex','latex'
-%         - data_label_typenames_vary (int): allow typenames to vary across datasets; default is 0
+%         - data_label_typenames_vary (int): 1 to allow typenames to vary across datasets, 0 does not; default is 0
 %         - callout_amount (float): moves the position of a label away from the data point, specified in units of rms deviation of data from callout_center; default is 0
 %         - callout_colors (cell array of color specifiers): color for callout lines connecting labels and points; default is {'k'}; can also be 'set_colors' to match set_colors
 %         - callout_linestyles (cell array of char): line styles for above callout lines; default is {'-.'}
