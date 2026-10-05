@@ -154,6 +154,11 @@ def process_subject_data(input_directory):
         Notes:
             - Trial numbering starts at 1 and increases sequentially across all files
               and rows; no session boundaries are inferred.
+            - To ensure compatibility with experiments that utilize multiple exemplars per stimulus,
+              stimuli are generated from the stimulus names in the CSV files after ignoring the text after an underscore.
+              If a stimulus name contains no underscore, then this is not a problem. This affects experiments where
+              an experimenter uses multiple images/ exemplars per stimulus which are coded as 'stim23_002', 'stim23_003' etc.
+              In this case both instances will be tied to one stimulus called 'stim23'.
             - CSV files are read using UTF-8 with BOM (`utf-8-sig`) encoding to match
               experimental data exports.
             - This function does not canonicalize comparison keys, remap stimulus IDs,
@@ -180,6 +185,9 @@ def process_subject_data(input_directory):
             for row in reader:
                 # eval is usually not secure but here I created the files parsing
                 clicked_stimuli = parse_click_sequence(row)
+                # ensures exemplars are not counted as separate stimuli
+                clicked_stimuli = [stim.split("_")[0] for stim in clicked_stimuli]
+                row['ref'] = row['ref'].split("_")[0]
                 comparisons = generate_comparisons(row['ref'], clicked_stimuli, trial_num)
                 # keep collecting stim
                 for stim in clicked_stimuli:

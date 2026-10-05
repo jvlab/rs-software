@@ -20,7 +20,7 @@ CONFIG = {
                 'num_sessions': '',
                 'num_trials': '',
                 'total_judgments': '',
-                'judgment_type': ''
+                'judgment_type': 'triadic'
             }
         },
         'combined_choice': {
@@ -33,7 +33,7 @@ CONFIG = {
                 'num_sessions': '',
                 'num_trials': '',
                 'total_judgments': '',
-                'judgment_type': ''
+                'judgment_type': 'triadic'
             }
         },
         'model_fit': {
