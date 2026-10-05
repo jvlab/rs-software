@@ -675,8 +675,6 @@ if aux_out.warn_bad==0
                     for lab=1:size(x.data_show_list,1)
                         zcallout(lab,:)=callout_center+(zcallout(lab,:)-callout_center)*(1+x.callout_amount*rmsdist/dists(x.data_show_list(lab)));
                     end
-                else
-                    zcallout=z;
                 end
                 typenames=data_in.sas{k}.typenames;
                 for ipt_ptr=1:length(x.data_label_list)
