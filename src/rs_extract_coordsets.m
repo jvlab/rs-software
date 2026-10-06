@@ -48,7 +48,7 @@ aux_out.warn_bad=0;
 %
 fns={'ds','sas','sets'}; %fields to extract
 %
-ns=zeros(1,length(fns)); %check that fields to extractenate have same length
+ns=zeros(1,length(fns)); %check that fields to extract have same length
 for ifn=1:length(fns)
     fn=fns{ifn};
     ns(ifn)=length(data_in.(fn));
