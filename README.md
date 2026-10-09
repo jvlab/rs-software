@@ -17,6 +17,5 @@ The package has several components that may be used together or independently.
 **See full documentation for installation and usage:** [https://jvlab.github.io/rs-software/](https://jvlab.github.io/rs-software/)
 
 ## Contact
-
-Jonathan D. Victor, Weill Cornell Medicine.
-Guillermo Aguilar, Technische Universität Berlin
+- [Jonathan D. Victor](mailto:jdvicto@med.cornell.edu), Weill Cornell Medicine.
+- [Guillermo Aguilar](mailto:guillermo.aguilar@mail.tu-berlin.de), Technische Universität Berlin
