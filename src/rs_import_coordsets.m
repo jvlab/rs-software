@@ -59,7 +59,7 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %     - opts_check (struct): aux.opts_check, with defaults filled in
 %
 % Note: Note regarding coordinates
-%    - if 'coords' is a 2-dimensional array of size [nstims dmax], then coords(:,1:k) is taken to be the coordinate set data_out.ds{1}{:,idim},
+%    - if 'coords' is a 2-dimensional array of size [nstims dmax], then coords(:,1:idim) is taken to be the coordinate set data_out.ds{1}{:,idim},
 %    for each idim=1,...,dmax
 %    - if 'coords' is a cell array, then coords{idim} should be of size [nstims idim] or empty, and, if non-empty, is taken to be the coordinate set for dimension idim.
 %
