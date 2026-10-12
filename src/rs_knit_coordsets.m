@@ -94,7 +94,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
 %     The transformation is
-%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. Note that ts.translation may be nonzero even if allow_offset=0, since this 
+%     is the best transformation from the original data to the consensus -- which may include a translation even if the consensus is calculated
+%     wthout allowing translation. If no translation is desired, then set this field to zeros(1,idim).
+%     If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     - details (cell array of struct): details{idim} contains details of
 %     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
 %
