@@ -515,8 +515,11 @@ if aux_out.warn_bad==0
         for iset=1:nsets
             ds_label=data_in.sets{iset}.label;
             if aux.opts_knit.if_remove_path_label
-                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
-                ds_label=strrep(ds_label,'.mat','');
+                path_end=max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0);
+                if ~isempty(path_end)
+                    ds_label=ds_label(1+path_end:end);
+                    ds_label=strrep(ds_label,'.mat','');
+                end
             end
             knit_stats_setup.dataset_labels{iset}=ds_label;
         end
