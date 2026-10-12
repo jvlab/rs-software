@@ -35,7 +35,7 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %         - paradigm_type (char): overall category of experiment; default is 'unknown'; see note below regarding customization
 %         - paradigm_name (char): subcategory of paradigm_type; default is opts_import.paradigm_type; see note below regarding customization
 %         - subj_id (char): full subject identifier; default is 'unknown'; see note below regarding customization
-%         - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id; see note below regarding customization
+%         - subj_id_short (char): short form of subj_id, e.g., for plot labels; default is opts_import.subj_id
 %         - extra (char): free-form identifier; default is []; see note below regarding customization
 %         - label_long (char): data source, typically a file path and name; default is 'unknown'; see note below regarding customization
 %         - label (char): short form of label_long; default is opts_import.label_long; see note below regarding customization
@@ -67,8 +67,19 @@ function [data_out,aux_out]=rs_import_coordsets(coords,aux)
 %    The default values of these parameters can be changed by editing `rs_aux_defaults_define`, running it 
 %    once, and saving the workspace as rs_aux_defaults.mat.
 %    For example, to change the default paradigm
-%    type to 'cars', add the line generic.opts_import.paradigm_type='cars'
-%    to the section in which generic.opts_import fields are defined.
+%    type to 'cars', add or edit the line generic.opts_import.paradigm_type='cars'
+%    in the section in which generic.opts_import fields are defined.
+%
+%    - typename_prefix
+%    - typename_ndigits
+%    - type_coords_def
+%    - paradigm_type
+%    - paradigm_name
+%    - subj_id
+%    - subj_id_short
+%    - extra
+%    - label_long
+%    - label
 %
 %  See also: RS_CONCAT_COORDSETS, RS_AUX_CUSTOMIZE, RS_CHECK_COORDSETS, PSG_TYPE_COORDS_DEF.
 %

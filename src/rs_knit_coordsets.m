@@ -64,7 +64,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
-%     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
+%     - data_align (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
 %   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
