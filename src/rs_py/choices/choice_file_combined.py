@@ -63,6 +63,7 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
     responses = data['responses']
     colnames = [name.strip() for name in data['responses_colnames']]
     metadata = data['metadata']
+    stim_list = data['stim_list']
 
     COL_REF = colnames.index("ref")
     COL_S1 = colnames.index("s1")
@@ -104,6 +105,7 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
 
     combined_choices = {
         'metadata': metadata,
+        'stim_list': stim_list,
         'responses_colnames': comb_response_colnames,
         'responses': comb_responses
     }
@@ -139,6 +141,7 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
     responses = data['responses']
     colnames = [name.strip() for name in data['responses_colnames']]
     metadata = data['metadata']
+    stim_list = data['stim_list']
 
     COL_S1 = colnames.index("s1")
     COL_S2 = colnames.index("s2")
@@ -185,6 +188,7 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
 
     combined_choices = {
         'metadata': metadata,
+        'stim_list': stim_list,
         'responses_colnames': comb_response_colnames,
         'responses': comb_responses
     }
