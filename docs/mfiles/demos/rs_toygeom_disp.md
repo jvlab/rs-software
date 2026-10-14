@@ -1,0 +1,96 @@
+# rs_toygeom_disp
+Display the results of rs_toygeom_sim with `rs_disp_geofit`
+
+sims: a structure containing simulations, geometric model fits, and key parameters
+
+Normally 'sims' is already in the workspace, having been created by rs_toygeom_sim or by
+one of the rs_toygeom_scenario* scripts. If it is not, a small stored example is loaded so
+that this script can also be run standalone.
+
+To regenerate the stored example, run the following from a clear workspace, with 'src' as
+the working directory. One transform and one paradigm keep the file small, and the fields
+that this script never reads are dropped before saving:
+
+  transform_names={'affine'};
+  paradigm_names={'Axes'};
+  ncoords_noise=0;
+  if_disp_coordsets=0;
+  rs_toygeom_sim;
+  sims=rmfield(sims,{'xs','aux_geof_out'});
+  for ip=1:length(sims.paradigms_all)
+      sims.(sims.paradigms_all{ip})=struct;  %the coordinate sets are not displayed here
+  end
+  save('demos/toygeom_sims_example','sims');
+
+See also: [rs_toygeom_sim](rs_toygeom_sim.md), [rs_disp_geofit](rs_disp_geofit.md)
+
+```matlab
+if ~exist('sims')
+    disp('no sims structure found; loading the example created by rs_toygeom_sim');
+    load('demos/toygeom_sims_example');
+end
+if ~exist('opts_dgeo') opts_dgeo=struct; end
+aux_dgeo=struct;
+aux_dgeo.opts_dgeo=opts_dgeo;
+if ~exist('transforms_fit_show') transforms_fit_show=sims.transform_names; end
+if ~exist('paradigms_fit_show') paradigms_fit_show=sims.paradigms_all; end
+if ~exist('subjs_fit_show') subjs_fit_show=[1:sims.nsubjs]; end
+```
+
+Output:
+
+```text
+no sims structure found; loading the example created by rs_toygeom_sim
+```
+
+```matlab
+for it=1:length(sims.transform_names)
+    transform_name=sims.transform_names{it};
+    for ip=1:length(sims.paradigms_all)
+        paradigm_name=sims.paradigms_all{ip};
+        for is=1:sims.nsubjs
+            if ~isempty(strmatch(transform_name,transforms_fit_show,'exact'))  & ~isempty(strmatch(paradigm_name,paradigms_fit_show,'exact')) & ismember(is,subjs_fit_show)
+                aux_dgeo_out=rs_disp_geofit(sims.gfs{it,ip}{is}.gf,aux_dgeo);
+                fig_handles=aux_dgeo_out.opts_dgeo.fig_handles;
+                fig_names=aux_dgeo_out.opts_dgeo.fig_names;
+                for ifig=1:length(fig_handles)
+                    figure(fig_handles{ifig});
+                    set(gcf,'Name',cat(2,fig_names{ifig},sprintf(' subj %1.0f',is),' ',transform_name,' ',paradigm_name));
+                    if exist('scenario_name')
+                        axes('Position',[0.80,0.05,0.01,0.01]); %for text
+                        text(0,0,scenario_name,'Interpreter','none');
+                        axis off;
+                    end
+                    axes('Position',[0.50,0.05,0.01,0.01]); %for text
+                    text(0,0,fig_names{ifig},'Interpreter','none');
+                    axis off;
+                    axes('Position',[0.50,0.03,0.01,0.01]); %for text
+                    text(0,0,sprintf('transform: %s, paradigm %s',transform_name,paradigm_name),'Interpreter','none');
+                    axis off;
+                    axes('Position',[0.50,0.01,0.01,0.01]);
+                    text(0,0,sprintf('subject %2.0f: transform noise %4.2f additive noise %4.2f',is,sims.noise_transform(is),sims.noise_add(is)));
+                    axis off;
+               end 
+            end %select
+        end %subject
+    end %paradigm name
+end %transform
+```
+
+![rs_toygeom_disp_chunk02_fig1](../../images/demos/rs_toygeom_disp_chunk02_fig1.png)
+
+![rs_toygeom_disp_chunk02_fig2](../../images/demos/rs_toygeom_disp_chunk02_fig2.png)
+
+![rs_toygeom_disp_chunk02_fig3](../../images/demos/rs_toygeom_disp_chunk02_fig3.png)
+
+![rs_toygeom_disp_chunk02_fig4](../../images/demos/rs_toygeom_disp_chunk02_fig4.png)
+
+![rs_toygeom_disp_chunk02_fig5](../../images/demos/rs_toygeom_disp_chunk02_fig5.png)
+
+![rs_toygeom_disp_chunk02_fig6](../../images/demos/rs_toygeom_disp_chunk02_fig6.png)
+
+![rs_toygeom_disp_chunk02_fig7](../../images/demos/rs_toygeom_disp_chunk02_fig7.png)
+
+![rs_toygeom_disp_chunk02_fig8](../../images/demos/rs_toygeom_disp_chunk02_fig8.png)
+
+![rs_toygeom_disp_chunk02_fig9](../../images/demos/rs_toygeom_disp_chunk02_fig9.png)

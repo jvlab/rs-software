@@ -390,16 +390,37 @@ def _linkify_code_tags(node: Node) -> None:
                 _linkify_code_tags(child)
 
 
-def _build_url(url: str) -> tuple[str, str]:
+# Where the page being rendered sits relative to the site root, for example
+# "../../" . mkdocs renders one page at a time, so a module-level value is enough,
+# and it spares every recursive helper below an extra argument. on_page_content
+# sets it before it walks the tree.
+_PAGE_PREFIX = ""
+
+
+def _set_page_prefix(page) -> None:
+    """Record where the page being rendered sits, for the links built below."""
+    global _PAGE_PREFIX
+    _PAGE_PREFIX = site_config.root_relative_prefix(page)
+
+
+def _build_url(url: str, prefix: str = None) -> tuple[str, str]:
     """
     Returns (full_url, target_attr).
-    External URLs are returned as-is with target="_blank".
-    Internal paths get SITE_PREFIX prepended.
+
+    External URLs are returned as-is with target="_blank". Internal ones are given
+    relative to the page being rendered, so the site works wherever it is served.
+
+    Args:
+        url: the target, external, or relative to the site root.
+        prefix: the "../" chain back to the site root; the page currently being
+            rendered supplies it when omitted.
     """
     if url.startswith("http"):
         return url, ' target="_blank"'
-    else:
-        return f"{site_config.SITE_PREFIX}/{url}", ""
+
+    if prefix is None:
+        prefix = _PAGE_PREFIX
+    return f"{prefix}{url}", ""
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +446,8 @@ def on_page_content(html: str, page, config, files) -> str:
     putting a link in the data type. This is done in function
     _linkify_toplevel_types.
     """
+    _set_page_prefix(page)
+
     try:
         builder = HTMLTreeBuilder()
         builder.feed(html)
