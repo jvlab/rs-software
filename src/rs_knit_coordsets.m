@@ -23,7 +23,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
-%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not (no effect if allow_scale=0); default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
 %         - **Statistics and shuffles**
@@ -64,7 +64,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
-%     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
+%     - data_align (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
 %   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
@@ -94,7 +94,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
 %     The transformation is
-%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. Note that ts.translation may be nonzero even if allow_offset=0, since this 
+%     is the best transformation from the original data to the consensus -- which may include a translation even if the consensus is calculated
+%     wthout allowing translation. If no translation is desired, then set this field to zeros(1,idim).
+%     If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
 %     - details (cell array of struct): details{idim} contains details of
 %     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
 %
@@ -515,8 +518,11 @@ if aux_out.warn_bad==0
         for iset=1:nsets
             ds_label=data_in.sets{iset}.label;
             if aux.opts_knit.if_remove_path_label
-                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
-                ds_label=strrep(ds_label,'.mat','');
+                path_end=max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0);
+                if ~isempty(path_end)
+                    ds_label=ds_label(1+path_end:end);
+                    ds_label=strrep(ds_label,'.mat','');
+                end
             end
             knit_stats_setup.dataset_labels{iset}=ds_label;
         end

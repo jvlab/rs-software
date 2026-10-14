@@ -675,8 +675,6 @@ if aux_out.warn_bad==0
                     for lab=1:size(x.data_show_list,1)
                         zcallout(lab,:)=callout_center+(zcallout(lab,:)-callout_center)*(1+x.callout_amount*rmsdist/dists(x.data_show_list(lab)));
                     end
-                else
-                    zcallout=z;
                 end
                 typenames=data_in.sas{k}.typenames;
                 for ipt_ptr=1:length(x.data_label_list)
@@ -902,9 +900,12 @@ n=length(vals_avail);
 wmsg=[];
 pair_list=[];
 npairs=0;
+list_specified_keep=list_specified; %so we can ignore if a string is used to specify
+list_specified=[];
 if n>=1
     switch method
         case 'none'
+            list_specified=[];
         case 'all'
             if n>=2
                 pairs=nchoosek([1:n],2);
@@ -924,6 +925,7 @@ if n>=1
             npairs=n-1;
             pair_list=[vals_avail(pairs(:,1))',vals_avail(pairs(:,2))'];
         case 'list'
+            list_specified=list_specified_keep; %restore specified list
             pair_list=list_specified;
             have_pair=find(all(ismember(pair_list,vals_avail),2));
             pair_list=pair_list(have_pair,:);
