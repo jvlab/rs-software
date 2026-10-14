@@ -19,3 +19,4 @@ The package has several components that may be used together or independently.
 ## Contact
 - [Jonathan D. Victor](mailto:jdvicto@med.cornell.edu), Weill Cornell Medicine.
 - [Guillermo Aguilar](mailto:guillermo.aguilar@mail.tu-berlin.de), Technische Universität Berlin
+- [Suniyya A. Waraich](mailto:swaraich@ucdavis.edu), University of California, Davis
