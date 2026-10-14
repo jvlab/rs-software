@@ -13,10 +13,10 @@ CONFIG = {
         'detailed_choice': {
             'input_path': None,                  # required
             'output_dir': None,                  # required
+            'stim_list': [],
             'metadata': {
                 'exp_name': '',
                 'subject': '',
-                'stim_list': [],
                 'num_sessions': '',
                 'num_trials': '',
                 'total_judgments': '',
@@ -26,10 +26,10 @@ CONFIG = {
         'combined_choice': {
             'input_path': None,                  # required
             'output_dir': None,                  # required
+            'stim_list': [],
             'metadata': {
                 'exp_name': '',
                 'subject': '',
-                'stim_list': [],
                 'num_sessions': '',
                 'num_trials': '',
                 'total_judgments': '',

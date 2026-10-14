@@ -400,11 +400,11 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
 
     results = {
         'metadata': metadata,
+        'stim_list': [stim_id_to_name[k] for k in stim_id_to_name.keys()],
         'responses_colnames': responses_col_names,
         'responses': responses
     }
 
-    results['metadata']['stim_list'] = [stim_id_to_name[k] for k in stim_id_to_name.keys()]
     results['metadata']['total_judgments'] = total_comparisons
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")

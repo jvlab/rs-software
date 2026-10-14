@@ -1,8 +1,10 @@
 """Script wrapper for the geometric model fit demo."""
 
+import os
 import random
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 from copy import deepcopy
 from scipy.spatial.distance import pdist
 import src.rs_py.model.fit_geometric_models as rs
@@ -60,6 +62,15 @@ def build_model_fit_args(user_params):
     args["noise_st_dev"] = args["sigma"]
 
     return args
+
+
+def fit_one_dimension(dim, subset, pairwise_num_repeats, params):
+    params = deepcopy(params)
+    params["n_dim"] = dim
+    model_coords, ll_nd = rs.points_of_best_fit(
+        subset, pairwise_num_repeats, params
+    )
+    return dim, model_coords, ll_nd
 
 
 def fit(params):
@@ -204,15 +215,24 @@ def fit(params):
     coords_by_dim = {}
     lls_by_dim = {}
 
-    for dim in params['model_dimensions']:
+    dimensions = params["model_dimensions"]
+    n_workers = min(os.cpu_count() or 1, len(dimensions))
+
+    with mp.get_context("spawn").Pool(n_workers) as pool:
+        fitted_models = pool.starmap(
+            fit_one_dimension,
+            [
+                (dim, subset, pairwise_num_repeats, params)
+                for dim in dimensions
+            ],
+        )
+
+    for dim, model_coords, ll_nd in fitted_models:
         print("\n" + "=" * 60)
-        print(f"FITTING {dim}D EUCLIDEAN MODEL")
+        print(f"FITTED {dim}D EUCLIDEAN MODEL")
         print("=" * 60)
 
         model_name = f"{dim}D"
-        params["n_dim"] = dim
-
-        model_coords, ll_nd = rs.points_of_best_fit(subset, pairwise_num_repeats, params)
 
         # (Distances computed previously; keep if useful for debugging)
         _ = pdist(model_coords)
