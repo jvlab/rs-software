@@ -23,7 +23,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
-%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not (no effect if allow_scale=0); default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
 %         - **Statistics and shuffles**
