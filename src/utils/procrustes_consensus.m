@@ -280,5 +280,14 @@ while (niters<opts_pcon.max_niters & rms>opts_pcon.max_rmstol)
     end
 end   
 znew=zz;
+% adjust the components and the transformations for the final alignment (15Oct26)
+for iset=1:nsets
+    znew(:,:,iset)=t_new.b*znew(:,:,iset)*t_new.T+repmat(t_new.c(1,:),[npts 1]);
+    %
+    ts_cum{iset}.translation=t_new.c(1,:)+ts_cum{iset}.translation*t_new.T*t_new.b; %offsets
+    ts_cum{iset}.scaling=t_new.b*ts_cum{iset}.scaling; %scale factors multiply
+    ts_cum{iset}.orthog=ts_cum{iset}.orthog*t_new.T; %matrices compose
+end
+%
 ts=ts_cum;
 return
