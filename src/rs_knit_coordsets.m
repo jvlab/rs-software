@@ -84,7 +84,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of `data_in` after transformation to the consensus; all stimuli in
 %     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
 %     - knit_stats (struct): statistics of knitting; see notes below regarding statistics and replotting a previous analysis
-%     - knit_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
+%     - knit_stats_setup (struct): parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
 %
 %         - nsets (int): number of records in `data_in`
 %         - nstims (int): number of stimuli
@@ -94,10 +94,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
 %     The transformation is
-%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. Note that ts.translation may be nonzero even if allow_offset=0, since this 
+%     ts_pca{idim,k}.scaling*[data_in{k}{idim}]\*ts_pca{idim}{k}.orthog+ts_pca{idim}{k}.translation. Note that translation may be nonzero even if allow_offset=0, since this 
 %     is the best transformation from the original data to the consensus -- which may include a translation even if the consensus is calculated
 %     wthout allowing translation. If no translation is desired, then set this field to zeros(1,idim).
-%     If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%     If dim_list_out>dim_list_in, then data_in{k}{idim} needs to be right-padded by columns of zeros for missing dimensions.
 %     - details (cell array of struct): details{idim} contains details of
 %     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
 %
@@ -146,17 +146,16 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         rmsdev_overall_shuff (mode 1: magenta, mode 2: red). Quantiles are specified by shuff_quantiles; if nshuffs=0, shuffled values will not be plotted
 %         - a comparison of the explained rmsd, parallel to the above, with available rmsd in blue
 %
-%     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
-%     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.
+%     - Other fields in aux_out.knit_stats are the following.  Note that ds_components and ts are analogus to the fields components and ts_pca] in aux_out, except that ds_components and ts do not include the rotation to principal components (if
+%     requested by aux.opt_knit.if_pca=1). This is not needed for the variance statistics. For a transformation that includes the rotation, see aux_out.ts_pca.
 %
 %         - opts_pcon (struct): supplied options for Procrustes consensus algorithm
 %         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
 %         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
-%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%         - ts (cell array): ts{idim}{k} is the Procrustes transformation
-%         for record k. The transformation is
-%         [consensus]=ts.scaling*[component]*ts.orthog+ts.translation; see `transformation structures` for further details.
-%         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k that most closely match the consensus
+%         - ts (cell array): ts{idim}{k} is the Procrustes transformation for record k. The transformation is
+%         [ds_components{k}{idim}]=ts{idim}{k}.scaling\*[data_in.ds{k}{idim}]*ts{idim}{k}.orthog+ts{idim}{k}.translation; see `transformation structures` for further details.
+%         If dim_list_out>dim_list_in, then data_in.ds{k}{idim}] needs to be right-padded by columns of zeros for missing dimensions.
 %     
 % Note: Note regarding recalculation of alignment
 %     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of `data_in`, and to 
