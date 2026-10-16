@@ -494,13 +494,13 @@ if aux_out.warn_bad==0
     %        qs=opts_used_pca.qs;
             v=opts_used_pca.qv;
     %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+            knitted_centroid_rep=repmat(knitted_centroid,nstims_all,1);
             for iset=1:nsets
-                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip_out},1,'omitnan'),nstims_all,1);
-                ds_components{iset}{1,ip_out}=consensus_centroid_rep+(ds_components{iset}{1,ip_out}-consensus_centroid_rep)*v(1:ip_out,:);
+                ds_components{iset}{1,ip_out}=knitted_centroid_rep+(ds_components{iset}{1,ip_out}-knitted_centroid_rep)*v(1:ip_out,:);
                 %determine transformation to consensus followed by pca
                 ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
                 ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
-                ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
+                ts_pca{ip}{iset}.translation=knitted_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-knitted_centroid_rep(1,:))*v(1:ip_out,:);
             end
         end %dptr
         aux_out.ts_pca=ts_pca;
