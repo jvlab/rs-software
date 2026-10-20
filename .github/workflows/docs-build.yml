@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: "3.14"
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
@@ -29,5 +29,5 @@ jobs:
           path: ~/.cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions mkdocstrings-matlab mkdocstrings-python
+      - run: pip install mkdocs-material mkdocs-autolinks-plugin mkdocs-material-extensions "mkdocstrings-matlab>=2.1" mkdocstrings-python
       - run: mkdocs build
