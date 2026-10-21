@@ -47,7 +47,8 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Logging and optimization**
 %         - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%         - pcon_init_method (int or char): typically omitted; default is 0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm
+%         - pcon_init_method (int or char): typically omitted; default is
+%         0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm for other options
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
 %         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
@@ -99,13 +100,18 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     wthout allowing translation. If no translation is desired, then set this field to zeros(1,idim).
 %     If dim_list_out>dim_list_in, then data_in{k}{idim} needs to be right-padded by columns of zeros for missing dimensions.
 %     - details (cell array of struct): details{idim} contains details of
-%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
+%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include
 %
-%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus
+%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found
+%         from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus, on iteration m
 %         - rms_change (float 1-D array): rms_change(m) is the rms change of the consensus coordinates from the previous iteration
-%         - consensus (float 3-D array): consensus(istim,:,m) are the current consensus coordinates 
-%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
+%         - consensus (float 3-D array): consensus(istim,:,m) are theconsensus coordinates on iteration m
+%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates
+%         data_in.ds{k}(istim,:) transformed to match the consensus on dimension m
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
+%         - initial_guess (float 2-D array): initial_guess(istim,idim) are the coordinates of stimulus istim used for the initial guess for the consensus
+%         - alignment (float 2-D array): alignment(istim,idim) are the coordinates of stimulus istim used to align the consensus
+%         - initialize_use(int 1-D array): initialize_use(istim,1) is the reocrd is used to initialize each point (if initialize_set>0)
 %
 % Note: Note regarding propagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -414,12 +420,14 @@ if aux_out.warn_bad==0
         if_hbad=0; %dimension heuristics always ok if only one set
     end
     if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
-        disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
-            h.dmax,h.dmax_free,h.dmax_constraints));
-        if if_hbad
-            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
-                h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
-            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        if nsets>1
+            disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
+                h.dmax,h.dmax_free,h.dmax_constraints));
+            if if_hbad
+                wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
+                    h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
+                aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+            end
         end
         disp('table of available data')
         for istim=1:nstims_all

@@ -17,7 +17,7 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %      - **Initialization and termination**
 %      - initialize_set (int or char): method for initialization and alignment on each iteration; default is 1
 %
-%          - If in [1:nsets]: use (z(:,:,intialize_set)) for initial guess and alignment; if this set of coordinates has no overlap, use the first set of coordinates afterit that does
+%          - If in [1:nsets]: use (z(:,:,intialize_set)) for initial guess and alignment; if this set of coordinates has no overlap, use the first set of coordinates after it that does
 %          - if 'pca','pca_center','pca_nocenter': use first nds principal components across all datasets for initial guess and alignment
 %          
 %              - 'pca_center': replace NaN's by mean and then center prior to PCA
