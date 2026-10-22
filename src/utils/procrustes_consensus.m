@@ -4,6 +4,8 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 % This algorithm generalizes MATLAB's procrustes tomore than two datasets, allowing for missig values (indicated by NaNs), eliminating translations,
 % and creation of a consensus that is of higher dimension than any of the components, by zero-padding z along dimension 2.
 %
+% If called with no arguments, the default settings for opts_pcon are returned.
+%
 % Args:
 %   z (float 3-D array): input data, size is [npts nds nsets] where npts is the number of points, nds is the number of dimensions, and nsets is the number of datasets
 %
@@ -97,6 +99,11 @@ opts_pcon=filldefault(opts_pcon,'overlaps',[]);
 opts_pcon=filldefault(opts_pcon,'if_justcheck',0);
 opts_pcon=filldefault(opts_pcon,'exclude_nan',1);
 opts_pcon=filldefault(opts_pcon,'if_initpca_rot',1);
+%
+if (nargin<1)
+   consensus=opts_pcon; %special return to get defaults
+   return
+end
 %
 opts_pcon_used=opts_pcon;
 %
