@@ -257,6 +257,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_init
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_dim_heuristics',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_swarm',0);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
