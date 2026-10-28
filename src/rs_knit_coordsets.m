@@ -47,14 +47,21 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Logging and optimization**
 %         - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%         - pcon_init_method (int or char): typically omitted; default is
-%         0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm for other options
+%         - pcon_init_method (int or char): typically omitted; default is 0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm for other options
+%         - if_swarm (int): 1 to enable swarm optimization (overriding pcon_init_method), 0 to disable; default is 0; see note below regarding swarm optimization
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
-%         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
+%         - max_rmstol (float): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
 %         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
+%         - swarm (struct): if present, sets options for swarm optimization (see note below regarding swarm optimization); fields are
+%
+%             - if_log (int): 1 for logging swarm optimization, 0 to suppress; default is 0
+%             - if_frozen (int):   1 for same numbers each run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
+%             - max_niters (int):  maximum number of iterations to determine best initialization for swarm; default is 50
+%             - max_rmstol (float): tolerance for stopping iterations to dtermine best initializatio for swarm; default is 10^-4
+%             - nrand (int): number of initial guesses based on random numbers; default is 10
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -111,7 +118,18 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
 %         - initial_guess (float 2-D array): initial_guess(istim,idim) are the coordinates of stimulus istim used for the initial guess for the consensus
 %         - alignment (float 2-D array): alignment(istim,idim) are the coordinates of stimulus istim used to align the consensus
-%         - initialize_use(int 1-D array): initialize_use(istim,1) is the reocrd is used to initialize each point (if initialize_set>0)
+%         - initialize_use (int 1-D array): initialize_use(istim,1) is the reocrd is used to initialize each point (if initialize_set>0)
+%         - swarm (struct): details from swarm optimization, present only if opts_knit.if_swarm=1 (see note regarding swarm optimization), with fields
+%
+%             - rms_dev_total_min (float): root-mean-squared deviation for best alignment from preliminary swarm runs
+%             - rms_dev_total_definitive (float): root-mean-squared deviation for best alignment for definitive run
+%             - class_name_min (char): the class that produced the best alignment in preliminary runs
+%             - itry_min (int): the instance in the class that produced the best alignment in preliminary runs
+%             - opts_definitive (struct): the options in opts_knit that produced the best alignment in preliminary runs
+%             - if_def_eq_swarm (int): 1 if halting parameters (max_niters, max_rmstol) for preliminary and definitive runs match
+%             - init_components (struct): results of swarm optimizations based on component datasets
+%             - init_pca (struct): results of swarm optimizations based on principal components
+%             - init_random (struct): results of swarm optimizations based on random starts
 %
 % Note: Note regarding propagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -204,6 +222,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
+%
+%     - The swarm option (opts_knit.if_swarm=1) can be used to automatically step through several types of initialization methods, and choose the best.
+%     - If allow_scale=1, then the optimal solution will depend not only on
+%     the data points that overlap, but also on the data points that are unique to individual components, since these contribute to determining tthe rescaling on each iteration
 % 
 % Note: Note regarding replotting a previous analysis
 %     - To replot a previous calculation with additional customization or to make a composite figure, proceed as follows:
@@ -224,6 +246,24 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     -  No further calculations are done
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
+%
+% Note: Note regarding swarm optimization
+%     - This is enabled by setting opts_knit.if_swarm=1.
+%     - Preliminary runs are made with several classes of initial guesses, and stopping parameters based on max_niters and max_rmstol in opts_knit.swarm
+%     - The choice that leads to the smallest rms deviation of the aligned coordinates is recorded in aux.details{idim}.swarm, and used for a definitive run, using the stopping parameters in opts_knit
+%     - The classes are
+%
+%         - init_components: the original component datasets are used; variants choose each component dataset in succession as the initial guess, advancing to the next dataset if a stimulus is missing
+%         - init_pca: principal components of the datasets are used, with options (mean subtraction, rotation) as described in the note regarding the Procrustes alignment algorithm; variants consist of computing the principal components from the coordinates of stimuli present in increasing numbers of the datasets
+%         - init_random: Gaussian random varibles are used as the initial guess; the number of variants is given by opts_knit.swarm.nrand; default is 10; these random numbers do not affect the random numbers used for permutation testing 
+%
+%     - Results from each class are recorded in aux.details{idim}.(class_name), including
+%
+%         - counts: the number of variants for each class
+%         - rms_dev_totals: the rms deviation for each example of the class
+%         - range: the range of rms deviations for each class
+%         - itry_min: the optimal choice within each class
+%         - opts: the options usef for the variant with the lowest rms deviation
 %
 % Note: Note regarding rays
 %     - The `ray structure` describes relationships among the simulus coordinates: 
