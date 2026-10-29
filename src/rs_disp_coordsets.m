@@ -31,7 +31,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
-%         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);
+%         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);  This applies to data in all records. To disable display of data in specific records, set their coordinates to NaN.
 %
 %         - **Figure and subplot control**
 %         - fig_handle (handle): handle to figure; will be created if empty or not provided
