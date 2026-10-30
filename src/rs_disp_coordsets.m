@@ -666,10 +666,10 @@ if aux_out.warn_bad==0
                     else
                         switch x.callout_center
                             case 'centroid'
-                                callout_center=mean(z_all,1);
+                                callout_center=mean(z_all,1,'omitnan');
                         end
                     end
-                    dists=sqrt(sum((z_all-repmat(callout_center,size(z_all,1),1)).^2,2)); %distances from callout_center
+                    dists=sqrt(sum((z_all-repmat(callout_center,size(z_all,1),1)).^2,2,'omitnan')); %distances from callout_center
                     rmsdist=sqrt(mean(dists.^2)); %rms distances from callout_center
                     dists(dists==0)=1;
                     for lab=1:size(x.data_show_list,1)
