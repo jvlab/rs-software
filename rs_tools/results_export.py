@@ -42,7 +42,7 @@ SCALAR_FIELDS = [
     "learning_rate", "resample_method", "warm_start", "seed_mode",
     "n_shared_stimuli", "n_triads1", "n_triads2",
     "real_disparity", "real_ll1", "real_ll2",
-    "surrogate_mean", "surrogate_std", "n_surrogates_ge_real",
+    "surrogate_mean", "surrogate_std", "surrogate_critical_5pct", "n_surrogates_ge_real",
     "p_value",
 ]
 ARRAY_FIELDS = ["surrogate_disparities", "surrogate_ll1", "surrogate_ll2"]
@@ -57,7 +57,7 @@ EXTRA_FIELDS = [
 SUMMARY_COLUMNS = [
     "dataset1", "dataset2", "dim", "n_surrogates", "max_iterations_real",
     "max_iterations_surrogate", "resample_method", "real_disparity", "surrogate_mean",
-    "surrogate_std", "p_value", "real_ll1", "real_ll2", "source",
+    "surrogate_std", "surrogate_critical_5pct", "p_value", "real_ll1", "real_ll2", "source",
     "created_utc",
 ]
 
@@ -110,6 +110,7 @@ def build_record(*, source, dataset1, dataset2, dim, n_surrogates, real_disparit
         "real_ll2": None if real_ll2 is None else float(real_ll2),
         "surrogate_mean": float(disparities.mean()) if n else None,
         "surrogate_std": float(disparities.std()) if n else None,
+        "surrogate_critical_5pct": float(np.quantile(disparities, 0.95)) if n else None,
         "n_surrogates_ge_real": n_ge,
         "p_value": float(n_ge / n) if n else None,
         "surrogate_disparities": disparities,
@@ -173,6 +174,17 @@ def table_csv(header, rows):
     writer.writerow(header)
     writer.writerows(rows)
     return buf.getvalue().encode("utf-8")
+
+
+def summary_table_csv(record):
+    """The one-row table for the lab's comparison spreadsheet: real Procrustes D, the surrogate mean, sd
+    and 5% critical value, and the p-value."""
+    header = ["dataset_1", "dataset_2", "dim", "n_surrogates", "real_procrustes_D", "surrogate_mean_D",
+              "surrogate_sd_D", "surrogate_5pct_quantile_D", "p_value"]
+    row = [record["dataset1"], record["dataset2"], record["dim"], record["n_surrogates"],
+           record["real_disparity"], record["surrogate_mean"], record["surrogate_std"],
+           record["surrogate_critical_5pct"], record["p_value"]]
+    return table_csv(header, [row])
 
 
 def coords_csv(labels, coords):

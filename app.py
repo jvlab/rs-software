@@ -33,6 +33,9 @@ from src.rs_py.utils.config import CONFIG
 import src.rs_py.model.fit_geometric_models as rs
 from rng_control import initialize_random_state
 
+DATASET_COLORS = ("#1F4E8C", "#6FA8DC")   # dataset 1 / dataset 2: two blues
+SURROGATE_COLOR = "#D62728"               # all surrogate curves: one red
+
 # ---------------------------------------------------------------------------
 # defaults
 # ---------------------------------------------------------------------------
@@ -254,15 +257,6 @@ st.sidebar.markdown("---")
 # --- Optional settings ---
 st.sidebar.subheader("Optional settings")
 
-# Learning rate
-_c1, _c2 = st.sidebar.columns([3, 1])
-learning_rate = _c1.number_input("Learning rate", min_value=0.001, max_value=1.0,
-                                  value=float(DEFAULT_LEARNING_RATE), step=0.001, format="%.3f",
-                                  help="Controls how fast the model updates at each step. The default (0.05) works well for most datasets — only adjust if the convergence plot shows instability.")
-if _c2.button("↺", key="d_lr", help="Reset to default"):
-    learning_rate = DEFAULT_LEARNING_RATE
-st.sidebar.caption("ℹ️ Learning rate rarely needs changing. Default of 0.05 is appropriate for most runs.")
-
 # Print convergence interval -- on (50) by default so the page shows live
 # progress instead of looking frozen during a slow fit, especially on
 # Streamlit Cloud
@@ -286,10 +280,10 @@ if show_pooled:
         surrogate_max_iter = 200
     n_surr_conv = _c1.number_input(
         "Show convergence for first N surrogates", min_value=0, max_value=20,
-        value=1, step=1,
+        value=2, step=1,
         help="Plots the convergence curve for the first N surrogates to verify warm start is working.")
     if _c2.button("↺", key="d_surr_conv", help="Reset to default"):
-        n_surr_conv = 1
+        n_surr_conv = 2
 else:
     surrogate_max_iter = max_iterations
     n_surr_conv = 0
@@ -322,6 +316,14 @@ else:
         seed_offset = 1
     real_if_frozen = -int(seed_offset)
 
+# Learning rate
+_c1, _c2 = st.sidebar.columns([3, 1])
+learning_rate = _c1.number_input("Learning rate", min_value=0.001, max_value=1.0,
+                                  value=float(DEFAULT_LEARNING_RATE), step=0.001, format="%.3f",
+                                  help="Step size of each update. Only change it if the convergence plot is unstable.")
+if _c2.button("↺", key="d_lr", help="Reset to default"):
+    learning_rate = DEFAULT_LEARNING_RATE
+
 st.sidebar.markdown("---")
 
 # Use all defaults — at the bottom so users see all parameters first
@@ -335,6 +337,13 @@ if st.sidebar.button("Use all defaults", use_container_width=True):
 
 st.sidebar.markdown("---")
 run_btn = st.sidebar.button("Run analysis", type="primary", use_container_width=True)
+
+def remove_temp_copies(*paths):
+    # only the temporary copies made for uploaded files are deleted; files given by path are the user's own
+    if input_mode == "Upload files":
+        for path in paths:
+            os.unlink(path)
+
 
 # --- main area ---
 st.title("Surrogate MDS Analysis")
@@ -435,7 +444,6 @@ if show_pooled: #if checkbox has been selected (t or f)
 
 # real data MDS
 st.markdown("#### Real data MDS")
-st.caption("Fitting an MDS coordinate map to each dataset's actual choices. LL (log-likelihood) measures fit quality — closer to 0 is better. Disparity measures how different the two maps are after alignment.")
 prog = st.progress(0, text="Fitting real data...")
 progress_log = st.empty()   # live iteration-by-iteration progress, so the page doesn't look frozen
 
@@ -463,15 +471,14 @@ final_ll2 = -real_ll2 / total_triads2
 col1, col2, col3 = st.columns(3)
 col1.metric(f"{name1} LL", f"{final_ll1:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit. Best possible model is the empirical choice probability itself.")
 col2.metric(f"{name2} LL", f"{final_ll2:.4f}", help="Log-likelihood per trial. Closer to 0 = better fit.")
-col3.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two maps. 0 = identical, higher = more different.")
+col3.metric("Real Procrustes D", f"{real_disparity:.4f}")
 
 # convergence plot
 if residuals1 or residuals2:
     st.markdown("#### Convergence")
-    st.caption("Log-likelihood per iteration for each dataset. A flat curve indicates the fit has converged — if it is still decreasing at the end, increase max iterations.")
     res_dict = {name1: residuals1, name2: residuals2}
     tri_dict = {name1: total_triads1, name2: total_triads2}
-    styles = {}
+    styles = {name1: {"color": DATASET_COLORS[0]}, name2: {"color": DATASET_COLORS[1]}}
     if show_pooled and pooled_residuals:
         res_dict["Pooled (A+B)"] = pooled_residuals
         tri_dict["Pooled (A+B)"] = total_triads_pooled
@@ -485,13 +492,11 @@ _show_surr_conv = show_pooled and n_surr_conv > 0
 # prelim mode — stop here
 if n_surrogates == 0:
     st.success("Preliminary run complete. Check the convergence plot above to decide how many iterations you need, then rerun with surrogates.")
-    os.unlink(path1)
-    os.unlink(path2)
+    remove_temp_copies(path1, path2)
     st.stop()
 
 # --- surrogates ---
 st.markdown("#### Surrogate runs")
-st.caption("Each surrogate is a randomly resampled dataset pair drawn from the pooled observations. Running MDS on many surrogates builds a null distribution — how different two maps look when there is no genuine difference between datasets.")
 
 observations = pool_observations(resp1, rep1, resp2, rep2)
 pool = build_pool(observations)
@@ -538,13 +543,12 @@ p_value = float(np.mean(surrogate_disparities >= real_disparity))
 
 # --- results ---
 st.markdown("#### Results")
-st.caption("The real disparity (red line) is compared against the surrogate null distribution (blue bars). If the real disparity falls in the tail of the distribution, the two datasets are genuinely different.")
 
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Real disparity", f"{real_disparity:.4f}", help="Procrustes disparity between the two real datasets.")
-m2.metric("Surrogate mean", f"{surrogate_disparities.mean():.4f}", help="Average disparity across all surrogate pairs — this is what 'no real difference' looks like.")
-m3.metric("Surrogate std", f"{surrogate_disparities.std():.4f}", help="Spread of the surrogate distribution. Wider = more variable null.")
-m4.metric("p-value", f"{p_value:.4f}", help="Fraction of surrogates with disparity ≥ real. Below 0.05 = statistically significant. Use at least 100 surrogates for a reliable estimate.")
+m1.metric("Real Procrustes D", f"{real_disparity:.4f}")
+m2.metric("Surrogate mean", f"{surrogate_disparities.mean():.4f}", help="Mean Procrustes D across the surrogate pairs.")
+m3.metric("Surrogate std", f"{surrogate_disparities.std():.4f}", help="Standard deviation of Procrustes D across the surrogate pairs.")
+m4.metric("p-value", f"{p_value:.4f}", help="Fraction of surrogates with Procrustes D ≥ real.")
 
 if p_value < 0.05:
     st.success(f"Statistically significant at p = 0.05 (p = {p_value:.4f}) — the two maps are more different than expected by chance.")
@@ -562,24 +566,28 @@ fig_dist.add_vline(
     x=float(real_disparity), line_color="#E24B4A", line_dash="dash",
     annotation_text=f"Real: {real_disparity:.4f}", annotation_position="top right"
 )
+# level the real disparity must exceed to be significant at 0.05: 5% of surrogates are at or above it
+# (a 1% level can be added the same way, once there are enough surrogates for it to mean something)
+critical_5pct = float(np.quantile(surrogate_disparities, 0.95))
+fig_dist.add_vline(
+    x=critical_5pct, line_color="#1F4E8C", line_dash="dot",
+    annotation_text=f"5% level: {critical_5pct:.4f}", annotation_position="top left"
+)
 fig_dist.update_layout(
-    xaxis_title="Procrustes disparity", yaxis_title="Count",
+    xaxis_title="Procrustes D", yaxis_title="Count",
     height=300, margin=dict(l=40, r=20, t=20, b=40),
     showlegend=False
 )
 st.plotly_chart(fig_dist, use_container_width=True)
-st.caption("Blue bars = surrogate null distribution. Red dashed line = real disparity. The further right the red line, the more the two datasets differ.")
+st.caption("Red dashed line = real Procrustes D. Dark blue dotted line = 5% level of the surrogates.")
 
 # surrogate convergence (warm start verification)
 if _show_surr_conv and surrogate_conv_results:
     st.markdown("#### Warm start verification — surrogate convergence")
-    st.caption(
-        f"Convergence of the first {len(surrogate_conv_results)} surrogate(s) (dashed), overlaid with the real fits (solid). "
-        "If warm start is working, surrogates should converge in far fewer iterations."
-    )
+    st.caption(f"First {len(surrogate_conv_results)} surrogate(s) (dashed) and the real fits (solid).")
     surr_res_dict = {name1: residuals1, name2: residuals2}
     surr_tri_dict = {name1: total_triads1, name2: total_triads2}
-    surr_styles = {}
+    surr_styles = {name1: {"color": DATASET_COLORS[0]}, name2: {"color": DATASET_COLORS[1]}}
     for i, (res_a, res_b) in enumerate(surrogate_conv_results):
         lbl_a = f"Surrogate {i+1} A"
         lbl_b = f"Surrogate {i+1} B"
@@ -587,28 +595,29 @@ if _show_surr_conv and surrogate_conv_results:
         surr_res_dict[lbl_b] = res_b
         surr_tri_dict[lbl_a] = sum(jobs[i][2].values())   # s_rep1 total
         surr_tri_dict[lbl_b] = sum(jobs[i][4].values())   # s_rep2 total
-        surr_styles[lbl_a] = {"color": "#378ADD", "dash": "dash"}
-        surr_styles[lbl_b] = {"color": "#E24B4A", "dash": "dash"}
+        surr_styles[lbl_a] = {"color": SURROGATE_COLOR, "dash": "dash", "name": "Surrogates",
+                              "legendgroup": "surrogates", "showlegend": i == 0}
+        surr_styles[lbl_b] = {"color": SURROGATE_COLOR, "dash": "dash", "name": "Surrogates",
+                              "legendgroup": "surrogates", "showlegend": False}
     convergence_plot(surr_res_dict, surr_tri_dict, surr_styles)
 
 # surrogate LL table
 st.markdown("#### Surrogate log-likelihoods")
-st.caption("Log-likelihood per trial for each surrogate's two datasets. Similar values across surrogates indicate stable fits.")
 import pandas as pd
 full_tbl = {
     "Surrogate": list(range(1, n_surrogates + 1)),
     f"LL ({name1})": [f"{r[0]:.4f}" for r in surrogate_lls],
     f"LL ({name2})": [f"{r[1]:.4f}" for r in surrogate_lls],
-    "Disparity": [f"{d:.4f}" for d in surrogate_disparities],
+    "Procrustes D": [f"{d:.4f}" for d in surrogate_disparities],
 }
 st.dataframe(full_tbl, use_container_width=True, hide_index=True)
 
 # --- download results as files (machine-readable, for the lab's comparison tables) ---
 from rs_tools.results_export import (build_record, record_bytes, bundle_zip, table_csv,
-                                     coords_csv, convergence_csv)
+                                     coords_csv, convergence_csv, summary_table_csv)
 
 st.markdown("#### Download results")
-st.caption("Save this whole run as files: settings, real and surrogate disparities and log-likelihoods, the "
+st.caption("Save this whole run as files: settings, real and surrogate Procrustes D and log-likelihoods, the "
            "p-value, both fitted maps (raw and aligned), the convergence curves, the surrogate table and the "
            "histogram. \"Download everything\" packs all of it into one zip.")
 
@@ -648,16 +657,18 @@ result_record = build_record(
             "shared_stim_labels": _shared, "aligned_coords1": _a1, "aligned_coords2": _a2,
             "convergence_dataset1": _conv1, "convergence_dataset2": _conv2,
             "convergence_pooled": _conv_pooled})
-st.caption(f"p-value {result_record['p_value']:.4f} is the fraction of surrogates at or above the real disparity "
+st.caption(f"p-value {result_record['p_value']:.4f} is the fraction of surrogates at or above the real Procrustes D "
            f"({result_record['n_surrogates_ge_real']} of {n_surrogates}). With {n_surrogates} surrogates it can only be a "
-           f"multiple of 1/{n_surrogates}; 0 means none of them reached the real disparity.")
+           f"multiple of 1/{n_surrogates}; 0 means none of them reached the real Procrustes D.")
 
 _surrogate_csv = table_csv(
-    ["surrogate", f"ll_per_triad_{name1}", f"ll_per_triad_{name2}", "disparity"],
+    ["surrogate", f"ll_per_triad_{name1}", f"ll_per_triad_{name2}", "procrustes_D"],
     [[i + 1, repr(float(r[0])), repr(float(r[1])), repr(float(d))]
      for i, (r, d) in enumerate(zip(surrogate_lls, surrogate_disparities))])
+_summary_csv = summary_table_csv(result_record)
 _histogram_html = fig_dist.to_html(include_plotlyjs="cdn").encode("utf-8")
 _bundle = bundle_zip(result_record, {
+    "summary_table.csv": _summary_csv,
     "surrogate_table.csv": _surrogate_csv,
     "coordinates_dataset1.csv": coords_csv(stims1, real_coords1),
     "coordinates_dataset2.csv": coords_csv(stims2, real_coords2),
@@ -673,15 +684,16 @@ _no_rerun = {"on_click": "ignore"} if tuple(int(x) for x in st.__version__.split
 st.download_button("Download everything (.zip)", _bundle, file_name=f"{_file_stem}_all.zip",
                    mime="application/zip", key="dl_results_all", type="primary", **_no_rerun)
 st.caption("Or one file at a time:")
-_cols = st.columns(5)
+_cols = st.columns(6)
 for _col, (_label, _data, _name, _mime) in zip(_cols, [
+        ("Summary table .csv", _summary_csv, f"{_file_stem}_summary_table.csv", "text/csv"),
         ("Summary .json", record_bytes(result_record, "json"), f"{_file_stem}.json", "application/json"),
         ("Summary .mat", record_bytes(result_record, "mat"), f"{_file_stem}.mat", "application/octet-stream"),
         ("Summary .npz", record_bytes(result_record, "npz"), f"{_file_stem}.npz", "application/octet-stream"),
         ("Surrogate table .csv", _surrogate_csv, f"{_file_stem}_surrogates.csv", "text/csv"),
         ("Histogram .html", _histogram_html, f"{_file_stem}_histogram.html", "text/html")]):
     _col.download_button(_label, _data, file_name=_name, mime=_mime,
-                         key="dl_results_" + _name.rsplit(".", 1)[-1], **_no_rerun)
+                         key="dl_results_" + _name.rsplit(".", 1)[0].rsplit("_", 1)[-1] + "_" + _name.rsplit(".", 1)[-1],
+                         **_no_rerun)
 
-os.unlink(path1)
-os.unlink(path2)
+remove_temp_copies(path1, path2)

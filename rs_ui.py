@@ -169,7 +169,8 @@ def convergence_plot(residuals_dict, total_triads_dict, styles=None):
 
     residuals_dict: {label: [(iter, ll), ...]}
     total_triads_dict: {label: int}
-    styles: optional {label: dict} with keys 'color', 'dash', 'symbol'
+    styles: optional {label: dict} with keys 'color', 'dash', 'symbol', and optionally
+            'name' (legend text), 'legendgroup' and 'showlegend' to share one legend entry
     """
     fig = go.Figure()
     for label, residuals in residuals_dict.items():
@@ -182,7 +183,9 @@ def convergence_plot(residuals_dict, total_triads_dict, styles=None):
             x=list(itrs),
             y=[-l / total for l in lls],
             mode='lines+markers',
-            name=label,
+            name=style.get('name', label),
+            legendgroup=style.get('legendgroup'),
+            showlegend=style.get('showlegend', True),
             marker=dict(size=4, symbol=style.get('symbol', 'circle')),
             line=dict(
                 color=style.get('color', None),
