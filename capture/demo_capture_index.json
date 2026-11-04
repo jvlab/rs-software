@@ -48,9 +48,9 @@
     "error": null
   },
   "rs_toygeom_scenarioA": {
-    "source_sha256": "352a85a4e51cedb7c2240eedb063f4a5f76aa1d072d4f3ab66454461c8395fa8",
-    "captured_at": "2026-11-04T13:51:37+00:00",
-    "figures": 74,
+    "source_sha256": "40abad83a0da49b4522dddcdf78903988ce02bb39e7f2a10c1d4c9118981273a",
+    "captured_at": "2026-11-04T15:14:50+00:00",
+    "figures": 10,
     "error": null
   },
   "rs_toygeom_scenarioB": {
