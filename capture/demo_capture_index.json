@@ -48,26 +48,26 @@
     "error": null
   },
   "rs_toygeom_scenarioA": {
-    "source_sha256": "90a60fde0d56b40a1ed524e58fecd4426d5b0e95899b0316b5dca391e3698cff",
-    "captured_at": "2026-09-21T17:43:05+00:00",
+    "source_sha256": "352a85a4e51cedb7c2240eedb063f4a5f76aa1d072d4f3ab66454461c8395fa8",
+    "captured_at": "2026-11-04T13:51:37+00:00",
     "figures": 74,
     "error": null
   },
   "rs_toygeom_scenarioB": {
-    "source_sha256": "ca2d6696e32a655608c5f8286f65d00dc9874846e574616abfc6c88dfc2d6e2f",
-    "captured_at": "2026-09-21T17:43:05+00:00",
+    "source_sha256": "7b2715d4e80e4a470bb0de69aeba8831e3cdc75373ac23813848636bf907df72",
+    "captured_at": "2026-11-04T13:51:37+00:00",
     "figures": 10,
     "error": null
   },
   "rs_toygeom_scenarioC": {
-    "source_sha256": "e2b4be076ac9c97f12059b58539d2e6fc85f292478b36b09548bb07d3cefe60f",
-    "captured_at": "2026-09-21T17:43:05+00:00",
+    "source_sha256": "8759481d1c30c9db9510afbb6e86a6df95765eb30dae604a39a32898a708446f",
+    "captured_at": "2026-11-04T13:51:37+00:00",
     "figures": 7,
     "error": null
   },
   "rs_toygeom_scenarioD": {
-    "source_sha256": "f28c5745e773706ba3954785f5a74595c08452ad8405ff2e826b9ac736a5b234",
-    "captured_at": "2026-09-21T17:43:05+00:00",
+    "source_sha256": "8d4e6ca76876746f10273e7d148402f5a887718900bf7c029f9b17f7a939351d",
+    "captured_at": "2026-11-04T13:51:37+00:00",
     "figures": 11,
     "error": null
   },
