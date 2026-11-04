@@ -34,6 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_demo_specs import BUILD_DIR, FIG_DIR, demo_paths  # noqa: E402
 from demo_capture import load_manifest  # noqa: E402
+from demo_include import expanded_source  # noqa: E402
 from function_registry import build as build_registry  # noqa: E402
 from matlab_to_markdown import parse_matlab_to_markdown  # noqa: E402
 
@@ -46,6 +47,10 @@ def source_hash(demo_path):
     """
     Return the SHA-256 of a demo source file, as a hex string.
 
+    The hash covers the demo with its %#demo-include calls expanded, so editing
+    an included script marks every demo that includes it as stale. A demo
+    without includes hashes exactly as its file does.
+
     Line endings are normalized to \n first, so the hash describes the content
     and not the checkout. Git for Windows converts to CRLF by default, and
     without this a capture made on one platform would mark every demo stale on
@@ -57,8 +62,7 @@ def source_hash(demo_path):
     Returns:
         str: the hex digest.
     """
-    content = Path(demo_path).read_bytes().replace(b"\r\n", b"\n")
-    return hashlib.sha256(content).hexdigest()
+    return hashlib.sha256(expanded_source(demo_path).encode("utf-8")).hexdigest()
 
 
 def figure_pattern(demo_name):
@@ -146,9 +150,7 @@ def render_demo(demo_path, registry, page_dir=PAGE_DIR, build_dir=BUILD_DIR):
     demo_path = Path(demo_path)
     manifest = load_manifest(Path(build_dir) / f"{demo_path.stem}.manifest.json")
 
-    markdown = parse_matlab_to_markdown(
-        demo_path.read_text(encoding="utf-8"), registry, manifest
-    )
+    markdown = parse_matlab_to_markdown(expanded_source(demo_path), registry, manifest)
 
     page_path = Path(page_dir) / f"{demo_path.stem}.md"
     page_path.parent.mkdir(parents=True, exist_ok=True)

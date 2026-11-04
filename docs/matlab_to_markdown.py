@@ -25,11 +25,15 @@ import re
 import sys
 from pathlib import Path
 
+from demo_include import BEGIN, BODY, END, MARKER
+
 # Capture directives are trailing (or whole-line) comments that drive capture:
 #
 #   %#demo-input: <answer>    the answer to a scripted input() or getinp() call
 #   %#demo-snapshot           export the current figure again after this chunk
 #   %#demo-snapshot: all      export every figure left open by earlier chunks
+#   %#demo-include            paste the script this line calls (see demo_include)
+#   %#demo-include-only       this script is published only inside its includers
 #
 # A directive counts only at the end of a code line or alone on its own line. In
 # a prose comment ("% add %#demo-snapshot to ...") it is just text, so that a
@@ -39,7 +43,7 @@ from pathlib import Path
 # source line before the line is classified as comment or code. Input answers
 # are read from the raw source by demo_capture, and snapshot requests are
 # recorded on the code block by parse_blocks, so removing them loses nothing.
-_DIRECTIVE_INLINE = re.compile(r"\s*%#demo-(?:input:|snapshot\b).*$")
+_DIRECTIVE_INLINE = re.compile(r"\s*%#demo-(?:input:|snapshot\b|include\b).*$")
 _SNAPSHOT = re.compile(r"%#demo-snapshot\b(?::(.*))?$")
 
 # Snapshot modes, as written into the capture spec. An empty string means the
@@ -173,6 +177,10 @@ def parse_blocks(matlab_code):
         indent    text blocks only: the indentation of the comment lines, in
                   columns, so the renderer can indent the prose to match
 
+    An expanded include (see demo_include) adds blocks of kind "include", with
+    "event" one of "begin", "body", "end" and "name" the included script. They
+    end any run of text or code, and carry no chunk.
+
     The splitting mirrors the original single-pass state machine: a run of
     comment lines becomes one text block, a run of code lines (including any
     interleaved blank lines) becomes one code block, and blank lines outside
@@ -210,6 +218,14 @@ def parse_blocks(matlab_code):
         comment_block_indent = None
 
     for line_number, raw in enumerate(matlab_code.splitlines(), start=1):
+        marker = MARKER.match(raw)
+        if marker:
+            flush_code()
+            flush_comments()
+            blocks.append({"kind": "include", "event": marker.group(1),
+                           "name": marker.group(2)})
+            continue
+
         mode = snapshot_mode(raw, line_number)
         line = _strip_demo_directive(raw)
         stripped = line.strip()
@@ -331,6 +347,34 @@ def render_capture(entry) -> str:
     return "\n\n".join(parts)
 
 
+def render_include_header(name, header_blocks, FUNCTION_REGISTRY) -> str:
+    """
+    Render the heading and the folded header comment of an included script.
+
+    The first header line, in the "name: description" form every demo and
+    script starts with, becomes the summary of a collapsed block holding the
+    rest of the header, so the reference text of a shared script does not
+    dominate every page that includes it.
+
+    Args:
+        name: the included script.
+        header_blocks: the text blocks between its begin and body markers.
+        FUNCTION_REGISTRY: mapping used to linkify "See also" lines.
+    """
+    lines = [line for block in header_blocks for line in block["lines"]]
+    heading = f"### Included script: `{name}`"
+    if not "".join(lines).strip():
+        return heading
+
+    summary = lines[0].strip()
+    body = "\n".join(process_see_also(line, FUNCTION_REGISTRY) for line in lines[1:]).strip()
+    details = f'<details class="demo-include" markdown="1">\n<summary>{summary}</summary>'
+    if body:
+        details += f"\n\n{body}\n"
+    details += "\n</details>"
+    return f"{heading}\n\n{details}"
+
+
 def render_blocks(blocks, FUNCTION_REGISTRY, manifest=None) -> str:
     """
     Render parsed blocks to markdown.
@@ -346,8 +390,21 @@ def render_blocks(blocks, FUNCTION_REGISTRY, manifest=None) -> str:
     output = []
     first_comment_seen = False
     chunk_index = 0
+    header = None   # (name, text blocks) while inside an include header
 
     for block in blocks:
+        if block["kind"] == "include":
+            if block["event"] == BEGIN:
+                header = (block["name"], [])
+            elif block["event"] == BODY:
+                output.append(render_include_header(header[0], header[1], FUNCTION_REGISTRY))
+                header = None
+            elif block["event"] == END:
+                output.append(f"*End of included script `{block['name']}`.*")
+            continue
+        if header is not None:
+            header[1].append(block)     # the header has no code by construction
+            continue
         if block["kind"] == "text":
             processed = []
             for line in block["lines"]:

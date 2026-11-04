@@ -44,6 +44,7 @@ import json
 import re
 from pathlib import Path
 
+from demo_include import expanded_source
 from matlab_to_markdown import (
     code_chunk_snapshots,
     code_chunk_texts,
@@ -85,6 +86,9 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
     """
     Build and write the capture spec for one demo.
 
+    The demo is read with its %#demo-include calls expanded, so the chunks and
+    scripted answers of included scripts are part of the spec.
+
     The spec lists the demo's code chunks (using the same segmentation the
     renderer uses, so chunk ids line up with manifest keys), the scripted
     answers, and where the MATLAB driver should write figures and the manifest.
@@ -106,7 +110,7 @@ def build_spec(demo_path, fig_dir, spec_path, manifest_path,
         The spec dict that was written.
     """
     demo_path = Path(demo_path)
-    source = demo_path.read_text(encoding="utf-8")
+    source = expanded_source(demo_path)
     blocks = parse_blocks(source)
     chunks = code_chunk_texts(blocks)
     snapshots = code_chunk_snapshots(blocks)

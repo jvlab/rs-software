@@ -30,20 +30,27 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from demo_capture import build_spec  # noqa: E402
+from demo_include import expanded_source, included_names, is_include_only, read_source  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BUILD_DIR = REPO_ROOT / "build" / "capture"
+DEMO_DIR = REPO_ROOT / "src" / "demos"
 FIG_DIR = REPO_ROOT / "docs" / "images" / "demos"
 SEED = 0
 
 
-def demo_paths(names=()):
+def demo_paths(names=(), demo_dir=DEMO_DIR):
     """
     Return the demo files to build specs for, sorted by path.
+
+    Scripts marked %#demo-include-only are not demos: they are published only
+    inside the demos that include them. Naming one selects those demos instead,
+    since they are what has to be captured again after it changes.
 
     Args:
         names: demo names to keep, given as bare names, file names or paths;
             empty means every demo.
+        demo_dir: directory holding the demo files.
 
     Returns:
         A list of demo file paths.
@@ -52,21 +59,36 @@ def demo_paths(names=()):
         SystemExit: if a requested name matches no demo file.
     """
     found = {}
-    for demo in sorted(glob(str(REPO_ROOT / "src" / "demos" / "*.m"))):
+    include_only = set()
+    for demo in sorted(glob(str(Path(demo_dir) / "*.m"))):
         name = Path(demo).stem
-        if name.lower() != "contents":
+        if name.lower() == "contents":
+            continue
+        if is_include_only(read_source(demo)):
+            include_only.add(name)
+        else:
             found[name] = demo
 
     if not names:
         return list(found.values())
 
-    wanted = [Path(name).stem for name in names]
-    missing = [name for name in wanted if name not in found]
+    selected = []
+    missing = []
+    for name in (Path(name).stem for name in names):
+        if name in found:
+            chosen = [name]
+        elif name in include_only:
+            chosen = [demo for demo in found
+                      if name in included_names(expanded_source(found[demo]))]
+        else:
+            missing.append(name)
+            continue
+        selected.extend(demo for demo in chosen if demo not in selected)
     if missing:
         raise SystemExit(
             f"[build_demo_specs] no such demo: {', '.join(missing)}"
         )
-    return [found[name] for name in wanted]
+    return [found[name] for name in selected]
 
 
 def clear_specs():
