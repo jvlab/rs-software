@@ -7,9 +7,9 @@
   },
   "rs_align_disp_enh_coordsets_demo": {
     "source_sha256": "8acadd7e1c43fb08ac5f03239a1cc49b2692a9d559e390113f407ebea38ecb35",
-    "captured_at": "2026-09-21T17:43:05+00:00",
+    "captured_at": "2026-11-04T16:39:15+00:00",
     "figures": 1,
-    "error": "Undefined function 'btc_exptname' for input arguments of type 'struct'."
+    "error": "Undefined function 'btc_coorkinds' for input arguments of type 'struct'."
   },
   "rs_disp_coordsets_demo": {
     "source_sha256": "de7d532a0821de240446afe1a63951e0b22d432b329d4fecb09f271c34dea78d",
@@ -48,8 +48,8 @@
     "error": null
   },
   "rs_toygeom_scenarioA": {
-    "source_sha256": "40abad83a0da49b4522dddcdf78903988ce02bb39e7f2a10c1d4c9118981273a",
-    "captured_at": "2026-11-04T15:14:50+00:00",
+    "source_sha256": "352a85a4e51cedb7c2240eedb063f4a5f76aa1d072d4f3ab66454461c8395fa8",
+    "captured_at": "2026-11-04T16:39:15+00:00",
     "figures": 10,
     "error": null
   },

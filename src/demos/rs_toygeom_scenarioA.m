@@ -41,7 +41,6 @@ paradigms_fit_show={'Axes','Random'};
 subjs_fit_show=[1:nsubjs];
 opts_dgeo=struct;
 opts_dgeo.view=[-40 20];
-opts_dgeo.if_nestbydim_show=0; %this scenario is about comparing models, not nesting by dimension
 %
 %display model-fitting results (rs_toygeom_disp)
 rs_toygeom_disp; %#demo-include

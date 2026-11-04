@@ -190,7 +190,7 @@ end %ipara
 Error:
 
 ```text
-Undefined function 'btc_exptname' for input arguments of type 'struct'.
+Undefined function 'btc_coorkinds' for input arguments of type 'struct'.
 ```
 
 ![rs_align_disp_enh_coordsets_demo_chunk06_fig1](../../images/demos/rs_align_disp_enh_coordsets_demo_chunk06_fig1.png)
