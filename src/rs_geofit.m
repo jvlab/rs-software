@@ -215,6 +215,8 @@ else
     aux.opts_geof=filldefault(aux.opts_geof,'nshuffs',0);
     aux.opts_geof.if_nestbymodel=0;
     aux.opts_geof.if_nestbydim=0;
+    aux.opts_geof.if_nestbydim_in=0;
+    aux.opts_geof.if_nestbydim_out=0;
 end
 %
 aux=rs_aux_customize(aux,'rs_geofit');
