@@ -24,6 +24,7 @@
 %   rs_read_choicedata: read choices from a file
 %
 % Analysis: choices
+%   rs_addtree_choicedata: analyze triads for consistency with addtree (four-point) inequality
 %   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
 %   rs_symumi_choicedata: analyze triads for consistency with symmetry and ultrametric inequality
 %

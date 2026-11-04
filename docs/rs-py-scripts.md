@@ -50,14 +50,7 @@ params = {
         "exp_name": "texture",
         "subject": "AJ",
         "num_sessions": 10,
-        "num_trials": 222, # e.g., in this experiment there were 222 unique trials which were repeated
-        "stim_list": [
-                        "ant", "bat", "bear", "bluebird", "butterfly", "cat", "cow", "crocodile",
-                        "dog", "dolphin", "duck", "eagle", "elephant", "fox", "frog", "giraffe",
-                        "goat", "goldfish", "hog", "horse", "ladybug", "lizard", "monkey", "mouse",
-                        "owl", "pigeon", "rat", "shark", "sheep", "snail", "snake", "sparrow",
-                        "spider", "tiger", "turkey", "turtle", "whale",
-                    ]
+        "num_trials": 222 # e.g., in this experiment there were 222 unique trials which were repeated
     },
 }
 
@@ -87,7 +80,7 @@ Common metadata fields include:
 * `num_trials`: number of unique trials
 * `num_judgments`: number of comparisons between pairs of stimuli
 * `judgment_type`: 'triadic' or 'tetradic' (see Note below)
-* `stim_list`: labels for stimuli - autopopulated from raw data if left empty
+* `stim_list`: these are autopopulated from raw data - do not provide at this stage
 
 Other metadata fields may be left blank or omitted if they are not available.
 

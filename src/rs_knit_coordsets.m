@@ -23,7 +23,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         - allow_offset (int): 1 to allow translational offset, 0 does not allow; default is 1
 %         - allow_scale (int): 1 to allow scaling of each dataset into the consensus, 0 does not allow; default is 0
 %         - allow_reflection (int): 1 to allow reflection, 0 does not allow; default is 1
-%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not, has no effect if allow_scale=0; default is allow_scale
+%         - if_normscale (int): 1 to normalize consensus to size of `data_in` (determined by geometric mean of scale factors for each dataset), 0 does not (no effect if allow_scale=0); default is allow_scale
 %         - if_pca (int): 1 to rotate the consensus coordinates in data_out into its principal components, 0 does not; default is 0
 %
 %         - **Statistics and shuffles**
@@ -47,13 +47,21 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %
 %         - **Logging and optimization**
 %         - if_log (int): 1 to log progress, 0 to suppress; default is 1
-%         - pcon_init_method (int or char): typically omitted; default is 0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm
+%         - pcon_init_method (int or char): typically omitted; default is 0, leading to 'pca' method for initializing `procrustes_consensus`; see note below regarding Procrustes consensus algorithm for other options
+%         - if_swarm (int): 1 to enable swarm optimization (overriding pcon_init_method), 0 to disable; default is 0; see note below regarding swarm optimization
 %         - if_initpca_rot (int): typically omitted, default is 1 unless any of dim_list_out>dim_list_in; see note below regarding Procrustes consensus algorithm
 %         - max_iters (int): maximum number of iterations for Procrustes consensus; default is 1000; see note below regarding Procrustes consensus algorithm
-%         - max_rmstol (int): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
+%         - max_rmstol (float): maximum change ofcoordinates for consensus solution; default is 10^-5; see note below regarding Procrustes consensus algorithm
 %         - keep_details (int): 1 to return details of Procrustes consensus minimization, 0 does not; default is 0; see note below regarding Procrustes consensus algorithm
 %         - pcon_initial_guess (cell array): specified initial guess for Proccrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
 %         - pcon_alignment (cell array): specified alignment for Procrustes minimization, typically omitted; see note below regarding Procrustes consensus algorithm
+%         - swarm (struct): if present, sets options for swarm optimization (see note below regarding swarm optimization); fields are
+%
+%             - if_log (int): 1 for logging swarm optimization, 0 to suppress; default is 0
+%             - if_frozen (int):   1 for same numbers each run, 0 for different random numbers each run, negative integer for a fixed seed each run; default is 1
+%             - max_niters (int):  maximum number of iterations to determine best initialization for swarm; default is 50
+%             - max_rmstol (float): tolerance for stopping iterations to dtermine best initializatio for swarm; default is 10^-4
+%             - nrand (int): number of initial guesses based on random numbers; default is 10
 %
 %     - opts_check (struct): options for consistency checking, with field
 %
@@ -64,7 +72,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - opts_rays (struct): options for rays, typically omitted; see note below regarding rays
 %
 %     - sa_pooled (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
-%     - data_align (struct): include to avoid recalculation of align ment, otherwise omit; see note below regarding recalculation of alignment
+%     - data_align (struct): include to avoid recalculation of alignment, otherwise omit; see note below regarding recalculation of alignment
 % 
 % Returns:
 %   data_out (struct): `dataset structure` with a single record consisting of the consensus coordinates from `data_in`, same format as  as `data_in`
@@ -84,7 +92,7 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - components (struct): a `dataset structure`, the kth record corresponds to the kth record of `data_in` after transformation to the consensus; all stimuli in
 %     data_out will be included but coordinates for stimuli not in data_in.sas{k} will be NaN
 %     - knit_stats (struct): statistics of knitting; see notes below regarding statistics and replotting a previous analysis
-%     - knit_stats_setup: parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
+%     - knit_stats_setup (struct): parameters extracted from aux.opts_knit, along with the additional fields below; see note below regarding replotting a previous analysis
 %
 %         - nsets (int): number of records in `data_in`
 %         - nstims (int): number of stimuli
@@ -94,15 +102,34 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     - fig_handle (handle): handle to figure created (present only if statistics are plotted)
 %     - ts_pca (cell array): ts_pca{idim}{k} is the transformation from data_in.ds{k}{idim} to the consensus, taking into account final pca; present only if aux.opts_knit.if_pca=1
 %     The transformation is
-%     [consensus]=ts.scaling*[component]*ts.orthog+ts.translation. If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%     ts_pca{idim,k}.scaling*[data_in{k}{idim}]\*ts_pca{idim}{k}.orthog+ts_pca{idim}{k}.translation. Note that translation may be nonzero even if allow_offset=0, since this 
+%     is the best transformation from the original data to the consensus -- which may include a translation even if the consensus is calculated
+%     wthout allowing translation. If no translation is desired, then set this field to zeros(1,idim).
+%     If dim_list_out>dim_list_in, then data_in{k}{idim} needs to be right-padded by columns of zeros for missing dimensions.
 %     - details (cell array of struct): details{idim} contains details of
-%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include, for each iteration m,
+%     the convergence towards knitting for data_in.ds{:}{idim}; present only if aux.opts_knit.keep_details=1; fields include
 %
-%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus
+%         - ts_cum (cell array): ts_cum{m}{k} is the transformation found
+%         from record k, i.e., from data_in.ds{k}(istim,:), to the current consensus, on iteration m
 %         - rms_change (float 1-D array): rms_change(m) is the rms change of the consensus coordinates from the previous iteration
-%         - consensus (float 3-D array): consensus(istim,:,m) are the current consensus coordinates 
-%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates data_in.ds{k}(istim,:) transformed to match the current consensus
+%         - consensus (float 3-D array): consensus(istim,:,m) are theconsensus coordinates on iteration m
+%         - z (float 4-D array): consensus(istim,:,k,m) are the coordinates
+%         data_in.ds{k}(istim,:) transformed to match the consensus on dimension m
 %         - rms_dev (float 2-D array): rms_dev(k,m) is the rms deviation of record k from the consensus, after the current transformation
+%         - initial_guess (float 2-D array): initial_guess(istim,idim) are the coordinates of stimulus istim used for the initial guess for the consensus
+%         - alignment (float 2-D array): alignment(istim,idim) are the coordinates of stimulus istim used to align the consensus
+%         - initialize_use (int 1-D array): initialize_use(istim,1) is the reocrd is used to initialize each point (if initialize_set>0)
+%         - swarm (struct): details from swarm optimization, present only if opts_knit.if_swarm=1 (see note regarding swarm optimization), with fields
+%
+%             - rms_dev_total_min (float): root-mean-squared deviation for best alignment from preliminary swarm runs
+%             - rms_dev_total_definitive (float): root-mean-squared deviation for best alignment for definitive run
+%             - class_name_min (char): the class that produced the best alignment in preliminary runs
+%             - itry_min (int): the instance in the class that produced the best alignment in preliminary runs
+%             - opts_definitive (struct): the options in opts_knit that produced the best alignment in preliminary runs
+%             - if_def_eq_swarm (int): 1 if halting parameters (max_niters, max_rmstol) for preliminary and definitive runs match
+%             - init_components (struct): results of swarm optimizations based on component datasets
+%             - init_pca (struct): results of swarm optimizations based on principal components
+%             - init_random (struct): results of swarm optimizations based on random starts
 %
 % Note: Note regarding propagation of fields from data_in to data_out
 %     - For all records with data_in.sets{k}.type='data', the strings in data_in.sets{k}.paradigm_type must agree.
@@ -143,17 +170,16 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %         rmsdev_overall_shuff (mode 1: magenta, mode 2: red). Quantiles are specified by shuff_quantiles; if nshuffs=0, shuffled values will not be plotted
 %         - a comparison of the explained rmsd, parallel to the above, with available rmsd in blue
 %
-%     - Other fields in aux_out.knit_stats are the following.  Note that for ds_components ts does not include the rotation to principal components (if
-%     requested by aux.opt_knit.if_pca=1) is not included; for a transformation that includes the rotation, see aux_out.ts_pca.
+%     - Other fields in aux_out.knit_stats are the following.  Note that ds_components and ts are analogus to the fields components and ts_pca] in aux_out, except that ds_components and ts do not include the rotation to principal components (if
+%     requested by aux.opt_knit.if_pca=1). This is not needed for the variance statistics. For a transformation that includes the rotation, see aux_out.ts_pca.
 %
 %         - opts_pcon (struct): supplied options for Procrustes consensus algorithm
 %         - opts_pcon_eachdim (cell array of struct): opts_pcon_eachdim{idim} are the options used for dimension idim
 %         - ds_knitted (cell array): ds_knitted{idim} are the consensus coordinates
-%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k
-%         - ts (cell array): ts{idim}{k} is the Procrustes transformation
-%         for record k. The transformation is
-%         [consensus]=ts.scaling*[component]*ts.orthog+ts.translation; see `transformation structures` for further details.
-%         If dim_list_out>dim_list_in, then [component] needs to be right-padded by columns of zeros for missing dimensions.
+%         - ds_components (cell array): ds_components{k}{idim} are the coordinates for record k that most closely match the consensus
+%         - ts (cell array): ts{idim}{k} is the Procrustes transformation for record k. The transformation is
+%         [ds_components{k}{idim}]=ts{idim}{k}.scaling\*[data_in.ds{k}{idim}]*ts{idim}{k}.orthog+ts{idim}{k}.translation; see `transformation structures` for further details.
+%         If dim_list_out>dim_list_in, then data_in.ds{k}{idim}] needs to be right-padded by columns of zeros for missing dimensions.
 %     
 % Note: Note regarding recalculation of alignment
 %     The first step in forming a consensus is alignment, which identifies the common stimuli among the records of `data_in`, and to 
@@ -196,6 +222,10 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %             - A second way is that there are a sufficient number of points, but there are several solutions that are approximately equally good. 
 %             Under these circumstances, the algorithm may get stuck in a local minimum. This possibility only occurs when there are at least three records in `data_in`, as the procedure reduces to
 %             the standard Procrustes algorithm, which finds the consensus when there are only two records, is deterministic other than does rotational ambiguity.
+%
+%     - The swarm option (opts_knit.if_swarm=1) can be used to automatically step through several types of initialization methods, and choose the best.
+%     - If allow_scale=1, then the optimal solution will depend not only on
+%     the data points that overlap, but also on the data points that are unique to individual components, since these contribute to determining tthe rescaling on each iteration
 % 
 % Note: Note regarding replotting a previous analysis
 %     - To replot a previous calculation with additional customization or to make a composite figure, proceed as follows:
@@ -216,6 +246,24 @@ function [data_out,aux_out]=rs_knit_coordsets(data_in,aux)
 %     -  No further calculations are done
 %     -  On return, data_out will be empty, and aux_out.fig_handle will be the figure handle
 %     -  In creating a composite figure, rows should be plotted in order from top to bottom, as plotting the bottom row triggers an equalization of the color scale. See `rs_knit_coordsets_demo` for an example.
+%
+% Note: Note regarding swarm optimization
+%     - This is enabled by setting opts_knit.if_swarm=1.
+%     - Preliminary runs are made with several classes of initial guesses, and stopping parameters based on max_niters and max_rmstol in opts_knit.swarm
+%     - The choice that leads to the smallest rms deviation of the aligned coordinates is recorded in aux.details{idim}.swarm, and used for a definitive run, using the stopping parameters in opts_knit
+%     - The classes are
+%
+%         - init_components: the original component datasets are used; variants choose each component dataset in succession as the initial guess, advancing to the next dataset if a stimulus is missing
+%         - init_pca: principal components of the datasets are used, with options (mean subtraction, rotation) as described in the note regarding the Procrustes alignment algorithm; variants consist of computing the principal components from the coordinates of stimuli present in increasing numbers of the datasets
+%         - init_random: Gaussian random varibles are used as the initial guess; the number of variants is given by opts_knit.swarm.nrand; default is 10; these random numbers do not affect the random numbers used for permutation testing 
+%
+%     - Results from each class are recorded in aux.details{idim}.(class_name), including
+%
+%         - counts: the number of variants for each class
+%         - rms_dev_totals: the rms deviation for each example of the class
+%         - range: the range of rms deviations for each class
+%         - itry_min: the optimal choice within each class
+%         - opts: the options usef for the variant with the lowest rms deviation
 %
 % Note: Note regarding rays
 %     - The `ray structure` describes relationships among the simulus coordinates: 
@@ -249,6 +297,7 @@ aux.opts_knit=filldefault(aux.opts_knit,'pcon_alignment',aux.opts_knit.pcon_init
 aux.opts_knit=filldefault(aux.opts_knit,'if_frozen',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_remove_path_label',1);
 aux.opts_knit=filldefault(aux.opts_knit,'if_dim_heuristics',0);
+aux.opts_knit=filldefault(aux.opts_knit,'if_swarm',0);
 %
 aux=filldefault(aux,'opts_check',struct);
 aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
@@ -412,12 +461,14 @@ if aux_out.warn_bad==0
         if_hbad=0; %dimension heuristics always ok if only one set
     end
     if aux.opts_knit.if_dim_heuristics==1 | if_hbad==1
-        disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
-            h.dmax,h.dmax_free,h.dmax_constraints));
-        if if_hbad
-            wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
-                h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
-            aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+        if nsets>1
+            disp(sprintf('dimension limit estimated at %3.0f (limit due to un-duplicated stimuli: %3.0f, limit due to number of overlapping distances: %3.0f)',...
+                h.dmax,h.dmax_free,h.dmax_constraints));
+            if if_hbad
+                wmsg=sprintf('number of overlaps between datasets may be insufficient for dimensions >= %2.0f; dimensions %2.0f to %2.0f requested',...
+                    h.dmax,min(aux.opts_knit.dim_list_out),max(aux.opts_knit.dim_list_out));
+                aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',aux.opts_check.if_warn));
+            end
         end
         disp('table of available data')
         for istim=1:nstims_all
@@ -492,13 +543,13 @@ if aux_out.warn_bad==0
     %        qs=opts_used_pca.qs;
             v=opts_used_pca.qv;
     %       coords=u*s*v', and recon_coords= u*s, with v'*v=I, so recon_coords=coords*v
+            knitted_centroid_rep=repmat(knitted_centroid,nstims_all,1);
             for iset=1:nsets
-                consensus_centroid_rep=repmat(mean(ds_components{iset}{1,ip_out},1,'omitnan'),nstims_all,1);
-                ds_components{iset}{1,ip_out}=consensus_centroid_rep+(ds_components{iset}{1,ip_out}-consensus_centroid_rep)*v(1:ip_out,:);
+                ds_components{iset}{1,ip_out}=knitted_centroid_rep+(ds_components{iset}{1,ip_out}-knitted_centroid_rep)*v(1:ip_out,:);
                 %determine transformation to consensus followed by pca
                 ts_pca{ip}{iset}.scaling=ra.ts{ip}{iset}.scaling;
                 ts_pca{ip}{iset}.orthog=ra.ts{ip}{iset}.orthog*v(1:ip_out,:);
-                ts_pca{ip}{iset}.translation=consensus_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-consensus_centroid_rep(1,:))*v(1:ip_out,:);
+                ts_pca{ip}{iset}.translation=knitted_centroid_rep(1,:)+(ra.ts{ip}{iset}.translation-knitted_centroid_rep(1,:))*v(1:ip_out,:);
             end
         end %dptr
         aux_out.ts_pca=ts_pca;
@@ -515,8 +566,11 @@ if aux_out.warn_bad==0
         for iset=1:nsets
             ds_label=data_in.sets{iset}.label;
             if aux.opts_knit.if_remove_path_label
-                ds_label=ds_label(1+max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0):end);
-                ds_label=strrep(ds_label,'.mat','');
+                path_end=max(max(union(find(ds_label=='\'),find(ds_label=='/'))),0);
+                if ~isempty(path_end)
+                    ds_label=ds_label(1+path_end:end);
+                    ds_label=strrep(ds_label,'.mat','');
+                end
             end
             knit_stats_setup.dataset_labels{iset}=ds_label;
         end

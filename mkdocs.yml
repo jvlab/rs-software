@@ -4,7 +4,6 @@ repo_url: https://github.com/jvlab/rs-software
 theme:
   name: material
   features:
-    - toc.integrate 
     - navigation.tabs
     - navigation.tabs.sticky
 #    - navigation.sections
@@ -78,19 +77,23 @@ nav:
       - Demo 2 - Detailed Choice File → Combined Choice File: rs-py-demo2.md
       - Demo 3 - Combined Choice File → Geometric model: rs-py-demo3.md
       - How to Run Scripts: rs-py-scripts.md
-    - Function index: function-index-python.md
+    - Choice → Coordinates:
+      - Python:
+        - Script: rs-py-choice-to-coords.md
+        - Python tools UI (web-based): rs-py-choice-to-coords-streamlit.md
   - Manipulating and analyzing RS:
     - Overview: rs-ml-overview.md
     - Demos (MATLAB): demos.md
-    - Function index: function-index-matlab.md
   - Comparing RS:
-    - Python option: comparing-rs-python.md
-    - Streamlit option: comparing-rs-streamlit.md
-    - Function reference: function-index-python.md
-  - File conversion:
-    - Python option: file-conversion-python.md
-    - Streamlit option: file-conversion-streamlit.md
-    - Function reference: function-index-python.md
+    - Python Script: comparing-rs-python.md
+    - Python UI: comparing-rs-streamlit.md
+  - File conversion utilities:
+    - Python:
+      - Script: file-conversion-python.md
+      - Python tools UI (web-based): file-conversion-streamlit.md
+  - Function Index:
+    - Python function index: function-index-python.md
+    - MATLAB function index: function-index-matlab.md
   - File formats, data structures, and domains:
     - File formats: file-formats.md
     - Data structures: data_structures.md

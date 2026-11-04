@@ -51,8 +51,8 @@ def run(user_params):
     Run the detailed choice-file builder on a set of user parameters.
 
     Args:
-        user_params: Dictionary of parameters used to build the detailed choice
-        file.
+        user_params (dict): Dictionary of parameters used to build the detailed choice
+            file.
             Required keys:
                 - input_path: Path to the input directory containing raw data.
                 - output_dir: Path to the directory where outputs should be saved.

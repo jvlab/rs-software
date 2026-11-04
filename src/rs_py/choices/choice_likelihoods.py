@@ -43,7 +43,7 @@ def calculate_ll(counts, probs, num_repeats):
         Args:
             counts (numpy.ndarray): Observed counts for each comparison direction.
             probs (numpy.ndarray): Model probabilities for the corresponding
-            comparisons.
+                comparisons.
             num_repeats (numpy.ndarray): Total number of repeats for each comparison.
 
         Returns:
@@ -84,16 +84,16 @@ def dist_model_ll_vectorized(pair_a, pair_b, judgment_counts, judgment_repeats, 
 
         Args:
             pair_a (numpy.ndarray): Array of index pairs defining the first distance in
-            each comparison.
+                each comparison.
             pair_b (numpy.ndarray): Array of index pairs defining the second distance
-            in each comparison.
+                in each comparison.
             judgment_counts (numpy.ndarray): Observed counts for the first pair being
-            judged more dissimilar than the second.
+                judged more dissimilar than the second.
             judgment_repeats (numpy.ndarray): Total number of repeats for each
-            comparison.
+                comparison.
             params (dict): Model parameters. Must contain `noise_st_dev`.
             stimuli (numpy.ndarray): Stimulus coordinates used to compute pairwise
-            distances.
+                distances.
 
         Returns:
             tuple[float, bool]: The log-likelihood and the infeasibility flag returned by `calculate_ll`.
@@ -119,7 +119,7 @@ def find_probabilities(distances, pair_a, pair_b, noise_st_dev):
         Args:
             distances (numpy.ndarray): Square matrix of pairwise stimulus distances.
             pair_a (numpy.ndarray): Array of index pairs defining the first distance in
-            each comparison.
+                each comparison.
             pair_b (numpy.ndarray): Array of index pairs defining the second distance in each comparison.
             noise_st_dev (float): Standard deviation of the combined Gaussian noise term.
 

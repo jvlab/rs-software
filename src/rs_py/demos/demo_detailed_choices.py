@@ -79,7 +79,6 @@ if __name__ == '__main__':
     metadata = {
         'exp_name': exp_name,
         'subject': subject,
-        'stim_list': [],  # to be filled in after reading data from csv files
         'num_sessions': int(num_sessions),
         'num_trials': int(num_trials),
         'total_judgments': None,

@@ -51,7 +51,7 @@ def parse_click_sequence(row):
 
     Returns:
         - sequence (list[str]) - Ordered list of stimulus labels corresponding
-          to the clicked stimuli for that trial.
+            to the clicked stimuli for that trial.
 
     Notes:
         - Assumes data are being read in from csv files created by Waraich and Victor (2022) paradigm.
@@ -139,21 +139,26 @@ def process_subject_data(input_directory):
 
         Returns:
             - all_comparisons (list[dict]) - Flat list of comparison dictionaries, one
-              for each generated triadic comparison.
-              Each dictionary contains:
-                - trial
-                - s1
-                - s2
-                - operator
-                - s3
-                - s4
-                - judgment
+                for each generated triadic comparison.
+                Each dictionary contains:
+                    - trial
+                    - s1
+                    - s2
+                    - operator
+                    - s3
+                    - s4
+                    - judgment
             - stimuli (set) - Labels of all stimuli encountered across all processed
-              trials, including both reference and non-reference stimuli.
+                trials, including both reference and non-reference stimuli.
 
         Notes:
             - Trial numbering starts at 1 and increases sequentially across all files
               and rows; no session boundaries are inferred.
+            - To ensure compatibility with experiments that utilize multiple exemplars per stimulus,
+              stimuli are generated from the stimulus names in the CSV files after ignoring the text after an underscore.
+              If a stimulus name contains no underscore, then this is not a problem. This affects experiments where
+              an experimenter uses multiple images/ exemplars per stimulus which are coded as 'stim23_002', 'stim23_003' etc.
+              In this case both instances will be tied to one stimulus called 'stim23'.
             - CSV files are read using UTF-8 with BOM (`utf-8-sig`) encoding to match
               experimental data exports.
             - This function does not canonicalize comparison keys, remap stimulus IDs,
@@ -180,6 +185,9 @@ def process_subject_data(input_directory):
             for row in reader:
                 # eval is usually not secure but here I created the files parsing
                 clicked_stimuli = parse_click_sequence(row)
+                # ensures exemplars are not counted as separate stimuli
+                clicked_stimuli = [stim.split("_")[0] for stim in clicked_stimuli]
+                row['ref'] = row['ref'].split("_")[0]
                 comparisons = generate_comparisons(row['ref'], clicked_stimuli, trial_num)
                 # keep collecting stim
                 for stim in clicked_stimuli:
@@ -214,13 +222,13 @@ def standardize_comparison_keys(comparisons, comparison_type='triadic'):
 
     Returns:
         - comparisons (list[dict]) - The same list of comparisons with field
-          names and comparison order standardized.
-          Each dictionary contains:
-            - s1
-            - s2
-            - s3
-            - s4
-            - judgment
+            names and comparison order standardized.
+            Each dictionary contains:
+                - s1
+                - s2
+                - s3
+                - s4
+                - judgment
 
     Notes:
         - If `(s2, s4)` appears in reverse order, the elements are swapped and
@@ -315,9 +323,9 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
 
         Returns:
             - comparisons (list[dict]) - The input list of comparison dictionaries
-              with stimulus labels replaced by integer stimulus IDs.
-              The mapping of IDs to stimuli is also returned or stored separately,
-              depending on downstream use.
+                with stimulus labels replaced by integer stimulus IDs.
+                The mapping of IDs to stimuli is also returned or stored separately,
+                depending on downstream use.
 
         Notes:
             - The function mutates the input `comparisons` list in place.
@@ -392,11 +400,11 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
 
     results = {
         'metadata': metadata,
+        'stim_list': [stim_id_to_name[k] for k in stim_id_to_name.keys()],
         'responses_colnames': responses_col_names,
         'responses': responses
     }
 
-    results['metadata']['stim_list'] = [stim_id_to_name[k] for k in stim_id_to_name.keys()]
     results['metadata']['total_judgments'] = total_comparisons
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")

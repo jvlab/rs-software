@@ -31,7 +31,7 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %
 %         - coord_groups (int 2-D array): groups of coordinates to show together if coord_group_method='list', as rows (of length coord_group_size) of an integer array; each row will generate one subplot
 %         - data_show_method (char): which data points to show, options are 'all', 'none', 'first', 'last', 'list'; default is 'all'
-%         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);
+%         - data_show_list (int 1-D array): list of data points to show, if data_show_method='list';  points plotted are data_in.ds{set_select}{k}(data_show_list,:);  This applies to data in all records. To disable display of individual data points in specific records, set their coordinates to NaN.
 %
 %         - **Figure and subplot control**
 %         - fig_handle (handle): handle to figure; will be created if empty or not provided
@@ -47,10 +47,12 @@ function aux_out=rs_disp_coordsets(data_in,aux)
 %         - data_label_list (int 1-D array): list of data points to label, if data_label_method='list'
 %         - data_label_font_size (int): font size for data labels, default is axis_font_size
 %         - data_label_interpreter (char): interpreter for labeling data, [] (default) uses system default, alternatively 'none','tex','latex'
-%         - callout_amount (float): moves the position of a label away from the data point, specified in units of rms deviation of data from centroid; default is 0
+%         - data_label_typenames_vary (int): 1 to allow typenames to vary across datasets, 0 does not; default is 0
+%         - callout_amount (float): moves the position of a label away from the data point, specified in units of rms deviation of data from callout_center; default is 0
 %         - callout_colors (cell array of color specifiers): color for callout lines connecting labels and points; default is {'k'}; can also be 'set_colors' to match set_colors
 %         - callout_linestyles (cell array of char): line styles for above callout lines; default is {'-.'}
 %         - callout_linewidths (int 1-D array): line widths for above callout lines; default is 1
+%         - callout_center (char or int 1-D array): callout lines point from the specified location outward; default is 'centroid' (centroid of data), can also be 'zero' or a coordinate value, of length 'dim_select' 
 %
 %         - **Formatting: axis and views**
 %         - axis_font_size (int): font size for axis; default is 8; see note below re customization
@@ -183,7 +185,25 @@ aux.opts_check=filldefault(aux.opts_check,'if_warn',1);
 %
 aux_out=struct;
 %
-check=rs_check_coordsets(data_in,aux.opts_check);
+%prior to consistency checking, see if we need to allow for typenames to vary
+%
+data_label_typenames_vary=0;
+if isfield(aux,'opts_disp')
+    if isfield(aux.opts_disp,'data_label_typenames_vary')
+        data_label_typenames_vary=aux.opts_disp.data_label_typenames_vary;
+    end
+end
+data_in_check=data_in;
+if data_label_typenames_vary
+    for iset=1:length(data_in.sas)
+        for istim=1:length(data_in.sas{iset}.typenames)
+            data_in_check.sas{iset}.typenames{istim}=sprintf('stim_%1.0f',istim);
+        end
+    end
+end
+%
+check=rs_check_coordsets(data_in_check,aux.opts_check);
+%
 aux_out.warnings=check.warnings;
 aux_out.warn_bad=check.warn_bad;
 nsets=check.nsets;
@@ -235,11 +255,13 @@ aux.opts_disp=filldefault(aux.opts_disp,'data_label_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_method','first');
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_setsel_list',[]);
 aux.opts_disp=filldefault(aux.opts_disp,'data_label_interpreter',[]);
+aux.opts_disp=filldefault(aux.opts_disp,'data_label_typenames_vary',0);
 %
 aux.opts_disp=filldefault(aux.opts_disp,'callout_amount',0);
 aux.opts_disp=filldefault(aux.opts_disp,'callout_colors',{'k'});
 aux.opts_disp=filldefault(aux.opts_disp,'callout_linestyles',{'-.'});
 aux.opts_disp=filldefault(aux.opts_disp,'callout_linewidths',1);
+aux.opts_disp=filldefault(aux.opts_disp,'callout_center','centroid');
 %
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_method','none');
 aux.opts_disp=filldefault(aux.opts_disp,'connect_data_list',[]);
@@ -591,6 +613,25 @@ if aux_out.warn_bad==0
             x.axis_handles{igp}=subplot(nrows,ncols,igp);
         end
     end
+    callout_center_ok=0;
+    if isnumeric(x.callout_center)
+        if length(x.callout_center)==x.dim_select
+            callout_center_ok=1;
+        end
+    else
+        switch x.callout_center
+            case 'centroid'
+                callout_center_ok=1;
+            case 'zero'
+                callout_center_ok=1;
+        end
+    end
+    if callout_center_ok==0
+        wmsg='callout_center specification not recognized, zero used';
+        aux_out=rs_warning(wmsg,0,setfield(aux_out,'if_warn',x.if_warn));
+        x.callout_center='zero';
+    end
+    %
     for igp_aug=1:ngroups_aug
         haxis=x.axis_handles{igp_aug};
         igp=mod(igp_aug-1,ngroups)+1; %if igp_aug=ngroup+1 (if_legend=-1) then igp=1 but it is plotted in a new subplot
@@ -619,15 +660,21 @@ if aux_out.warn_bad==0
             if ismember(k,x.data_label_setsel_list)
                 zcallout=z; 
                 if x.callout_amount>0 %compute position of call-out for every data point shown
-                    centroid=mean(z_all,1);
-                    dists=sqrt(sum((z_all-repmat(centroid,size(z_all,1),1)).^2,2)); %distances from centroid
-                    rmsdist=sqrt(mean(dists.^2)); %rms distances from centroid
+                    callout_center=zeros(1,x.coord_group_size);
+                    if isnumeric(x.callout_center)
+                        callout_center=x.callout_center(1,cg);
+                    else
+                        switch x.callout_center
+                            case 'centroid'
+                                callout_center=mean(z_all,1,'omitnan');
+                        end
+                    end
+                    dists=sqrt(sum((z_all-repmat(callout_center,size(z_all,1),1)).^2,2,'omitnan')); %distances from callout_center
+                    rmsdist=sqrt(mean(dists.^2)); %rms distances from callout_center
                     dists(dists==0)=1;
                     for lab=1:size(x.data_show_list,1)
-                        zcallout(lab,:)=centroid+(zcallout(lab,:)-centroid)*(1+x.callout_amount*rmsdist/dists(x.data_show_list(lab)));
+                        zcallout(lab,:)=callout_center+(zcallout(lab,:)-callout_center)*(1+x.callout_amount*rmsdist/dists(x.data_show_list(lab)));
                     end
-                else
-                    zcallout=z;
                 end
                 typenames=data_in.sas{k}.typenames;
                 for ipt_ptr=1:length(x.data_label_list)
@@ -853,9 +900,12 @@ n=length(vals_avail);
 wmsg=[];
 pair_list=[];
 npairs=0;
+list_specified_keep=list_specified; %so we can ignore if a string is used to specify
+list_specified=[];
 if n>=1
     switch method
         case 'none'
+            list_specified=[];
         case 'all'
             if n>=2
                 pairs=nchoosek([1:n],2);
@@ -875,6 +925,7 @@ if n>=1
             npairs=n-1;
             pair_list=[vals_avail(pairs(:,1))',vals_avail(pairs(:,2))'];
         case 'list'
+            list_specified=list_specified_keep; %restore specified list
             pair_list=list_specified;
             have_pair=find(all(ismember(pair_list,vals_avail),2));
             pair_list=pair_list(have_pair,:);

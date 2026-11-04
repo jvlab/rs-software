@@ -4,6 +4,8 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 % This algorithm generalizes MATLAB's procrustes tomore than two datasets, allowing for missig values (indicated by NaNs), eliminating translations,
 % and creation of a consensus that is of higher dimension than any of the components, by zero-padding z along dimension 2.
 %
+% If called with no arguments, the default settings for opts_pcon are returned.
+%
 % Args:
 %   z (float 3-D array): input data, size is [npts nds nsets] where npts is the number of points, nds is the number of dimensions, and nsets is the number of datasets
 %
@@ -17,7 +19,7 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %      - **Initialization and termination**
 %      - initialize_set (int or char): method for initialization and alignment on each iteration; default is 1
 %
-%          - If in [1:nsets]: use (z(:,:,intialize_set)) for initial guess and alignment, or first dataset after that with at least some overlap
+%          - If in [1:nsets]: use (z(:,:,intialize_set)) for initial guess and alignment; if this set of coordinates has no overlap, use the first set of coordinates after it that does
 %          - if 'pca','pca_center','pca_nocenter': use first nds principal components across all datasets for initial guess and alignment
 %          
 %              - 'pca_center': replace NaN's by mean and then center prior to PCA
@@ -29,7 +31,7 @@ function [consensus,znew,ts,details,opts_pcon_used]=procrustes_consensus(z,opts_
 %              - initial_guess (float 2-D array): array of size [npts nds] for initial guess; if empty ([]), then normally distributed random quantities,
 %              - alignment (float 2-D array): array of size [npts nds] for alignment; if empty ([]), use initial_guess
 %
-%      - if_initpca_rot (int): specifies how to use PCA for initialization, if initialize_set='pca_center','pca_nocenter',or 'pca'; default is 1
+%      - if_initpca_rot (int): relevant only if initialize_set='pca_center','pca_nocenter', or 'pca'; default is 1
 %
 %          - 1 rotates the initial guess into its principal components, best if data are not zero-padded
 %          - 0 does not rotate the initial guess into its initial components, best if the data are zero-padded to access higher dimensions
@@ -97,6 +99,11 @@ opts_pcon=filldefault(opts_pcon,'overlaps',[]);
 opts_pcon=filldefault(opts_pcon,'if_justcheck',0);
 opts_pcon=filldefault(opts_pcon,'exclude_nan',1);
 opts_pcon=filldefault(opts_pcon,'if_initpca_rot',1);
+%
+if (nargin<1)
+   consensus=opts_pcon; %special return to get defaults
+   return
+end
 %
 opts_pcon_used=opts_pcon;
 %
@@ -280,5 +287,14 @@ while (niters<opts_pcon.max_niters & rms>opts_pcon.max_rmstol)
     end
 end   
 znew=zz;
+% adjust the components and the transformations for the final alignment (15Oct26)
+for iset=1:nsets
+    znew(:,:,iset)=t_new.b*znew(:,:,iset)*t_new.T+repmat(t_new.c(1,:),[npts 1]);
+    %
+    ts_cum{iset}.translation=t_new.c(1,:)+ts_cum{iset}.translation*t_new.T*t_new.b; %offsets
+    ts_cum{iset}.scaling=t_new.b*ts_cum{iset}.scaling; %scale factors multiply
+    ts_cum{iset}.orthog=ts_cum{iset}.orthog*t_new.T; %matrices compose
+end
+%
 ts=ts_cum;
 return

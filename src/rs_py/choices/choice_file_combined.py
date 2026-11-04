@@ -47,22 +47,23 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
         combined .mat file in the specified output directory.
 
         Args:
-            input_mat_path (str): Path to the input .mat file containing the fields responses,
-            responses_colnames, and metadata.
+            input_mat_path (str): Path to the input .mat file containing the fields
+                responses, responses_colnames, and metadata.
             output_dir (str): Directory where the combined .mat file will be saved.
             exp_name (str): Experiment name used to build the output filename.
             subject (str): Subject identifier used to build the output filename.
 
         Returns:
             None:
-            Saves a .mat file named {exp_name}_combined_choices_{subject}.mat in output_dir.
-            Prints the full output path after saving.
+                Saves a .mat file named {exp_name}_combined_choices_{subject}.mat in
+                output_dir. Prints the full output path after saving.
     """
     data = loadmat(input_mat_path, squeeze_me=True)
 
     responses = data['responses']
     colnames = [name.strip() for name in data['responses_colnames']]
     metadata = data['metadata']
+    stim_list = data['stim_list']
 
     COL_REF = colnames.index("ref")
     COL_S1 = colnames.index("s1")
@@ -104,6 +105,7 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
 
     combined_choices = {
         'metadata': metadata,
+        'stim_list': stim_list,
         'responses_colnames': comb_response_colnames,
         'responses': comb_responses
     }
@@ -123,15 +125,15 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
 
         Args:
             input_mat_path (str): Path to the input `.mat` file containing the fields
-            `responses`, `responses_colnames`, and `metadata`.
+                `responses`, `responses_colnames`, and `metadata`.
             output_dir (str): Directory where the combined `.mat` file will be saved.
             exp_name (str): Experiment name used to build the output filename.
             subject (str): Subject identifier used to build the output filename.
 
         Returns:
             None:
-            Saves a `.mat` file named `{exp_name}_combined_choices_{subject}.mat` in `output_dir`
-             and prints the full output path after saving.
+                Saves a `.mat` file named `{exp_name}_combined_choices_{subject}.mat` in
+                `output_dir` and prints the full output path after saving.
     """
 
     data = loadmat(input_mat_path, squeeze_me=True)
@@ -139,6 +141,7 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
     responses = data['responses']
     colnames = [name.strip() for name in data['responses_colnames']]
     metadata = data['metadata']
+    stim_list = data['stim_list']
 
     COL_S1 = colnames.index("s1")
     COL_S2 = colnames.index("s2")
@@ -185,6 +188,7 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
 
     combined_choices = {
         'metadata': metadata,
+        'stim_list': stim_list,
         'responses_colnames': comb_response_colnames,
         'responses': comb_responses
     }
@@ -206,21 +210,21 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
 
         Args:
             input_mat_path (str): Path to the input `.mat` file containing the fields
-            `responses`, `responses_colnames`, and `metadata`.
+                `responses`, `responses_colnames`, and `metadata`.
             output_dir (str): Directory where the combined `.mat` file will be saved.
             exp_name (str): Experiment name used to build the output filename.
             subject (str): Subject identifier used to build the output filename.
 
         Returns:
             None:
-            Calls the appropriate aggregation function and writes the combined
-            `.mat` file to `output_dir`.
+                Calls the appropriate aggregation function and writes the combined
+                `.mat` file to `output_dir`.
 
         See Also:
             build_combine_choice_mat_triadic_format: Aggregates triadic comparison
-            responses.
+                responses.
             build_combined_mat_tetradic_format: Aggregates tetradic comparison
-            responses.
+                responses.
     """
     data = loadmat(input_mat_path, squeeze_me=True)
     colnames = [name.strip() for name in data['responses_colnames']]

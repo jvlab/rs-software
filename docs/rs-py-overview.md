@@ -1,6 +1,6 @@
 # Creating RS from perceptual judgments (python)
 
-This pipeline processes similarity judgments from behavioral experiments and fits geometric models to those judgments.
+This pipeline processes [similarity judgments from behavioral experiments](https://doi.org/10.3791/63461) and fits geometric models to those judgments.
 
 It is designed for experiments where participants make relative similarity judgments, such as:
 > "Is stimulus A more similar to B or to C?"
