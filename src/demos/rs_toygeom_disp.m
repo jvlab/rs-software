@@ -2,30 +2,20 @@
 %
 % sims: a structure containing simulations, geometric model fits, and key parameters
 %
-% Normally 'sims' is already in the workspace, having been created by rs_toygeom_sim or by
-% one of the rs_toygeom_scenario* scripts. If it is not, a small stored example is loaded so
-% that this script can also be run standalone.
+% 'sims' must already be in the workspace, created by rs_toygeom_sim, which the
+% rs_toygeom_scenario* scripts run first. Display options (opts_dgeo, transforms_fit_show,
+% paradigms_fit_show, subjs_fit_show) are read from the workspace when they are defined.
 %
-% To regenerate the stored example, run the following from a clear workspace, with 'src' as
-% the working directory. One transform and one paradigm keep the file small, and the fields
-% that this script never reads are dropped before saving:
-%
-%   transform_names={'affine'};
-%   paradigm_names={'Axes'};
-%   ncoords_noise=0;
-%   if_disp_coordsets=0;
-%   rs_toygeom_sim;
-%   sims=rmfield(sims,{'xs','aux_geof_out'});
-%   for ip=1:length(sims.paradigms_all)
-%       sims.(sims.paradigms_all{ip})=struct;  %the coordinate sets are not displayed here
-%   end
-%   save('demos/toygeom_sims_example','sims');
+% This script has no documentation page of its own: each rs_toygeom_scenario* page shows it
+% where the scenario runs it.
 %
 %   See also: RS_TOYGEOM_SIM, RS_DISP_GEOFIT.
 %
+
+%#demo-include-only
+%
 if ~exist('sims')
-    disp('no sims structure found; loading the example created by rs_toygeom_sim');
-    load('demos/toygeom_sims_example');
+    error('no sims structure found: run one of the rs_toygeom_scenario* scripts, or rs_toygeom_sim, first');
 end
 if ~exist('opts_dgeo') opts_dgeo=struct; end
 aux_dgeo=struct;

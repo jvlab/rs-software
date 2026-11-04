@@ -47,12 +47,6 @@
     "figures": 0,
     "error": null
   },
-  "rs_toygeom_disp": {
-    "source_sha256": "bfb8c8ee1ab9e3f0a2abed1f3688b3e1e8990c2c2186805c61d3324519c14155",
-    "captured_at": "2026-09-21T17:43:05+00:00",
-    "figures": 9,
-    "error": null
-  },
   "rs_toygeom_scenarioA": {
     "source_sha256": "90a60fde0d56b40a1ed524e58fecd4426d5b0e95899b0316b5dca391e3698cff",
     "captured_at": "2026-09-21T17:43:05+00:00",
@@ -75,12 +69,6 @@
     "source_sha256": "f28c5745e773706ba3954785f5a74595c08452ad8405ff2e826b9ac736a5b234",
     "captured_at": "2026-09-21T17:43:05+00:00",
     "figures": 11,
-    "error": null
-  },
-  "rs_toygeom_sim": {
-    "source_sha256": "8f02ed6863a8d6053013644b4e2694ef726f7d2a15aafd81f33bd19d41e9527e",
-    "captured_at": "2026-09-21T17:43:05+00:00",
-    "figures": 6,
     "error": null
   },
   "rs_xform_coordsets_demo": {

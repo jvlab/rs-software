@@ -37,8 +37,13 @@
 %
 % Results of the fitting are displayed with rs_toygeom_disp, which invokes rs_disp_geofit.
 %
+% This script has no documentation page of its own: each rs_toygeom_scenario* page shows it
+% where the scenario runs it.
+%
 %  See also:  RS_IMPORT_COORDSETS, RS_DISP_COORDSETS, RS_DISP_GEOFIT,
 %  RS_DISP_ENH_COORDSETS, RS_XFORM_APPLY, RS_CONCAT_DATASETS, RS_EXTRACT_COORDSETS, RS_TOYGEOM_DISP.
+
+%#demo-include-only
 %
 %these are the main simulation parameters that may be edited, or have values set before running
 %

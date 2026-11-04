@@ -31,7 +31,8 @@ model_list={'affine_offset'};
 opts_geof=struct;
 opts_geof.if_stats=1;
 %
-rs_toygeom_sim; %create the stimuli and datasets, and fit the models
+%create the stimuli and datasets, and fit the models (rs_toygeom_sim)
+rs_toygeom_sim; %#demo-include
 %
 %geometric model fit display customizations
 paradigms_fit_show={'Axes'};
@@ -40,4 +41,5 @@ opts_dgeo=struct;
 opts_dgeo.view=[-15 45];
 opts_dgeo.if_nestbydim_in_show=0;
 %
-rs_toygeom_disp; %display model-fitting results
+%display model-fitting results (rs_toygeom_disp)
+rs_toygeom_disp; %#demo-include
