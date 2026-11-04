@@ -17,7 +17,7 @@ and `perceptual_space_geometry` already in MATLAB's path, run:
 
 ```bash
 python docs/update_demo_docs.py rs_knit_coordsets_demo   # one demo, seconds to minutes
-python docs/update_demo_docs.py                          # all 15, about 15 minutes
+python docs/update_demo_docs.py                          # all 13, about an hour
 ```
 
 That runs three stages:
@@ -27,7 +27,8 @@ That runs three stages:
 2. `capture/matlab/run_all.m` runs each spec through `run_capture.m`, which
    evaluates the chunks, exports figures, and writes `<demo>.manifest.json`.
 3. `docs/render_demo_pages.py` renders `docs/mfiles/demos/<demo>.md` from the demo
-   source plus that manifest, and records the demo's source hash in
+   source (with its included scripts pasted in) plus that manifest, and records the
+   demo's source hash in
    `capture/demo_capture_index.json`.
 
 Then review and commit:
@@ -61,7 +62,17 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   the code block that opened it ends. To save it again after a later block draws on
   it, end a code line of that block with `%#demo-snapshot` (the current figure) or
   `%#demo-snapshot: all` (every figure still open from earlier blocks).
-- **Directives** (`%#demo-input:`, `%#demo-snapshot`) count only at the end of a code
+- **Shared scripts** are pasted into the demos that run them, so their code is kept in
+  one place and every page is still complete. End the calling line with
+  `%#demo-include`, as in `rs_toygeom_sim; %#demo-include`: the line must be unindented
+  and only call the script. Mark the shared script with `%#demo-include-only` alone on
+  a line, and it gets no page of its own. On the page, the script's header comment (its
+  leading comment lines, up to the first blank line) is folded into a collapsed block,
+  and the rest appears as code and prose where the demo runs it, with its output and
+  figures. In MATLAB both directives are comments, so the demo still just calls the
+  script. Editing a shared script marks every demo that includes it as stale, and
+  `python docs/update_demo_docs.py rs_toygeom_sim` captures those demos.
+- **Directives** (`%#demo-input:`, `%#demo-snapshot`, `%#demo-include`) count only at the end of a code
   line or alone on a line; inside a prose comment they are plain text.
 - **On Linux and macOS** the capture runs with `-nodisplay`. Without it MATLAB tries
   hardware OpenGL in batch mode and exports solid black images without failing.
