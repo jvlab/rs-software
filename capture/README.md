@@ -6,9 +6,11 @@ result is committed. The documentation build itself needs only Python.
 
 ## When to run it
 
-Whenever you change a file in `src/demos`, or change code that alters what a demo
-prints or plots, the test `docs/test_demo_captures_current.py` will fail, indicating that
-you need to re-run the capture.
+Whenever you change a file in `src/demos`, the test `docs/test_demo_captures_current.py`
+fails, indicating that you need to re-run the capture. It compares only the demo files
+and the scripts they include, so it does not notice a change elsewhere, such as a
+toolbox function, that alters what a demo prints or plots. Re-capture with `--all` after
+such a change.
 
 ## How to run it
 
