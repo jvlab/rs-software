@@ -129,11 +129,7 @@ opts_disp_raw.callout_amount=0.3; %labels are slightly removed from each data po
 opts_disp_raw.callout_colors='set_colors'; %use the color assigned to each dataset for the callout lines
 opts_disp_raw.callout_linestyles='-'; %dashed callout lines
 opts_disp_raw.legend_location='North'; %legend location
-```
 
-![rs_align_disp_coordsets_demo_chunk04_fig1](../../images/demos/rs_align_disp_coordsets_demo_chunk04_fig1.png)
-
-```matlab
 aux_out_raw=cell(1,ngroups);
 haxes=cell(1,ngroups);
 for iset=1:nsets
@@ -154,6 +150,8 @@ each call to rs_disp_coordsets will plot data from one subject, both coordinate 
     aux_out_raw{iset}=rs_disp_coordsets(data_read,setfield(struct,'opts_disp',opts_disp_raw)); %create the plot
 end
 ```
+
+![rs_align_disp_coordsets_demo_chunk05_fig1](../../images/demos/rs_align_disp_coordsets_demo_chunk05_fig1.png)
 
 align data, rotate data into a consensus, and use each component, aligned to consensus, for further plotting
 
@@ -223,13 +221,13 @@ knitting  37 stimuli across   4 datasets, dimensions   1  2  3  4  5  6  7
  set  2: created shuffles for  37 stimuli
  set  3: created shuffles for  37 stimuli
  set  4: created shuffles for  37 stimuli
- creating Procrustes consensus from dim  1 to dim  1 based on component datasets, iterations:    2, final total rms dev per coordinate:  2.50094
- creating Procrustes consensus from dim  2 to dim  2 based on component datasets, iterations:    8, final total rms dev per coordinate:  2.82280
- creating Procrustes consensus from dim  3 to dim  3 based on component datasets, iterations:   17, final total rms dev per coordinate:  2.93191
- creating Procrustes consensus from dim  4 to dim  4 based on component datasets, iterations:   11, final total rms dev per coordinate:  2.86859
- creating Procrustes consensus from dim  5 to dim  5 based on component datasets, iterations:   16, final total rms dev per coordinate:  2.88087
- creating Procrustes consensus from dim  6 to dim  6 based on component datasets, iterations:   23, final total rms dev per coordinate:  2.91432
- creating Procrustes consensus from dim  7 to dim  7 based on component datasets, iterations:   52, final total rms dev per coordinate:  2.92061
+ created  Procrustes consensus from dim  1 to dim  1 based on component datasets, iterations:    2, final total rms dev per coordinate:  2.50094
+ created  Procrustes consensus from dim  2 to dim  2 based on component datasets, iterations:    8, final total rms dev per coordinate:  2.82280
+ created  Procrustes consensus from dim  3 to dim  3 based on component datasets, iterations:   17, final total rms dev per coordinate:  2.93191
+ created  Procrustes consensus from dim  4 to dim  4 based on component datasets, iterations:   11, final total rms dev per coordinate:  2.86859
+ created  Procrustes consensus from dim  5 to dim  5 based on component datasets, iterations:   16, final total rms dev per coordinate:  2.88087
+ created  Procrustes consensus from dim  6 to dim  6 based on component datasets, iterations:   23, final total rms dev per coordinate:  2.91432
+ created  Procrustes consensus from dim  7 to dim  7 based on component datasets, iterations:   52, final total rms dev per coordinate:  2.92061
 ##### rs_warning: cannot find stimulus coordinates, so cannot identify rays
 ```
 
@@ -265,4 +263,4 @@ opts_disp_raw.callout_amount=1.0;
 rs_disp_coordsets(data_cons,setfield(struct,'opts_disp',opts_disp_cons));
 ```
 
-![rs_align_disp_coordsets_demo_chunk11_fig1](../../images/demos/rs_align_disp_coordsets_demo_chunk11_fig1.png)
+![rs_align_disp_coordsets_demo_chunk10_fig1](../../images/demos/rs_align_disp_coordsets_demo_chunk10_fig1.png)
