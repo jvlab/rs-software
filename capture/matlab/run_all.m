@@ -6,10 +6,9 @@ function run_all(spec_dir, repo_root)
 %
 % Sets up the MATLAB path so demos and their dependencies resolve, with the
 % scripted input() shadow taking precedence over the builtin, runs each demo,
-% then restores the original path. Intended to be called through the
-% matlab-actions/run-command action in CI:
-%
-%   run_all('build/capture')
+% then restores the original path. It runs locally, never in CI, and is
+% normally started by docs/update_demo_docs.py, which builds the specs first
+% and renders the pages afterwards.
 %
 % Specs are matched by the pattern *.spec.json. Each demo's figure and
 % manifest paths are absolute (written by the Python spec builder), so the
@@ -139,7 +138,8 @@ function root = local_psg_root(repo_root)
 % Locate a perceptual_space_geometry checkout to put on the path.
 %
 % Looked for in the RS_PSG_PATH environment variable, then inside the repository
-% (where the CI workflows check it out), then beside it. Returns '' when none is
+% (a gitignored folder, which is also where a git submodule would go), then beside
+% it. Returns '' when none is
 % found, which is the normal case on a machine where the repository is already on
 % the saved MATLAB path; local_check_dependencies then decides whether that is a
 % problem.

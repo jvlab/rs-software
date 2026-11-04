@@ -14,8 +14,12 @@ such a change.
 
 ## How to run it
 
-From the repository root, with MATLAB on `PATH` (or `MATLAB` set to its full path)
-and `perceptual_space_geometry` already in MATLAB's path, run:
+From the repository root, with MATLAB on `PATH` (or `MATLAB` set to its full path),
+run the command below. The demos need
+[`perceptual_space_geometry`](https://github.com/jvlab/perceptual_space_geometry):
+`run_all.m` uses the checkout named by the `RS_PSG_PATH` environment variable, or one
+inside or beside this repository, and otherwise relies on MATLAB's saved path. It stops
+before capturing anything if the `psg_*` functions cannot be found.
 
 ```bash
 python docs/update_demo_docs.py                          # only the demos that changed
