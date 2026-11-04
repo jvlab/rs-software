@@ -9,11 +9,15 @@ argument list.
 
 import sys
 
+import pytest
+
 from update_demo_docs import (
+    ALL_FLAG,
     DONE_NAME,
     MATLAB_CAPTURE_COMMAND,
     SPEC_SCRIPT,
     capture_finished,
+    choose_demos,
     clear_done,
     done_path,
     matlab_argv,
@@ -125,3 +129,52 @@ def test_wait_for_capture_polls_until_the_marker_appears(tmp_path):
 
     assert polls == 3
     assert calls == [0.5, 0.5, 0.5]
+
+
+# --- choosing which demos to capture ----------------------------------------------
+
+def test_no_arguments_capture_the_stale_demos():
+    assert choose_demos([], ["b", "a"]) == ["b", "a"]
+
+
+def test_no_arguments_and_nothing_stale_capture_nothing():
+    assert choose_demos([], []) is None
+
+
+def test_named_demos_are_captured_even_when_current():
+    assert choose_demos(["x"], []) == ["x"]
+    assert choose_demos(["x", "y"], ["z"]) == ["x", "y"]
+
+
+def test_all_flag_captures_every_demo():
+    # An empty list means every demo to build_specs, clear_stale_figures and render.
+    assert choose_demos([ALL_FLAG], []) == []
+
+
+def test_all_flag_refuses_demo_names():
+    with pytest.raises(SystemExit, match="takes no demo names"):
+        choose_demos([ALL_FLAG, "x"], [])
+
+
+def test_main_with_nothing_stale_does_not_start_matlab(monkeypatch):
+    import update_demo_docs
+    monkeypatch.setattr(update_demo_docs, "stale_demos", lambda: [])
+    monkeypatch.setattr(update_demo_docs, "build_specs",
+                        lambda demos: pytest.fail("specs built with nothing to capture"))
+    monkeypatch.setattr(update_demo_docs, "run_capture",
+                        lambda matlab: pytest.fail("MATLAB started with nothing to capture"))
+    assert update_demo_docs.main([]) == 0
+
+
+def test_main_passes_only_the_stale_demos_on(monkeypatch):
+    import update_demo_docs
+    seen = {}
+    monkeypatch.setattr(update_demo_docs, "stale_demos", lambda: ["a"])
+    monkeypatch.setattr(update_demo_docs, "build_specs", lambda demos: seen.setdefault("specs", demos))
+    monkeypatch.setattr(update_demo_docs, "clear_stale_figures", lambda demos: seen.setdefault("clear", demos))
+    monkeypatch.setattr(update_demo_docs, "clear_done", lambda: None)
+    monkeypatch.setattr(update_demo_docs, "run_capture", lambda matlab: 0)
+    monkeypatch.setattr(update_demo_docs, "capture_finished", lambda: True)
+    monkeypatch.setattr(update_demo_docs, "render", lambda demos: seen.setdefault("render", demos))
+    assert update_demo_docs.main([]) == 0
+    assert seen == {"specs": ["a"], "clear": ["a"], "render": ["a"]}

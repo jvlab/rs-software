@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_demo_specs import BUILD_DIR, FIG_DIR, demo_paths, scan_demos  # noqa: E402
+from build_demo_specs import BUILD_DIR, DEMO_DIR, FIG_DIR, demo_paths, scan_demos  # noqa: E402
 from demo_capture import load_manifest  # noqa: E402
 from demo_include import expanded_source  # noqa: E402
 from function_registry import build as build_registry  # noqa: E402
@@ -63,6 +63,31 @@ def source_hash(demo_path):
         str: the hex digest.
     """
     return hashlib.sha256(expanded_source(demo_path).encode("utf-8")).hexdigest()
+
+
+def stale_demos(demo_dir=DEMO_DIR, index_path=INDEX_PATH):
+    """
+    Return the demos whose capture is missing or out of date, in path order.
+
+    A demo is stale when it has no index entry, or when its source hash (which
+    covers the scripts it includes) differs from the one recorded when it was
+    last captured. This is the comparison docs/test_demo_captures_current.py
+    makes, so capturing these demos is what makes that test pass.
+
+    Args:
+        demo_dir: directory holding the demo files.
+        index_path: path of the capture index.
+
+    Returns:
+        list of demo names.
+    """
+    index = load_index(index_path)
+    stale = []
+    for demo in demo_paths(demo_dir=demo_dir):
+        name = Path(demo).stem
+        if index.get(name, {}).get("source_sha256") != source_hash(demo):
+            stale.append(name)
+    return stale
 
 
 def figure_pattern(demo_name):

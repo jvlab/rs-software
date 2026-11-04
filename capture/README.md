@@ -16,9 +16,19 @@ From the repository root, with MATLAB on `PATH` (or `MATLAB` set to its full pat
 and `perceptual_space_geometry` already in MATLAB's path, run:
 
 ```bash
-python docs/update_demo_docs.py rs_knit_coordsets_demo   # one demo, seconds to minutes
-python docs/update_demo_docs.py                          # all 13, about an hour
+python docs/update_demo_docs.py                          # only the demos that changed
+python docs/update_demo_docs.py rs_knit_coordsets_demo   # this demo, changed or not
+python docs/update_demo_docs.py --all                    # all 13, a few minutes
 ```
+
+With no argument it captures the demos whose source changed since their last
+capture (the ones `docs/test_demo_captures_current.py` reports), and does nothing,
+without starting MATLAB, when there are none. Unchanged demos are left alone on
+purpose: MATLAB writes figures whose bytes differ from run to run even when the
+plots are identical, so re-capturing them would only add images to git history.
+Use `--all` when something outside `src/demos` changed what the demos print or
+plot, for example a toolbox function, then commit only the figures that really
+changed.
 
 That runs three stages:
 
@@ -88,5 +98,5 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   on Windows matches one made on Linux or macOS.
 - **A demo that errors** is still captured: the error appears on its page where it
   happened, and in the index.
-- Re-capturing rewrites that demo's PNGs, and every version stays in git history.
-  Capture only the demos you changed, so that the repository stays small.
+- Re-capturing rewrites that demo's PNGs, and every version stays in git history,
+  which is why the default captures only the demos that changed.

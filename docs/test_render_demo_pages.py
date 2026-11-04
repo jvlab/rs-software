@@ -257,3 +257,29 @@ def test_render_replaces_an_existing_page_when_a_manifest_is_there(tmp_path,
     assert "fresh output" in page
     assert "stale page" not in page
     assert load_index(index_path)["my_demo"]["figures"] == 0
+
+
+def test_stale_demos_lists_changed_and_uncaptured_demos(tmp_path):
+    from render_demo_pages import stale_demos
+    demo_dir = tmp_path / "demos"
+    demo_dir.mkdir()
+    for name in ("changed", "current", "uncaptured"):
+        (demo_dir / f"{name}.m").write_text(f"%{name}: a demo\ndisp(1)\n")
+    index_path = tmp_path / "index.json"
+    save_index({
+        "changed": {"source_sha256": "0" * 64},
+        "current": {"source_sha256": source_hash(demo_dir / "current.m")},
+    }, index_path)
+
+    assert stale_demos(demo_dir, index_path) == ["changed", "uncaptured"]
+
+
+def test_stale_demos_is_empty_when_every_capture_matches(tmp_path):
+    from render_demo_pages import stale_demos
+    demo_dir = tmp_path / "demos"
+    demo_dir.mkdir()
+    (demo_dir / "only.m").write_text("%only: a demo\n")
+    index_path = tmp_path / "index.json"
+    save_index({"only": {"source_sha256": source_hash(demo_dir / "only.m")}}, index_path)
+
+    assert stale_demos(demo_dir, index_path) == []

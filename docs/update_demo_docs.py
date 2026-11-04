@@ -17,12 +17,24 @@ docs/test_demo_captures_current.py fail when they drift apart.
 
 Usage, from the repository root:
 
-    python docs/update_demo_docs.py                        # every demo
+    python docs/update_demo_docs.py                        # the demos that changed
     python docs/update_demo_docs.py rs_knit_coordsets_demo # just this one
+    python docs/update_demo_docs.py --all                  # every demo
 
-Naming demos captures only those, which is what you want while iterating: a full
-run is as slow as the slowest demo. The demos that are not named keep the output
-captured for them earlier.
+With no argument, only the demos whose source changed since their last capture
+are captured: those with no entry in capture/demo_capture_index.json, or whose
+source hash (which covers the scripts they include) differs from the recorded
+one. That is the set docs/test_demo_captures_current.py complains about. When
+nothing changed, MATLAB is not started at all.
+
+Re-capturing an unchanged demo is avoided on purpose: MATLAB writes PNGs whose
+bytes differ from run to run even when the plots are identical, so a full run
+dirties every figure and, if committed, adds them all to the git history again.
+Use --all only when something outside src/demos changed what demos print or
+plot, such as a toolbox function or the capture itself.
+
+Naming demos captures exactly those, changed or not. The demos that are not
+captured keep the output captured for them earlier.
 
 The MATLAB executable defaults to "matlab" on PATH. If it is installed
 elsewhere, set the MATLAB environment variable to its full path.
@@ -53,7 +65,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_demo_specs import BUILD_DIR, demo_paths  # noqa: E402
-from render_demo_pages import clear_figures, render  # noqa: E402
+from render_demo_pages import clear_figures, render, stale_demos  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SPEC_SCRIPT = "docs/build_demo_specs.py"
@@ -61,6 +73,8 @@ MATLAB_CAPTURE_COMMAND = "addpath('capture/matlab'); run_all('build/capture')"
 
 # Written by run_all.m when it reaches the end of the capture; see done_path().
 DONE_NAME = "run_all.done"
+
+ALL_FLAG = "--all"
 
 
 def specs_argv(python_executable=sys.executable, demos=()):
@@ -205,8 +219,42 @@ def run_capture(matlab_executable):
     return result.returncode
 
 
+def choose_demos(args, stale):
+    """
+    Decide which demos to capture from the command-line arguments.
+
+    Args:
+        args: the arguments: demo names, or ALL_FLAG alone, or nothing.
+        stale: the names of the demos whose capture is out of date.
+
+    Returns:
+        The list of demo names to capture. An empty list means every demo, as
+        it does for build_specs, clear_stale_figures and render, and is only
+        returned for ALL_FLAG; with no arguments and nothing stale, None.
+
+    Raises:
+        SystemExit: when ALL_FLAG is combined with demo names.
+    """
+    if ALL_FLAG in args:
+        if len(args) > 1:
+            raise SystemExit(f"[update-demo-docs] {ALL_FLAG} takes no demo names")
+        return []
+    if args:
+        return list(args)
+    return list(stale) or None
+
+
 def main(argv=None):
-    demos = list(sys.argv[1:] if argv is None else argv)
+    args = list(sys.argv[1:] if argv is None else argv)
+    stale = [] if args else stale_demos()
+    demos = choose_demos(args, stale)
+    if demos is None:
+        print("[update-demo-docs] every demo matches its capture; nothing to do. "
+              f"Name demos, or pass {ALL_FLAG}, to capture anyway.")
+        return 0
+    if not args:
+        print(f"[update-demo-docs] capturing the demos that changed: {', '.join(demos)}")
+
     build_specs(demos)
     clear_stale_figures(demos)
     clear_done()
