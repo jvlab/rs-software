@@ -112,10 +112,10 @@ def _linkify_text(text: str, prefix: str) -> str:
     result = []
     for i, part in enumerate(parts):
         if i % 2 == 0:
-            # Text node — apply identifier replacement
+            # Text node - apply identifier replacement
             result.append(_IDENTIFIER_RE.sub(lambda m: _make_link(m.group(1), prefix), part))
         else:
-            # HTML tag — leave untouched
+            # HTML tag - leave untouched
             result.append(part)
     return "".join(result)
 
@@ -146,10 +146,10 @@ def _linkify_code_in_content(html: str, prefix: str) -> str:
     result = []
     last = 0
     for anchor in _ANCHOR_RE.finditer(html):
-        # Process the segment *before* this <a>…</a> block
+        # Process the segment *before* this <a>...</a> block
         segment = html[last:anchor.start()]
         result.append(_CODE_TAG_RE.sub(replace, segment))
-        # Keep the <a>…</a> block completely untouched
+        # Keep the <a>...</a> block completely untouched
         result.append(anchor.group(0))
         last = anchor.end()
     # Remaining tail after the last <a>
@@ -174,7 +174,7 @@ def run_scripts(script_paths: list[str]) -> None:
         path = Path(script)
 
         if not path.exists():
-            print(f"[SKIP] '{script}' — file not found.")
+            print(f"[SKIP] '{script}' - file not found.")
             continue
 
         print(f"\n{'='*50}")

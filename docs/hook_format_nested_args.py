@@ -97,7 +97,7 @@ class HTMLTreeBuilder(HTMLParser):
 
 
 # ---------------------------------------------------------------------------
-# Tree → HTML serializer
+# Tree --> HTML serializer
 # ---------------------------------------------------------------------------
 
 def serialize(node: Node | str) -> str:
@@ -166,7 +166,7 @@ def _group_into_details(ul_node: Node) -> None:
 
     for child in ul_node.children:
         if not (isinstance(child, Node) and child.tag == "li"):
-            # Whitespace or text nodes — attach to current context
+            # Whitespace or text nodes - attach to current context
             if current_inner_ul is not None:
                 current_inner_ul.children.append(child)
             else:
@@ -177,8 +177,8 @@ def _group_into_details(ul_node: Node) -> None:
 
         if is_category:
             # Build: <details open class="doc-param-group">
-            #            <summary>…label…</summary>
-            #            <ul class="doc-param-group-items">…</ul>
+            #            <summary>...label...</summary>
+            #            <ul class="doc-param-group-items">...</ul>
             #        </details>
             summary_html = "".join(serialize(c) for c in child.children)
             details_node = Node("details", [("class", "doc-param-group")])
@@ -193,7 +193,7 @@ def _group_into_details(ul_node: Node) -> None:
             if current_inner_ul is not None:
                 current_inner_ul.children.append(child)
             else:
-                # Item before any category header — keep at top level
+                # Item before any category header - keep at top level
                 new_children.append(child)
 
     ul_node.children = new_children
@@ -247,7 +247,7 @@ def _reformat_li(li_node: Node) -> None:
 
     # Check for category header BEFORE trying _ARG_RE.
     # Category headers come from **Bold text** in the docstring, which
-    # renders as <strong>…</strong> with no (type): description pattern.
+    # renders as <strong>...</strong> with no (type): description pattern.
     match_cat = _CATEGORY_RE.match(text)
     if match_cat:
         li_node.attrs["class"] = "doc-param-category"
