@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_demo_specs import BUILD_DIR, FIG_DIR, demo_paths  # noqa: E402
+from build_demo_specs import BUILD_DIR, FIG_DIR, demo_paths, scan_demos  # noqa: E402
 from demo_capture import load_manifest  # noqa: E402
 from demo_include import expanded_source  # noqa: E402
 from function_registry import build as build_registry  # noqa: E402
@@ -158,6 +158,24 @@ def render_demo(demo_path, registry, page_dir=PAGE_DIR, build_dir=BUILD_DIR):
     return page_path, manifest
 
 
+def page_registry(demo_dir=None):
+    """
+    Return the function registry used to linkify demo pages.
+
+    Include-only scripts have no page, so they are left out: a "See also" line
+    naming one stays plain text instead of linking to a page that does not exist.
+
+    Args:
+        demo_dir: directory holding the demo files; the default demo folder
+            when omitted.
+    """
+    registry = build_registry()
+    _, include_only = scan_demos() if demo_dir is None else scan_demos(demo_dir)
+    for name in include_only:
+        registry.pop(name.lower(), None)
+    return registry
+
+
 def render(names=(), page_dir=PAGE_DIR, build_dir=BUILD_DIR, index_path=INDEX_PATH):
     """
     Render the named demos and update the capture index.
@@ -179,7 +197,7 @@ def render(names=(), page_dir=PAGE_DIR, build_dir=BUILD_DIR, index_path=INDEX_PA
     Returns:
         The list of rendered page paths.
     """
-    registry = build_registry()
+    registry = page_registry()
     index = load_index(index_path)
     pages = []
 

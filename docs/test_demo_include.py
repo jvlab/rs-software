@@ -243,3 +243,11 @@ def test_script_without_header_gets_only_a_heading(tmp_path):
     page = parse_matlab_to_markdown(expand_includes("%d: x\nbare; %#demo-include\n", tmp_path), {})
     assert "### Included script: `bare`\n\n```matlab\nz = 0;\n```" in page
     assert "<details" not in page
+
+
+def test_page_registry_leaves_out_include_only_scripts(tmp_path):
+    from render_demo_pages import page_registry
+    write_files(tmp_path, {"rs_toygeom_scenarioA": DEMO, "rs_toygeom_sim": SHARED})
+    registry = page_registry(tmp_path)
+    assert "rs_toygeom_sim" not in registry
+    assert "rs_geofit" in registry

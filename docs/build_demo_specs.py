@@ -39,6 +39,30 @@ FIG_DIR = REPO_ROOT / "docs" / "images" / "demos"
 SEED = 0
 
 
+def scan_demos(demo_dir=DEMO_DIR):
+    """
+    Sort the scripts of a demo folder into demos and include-only scripts.
+
+    Args:
+        demo_dir: directory holding the demo files.
+
+    Returns:
+        A (demos, include_only) tuple: a dict from demo name to its path, in
+        path order, and the set of names of the include-only scripts.
+    """
+    demos = {}
+    include_only = set()
+    for demo in sorted(glob(str(Path(demo_dir) / "*.m"))):
+        name = Path(demo).stem
+        if name.lower() == "contents":
+            continue
+        if is_include_only(read_source(demo)):
+            include_only.add(name)
+        else:
+            demos[name] = demo
+    return demos, include_only
+
+
 def demo_paths(names=(), demo_dir=DEMO_DIR):
     """
     Return the demo files to build specs for, sorted by path.
@@ -58,16 +82,7 @@ def demo_paths(names=(), demo_dir=DEMO_DIR):
     Raises:
         SystemExit: if a requested name matches no demo file.
     """
-    found = {}
-    include_only = set()
-    for demo in sorted(glob(str(Path(demo_dir) / "*.m"))):
-        name = Path(demo).stem
-        if name.lower() == "contents":
-            continue
-        if is_include_only(read_source(demo)):
-            include_only.add(name)
-        else:
-            found[name] = demo
+    found, include_only = scan_demos(demo_dir)
 
     if not names:
         return list(found.values())
