@@ -187,10 +187,31 @@ choose datapoints to label:  only if stim name is <=6 chars
 end %ipara
 ```
 
-Error:
+Output:
 
 ```text
-Undefined function 'btc_coorkinds' for input arguments of type 'struct'.
+ group 1:  3 files
+ file 1:                   ./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat:   4 rays,   3 rings,   6 pairs
+ file 2:                   ./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat:   4 rays,   3 rings,   6 pairs
+ file 3:                   ./samples/bwtextures/bgca3pt_coords_NF_sess01_10.mat:   4 rays,   3 rings,   6 pairs
+ group 2:  3 files
+ file 1:                   ./samples/bwtextures/bcpm3pt_coords_BL_sess01_10.mat:   4 rays,   3 rings,   8 pairs
+ file 2:                   ./samples/bwtextures/bcpm3pt_coords_MC_sess01_10.mat:   4 rays,   3 rings,   8 pairs
+ file 3:                   ./samples/bwtextures/bcpm3pt_coords_ZK_sess01_10.mat:   4 rays,   3 rings,   8 pairs
+ group 3:  3 files
+ file 1:                 ./samples/bwtextures/bcpp55qpt_coords_BL_sess01_10.mat:   2 rays,   0 rings,  40 pairs
+ file 2:                 ./samples/bwtextures/bcpp55qpt_coords_MC_sess01_10.mat:   2 rays,   0 rings,  40 pairs
+ file 3:                 ./samples/bwtextures/bcpp55qpt_coords_ZK_sess01_10.mat:   2 rays,   0 rings,  40 pairs
+ group 4:  3 files
+ file 1:                  ./samples/bwtextures/bcpm24pt_coords_BL_sess01_10.mat:   4 rays,   1 rings,  24 pairs
+ file 2:                  ./samples/bwtextures/bcpm24pt_coords_MC_sess01_10.mat:   4 rays,   1 rings,  24 pairs
+ file 3:                  ./samples/bwtextures/bcpm24pt_coords_ZK_sess01_10.mat:   4 rays,   1 rings,  24 pairs
 ```
 
 ![rs_align_disp_enh_coordsets_demo_chunk06_fig1](../../images/demos/rs_align_disp_enh_coordsets_demo_chunk06_fig1.png)
+
+![rs_align_disp_enh_coordsets_demo_chunk06_fig2](../../images/demos/rs_align_disp_enh_coordsets_demo_chunk06_fig2.png)
+
+![rs_align_disp_enh_coordsets_demo_chunk06_fig3](../../images/demos/rs_align_disp_enh_coordsets_demo_chunk06_fig3.png)
+
+![rs_align_disp_enh_coordsets_demo_chunk06_fig4](../../images/demos/rs_align_disp_enh_coordsets_demo_chunk06_fig4.png)

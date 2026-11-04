@@ -7,9 +7,9 @@
   },
   "rs_align_disp_enh_coordsets_demo": {
     "source_sha256": "8acadd7e1c43fb08ac5f03239a1cc49b2692a9d559e390113f407ebea38ecb35",
-    "captured_at": "2026-11-04T16:39:15+00:00",
-    "figures": 1,
-    "error": "Undefined function 'btc_coorkinds' for input arguments of type 'struct'."
+    "captured_at": "2026-11-04T17:13:29+00:00",
+    "figures": 4,
+    "error": null
   },
   "rs_disp_coordsets_demo": {
     "source_sha256": "de7d532a0821de240446afe1a63951e0b22d432b329d4fecb09f271c34dea78d",
