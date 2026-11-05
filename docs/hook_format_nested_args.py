@@ -97,7 +97,7 @@ class HTMLTreeBuilder(HTMLParser):
 
 
 # ---------------------------------------------------------------------------
-# Tree → HTML serializer
+# Tree --> HTML serializer
 # ---------------------------------------------------------------------------
 
 def serialize(node: Node | str) -> str:
@@ -166,7 +166,7 @@ def _group_into_details(ul_node: Node) -> None:
 
     for child in ul_node.children:
         if not (isinstance(child, Node) and child.tag == "li"):
-            # Whitespace or text nodes — attach to current context
+            # Whitespace or text nodes - attach to current context
             if current_inner_ul is not None:
                 current_inner_ul.children.append(child)
             else:
@@ -177,8 +177,8 @@ def _group_into_details(ul_node: Node) -> None:
 
         if is_category:
             # Build: <details open class="doc-param-group">
-            #            <summary>…label…</summary>
-            #            <ul class="doc-param-group-items">…</ul>
+            #            <summary>...label...</summary>
+            #            <ul class="doc-param-group-items">...</ul>
             #        </details>
             summary_html = "".join(serialize(c) for c in child.children)
             details_node = Node("details", [("class", "doc-param-group")])
@@ -193,7 +193,7 @@ def _group_into_details(ul_node: Node) -> None:
             if current_inner_ul is not None:
                 current_inner_ul.children.append(child)
             else:
-                # Item before any category header — keep at top level
+                # Item before any category header - keep at top level
                 new_children.append(child)
 
     ul_node.children = new_children
@@ -247,7 +247,7 @@ def _reformat_li(li_node: Node) -> None:
 
     # Check for category header BEFORE trying _ARG_RE.
     # Category headers come from **Bold text** in the docstring, which
-    # renders as <strong>…</strong> with no (type): description pattern.
+    # renders as <strong>...</strong> with no (type): description pattern.
     match_cat = _CATEGORY_RE.match(text)
     if match_cat:
         li_node.attrs["class"] = "doc-param-category"
@@ -390,16 +390,37 @@ def _linkify_code_tags(node: Node) -> None:
                 _linkify_code_tags(child)
 
 
-def _build_url(url: str) -> tuple[str, str]:
+# Where the page being rendered sits relative to the site root, for example
+# "../../" . mkdocs renders one page at a time, so a module-level value is enough,
+# and it spares every recursive helper below an extra argument. on_page_content
+# sets it before it walks the tree.
+_PAGE_PREFIX = ""
+
+
+def _set_page_prefix(page) -> None:
+    """Record where the page being rendered sits, for the links built below."""
+    global _PAGE_PREFIX
+    _PAGE_PREFIX = site_config.root_relative_prefix(page)
+
+
+def _build_url(url: str, prefix: str = None) -> tuple[str, str]:
     """
     Returns (full_url, target_attr).
-    External URLs are returned as-is with target="_blank".
-    Internal paths get SITE_PREFIX prepended.
+
+    External URLs are returned as-is with target="_blank". Internal ones are given
+    relative to the page being rendered, so the site works wherever it is served.
+
+    Args:
+        url: the target, external, or relative to the site root.
+        prefix: the "../" chain back to the site root; the page currently being
+            rendered supplies it when omitted.
     """
     if url.startswith("http"):
         return url, ' target="_blank"'
-    else:
-        return f"{site_config.SITE_PREFIX}/{url}", ""
+
+    if prefix is None:
+        prefix = _PAGE_PREFIX
+    return f"{prefix}{url}", ""
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +446,8 @@ def on_page_content(html: str, page, config, files) -> str:
     putting a link in the data type. This is done in function
     _linkify_toplevel_types.
     """
+    _set_page_prefix(page)
+
     try:
         builder = HTMLTreeBuilder()
         builder.feed(html)

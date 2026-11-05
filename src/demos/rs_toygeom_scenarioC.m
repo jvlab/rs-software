@@ -1,6 +1,6 @@
 %rs_toygeom_scenarioC: geometric transformations, affine model, with statistical analysis of nesting by output dimension
 %
-% Scenario C for rs_toygeom_demo: 
+% Scenario C for rs_toygeom_sim: 
 % illustration of geometric models, focusing on nesting by output dimension
 %
 % Geometric model simulated: affine (4 dimensions)
@@ -9,6 +9,7 @@
 %  * With medium noise (subject 2), adding output dimension 4 is not a statistically significant improvement
 %  * With high noise (subject 3), adding output dimension 3 is not a statistically significant improvement
 %
+clear; %parameters are read from the workspace, so start from a clean one
 scenario_name='scenario C';
 %transform selection
 transform_names={'affine'};
@@ -30,7 +31,8 @@ model_list={'affine_offset'};
 opts_geof=struct;
 opts_geof.if_stats=1;
 %
-rs_toygeom_demo; %create the stimuli and datasets, and fit the models
+%create the stimuli and datasets, and fit the models (rs_toygeom_sim)
+rs_toygeom_sim; %#demo-include
 %
 %geometric model fit display customizations
 paradigms_fit_show={'Axes'};
@@ -39,4 +41,5 @@ opts_dgeo=struct;
 opts_dgeo.view=[-15 45];
 opts_dgeo.if_nestbydim_in_show=0;
 %
-rs_toygeom_disp; %display model-fitting results
+%display model-fitting results (rs_toygeom_disp)
+rs_toygeom_disp; %#demo-include

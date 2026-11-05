@@ -5,9 +5,9 @@
 %
 %  See also:  RS_KNIT_COORDSETS, RS_ALIGN_COORDSETS.
 %
-verbosity=getinp('pipeline display verbosity','d',[0 2],0);
-if_write=getinp('1 to write the knitted sets','d',[0 1]);
-nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);
+verbosity=getinp('pipeline display verbosity','d',[0 2],0);        %#demo-input: 0
+if_write=getinp('1 to write the knitted sets','d',[0 1]);          %#demo-input: 0
+nshuffs=getinp('number of shuffles for statistics (0 for none)','d',[0 1000],10);  %#demo-input: 10
 %
 %section to force btc defaults, even if rs_aux_defaults.mat has been created or modified
 if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; end
@@ -63,6 +63,9 @@ end
 %
 figure;
 spy(aux_knit.coords_havedata');
+%
+% GA: added this line to test if figure saving works... a partial figure should be plotted before this line
+%
 nstims=data_knit.sas{1}.nstims;
 typenames=data_knit.sas{1}.typenames;
 xlabel('stimuli');
@@ -71,7 +74,7 @@ set(gca,'XTickLabel',typenames);
 ylabel('paradigms');
 set(gca,'YTick',[1:nsets]);
 set(gca,'YTickLabel',paradigm_names);
-drawnow;
+drawnow; %#demo-snapshot
 %
 %retrieve and plot convergence and scaling
 %
@@ -92,6 +95,7 @@ for idim=dim_list
         end
     end
 end
+%
 figure;
 set(gcf,'Position',[100 100 1200 900]);
 ncols=3;

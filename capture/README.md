@@ -1,0 +1,108 @@
+# Demo capture
+
+The demo pages in the documentation show what each demo prints and the figures it
+draws. Producing that needs MATLAB, so it happens **locally, on demand**, and the
+result is committed. The documentation build itself needs only Python.
+
+## When to run it
+
+Whenever you change a file in `src/demos`, the test `docs/test_demo_captures_current.py`
+fails, indicating that you need to re-run the capture. It compares only the demo files
+and the scripts they include, so it does not notice a change elsewhere, such as a
+toolbox function, that alters what a demo prints or plots. Re-capture with `--all` after
+such a change.
+
+## How to run it
+
+From the repository root, with MATLAB on `PATH` (or `MATLAB` set to its full path),
+run the command below. The demos need
+[`perceptual_space_geometry`](https://github.com/jvlab/perceptual_space_geometry):
+`run_all.m` uses the checkout named by the `RS_PSG_PATH` environment variable, or one
+inside or beside this repository, and otherwise relies on MATLAB's saved path. It stops
+before capturing anything if the `psg_*` functions cannot be found.
+
+```bash
+python docs/update_demo_docs.py                          # only the demos that changed
+python docs/update_demo_docs.py rs_knit_coordsets_demo   # this demo, changed or not
+python docs/update_demo_docs.py --all                    # all 13, a few minutes
+```
+
+With no argument it captures the demos whose source changed since their last
+capture (the ones `docs/test_demo_captures_current.py` reports), and does nothing,
+without starting MATLAB, when there are none. Unchanged demos are left alone on
+purpose: MATLAB writes figures whose bytes differ from run to run even when the
+plots are identical, so re-capturing them would only add images to git history.
+Use `--all` when something outside `src/demos` changed what the demos print or
+plot, for example a toolbox function, then commit only the figures that really
+changed.
+
+That runs three stages:
+
+1. `docs/build_demo_specs.py` writes `build/capture/<demo>.spec.json`: the code
+   chunks, the scripted answers to interactive prompts, and where output goes.
+2. `capture/matlab/run_all.m` runs each spec through `run_capture.m`, which
+   evaluates the chunks, exports figures, and writes `<demo>.manifest.json`.
+3. `docs/render_demo_pages.py` renders `docs/mfiles/demos/<demo>.md` from the demo
+   source (with its included scripts pasted in) plus that manifest, and records the
+   demo's source hash in
+   `capture/demo_capture_index.json`.
+
+Then review and commit:
+
+```bash
+git status                  # page, figures, index
+mkdocs serve                # check the pages read well
+git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
+```
+
+`build/` is scratch and is not committed.
+
+## What is committed, and what is generated
+
+| Path | |
+| --- | --- |
+| `docs/mfiles/demos/*.md` | committed, rendered by the capture |
+| `docs/images/demos/*.png` | committed, exported by the capture |
+| `capture/demo_capture_index.json` | committed, one entry per demo |
+| `docs/mfiles/*.md`, `docs/demos.md` | generated on every build |
+| `build/capture/*` | scratch, local only |
+
+## Notes
+
+- **Interactive demos** need a `%#demo-input: <answer>` comment on each line that
+  prompts; an empty answer means "press enter for the default". A missing directive
+  makes the capture hang or fail.
+- **Figures** are exported at 96 dpi as they are created, keeping at most 20 open at
+  once; `capture/matlab/run_capture_test.m` checks that, and the snapshot directive described next. Run it
+  with `matlab -batch "addpath('capture/matlab'); run_capture_test"`. A figure is saved once, when
+  the code block that opened it ends. To save it again after a later block draws on
+  it, end a code line of that block with `%#demo-snapshot` (the current figure) or
+  `%#demo-snapshot: all` (every figure still open from earlier blocks).
+- **Shared scripts** are pasted into the demos that run them, so their code is kept in
+  one place and every page is still complete. End the calling line with
+  `%#demo-include`, as in `rs_toygeom_sim; %#demo-include`: the line must be unindented
+  and only call the script. Mark the shared script with `%#demo-include-only` alone on
+  a line, and it gets no page of its own. On the page, the script's header comment (its
+  leading comment lines, up to the first blank line) is folded into a collapsed block,
+  and the rest appears as code and prose where the demo runs it, with its output and
+  figures. In MATLAB both directives are comments, so the demo still just calls the
+  script. Editing a shared script marks every demo that includes it as stale, and
+  `python docs/update_demo_docs.py rs_toygeom_sim` captures those demos.
+- **Directives** (`%#demo-input:`, `%#demo-snapshot`, `%#demo-include`) count only at the end of a code
+  line or alone on a line; inside a prose comment they are plain text.
+- **On Linux and macOS** the capture runs with `-nodisplay`. Without it MATLAB tries
+  hardware OpenGL in batch mode and exports solid black images without failing.
+- **On Windows** the capture runs with `-wait` instead, because the `matlab` command
+  otherwise returns to the shell before MATLAB has finished. That flag is not trusted
+  either: `run_all.m` deletes `build/capture/run_all.done` when it starts and writes it
+  when it has run every spec, and `update_demo_docs.py` waits for that file before
+  rendering. If MATLAB is still running, the script says so and waits; interrupt it with
+  Ctrl-C if MATLAB is no longer there. Rendering a demo whose manifest is missing never
+  overwrites the page already on disk, so a stray run cannot replace captured output
+  with a page of code only. Pages, the index and the specs are written with Unix line
+  endings, and demo sources are hashed with line endings normalized, so a capture made
+  on Windows matches one made on Linux or macOS.
+- **A demo that errors** is still captured: the error appears on its page where it
+  happened, and in the index.
+- Re-capturing rewrites that demo's PNGs, and every version stays in git history,
+  which is why the default captures only the demos that changed.
