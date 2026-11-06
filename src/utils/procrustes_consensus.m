@@ -273,7 +273,9 @@ while (niters<opts_pcon.max_niters & rms>opts_pcon.max_rmstol)
     [d,consensus_new,t_new]=procrustes(alignment,consensus_new,'Scaling',scaling_token_new,'Reflection',reflection_token); %don't renormalize
     if opts_pcon.allow_offset==0 %29Nov24
         consensus_new=consensus_new-t_new.c;
+        t_new.c=zeros(1,nds); %15Oct26
     end
+    %
     details.ts_cum{niters}=ts_cum;
     details.consensus(:,:,niters)=consensus_new;
     rms=sqrt(mean((consensus_new(:)-consensus(:)).^2));
