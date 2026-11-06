@@ -8,6 +8,7 @@ src/tests/*.fig
 src/tests/*.mat
 svd_issue
 src/benchmarks/*.zip
+src/rs_aux_defaults_define_pvt.m
 junk*.*
 *.ppt*
 *.doc*
