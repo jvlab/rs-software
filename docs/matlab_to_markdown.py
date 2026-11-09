@@ -247,7 +247,8 @@ def parse_blocks(matlab_code):
 
         if stripped.startswith("%"):
             flush_code()
-            comment_text = re.sub(r"^%\s?", "", stripped)
+            # A bare "%%" starts a MATLAB cell, and on the page it is an empty comment.
+            comment_text = "" if stripped == "%%" else re.sub(r"^%\s?", "", stripped)
             if comment_text.strip():
                 indent = comment_indent(line)
                 if comment_block_indent is not None and indent != comment_block_indent:

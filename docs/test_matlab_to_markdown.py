@@ -25,6 +25,22 @@ from matlab_to_markdown import (
 REG = {"rs_knit_coordsets": "rs_knit_coordsets"}
 
 
+def test_bare_cell_line_renders_the_same_as_an_empty_comment():
+    with_comment = "% t: d\nx = 1;\n%\n% ## Main\n% Text.\ny = 2;\n"
+    with_cell = "% t: d\nx = 1;\n%%\n% ## Main\n% Text.\ny = 2;\n"
+    assert parse_matlab_to_markdown(with_cell, REG) == parse_matlab_to_markdown(with_comment, REG)
+    assert "## Main\nText." in parse_matlab_to_markdown(with_cell, REG)
+
+
+def test_bare_cell_line_ends_a_code_chunk_like_any_comment():
+    assert code_chunk_texts(parse_blocks("a = 1;\n%%\nb = 2;\n")) == ["a = 1;", "b = 2;"]
+
+
+def test_comment_starting_with_two_percents_keeps_its_text():
+    blocks = parse_blocks("%%section note\n")
+    assert blocks[0]["lines"] == ["%section note"]
+
+
 def test_first_line_becomes_heading():
     assert process_first_line("mydemo: does a thing") == "# mydemo\nDoes a thing"
 

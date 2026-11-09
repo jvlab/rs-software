@@ -12,9 +12,9 @@
     "error": null
   },
   "rs_disp_coordsets_demo": {
-    "source_sha256": "de7d532a0821de240446afe1a63951e0b22d432b329d4fecb09f271c34dea78d",
-    "captured_at": "2026-09-21T17:43:05+00:00",
-    "figures": 9,
+    "source_sha256": "0973acb55635975636977770741a178dab821dd0e3cac2003d50097b6bed8d0d",
+    "captured_at": "2026-11-09T17:50:19+00:00",
+    "figures": 10,
     "error": null
   },
   "rs_disp_coordsets_demo_cars": {

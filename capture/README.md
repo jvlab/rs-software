@@ -88,6 +88,9 @@ git add docs/mfiles/demos docs/images/demos capture/demo_capture_index.json
   figures. In MATLAB both directives are comments, so the demo still just calls the
   script. Editing a shared script marks every demo that includes it as stale, and
   `python docs/update_demo_docs.py rs_toygeom_sim` captures those demos.
+- **Sections** are markdown headings in comments, such as `% ## Title`. Put a bare `%%` on
+  the line before each one, so that MATLAB shows them as separate cells. On the page a
+  bare `%%` is an empty comment line.
 - **Directives** (`%#demo-input:`, `%#demo-snapshot`, `%#demo-include`) count only at the end of a code
   line or alone on a line; inside a prose comment they are plain text.
 - **On Linux and macOS** the capture runs with `-nodisplay`. Without it MATLAB tries
