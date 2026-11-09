@@ -406,6 +406,7 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
     }
 
     results['metadata']['total_judgments'] = total_comparisons
+    results['metadata']['num_trials'] = len(np.unique(responses[:, COL_TRIAL]))
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")
     savemat(output_path, results)
