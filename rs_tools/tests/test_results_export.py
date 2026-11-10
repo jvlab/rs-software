@@ -134,3 +134,9 @@ def test_bundle_zip_has_everything(tmp_path):
     header = z.read("coordinates_dataset1.csv").decode().splitlines()[0]
     assert header == "stimulus,dim1,dim2"
     assert z.read("convergence.csv").decode().splitlines()[0] == "fit,iteration,log_likelihood_per_triad"
+
+
+def test_summary_table_p_value_has_two_decimals(record):
+    from rs_tools.results_export import summary_table_csv
+    lines = summary_table_csv(record).decode().strip().splitlines()
+    assert lines[1].split(",")[-1] == "0.00"

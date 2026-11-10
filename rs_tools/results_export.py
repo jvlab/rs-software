@@ -176,6 +176,11 @@ def table_csv(header, rows):
     return buf.getvalue().encode("utf-8")
 
 
+def format_p(p):
+    """A p-value as text with 2 decimals (with 100 surrogates it is a whole number of hundredths)."""
+    return "" if p is None else f"{p:.2f}"
+
+
 def summary_table_csv(record):
     """The one-row table for the lab's comparison spreadsheet: real Procrustes D, the surrogate mean, sd
     and 5% critical value, and the p-value."""
@@ -183,7 +188,7 @@ def summary_table_csv(record):
               "surrogate_sd_D", "surrogate_5pct_quantile_D", "p_value"]
     row = [record["dataset1"], record["dataset2"], record["dim"], record["n_surrogates"],
            record["real_disparity"], record["surrogate_mean"], record["surrogate_std"],
-           record["surrogate_critical_5pct"], record["p_value"]]
+           record["surrogate_critical_5pct"], format_p(record["p_value"])]
     return table_csv(header, [row])
 
 
@@ -296,7 +301,7 @@ def summarize(paths, csv_path=None):
         with open(csv_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=["file"] + SUMMARY_COLUMNS)
             writer.writeheader()
-            writer.writerows(rows)
+            writer.writerows({**r, "p_value": format_p(r["p_value"])} for r in rows)
     return rows
 
 
@@ -311,7 +316,7 @@ def main(argv=None):
     rows = summarize(args.files, args.csv)
     for r in rows:
         print(f"{r['file']}: {r['dataset1']} vs {r['dataset2']}  {r['dim']}D  "
-              f"disparity {r['real_disparity']:.4f}  p={r['p_value']:.4f}  "
+              f"disparity {r['real_disparity']:.4f}  p={format_p(r['p_value'])}  "
               f"({r['n_surrogates']} surrogates)")
     if args.csv:
         print(f"Wrote {args.csv}")
