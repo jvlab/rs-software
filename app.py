@@ -27,6 +27,7 @@ import streamlit as st
 # repo root — works both locally (cd rs-software && streamlit run app.py) and on Streamlit Cloud
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rs_ui import convergence_plot, slider_with_number, live_progress
+from rs_tools.run_checks import cost_plateau, estimate_seconds, format_duration, seconds_per_iteration
 
 from src.rs_py.utils.util import load_choices
 from src.rs_py.utils.config import CONFIG
@@ -405,6 +406,17 @@ with st.spinner("Loading files..."):
 total_triads1 = sum(rep1.values())
 total_triads2 = sum(rep2.values())
 
+# estimated run time, from timing a few iterations of each dataset's fit
+def _time_iterations(resp, rep, stims):
+    # a fixed start point, so the timing fits do not touch the random state the real fits use
+    start = np.random.RandomState(0).randn(len(stims), dim)
+    return seconds_per_iteration(lambda n: run_mds(resp, rep, stims, dim, n, learning_rate, start_points=start.copy()))
+
+with st.spinner("Timing a few iterations..."):
+    _spi1 = _time_iterations(resp1, rep1, stims1)
+    _spi2 = _time_iterations(resp2, rep2, stims2)
+st.info(f"Estimated run time: {format_duration(estimate_seconds(_spi1, _spi2, max_iterations, n_surrogates, surrogate_max_iter, show_pooled))}")
+
 # pooled fit (warm start) — must run BEFORE real fits so we can pass start_points
 pooled_residuals, total_triads_pooled = [], None #pooled_residuals= convergence log of pooled MDS fit
 start1, start2 = None, None
@@ -485,6 +497,16 @@ if residuals1 or residuals2:
         styles["Pooled (A+B)"] = {"color": "purple", "dash": "dash"}
     convergence_plot(res_dict, tri_dict, styles)
 
+    # has the log-likelihood levelled off? (needs the progress log, so not when progress is off)
+    _plateau = {name1: cost_plateau(residuals1, total_triads1), name2: cost_plateau(residuals2, total_triads2)}
+    _still_improving = {n: r[1] for n, r in _plateau.items() if r is not None and not r[0]}
+    if _still_improving:
+        st.warning("Log-likelihood is still improving for " + ", ".join(
+            f"{n} (changed {c:.2%} over the last 20% of iterations)" for n, c in _still_improving.items())
+            + ". Consider more iterations.")
+    elif all(r is not None for r in _plateau.values()):
+        st.success("Log-likelihood has levelled off for both datasets.")
+
 # surrogate convergence plot (warm start verification) — shown after real convergence, before surrogate run
 # We'll render it after surrogates complete below. Store a flag here.
 _show_surr_conv = show_pooled and n_surr_conv > 0
@@ -548,12 +570,12 @@ m1, m2, m3, m4 = st.columns(4)
 m1.metric("Real Procrustes D", f"{real_disparity:.4f}")
 m2.metric("Surrogate mean", f"{surrogate_disparities.mean():.4f}", help="Mean Procrustes D across the surrogate pairs.")
 m3.metric("Surrogate std", f"{surrogate_disparities.std():.4f}", help="Standard deviation of Procrustes D across the surrogate pairs.")
-m4.metric("p-value", f"{p_value:.4f}", help="Fraction of surrogates with Procrustes D ≥ real.")
+m4.metric("p-value", f"{p_value:.2f}", help="Fraction of surrogates with Procrustes D ≥ real.")
 
 if p_value < 0.05:
-    st.success(f"Statistically significant at p = 0.05 (p = {p_value:.4f}) — the two maps are more different than expected by chance.")
+    st.success(f"Statistically significant at p = 0.05 (p = {p_value:.2f}) — the two maps are more different than expected by chance.")
 else:
-    st.warning(f"Not statistically significant at p = 0.05 (p = {p_value:.4f}) — cannot rule out that the difference is due to chance.")
+    st.warning(f"Not statistically significant at p = 0.05 (p = {p_value:.2f}) — cannot rule out that the difference is due to chance.")
 
 # distribution plot
 fig_dist = go.Figure()
@@ -657,7 +679,7 @@ result_record = build_record(
             "shared_stim_labels": _shared, "aligned_coords1": _a1, "aligned_coords2": _a2,
             "convergence_dataset1": _conv1, "convergence_dataset2": _conv2,
             "convergence_pooled": _conv_pooled})
-st.caption(f"p-value {result_record['p_value']:.4f} is the fraction of surrogates at or above the real Procrustes D "
+st.caption(f"p-value {result_record['p_value']:.2f} is the fraction of surrogates at or above the real Procrustes D "
            f"({result_record['n_surrogates_ge_real']} of {n_surrogates}). With {n_surrogates} surrogates it can only be a "
            f"multiple of 1/{n_surrogates}; 0 means none of them reached the real Procrustes D.")
 
