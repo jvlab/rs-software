@@ -1,4 +1,6 @@
-%rs_auto_choice_test: run all tests for the choice analyses in automatic mode
+%rs_auto_choice_test: run all tests for the choice analyses in automati mode 
+% (rs_dirfit_choicedata is called by rs_symumi_choicedata and rs_addtree_choicedata, and not tested explicitly)
+%
 if ~exist('if_auto_skip')  if_auto_skip=1; end %by default, skip modules that require keyboard input
 if ~exist('if_ignore_svdambig') if_ignore_svdambig=0; end
 if ~exist('diff_maxchars') diff_maxchars=70; end 
@@ -17,12 +19,6 @@ r.(rs_module).data_outs=data_comps;
 r.(rs_module).aux_outs=aux_reads;
 %
 %analysis modules
-%
-clear ifdif
-rs_dirfit_choicedata_test;
-r.(rs_module).ifdif=ifdif;
-r.(rs_module).data_outs=dirfits;
-r.(rs_module).aux_outs=aux_dirfit_outs;
 %
 clear ifdif
 rs_symumi_choicedata_test;
