@@ -1,6 +1,6 @@
 """
 transform -- run an rs_tools operation on a dataset, from Python, the command line,
-or MATLAB (through src/rs_transform.m).
+or MATLAB (through src/rs_subset_coordsets.m and src/rs_subset_choicesets.m).
 
 One option dictionary (`aux`, same field names as MATLAB's `aux` struct) drives all
 three entry points, so a MATLAB call, a terminal call and a Python call that carry
@@ -16,6 +16,14 @@ Supported operations (aux["operation"]):
                aux["return_indices"] True to also write `kept_indices` (1-based positions of the
                                      kept stimuli in the original list, as a column), so that a
                                      caller can cut other per-stimulus data the same way
+    "subset_choices"  keep or drop stimuli in choice data, as MATLAB's rs_read_choicedata returns it:
+               the variable `data_comp` is a table with one row per comparison, 5 columns (triadic:
+               ref, s1, s2, count, trials) or 6 (tetradic: s1, s2, s3, s4, count, trials), whose
+               first columns number the stimuli from 1; the variable `typenames` (or `stim_list`)
+               holds the stimulus names.  Trials that use a dropped stimulus are removed and the
+               surviving stimuli are renumbered 1..N.  The count and trials columns are not changed.
+               Uses the same filter_type, filter_pattern, regex_mode, alphabetize and
+               return_indices options as "subset".
 
 `dimensions` and `iterations` are accepted so the same aux works for future
 operations (e.g. model fitting); "subset" does not use them.
@@ -93,6 +101,21 @@ def _op_subset(data, aux):
             raise ValueError(
                 f"'{key}' has {n_rows} rows but there are {len(stim_list)} stimulus names.")
 
+    _, kept_indices = subset_stimuli(stim_list, **_selection_kwargs(aux))
+
+    out = {}
+    for key, value in data.items():
+        if key in dim_keys or key == label_key:
+            out[key] = np.asarray(value)[kept_indices]
+        else:
+            out[key] = value
+    if aux.get("return_indices"):
+        out["kept_indices"] = (np.asarray(kept_indices, dtype=float) + 1).reshape(-1, 1)
+    return out
+
+
+def _selection_kwargs(aux):
+    """Turn the filter options in aux into the arguments of subset_stimuli (shared by every subset operation)."""
     ftype = aux.get("filter_type", "keep_all")
     pattern = aux.get("filter_pattern")
     kwargs = {"alphabetize": bool(aux.get("alphabetize", False))}
@@ -109,13 +132,59 @@ def _op_subset(data, aux):
     else:
         raise ValueError(
             f"Unknown filter_type {ftype!r}; use regex, include, exclude or keep_all.")
+    return kwargs
 
-    _, kept_indices = subset_stimuli(stim_list, **kwargs)
+
+_CHOICE_LABEL_KEYS = ("typenames", "stim_list")
+
+
+def _op_subset_choices(data, aux):
+    if "data_comp" not in data:
+        raise ValueError("No 'data_comp' variable (the table of choices) found in this data.")
+    label_key = next((k for k in _CHOICE_LABEL_KEYS if k in data), None)
+    if label_key is None:
+        raise ValueError("No stimulus name variable ('typenames' or 'stim_list') found in this data.")
+    labels_arr = np.asarray(data[label_key])
+    stim_list = [_label_to_str(x) for x in np.atleast_1d(labels_arr).ravel()]
+
+    comp = np.asarray(data["data_comp"], dtype=float)
+    if comp.ndim != 2 or comp.shape[0] == 0:
+        raise ValueError("'data_comp' has no trials (it must be a table with one row per comparison).")
+    n_cols = comp.shape[1]
+    if n_cols not in (5, 6):
+        raise ValueError(
+            f"'data_comp' has {n_cols} columns; a choice table has 5 (triadic) or 6 (tetradic).")
+    n_idx = n_cols - 2                      # columns that number the stimuli
+    idx = comp[:, :n_idx]
+    if not np.all(idx == np.round(idx)):
+        raise ValueError("The stimulus numbers in the first columns of 'data_comp' must be whole numbers.")
+    if idx.min() < 1 or idx.max() > len(stim_list):
+        raise ValueError(
+            f"'data_comp' uses stimulus numbers {int(idx.min())} to {int(idx.max())}, "
+            f"but there are {len(stim_list)} stimulus names.")
+
+    _, kept_indices = subset_stimuli(stim_list, **_selection_kwargs(aux))
+    new_number = np.zeros(len(stim_list) + 1)       # new_number[old stimulus number] = new number, 0 if dropped
+    for new, old in enumerate(kept_indices, start=1):
+        new_number[old + 1] = new
+    renumbered = new_number[idx.astype(int)]
+    keep_rows = np.all(renumbered > 0, axis=1)      # a trial stays only if every stimulus in it is kept
+    if not keep_rows.any():
+        raise ValueError(
+            f"No trials left after filtering -- none of the {comp.shape[0]} trials uses only the kept "
+            f"stimuli. With tetradic data this happens when the kept stimuli never appear together in a trial.")
+    new_comp = comp[keep_rows].copy()
+    new_comp[:, :n_idx] = renumbered[keep_rows]
 
     out = {}
     for key, value in data.items():
-        if key in dim_keys or key == label_key:
-            out[key] = np.asarray(value)[kept_indices]
+        if key == "data_comp":
+            out[key] = new_comp
+        elif key == label_key:
+            if np.asarray(value).dtype == object:       # a MATLAB cell array of names: stays a cell array
+                out[key] = np.array([stim_list[i] for i in kept_indices], dtype=object).reshape(-1, 1)
+            else:
+                out[key] = np.asarray(value)[kept_indices]
         else:
             out[key] = value
     if aux.get("return_indices"):
@@ -123,7 +192,7 @@ def _op_subset(data, aux):
     return out
 
 
-OPERATIONS = {"subset": _op_subset}
+OPERATIONS = {"subset": _op_subset, "subset_choices": _op_subset_choices}
 
 
 def transform(data_original, aux=None):
