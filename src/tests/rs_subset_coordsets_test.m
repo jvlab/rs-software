@@ -107,7 +107,7 @@ aux.opts_subset.filter_pattern=names;
 [data_out,aux_out]=rs_subset_coordsets(data_one,aux);
 nfail=nfail+check(aux_out.warn_bad==0 && data_out.sas{1}.nstims==length(labs1)-2,'exclude: drops the named stimuli');
 %
-% a square stimulus-coordinate array (columns also correspond to stimuli) is cut in both directions
+% a stimulus-coordinate array that happens to be square is cut by rows only, like any other (JV, Nov 13)
 data_sq=data_one;
 n1=length(labs1);
 data_sq.sas{1}.type_coords=eye(n1);
@@ -116,7 +116,8 @@ aux.opts_subset.filter_type='regex';
 aux.opts_subset.filter_pattern=pattern;
 [data_out,aux_out]=rs_subset_coordsets(data_sq,aux);
 nk=length(aux_out.kept_indices{1});
-nfail=nfail+check(isequal(data_out.sas{1}.type_coords,eye(nk)),'square type_coords: rows and columns both follow the kept stimuli');
+E=eye(n1);
+nfail=nfail+check(isequal(data_out.sas{1}.type_coords,E(aux_out.kept_indices{1},:)) && isequal(size(data_out.sas{1}.type_coords),[nk n1]),'square type_coords: only the rows are cut, the columns are left alone');
 %
 % problems are reported in aux_out, as in the other rs_ modules, with a readable message
 aux=quiet;
