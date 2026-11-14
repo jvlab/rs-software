@@ -44,6 +44,11 @@ quiet=struct('opts_subset',struct('if_log',0),'opts_check',struct('if_warn',0));
 %
 % keep_all (the default) returns the input unchanged
 [data_out,aux_out]=rs_subset_coordsets(data_in,quiet);
+if aux_out.warn_bad>0
+    % the first call is the simplest one; if it fails, nothing else can work, so stop with a clear message
+    disp(aux_out.warnings);
+    error('rs_subset_coordsets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see README.txt for Python setup.');
+end
 nfail=nfail+check(aux_out.warn_bad==0,'keep_all: no warnings');
 nfail=nfail+check(isequaln(data_out,data_in),'keep_all: the dataset structure is identical to the input');
 nfail=nfail+check(isequal(aux_out.kept_indices{1},1:length(data_in.sas{1}.typenames)),'keep_all: kept_indices lists every stimulus');
