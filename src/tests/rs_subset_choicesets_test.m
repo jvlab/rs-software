@@ -31,6 +31,11 @@ nfail=nfail+check(size(tri.data_comp,2)==5 && n==37,sprintf('triadic sample: %d 
 %
 % keep_all (the default) returns the input unchanged
 [data_out,aux_out]=rs_subset_choicesets(tri,quiet);
+if aux_out.warn_bad>0
+    % the first call is the simplest one; if it fails, nothing else can work, so stop with a clear message
+    disp(aux_out.warnings);
+    error('rs_subset_choicesets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see README.txt for Python setup.');
+end
 nfail=nfail+check(aux_out.warn_bad==0,'keep_all: no warnings');
 nfail=nfail+check(isequal(data_out.data_comp,tri.data_comp) && isequal(data_out.typenames,tri.typenames),'keep_all: data_comp and typenames are identical to the input');
 nfail=nfail+check(isequal(aux_out.kept_indices,1:n) && isequal(aux_out.ntrials,[1 1]*size(tri.data_comp,1)),'keep_all: kept_indices lists every stimulus; no trials lost');

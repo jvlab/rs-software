@@ -166,9 +166,13 @@ switch backend
             insert(py.sys.path,int32(0),repo_root);
         end
         try
-            py.rs_tools.transform.run_files(tmp_in,tmp_out,aux_json);
+            % import the module by name: if Python cannot load it (for example, numpy or scipy is not installed in this
+            % Python), the message is Python's own, not just "Unable to resolve the name py.rs_tools.transform.run_files"
+            py.importlib.invalidate_caches();
+            tools=py.importlib.import_module('rs_tools.transform');
+            tools.run_files(tmp_in,tmp_out,aux_json);
         catch err
-            wmsg=sprintf('Python reported: %s',err.message);
+            wmsg=sprintf('Python reported: %s (rs_tools is looked for in %s; Python needs numpy and scipy)',err.message,repo_root);
             return
         end
     case 'cli'
