@@ -16,14 +16,16 @@ Supported operations (aux["operation"]):
                aux["return_indices"] True to also write `kept_indices` (1-based positions of the
                                      kept stimuli in the original list, as a column), so that a
                                      caller can cut other per-stimulus data the same way
-    "subset_choices"  keep or drop stimuli in choice data, as MATLAB's rs_read_choicedata returns it:
-               the variable `data_comp` is a table with one row per comparison, 5 columns (triadic:
-               ref, s1, s2, count, trials) or 6 (tetradic: s1, s2, s3, s4, count, trials), whose
-               first columns number the stimuli from 1; the variable `typenames` (or `stim_list`)
-               holds the stimulus names.  Trials that use a dropped stimulus are removed and the
-               surviving stimuli are renumbered 1..N.  The count and trials columns are not changed.
-               Uses the same filter_type, filter_pattern, regex_mode, alphabetize and
-               return_indices options as "subset".
+    "subset_choices"  keep or drop stimuli in a choice file, as MATLAB's load() returns it: the variables
+               `responses` (one row per comparison), `responses_colnames` and `stim_list` (the names).
+               Three layouts, told apart by `responses_colnames` (the same rule as detect_choice_format):
+                 triadic (5 columns)      ref, s1, s2, count, trials
+                 tetradic (6 columns)     s1, s2, s3, s4, count, trials          (has an 's4' column)
+                 odd-one-out (6 columns)  s1, s2, s3, N(s1 odd out), N(s2 odd out), N(s3 odd out)
+               The first 3 (or 4) columns number the stimuli from 1.  Trials that use a dropped stimulus are
+               removed and the surviving stimuli are renumbered 1..N; the count columns and
+               `responses_colnames` are not changed.  Same filter_type, filter_pattern, regex_mode,
+               alphabetize and return_indices options as "subset".
 
 `dimensions` and `iterations` are accepted so the same aux works for future
 operations (e.g. model fitting); "subset" does not use them.
@@ -135,32 +137,41 @@ def _selection_kwargs(aux):
     return kwargs
 
 
-_CHOICE_LABEL_KEYS = ("typenames", "stim_list")
+def _choice_layout(colnames, n_cols):
+    """Number of columns that number the stimuli (3 or 4), and the layout name, for a choice table."""
+    if n_cols == 5:
+        return 3, "triadic"
+    if n_cols != 6:
+        raise ValueError(
+            f"'responses' has {n_cols} columns; a choice file has 5 (triadic) or 6 (tetradic or odd-one-out).")
+    names = [_label_to_str(c) for c in np.atleast_1d(np.asarray(colnames)).ravel()] if colnames is not None else []
+    if any(n == "s4" for n in names):
+        return 4, "tetradic"
+    if any("odd" in n.lower() for n in names):
+        return 3, "odd-one-out"
+    raise ValueError(
+        "'responses' has 6 columns, which could be tetradic or odd-one-out, and 'responses_colnames' does not say which "
+        "(tetradic has an 's4' column; odd-one-out has columns like 'N(s1 odd out)').")
 
 
 def _op_subset_choices(data, aux):
-    if "data_comp" not in data:
-        raise ValueError("No 'data_comp' variable (the table of choices) found in this data.")
-    label_key = next((k for k in _CHOICE_LABEL_KEYS if k in data), None)
-    if label_key is None:
-        raise ValueError("No stimulus name variable ('typenames' or 'stim_list') found in this data.")
-    labels_arr = np.asarray(data[label_key])
+    for needed in ("responses", "stim_list"):
+        if needed not in data:
+            raise ValueError(f"No '{needed}' variable found -- is this a choice file?")
+    labels_arr = np.asarray(data["stim_list"])
     stim_list = [_label_to_str(x) for x in np.atleast_1d(labels_arr).ravel()]
 
-    comp = np.asarray(data["data_comp"], dtype=float)
+    comp = np.asarray(data["responses"], dtype=float)
     if comp.ndim != 2 or comp.shape[0] == 0:
-        raise ValueError("'data_comp' has no trials (it must be a table with one row per comparison).")
-    n_cols = comp.shape[1]
-    if n_cols not in (5, 6):
-        raise ValueError(
-            f"'data_comp' has {n_cols} columns; a choice table has 5 (triadic) or 6 (tetradic).")
-    n_idx = n_cols - 2                      # columns that number the stimuli
+        raise ValueError("'responses' has no trials (it must be a table with one row per comparison).")
+    colnames = data.get("responses_colnames", data.get("response_colnames"))
+    n_idx, layout = _choice_layout(colnames, comp.shape[1])   # n_idx = columns that number the stimuli
     idx = comp[:, :n_idx]
     if not np.all(idx == np.round(idx)):
-        raise ValueError("The stimulus numbers in the first columns of 'data_comp' must be whole numbers.")
+        raise ValueError("The stimulus numbers in the first columns of 'responses' must be whole numbers.")
     if idx.min() < 1 or idx.max() > len(stim_list):
         raise ValueError(
-            f"'data_comp' uses stimulus numbers {int(idx.min())} to {int(idx.max())}, "
+            f"'responses' ({layout}) uses stimulus numbers {int(idx.min())} to {int(idx.max())}, "
             f"but there are {len(stim_list)} stimulus names.")
 
     _, kept_indices = subset_stimuli(stim_list, **_selection_kwargs(aux))
@@ -172,18 +183,18 @@ def _op_subset_choices(data, aux):
     if not keep_rows.any():
         raise ValueError(
             f"No trials left after filtering -- none of the {comp.shape[0]} trials uses only the kept "
-            f"stimuli. With tetradic data this happens when the kept stimuli never appear together in a trial.")
+            f"stimuli. With {layout} data this happens when the kept stimuli never appear together in a trial.")
     new_comp = comp[keep_rows].copy()
     new_comp[:, :n_idx] = renumbered[keep_rows]
 
     out = {}
     for key, value in data.items():
-        if key == "data_comp":
+        if key == "responses":
             out[key] = new_comp
-        elif key == label_key:
+        elif key == "stim_list":
             if np.asarray(value).dtype == object:       # a MATLAB cell array of names: stays a cell array
                 out[key] = np.array([stim_list[i] for i in kept_indices], dtype=object).reshape(-1, 1)
-            else:
+            else:                                       # a MATLAB character array: keep the same rows, same padding
                 out[key] = np.asarray(value)[kept_indices]
         else:
             out[key] = value
