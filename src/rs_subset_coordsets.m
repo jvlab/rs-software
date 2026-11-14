@@ -48,8 +48,8 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 %   -  aux may be omitted; defaults are filled in.  The default, filter_type='keep_all', returns data_in unchanged.
 %   -  Python (numpy and scipy) is required, and the folder that contains this file's folder must contain rs_tools.
 %   -  In each record, the fields of sas{k} that have one row per stimulus (typenames, type_coords, btc_specoords,
-%   btc_augcoords, spec_labels, specs) are subsetted, and sas{k}.nstims and sets{k}.nstims are updated.  If a stimulus
-%   coordinate array is square, so that its columns also correspond to stimuli, its columns are subsetted as well.
+%   btc_augcoords, spec_labels, specs) are subsetted by rows, and sas{k}.nstims and sets{k}.nstims are updated.  Only rows are
+%   subsetted, including in an array that happens to be square.
 %   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
 %   -  If no stimuli remain in a record, or the pattern is not valid, warn_bad is set to 1 and data_out is empty.
 %
@@ -166,7 +166,7 @@ if ~isempty(wmsg)
 end
 kept=double(flat_out.kept_indices(:))';
 %
-% cut the rows (and, where the array is square, the columns) that belong to stimuli that are dropped
+% cut the rows that belong to stimuli that are dropped
 for idim=1:length(ds)
     if ~isempty(ds{idim})
         ds_new{idim}=ds{idim}(kept,:);
@@ -178,11 +178,7 @@ for ifield=1:length(sas_fields)
     if isfield(sas,fn)
         v=sas.(fn);
         if ~isempty(v) && size(v,1)==nstims
-            v_new=v(kept,:);
-            if size(v,2)==nstims && nstims>1 && ~iscell(v)
-                v_new=v_new(:,kept);
-            end
-            sas_new.(fn)=v_new;
+            sas_new.(fn)=v(kept,:); %only the rows are subsetted, even if the array happens to be square
         end
     end
 end
