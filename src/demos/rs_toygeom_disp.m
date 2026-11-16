@@ -1,9 +1,22 @@
-%rs_toygeom_disp: display the results of rs_toygeom_demo* with `rs_disp_geofit`
+%rs_toygeom_disp: display the results of rs_toygeom_sim with `rs_disp_geofit`
 %
 % sims: a structure containing simulations, geometric model fits, and key parameters
-% 
-%   See also: RS_TOYGEOM_DEMO, RS_DISP_GEOFIT.
 %
+% 'sims' must already be in the workspace, created by rs_toygeom_sim, which the
+% rs_toygeom_scenario* scripts run first. Display options (opts_dgeo, transforms_fit_show,
+% paradigms_fit_show, subjs_fit_show) are read from the workspace when they are defined.
+%
+% This script has no documentation page of its own: each rs_toygeom_scenario* page shows it
+% where the scenario runs it.
+%
+%   See also: RS_TOYGEOM_SIM, RS_DISP_GEOFIT.
+%
+
+%#demo-include-only
+%
+if ~exist('sims')
+    error('no sims structure found: run one of the rs_toygeom_scenario* scripts, or rs_toygeom_sim, first');
+end
 if ~exist('opts_dgeo') opts_dgeo=struct; end
 aux_dgeo=struct;
 aux_dgeo.opts_dgeo=opts_dgeo;

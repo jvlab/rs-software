@@ -9,7 +9,7 @@ First are MATLAB function defined and their links to official MATLAB documentati
 @author: G. Aguilar - Feb 2026
 """
 
-# Manually maintained MATLAB builtins and help documents → MathWorks documentation URLs
+# Manually maintained MATLAB builtins and help documents --> MathWorks documentation URLs
 MATLAB_BUILTINS = {
    "procrustes":   "https://mathworks.com/help/stats/procrustes.html",
    "graph":        "https://mathworks.com/help/matlab/ref/graph.html",

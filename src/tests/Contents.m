@@ -24,7 +24,8 @@
 % rs_symumi_choicedata_test: test rs_rs_symumi_choicedata
 %
 % Supporting modules
-% rs_auto_test: run all tests
+% rs_auto_test: run all tests other than choice analyses
+% rs_auto_choice_test: run all tests for choice analyses
 % rs_benchmark_compare: compare a test output with benchmark
 % 
 %   Copyright (c) 2025, 2026 by J. Victor

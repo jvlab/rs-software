@@ -65,7 +65,7 @@ function [data_out,aux_out]=rs_get_coordsets(fullnames,aux)
 %         - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
 %
 % Returns:
-%   data_out (struct): `dataset structure`, containing one records, with fields
+%   data_out (struct): `dataset structure`, containing one or more records, with fields
 %
 %     - ds (cell array): `coordinate structure`, ds{k}{idim} is an array of [nstims idim] of coordinates for the kth record
 %     - sas (cell array): `stimulus metadata structure`, sas{k} is the stimulus metadata for the kth record

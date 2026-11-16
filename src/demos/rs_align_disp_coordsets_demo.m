@@ -74,7 +74,7 @@ opts_disp_raw.callout_amount=0.3; %labels are slightly removed from each data po
 opts_disp_raw.callout_colors='set_colors'; %use the color assigned to each dataset for the callout lines
 opts_disp_raw.callout_linestyles='-'; %dashed callout lines
 opts_disp_raw.legend_location='North'; %legend location
-%
+
 aux_out_raw=cell(1,ngroups);
 haxes=cell(1,ngroups);
 for iset=1:nsets
