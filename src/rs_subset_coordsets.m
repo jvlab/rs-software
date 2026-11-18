@@ -3,7 +3,7 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 % keeps or drops stimuli in every record of a `dataset structure`, using the Python package rs_tools
 %
 % The choice of stimuli is made by Python (rs_tools.subset_stimuli), from the stimulus names in data_in.sas{k}.typenames.
-% The same selection rule is applied to each record k.  In each record, the rows of the coordinates
+% The same selection rule is applied to each record.  In each record, the rows of the coordinates
 % and of the stimulus metadata that belong to stimuli that are dropped are removed, and the metadata
 % for the response set is otherwise unchanged.
 %
@@ -19,7 +19,7 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 %     - opts_subset (struct): options for subsetting, with fields
 %
 %       - filter_type (char): 'keep_all' (default), 'regex', 'include', or 'exclude'
-%       - filter_pattern (char or cell array): for 'regex', a regular expression, such as '^b' for names that start with b;
+%       - filter_pattern (char or cell array): for 'regex', a regular expression, as a single char array (a cell array gives an error), such as '^b' for names that start with b;
 %       for 'include' or 'exclude', a cell array of stimulus names
 %       - regex_mode (char): for 'regex', 'include' (default) to keep the stimuli that match, 'exclude' to drop them
 %       - alphabetize (int): 1 to put the kept stimuli in alphabetical order, 0 (default) to keep their original order
@@ -47,11 +47,9 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 % Note: Notes
 %   -  aux may be omitted; defaults are filled in.  The default, filter_type='keep_all', returns data_in unchanged.
 %   -  Python (numpy and scipy) is required, and the folder that contains this file's folder must contain rs_tools.
-%   -  In each record, the fields of sas{k} that have one row per stimulus (typenames, type_coords, btc_specoords,
-%   btc_augcoords, spec_labels, specs) are subsetted by rows, and sas{k}.nstims and sets{k}.nstims are updated.  Only rows are
-%   subsetted, including in an array that happens to be square.
+%   -  In each record, the fields of sas{k} that have one row per stimulus (typenames; optionally, type_coords, btc_specoords, btc_augcoords, spec_labels, specs) are subsetted by rows, and sas{k}.nstims and sets{k}.nstims are updated.
 %   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
-%   -  If no stimuli remain in a record, or the pattern is not valid, warn_bad is set to 1 and data_out is empty.
+%   -  If no stimuli remain in a record, or the pattern is not valid, or does not match any of typenames, warn_bad is set to 1 and data_out is empty.
 %
 % Example:
 %   [data_b,aux_out]=rs_subset_coordsets(data_in,struct('opts_subset',struct('filter_type','regex','filter_pattern','^b')));
