@@ -32,7 +32,7 @@ function [data_out,aux_out]=rs_subset_choicesets(data_in,aux)
 %     - opts_subset (struct): options for subsetting, with fields
 %
 %       - filter_type (char): 'keep_all' (default), 'regex', 'include', or 'exclude'
-%       - filter_pattern (char or cell array): for 'regex', a regular expression, such as '^b' for names that start with b;
+%       - filter_pattern (char or cell array): for 'regex', a regular expression, as a single char array (a cell array gives an error), such as '^b' for names that start with b;
 %       for 'include' or 'exclude', a cell array of stimulus names
 %       - regex_mode (char): for 'regex', 'include' (default) to keep the stimuli that match, 'exclude' to drop them
 %       - alphabetize (int): 1 to put the kept stimuli in alphabetical order, 0 (default) to keep their original order
