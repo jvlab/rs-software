@@ -99,7 +99,11 @@ def _op_subset(data, aux):
     if ftype == "regex":
         if not pattern:
             raise ValueError("filter_type 'regex' needs a filter_pattern.")
-        kwargs.update(regex=str(pattern), regex_mode=aux.get("regex_mode", "include"))
+        if not isinstance(pattern, str):
+            raise ValueError("filter_type 'regex' needs filter_pattern to be a single text string, "
+                             f"but it is {type(pattern).__name__} (a MATLAB cell array?). "
+                             "Give one regular expression, for example '^b'.")
+        kwargs.update(regex=pattern, regex_mode=aux.get("regex_mode", "include"))
     elif ftype == "include":
         kwargs["include"] = _names_from_pattern(pattern)
     elif ftype == "exclude":
