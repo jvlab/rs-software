@@ -81,6 +81,7 @@ end
 % intepretration of persp (variable names changed here for compatibility with psg_geo_procrustes and
 % psg_geo_affine: 
 %
+persp=persp/persp(end,end); %de-homogenize
 transform.b=1;
 transform.T=persp(1:end-1,1:end-1);
 transform.c=persp(end,1:end-1);
