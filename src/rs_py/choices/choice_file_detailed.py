@@ -351,6 +351,8 @@ def replace_stimuli_with_ids(comparisons, stimuli_set):
 def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata):
     # Process rank orderings to pairwise comparisons between a reference and two stimuli
     pairwise_comparisons, stimulus_set = process_subject_data(input_dir)
+    # Each response CSV file is one observed session.
+    metadata['num_sessions'] = len(get_response_files(input_dir))
     # Swap stimulus names with numeric stimulus ids
     comparisons_with_stim_ids, stim_id_to_name = replace_stimuli_with_ids(pairwise_comparisons, stimulus_set)
     # Standardize the orders in which stimuli will appear, such that if two pairs are compared across different
@@ -406,6 +408,7 @@ def build_detailed_choice_mat(input_dir, output_dir, exp_name, subject, metadata
     }
 
     results['metadata']['total_judgments'] = total_comparisons
+    results['metadata']['num_trials'] = len(np.unique(responses[:, COL_TRIAL]))
 
     output_path = os.path.join(output_dir, f"{exp_name}_detailed_choices_{subject}.mat")
     savemat(output_path, results)

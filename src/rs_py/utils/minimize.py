@@ -21,6 +21,7 @@ def gradient_descent(costfunc, start, pair_a, pair_b, counts, repeats, params):
     The code below is my first attempt and not an optimized program
     Based on a tutorial on realpython.com
     """
+    LOG.setLevel(logging.INFO)
     vector = np.array(start)
     vector_length = len(vector)
     # vector = vector.reshape(len(vector), 1)  # in case it was a row, vector, make column vector
@@ -32,8 +33,8 @@ def gradient_descent(costfunc, start, pair_a, pair_b, counts, repeats, params):
             break
         vector += diff
         if _ % 1000 == 0:
-            print('\tIterations completed: \t\t{}'.format(_))
-    print("\tStopped on Iteration number {}".format(_))
+            LOG.info('\tIterations completed for {}D model: \t\t{}'.format(params['n_dim'], _))
+    LOG.info("\tStopped on Iteration number {}".format(_))
     # vector = vector.reshape(1, len(vector))  # returned vector must be a regular 1D array
     return vector
 

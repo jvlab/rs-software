@@ -24,8 +24,8 @@ def demo_inputs():
     demo_defaults['output_dir'] = (base_dir / 'samples/outputs').resolve()  # returns detailed mat file here
     demo_defaults['comparison_type'] = 'triadic'  # can only handle triadic judgments
     demo_defaults['metadata'] = {
-        'num_trials': 1110,  # sample had 222 unique trials x 5
-        'num_sessions': 10,
+        'num_trials': '',  # sample had 222 unique trials x 5
+        'num_sessions': '',
         'subject': 'S4',    # used to name out file
         'exp_name': 'image'       # used to name out file
     }
