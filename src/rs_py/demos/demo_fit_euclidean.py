@@ -90,4 +90,3 @@ if __name__ == '__main__':
     args['noise_st_dev'] = args['sigma']
 
     fit(args)
-

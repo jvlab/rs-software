@@ -216,7 +216,7 @@ def fit(params):
     lls_by_dim = {}
 
     dimensions = params["model_dimensions"]
-    n_workers = min(os.cpu_count() or 1, len(dimensions))
+    n_workers = min(os.cpu_count(), len(dimensions))
 
     with mp.get_context("spawn").Pool(n_workers) as pool:
         fitted_models = pool.starmap(

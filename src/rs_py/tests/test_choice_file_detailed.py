@@ -8,7 +8,8 @@ from scipy.io import savemat, loadmat
 from collections import Counter
 
 from src.rs_py.choices.choice_file_detailed import (generate_comparisons, process_subject_data,
-                                                    standardize_comparison_keys, replace_stimuli_with_ids)
+                                                    standardize_comparison_keys, replace_stimuli_with_ids,
+                                                    build_detailed_choice_mat)
 
 
 def write_csv(path, rows, fieldnames):
@@ -385,6 +386,108 @@ class TestReplaceStimuliWithIds(unittest.TestCase):
         out, id_to_stim = replace_stimuli_with_ids(comparisons, stimuli_set)
 
         self.assertEqual(out, [])
+
+
+class TestDetailedChoiceDemo(unittest.TestCase):
+    def test_build_detailed_choice_mat_triadic(self):
+        with tempfile.TemporaryDirectory() as input_dir, tempfile.TemporaryDirectory() as output_dir:
+            rows = [{
+                "ref": "A",
+                "stim1": "B",
+                "stim2": "C",
+                "stim3": "D",
+                "clicks": "['stim2', 'stim1', 'stim3']",
+            }]
+            write_csv(os.path.join(input_dir, "session_responses.csv"), rows, rows[0].keys())
+            build_detailed_choice_mat(
+                input_dir, output_dir, "texture", "AJ", {"judgment_type": "triadic"}
+            )
+
+            output_path = os.path.join(output_dir, "texture_detailed_choices_AJ.mat")
+            result = loadmat(output_path, squeeze_me=True, struct_as_record=False)
+            self.assertIn("metadata", result)
+            self.assertIn("stim_list", result)
+            self.assertIn("responses_colnames", result)
+            self.assertIn("responses", result)
+            self.assertEqual(list(result["stim_list"]), ["A", "B", "C", "D"])
+            self.assertFalse(hasattr(result["metadata"], "stim_list"))
+            self.assertEqual(
+                [name.strip() for name in result["responses_colnames"]],
+                ["trial", "ref", "s1", "s2", "N(D(ref, s1) > D(ref, s2))"],
+            )
+
+            responses = np.atleast_2d(result["responses"])
+            observed_judgments = {
+                (result["stim_list"][int(row[2]) - 1], result["stim_list"][int(row[3]) - 1]): int(row[4])
+                for row in responses
+            }
+            self.assertEqual(
+                observed_judgments,
+                {("B", "C"): 1, ("B", "D"): 0, ("C", "D"): 0},
+            )
+
+    def test_repeated_and_missing_trials_do_not_break_detailed_choice_file(self):
+        with tempfile.TemporaryDirectory() as input_dir, tempfile.TemporaryDirectory() as output_dir:
+            session_1_rows = [
+                {"ref": "A", "stim1": "B", "stim2": "C", "clicks": "['stim1', 'stim2']"},
+                {"ref": "A", "stim1": "B", "stim2": "C", "clicks": "['stim1', 'stim2']"},
+            ]
+            session_2_rows = [
+                {"ref": "D", "stim1": "B", "stim2": "C", "clicks": "['stim2', 'stim1']"},
+            ]
+            write_csv(os.path.join(input_dir, "session_1_responses.csv"), session_1_rows, session_1_rows[0].keys())
+            write_csv(os.path.join(input_dir, "session_2_responses.csv"), session_2_rows, session_2_rows[0].keys())
+
+            build_detailed_choice_mat(
+                input_dir, output_dir, "texture", "AJ",
+                {"judgment_type": "triadic", "num_trials": 100, "num_sessions": 10},
+            )
+            output_path = os.path.join(output_dir, "texture_detailed_choices_AJ.mat")
+            result = loadmat(output_path, squeeze_me=True, struct_as_record=False)
+            responses = np.atleast_2d(result["responses"])
+            self.assertEqual(list(responses[:, 0]), [1, 2, 3])
+            np.testing.assert_array_equal(responses[0, 1:], responses[1, 1:])
+            self.assertEqual(result["metadata"].num_trials, 3)
+            self.assertEqual(result["metadata"].num_sessions, 2)
+            self.assertEqual(result["metadata"].total_judgments, responses.shape[0])
+
+    def test_build_detailed_choice_mat_tetradic(self):
+        with tempfile.TemporaryDirectory() as input_dir, tempfile.TemporaryDirectory() as output_dir:
+            rows = [{
+                "ref": "A",
+                "stim1": "B",
+                "stim2": "C",
+                "stim3": "D",
+                "clicks": "['stim2', 'stim1', 'stim3']",
+            }]
+            write_csv(os.path.join(input_dir, "session_responses.csv"), rows, rows[0].keys())
+            build_detailed_choice_mat(
+                input_dir, output_dir, "texture", "AJ", {"judgment_type": "tetradic"}
+            )
+            output_path = os.path.join(output_dir, "texture_detailed_choices_AJ.mat")
+            result = loadmat(output_path, squeeze_me=True, struct_as_record=False)
+            self.assertEqual(
+                [name.strip() for name in result["responses_colnames"]],
+                ["trial", "s1", "s2", "s3", "s4", "N(D(s1, s2) > D(s3, s4))"],
+            )
+            self.assertEqual(np.atleast_2d(result["responses"]).shape, (3, 6))
+
+    def test_bad_input_files_raise_errors(self):
+        with tempfile.TemporaryDirectory() as input_dir:
+            with self.assertRaises(ValueError):
+                process_subject_data(input_dir)
+
+        with tempfile.TemporaryDirectory() as input_dir:
+            rows = [{"ref": "A", "stim1": "B", "stim2": "C", "clicks": "stim1,stim2"}]
+            write_csv(os.path.join(input_dir, "bad_responses.csv"), rows, rows[0].keys())
+            with self.assertRaises(ValueError):
+                process_subject_data(input_dir)
+
+        with tempfile.TemporaryDirectory() as input_dir:
+            rows = [{"stim1": "B", "stim2": "C", "clicks": "['stim1', 'stim2']"}]
+            write_csv(os.path.join(input_dir, "bad_responses.csv"), rows, rows[0].keys())
+            with self.assertRaises(KeyError):
+                process_subject_data(input_dir)
 
 
 class TestFullMatPipelineWithOverlappingTriad(unittest.TestCase):
