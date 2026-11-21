@@ -41,7 +41,7 @@ function [results,opts_geofit_used]=psg_geomodels_fit(d_ref,d_adj,opts_geofit)
 %   persp_method: 'fmin' (default) or 'oneshot' (Zhang method, see persp_xform_find)
 %   persp_if_cycle: 1 (default), or 0, variants of Zhang method
 %   persp_if_multi: 0 (default) or 1, multistart variant of fmin method
-%   persp_fmin_startfactor: 2 (default), scaling for ultiple start points
+%   persp_fmin_startfactor: 2 (default), scaling for multiple start points
 %   if_keep_opts_model_used: 0 to eliminate return of opts_model_used, opts_model_shuff_used_nestdim_[in|out], 1 (default) to keep
 %
 %  results: cell(max(ref_dim_list),max(adj_dim_list)), a structure with results
