@@ -295,10 +295,10 @@ for iref_ptr=1:length(ref_dim_each)
                 else
                     opts_model=model_types_def.(model_type).opts;
                     model_class=model_types_def.(model_type).class;
-                    opts_model.if_cycle=opts_geofit.persp_if_cycle;
                     opts_model.method=opts_geofit.persp_method;
+                    opts_model.if_cycle=opts_geofit.persp_if_cycle;
                     opts_model.if_multi=opts_geofit.persp_if_multi;
-                    opts_model.persp_fmin.startfactor=opts_geofit.persp_fmin_startfactor;
+                    opts_model.fmin_startfactor=opts_geofit.persp_fmin_startfactor;
                     [d(imodel),adj_model{imodel},transforms{imodel},opts_model_used{imodel}]=psg_geo_general(ref,adj,model_class,opts_model);
                     %
                     %verify the model   
