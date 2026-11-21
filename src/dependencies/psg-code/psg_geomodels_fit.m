@@ -54,6 +54,7 @@ function [results,opts_geofit_used]=psg_geomodels_fit(d_ref,d_adj,opts_geofit)
 % 23Feb26: add if_nestbydim_in, if_nestbydim_out and resulting computations
 % 27Mar26: fix pointer in saving options for ref nest by dim
 % 01Jun26: save transformations for nested comparisons
+% 21Nov26: propagate options for multiple starts for persp_xform_find
 %
 %   See also:  PSG_GEOMODELS_RUN, PSG_GEO_GENERAL, PSG_GEOMODELS_DEFINE, PSG_PCAOFFSET, PSG_GEOMODELS_NESTORDER, PSG_GEOMODELS_NESTUTIL.
 %
