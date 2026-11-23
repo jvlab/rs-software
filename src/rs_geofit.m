@@ -340,6 +340,12 @@ for iset=1:nsets
     opts_psgfit=opts_psgfit_base;
     opts_psgfit.dimpairs_list=z.dimpairs_list;
     opts_psgfit.if_keep_opts_model_used=0; %eliminate some un-needed fields
+    if isfield(aux.opts_geof,'vcut_specified')
+        opts_psgfit.vcut_specified=aux.opts_geof.vcut_specified;
+    end
+    if isfield(aux.opts_geof,'acut_specified')
+        opts_psgfit.acut_specified=aux.opts_geof.acut_specified;
+    end
     [gf,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
     gfs{iset}.gf=gf;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;

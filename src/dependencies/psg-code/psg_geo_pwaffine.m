@@ -85,11 +85,12 @@ if isfield(opts,'vcut_specified') & isfield(opts,'acut_specified')
         if length(opts.vcut_specified)>=dim_x & length(opts.acut_specified)>=dim_x
             vcut_specified=opts.vcut_specified{dim_x};
             acut_specified=opts.acut_specified{dim_x};
-            if size(vcut_specified,2)==dim_x;
-                ncuts_model=size(vcut_specified,1);
-                if length(acut_specified)==ncuts_model
+            if (size(vcut_specified,2)==dim_x) & (size(vcut_specified,1)==opts.n_cuts_model)
+                if length(acut_specified)==opts.n_cuts_model
                     if_specified=1;
                     vcut=vcut_specified;
+                    %ensure that vcut rows are unit vectors
+                    vcut=vcut./repmat(sqrt(sum(vcut,2).^2),[1 dim_x]);
                     acut=acut_specified(:)';
                 end %acut has correct dims
             end %vcut has correct dims
