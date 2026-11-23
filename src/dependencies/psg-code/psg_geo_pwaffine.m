@@ -23,7 +23,7 @@ function [d,adj_model,transform,opts_used]=psg_geo_pwaffine(ref,adj,opts)
 %    opts.n_cuts_model: number of cutting planes in the model, defaults to 1
 %    opts.vcut_specified and opts.acut_specified are optional.  If omitted, the cutplanes are fitted.  If present, they are specified.
 %       opts.vcut_specified: cell array; vcut_specified{dim_x} is an array of size [ncuts dim_x]; cutplanes as specified by unit normals; if omitted, vcut each row is a unit vector
-%       opts.acut_specified: cell array; acut_specified{dim_x} is array of size [1 ncuts]; the specified cutpoints
+%       opts.acut_specified: cell array; acut_specified{dim_x} is array of size [1 ncuts] containing the specified cutpoints
 %
 % d: goodness of fit, mean squared deviation of adj_model from res, divided by mean squared dev of ref
 % adj_model: coordinates of adj, after transformation
