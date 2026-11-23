@@ -24,6 +24,8 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
 %          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1;  note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%          - vcut_specified (cell array): if provided and model_list contains 'pwaffine' or 'pwaffine_2', then vcut_specified{idim}(icut,:) is a unit vector that is normal to cutplane 'icut' for input dimension idim; see `transformation structures` for further details; default is that this field is not provided, and the unit normals are fitted
+%          - acut_specified (cell array): if provided and model_list contains 'pwaffine' or 'pwaffine_2', then acut_specified{idim}(1,icut) specifies the position of the cutplane along vcut_specified{idim}(icut,:); see `transformation structures` for further details; default is that this field is not provided, and the plane positions are fitted
 %
 %          - **Dimension selection**
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
@@ -124,7 +126,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
 %    - To determine the model class (see `transformation structures`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
 %    - To determine the models nested in model type mt:  `m=psg_models_define; getfield(m.(mt),'nested')`
-%    - See `transformation structures` for further details on how the models are parameterized and nesting
+%    - See `transformation structures` for further details on how the models are parameterized and nested
 %
 % Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
