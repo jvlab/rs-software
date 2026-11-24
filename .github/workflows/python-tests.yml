@@ -1,6 +1,6 @@
 name: python-tests
 
-# Runs the tests of the Python pipeline (src/rs_py) with coverage on every pull request and
+# Runs the tests of the Python pipeline (src/rs_py) and of rs_tools with coverage on every pull request and
 # every push to main. The job fails if a test fails or if coverage drops below the floor set
 # in --cov-fail-under; raise the floor as tests are added.
 #
@@ -37,10 +37,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy scipy pandas scikit-learn pytest pytest-cov
-      - name: Run the rs_py tests with coverage
+      - name: Run the rs_py and rs_tools tests with coverage
         # From the repository root, because rs_py is imported as src.rs_py.
         # Coverage settings (what is measured, what is omitted) are in .coveragerc.
-        run: python -m pytest src/rs_py/tests --cov --cov-report=term-missing --cov-fail-under=25
+        run: python -m pytest src/rs_py/tests rs_tools/tests --cov --cov-report=term-missing --cov-fail-under=45
       - name: Coverage comment
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@281cb0dcb5b15d4773037d51873558fddc5a7df8 # v4.7
