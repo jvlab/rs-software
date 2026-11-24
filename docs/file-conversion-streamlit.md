@@ -17,6 +17,10 @@ conversion tool is its own standalone app.
 
 ## Running locally
 
+> **Not yet available from this repository.** The app files are being integrated into
+> `rs-software` and are not yet on its main branch, so the commands below do not work from a
+> clone yet. The hosted apps above work.
+
 Faster than the hosted versions, and not limited by their shared resources:
 
 ```bash

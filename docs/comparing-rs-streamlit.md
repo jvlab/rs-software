@@ -15,6 +15,10 @@ hosted version below.
 
 ## Running locally
 
+> **Not yet available from this repository.** The app files are being integrated into
+> `rs-software` and are not yet on its main branch, so the commands below do not work from a
+> clone yet. The hosted app above works.
+
 Faster than the hosted version, and not limited by its shared resources:
 
 ```bash
