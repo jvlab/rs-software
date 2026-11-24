@@ -34,6 +34,6 @@ jobs:
         # Demos are captured locally, because they need MATLAB, and their
         # pages and figures are committed. test_demo_captures_current.py is
         # what stops a demo being edited without a fresh capture. Scoped to
-        # docs/ because src/rs_py has a failing test unrelated to the docs.
+        # docs/: the src/rs_py tests run in python-tests.yml.
         run: python -m pytest docs
       - run: mkdocs build

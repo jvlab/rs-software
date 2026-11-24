@@ -1,0 +1,8 @@
+[run]
+source = src/rs_py
+omit =
+    src/rs_py/tests/*
+    src/rs_py/demos/*
+
+[report]
+show_missing = True
