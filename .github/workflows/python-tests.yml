@@ -1,17 +1,38 @@
 name: python-tests
 
-# Runs the tests of the Python pipeline (src/rs_py) with a coverage report on every
-# push and pull request. The job fails if a test fails or if coverage drops below the
-# floor set in --cov-fail-under; raise the floor as tests are added.
+# Runs the tests of the Python pipeline (src/rs_py) with coverage on every pull request and
+# every push to main. The job fails if a test fails or if coverage drops below the floor set
+# in --cov-fail-under; raise the floor as tests are added.
+#
+# Coverage comment (py-cov-action/python-coverage-comment-action):
+# - on a pull request from a branch of this repository, the comment is posted directly;
+# - on a pull request from a fork, the comment is stored as an artifact and posted by
+#   coverage-comment.yml (GitHub gives fork pull requests a read-only token);
+# - on a push to main, the coverage data is saved to the branch
+#   python-coverage-comment-action-data (badge, and the reference for later comments).
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      # Fork pull requests are downgraded to read-only by GitHub.
+      pull-requests: write # post or update the coverage comment
+      contents: write # push the coverage data to the data branch (main only)
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -20,3 +41,14 @@ jobs:
         # From the repository root, because rs_py is imported as src.rs_py.
         # Coverage settings (what is measured, what is omitted) are in .coveragerc.
         run: python -m pytest src/rs_py/tests --cov --cov-report=term-missing --cov-fail-under=25
+      - name: Coverage comment
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@281cb0dcb5b15d4773037d51873558fddc5a7df8 # v4.7
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Store the pull request comment to be posted (pull requests from forks)
+        uses: actions/upload-artifact@v4
+        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+        with:
+          name: python-coverage-comment-action
+          path: python-coverage-comment-action.txt
