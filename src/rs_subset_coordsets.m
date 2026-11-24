@@ -47,6 +47,9 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 % Note: Notes
 %   -  aux may be omitted; defaults are filled in.  The default, filter_type='keep_all', returns data_in unchanged.
 %   -  Python (numpy and scipy) is required, and the folder that contains this file's folder must contain rs_tools.
+%   -  With backend 'py' (the default in MATLAB), a numpy built with Intel's Math Kernel Library, such as the one in anaconda's default channel, can crash
+%   MATLAB on Linux once MATLAB has used its own numerical libraries. Use numpy installed with pip or from conda-forge, or
+%   set opts_subset.backend='cli'. See docs/python-matlab-octave.md.
 %   -  In each record, the fields of sas{k} that have one row per stimulus (typenames; optionally, type_coords, btc_specoords, btc_augcoords, spec_labels, specs) are subsetted by rows, and sas{k}.nstims and sets{k}.nstims are updated.
 %   -  data_out.sets{k}.pipeline records the subsetting: type 'subset', opts (opts_subset and kept_indices), and sets{1},
 %   the set metadata of the kth record of data_in (which contains its earlier pipeline).  With filter_type='keep_all', nothing is

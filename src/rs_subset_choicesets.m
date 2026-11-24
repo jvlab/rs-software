@@ -60,6 +60,9 @@ function [data_out,aux_out]=rs_subset_choicesets(data_in,aux)
 % Note: Notes
 %   -  aux may be omitted; defaults are filled in.  The default, filter_type='keep_all', returns data_in unchanged.
 %   -  Python (numpy and scipy) is required, and the folder that contains this file's folder must contain rs_tools.
+%   -  With backend 'py' (the default in MATLAB), a numpy built with Intel's Math Kernel Library, such as the one in anaconda's default channel, can crash
+%   MATLAB on Linux once MATLAB has used its own numerical libraries. Use numpy installed with pip or from conda-forge, or
+%   set opts_subset.backend='cli'. See docs/python-matlab-octave.md.
 %   -  The counts in responses and responses_colnames are not changed, and so the sign convention of the counts is not changed.
 %   -  For tetradic data, trials remain only if all four stimuli are kept, so a selection can leave no trials; this is reported as a warning
 %   and warn_bad is set to 1.

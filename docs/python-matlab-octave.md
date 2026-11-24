@@ -1,5 +1,29 @@
 # Python - MATLAB/Octave
 
+## Functions that use Python
+
+Two MATLAB functions call Python: `rs_subset_coordsets` (keep or drop stimuli in a `dataset structure`)
+and `rs_subset_choicesets` (the same for choice data). They need Python 3 with `numpy` and `scipy`.
+Nothing has to be installed with pip: they use the Python code in the folder `rs_tools` of this
+repository.
+
+* **MATLAB**: choose the Python to use, once per session, with `pyenv`, for example
+  `pyenv('Version', '/path/to/python')` (the Python of a conda environment, see
+  [Dependencies for MATLAB environment](#dependencies-for-matlab-environment) below). Typing `pyenv`
+  shows the current choice; its `Version` must not be empty.
+* **Octave**: `python3` must be on the system path; the functions call it on the command line. Another
+  Python can be given with the option `python_executable`.
+
+`rs_auto_test` runs the tests of these two functions (`rs_subset_coordsets_test`,
+`rs_subset_choicesets_test`) when Python is available, and reports them as skipped otherwise.
+
+> **numpy built with Intel's Math Kernel Library (MKL) can crash MATLAB.** By default, MATLAB runs Python inside its own process (`backend` `'auto'`, which is `'py'` in
+> MATLAB). On Linux, if numpy was built with this library, as in anaconda's default channel, MATLAB can
+> crash (segmentation violation) when numpy is loaded after MATLAB has done numerical work, because
+> MATLAB's copy of the library and numpy's copy clash. numpy installed with pip, or from conda-forge, uses OpenBLAS and does
+> not have this problem. To check, run `import numpy; numpy.show_config()` in that Python and look
+> for `mkl`. Alternatives: call the functions with `opts_subset.backend='cli'`, which runs Python as a
+> separate program, or call them before any other computation in the MATLAB session.
 
 ## Running python inside MATLAB
 
