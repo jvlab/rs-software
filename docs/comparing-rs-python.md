@@ -1,5 +1,9 @@
 # Comparing RS — Python option
 
+> **Not yet available from this repository.** The functions shown here (`rs_tools`) are being
+> integrated into `rs-software` and are not yet on its main branch. Until then, use the hosted
+> app: [Comparing RS, Python tools UI](comparing-rs-streamlit.md).
+
 Runs a full surrogate MDS comparison between two choice datasets and returns a p-value: are the
 perceptual maps for two datasets genuinely different, or could the difference be explained by chance?
 

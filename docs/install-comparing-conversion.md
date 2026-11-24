@@ -5,6 +5,12 @@ file formats (OOO ↔ triadic, `.mat` ↔ NumPy, choices → coordinates). They'
 toolkit, available two ways: as importable functions in your own scripts, or through the **Python
 tools UI** — a browser-based version of the same tools.
 
+> **Not yet available from this repository.** The Python package and the local apps described
+> on this page are being integrated into `rs-software` and are not yet on its main branch, so
+> `pip install -e .` and `streamlit run ...` do not work from a clone yet. Until then, use the
+> hosted apps linked from the pages below, which need no installation. The package `jvlab-rs`
+> on PyPI is an early test release that will be replaced; we do not recommend installing it.
+
 ## Python
 
 ### Install the package
