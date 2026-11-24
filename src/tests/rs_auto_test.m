@@ -8,6 +8,31 @@ if ~exist('aux_force_filename') aux_force_filename='rs_aux_defaults_btc.mat'; en
 %
 r=struct;
 %
+%self-checking tests: they compare with values worked out in the test itself, not with benchmarks,
+%and need Python with numpy and scipy (see docs/python-matlab-octave.md); skipped without Python.
+%They run first: with MATLAB's Python interface, a numpy built with Intel's Math Kernel Library (as in
+%anaconda's default channel) can crash MATLAB if it is loaded after MATLAB has used its own copy of that library.
+selfcheck_modules={'rs_subset_coordsets_test','rs_subset_choicesets_test'};
+r_selfcheck=struct;
+if exist('OCTAVE_VERSION','builtin')
+    if_python=(system('python3 -c "import numpy, scipy"')==0);
+else
+    selfcheck_pe=pyenv;
+    if_python=(strlength(string(selfcheck_pe.Version))>0);
+end
+for isc=1:length(selfcheck_modules)
+    selfcheck_name=selfcheck_modules{isc};
+    r_selfcheck.(selfcheck_name)=[]; %empty: skipped
+    if if_python
+        try
+            r_selfcheck.(selfcheck_name)=feval(selfcheck_name);
+        catch selfcheck_err
+            disp(sprintf('%s stopped with an error: %s',selfcheck_name,selfcheck_err.message));
+            r_selfcheck.(selfcheck_name)=NaN;
+        end
+    end
+end
+%
 clear ifdif
 rs_aux_customize_test;
 r.(rs_module).ifdif=ifdif;
@@ -139,6 +164,19 @@ for irs=1:length(rs_modules)
             disp(diff_show);
         end
         alldiffs=alldiffs+sum(diff_list);
+    end
+end
+for isc=1:length(selfcheck_modules)
+    selfcheck_name=selfcheck_modules{isc};
+    selfcheck_n=r_selfcheck.(selfcheck_name);
+    if isempty(selfcheck_n)
+        disp(sprintf('%20s: skipped (needs Python with numpy and scipy)',selfcheck_name));
+    elseif isnan(selfcheck_n)
+        disp(sprintf('%20s: stopped with an error (see above)',selfcheck_name));
+        alldiffs=alldiffs+1;
+    else
+        disp(sprintf('%20s: %3.0f self-checks failed',selfcheck_name,selfcheck_n));
+        alldiffs=alldiffs+selfcheck_n;
     end
 end
 disp(sprintf('run with if_auto_skip=%1.0f, if_ignore_svdambig=%1.0f, if_save_and_close=%1.0f',...

@@ -16,6 +16,7 @@
 %   rs_extract_coordsets: extract a subset of dataset structures
 %   rs_geofit: fit geometrical models
 %   rs_knit_coordsets: find consensus coordinates across coordinate files
+%   rs_subset_coordsets: keep or drop stimuli in a dataset structure (uses Python)
 %   rs_xform_specify: specify a transformation (rotation and translation)
 %   rs_xform_apply: apply a transformation from rs_xform_specify
 %   rs_vara_coordsets: calculate statitics of consensus within groups
@@ -26,6 +27,7 @@
 % Analysis: choices
 %   rs_addtree_choicedata: analyze triads for consistency with addtree (four-point) inequality
 %   rs_dirfit_choicedata: fit Dirichlet parameters to choice probability distribution
+%   rs_subset_choicesets: keep or drop stimuli in choice data (uses Python)
 %   rs_symumi_choicedata: analyze triads for consistency with symmetry and ultrametric inequality
 %
 % Visualization
