@@ -38,7 +38,7 @@ for irec=1:2
         opts.opts_import.type_coords=[(1:length(labs))' 10*(1:length(labs))']; %non-square, one row per stimulus
     end
     [dat{irec},aux_imp]=rs_import_coordsets(coords,opts);
-    dat{irec}.sets{1}.pipeline=struct('note',sprintf('pipeline of record %d',irec)); %must be kept inside the new pipeline entry
+    dat{irec}.sets{1}.pipeline=struct('note',sprintf('pipeline of record %d',irec)); %must come back untouched
 end
 data_in=rs_concat_coordsets(dat{1},dat{2},struct('opts_check',struct('if_warn',0)));
 nsets=length(data_in.sets);
@@ -81,15 +81,11 @@ for k=1:nsets
     nfail=nfail+check(rows_ok,[tag ': coordinate rows follow the kept stimuli']);
     nfail=nfail+check(data_out.sas{k}.nstims==length(keep) & data_out.sets{k}.nstims==length(keep),[tag ': sas.nstims and sets.nstims updated']);
     sets_same=true;
-    sets_fns=setdiff(fieldnames(data_in.sets{k}),{'nstims','pipeline'});
+    sets_fns=setdiff(fieldnames(data_in.sets{k}),{'nstims'});
     for ifn=1:length(sets_fns)
         sets_same=sets_same & isequaln(data_out.sets{k}.(sets_fns{ifn}),data_in.sets{k}.(sets_fns{ifn}));
     end
-    nfail=nfail+check(sets_same,[tag ': other set metadata untouched']);
-    pipe=data_out.sets{k}.pipeline;
-    nfail=nfail+check(strcmp(pipe.type,'subset') && isequal(pipe.opts.kept_indices,keep) && strcmp(pipe.opts.opts_subset.filter_pattern,pattern),...
-        [tag ': pipeline records the subsetting (type, kept_indices, pattern)']);
-    nfail=nfail+check(isequaln(pipe.sets{1},data_in.sets{k}),[tag ': pipeline keeps the input set metadata, with its earlier pipeline']);
+    nfail=nfail+check(sets_same,[tag ': other set metadata (including pipeline) untouched']);
     nfail=nfail+check(strcmp(class(data_out.ds{k}{end}),class(data_in.ds{k}{end})),[tag ': coordinates keep their number type']);
 end
 nfail=nfail+check(isequal(data_out.sas{1}.type_coords,data_in.sas{1}.type_coords(aux_out.kept_indices{1},:)),'regex: stimulus coordinates (type_coords) of record 1 follow the kept stimuli');

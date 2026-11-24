@@ -51,9 +51,7 @@ function [data_out,aux_out]=rs_subset_coordsets(data_in,aux)
 %   MATLAB on Linux once MATLAB has used its own numerical libraries. Use numpy installed with pip or from conda-forge, or
 %   set opts_subset.backend='cli'. See docs/python-matlab-octave.md.
 %   -  In each record, the fields of sas{k} that have one row per stimulus (typenames; optionally, type_coords, btc_specoords, btc_augcoords, spec_labels, specs) are subsetted by rows, and sas{k}.nstims and sets{k}.nstims are updated.
-%   -  data_out.sets{k}.pipeline records the subsetting: type 'subset', opts (opts_subset and kept_indices), and sets{1},
-%   the set metadata of the kth record of data_in (which contains its earlier pipeline).  With filter_type='keep_all', nothing is
-%   changed, and the pipeline is not updated.
+%   -  data_out.sets{k}.pipeline is copied from data_in and is not updated.
 %   -  If no stimuli remain in a record, or the pattern is not valid, or does not match any of typenames, warn_bad is set to 1 and data_out is empty.
 %
 % Example:
@@ -110,12 +108,6 @@ if aux_out.warn_bad==0
         data_out.ds{iset}=ds_new;
         data_out.sas{iset}=sas_new;
         data_out.sets{iset}=sets_new;
-        if ~strcmp(aux.opts_subset.filter_type,'keep_all')
-            pipeline_opts=struct;
-            pipeline_opts.opts_subset=aux.opts_subset;
-            pipeline_opts.kept_indices=kept;
-            data_out.sets{iset}.pipeline=psg_coord_pipe_util('subset',pipeline_opts,data_in.sets{iset});
-        end
         aux_out.kept_indices{iset}=kept;
         if aux.opts_subset.if_log
             disp(sprintf('record %3.0f: kept %3.0f of %3.0f stimuli',iset,length(kept),length(data_in.sas{iset}.typenames)));
