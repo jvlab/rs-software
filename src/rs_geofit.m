@@ -56,12 +56,17 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - if_fit_summary (int): 1 to log a summary of fits, 0 to omit; default is 1
 %          - if_fit_log (int): 1 for a detailed log of fitting, 0 to omit; default is 0
 %          - if_warn (int): 1 to show warnings, 0 to omit; default is 1
-%          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'
+%          - persp_method (char): method for finding projective transformations, options are 'fmin','oneshot', or 'best'; default is 'best'. 'fmin' is slower but may find better optima than 'oneshot' if viewpoint is outside of data (typical
+%          situation); 'oneshot' is fast but may fail to find optimal solution
 %
 %              - 'fmin': uses an iterative method to search for the denominator; for each trial denominator, numerator parameters are determined by standard least-squares
-%              - 'oneshot': uses method 2 of Zhengyou Zhang, Microsoft Research Technical Report MSR-TR-2010-63 (1993, revised 2010); well-suited if the projective transformation is a close fit
+%              - 'oneshot': uses method 2 of Zhengyou Zhang, Microsoft Research Technical Report MSR-TR-2010-63 (1993, revised 2010)
 %              - 'best' uses both methods and chooses the best-fit
 %
+%          - persp_if_cycle (int): 1 to enable cycling option for 'oneshot' method, 0 to disable; default is 1
+%          - persp_if_multi (int): 1 to enable nultiple start points for 'fmin' method, 0 to disable; default is 1
+%          - persp_fmin_startfactor (float): scaling factor for multiple start points for 'fmin' method; default is 2
+% 
 %     - opts_check (struct): options for consistency checking, with field
 %
 %          - if_warn (int): 1 to show warnings when datasets are checked for consistency, 0 to suppress; default is 1
@@ -165,8 +170,9 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    PSG_GEOMODELS_NESTORDER, RS_DISP_GEOFIT.
 %
 %
-fields_unchanged={'nshuffs','if_nestbydim','if_center','if_frozen','persp_method','if_nestbymodel','if_nestbydim_in','if_nestbydim_out',...
-    'if_keep_transforms','if_keep_transforms_nestbymodel','if_keep_transforms_nestbydim_in','if_keep_transforms_nestbydim_out'};
+fields_unchanged={'nshuffs','if_nestbydim','if_center','if_frozen','if_nestbymodel','if_nestbydim_in','if_nestbydim_out',...
+    'if_keep_transforms','if_keep_transforms_nestbymodel','if_keep_transforms_nestbydim_in','if_keep_transforms_nestbydim_out',...
+    'persp_method','persp_if_cycle','persp_if_multi','persp_fmin_startfactor'};
 %
 psg_geomodels_def=psg_geomodels_define(); %access the available models and their characteristics
 %
@@ -199,7 +205,10 @@ aux.opts_geof=filldefault(aux.opts_geof,'if_fit_summary',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_fit_log',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_warn',1);
 aux.opts_geof=filldefault(aux.opts_geof,'if_log',1);
-aux.opts_geof=filldefault(aux.opts_geof,'persp_method','best');
+aux.opts_geof=filldefault(aux.opts_geof,'persp_method','best'); %this overrides defualt in psg_gemodels_fit and persp_xform_find
+aux.opts_geof=filldefault(aux.opts_geof,'persp_if_cycle',1); %this overrides default in persp_xform_find
+aux.opts_geof=filldefault(aux.opts_geof,'persp_if_multi',1); %this overrides default in psg_geomodels_fit and persp_xform_find
+aux.opts_geof=filldefault(aux.opts_geof,'persp_fmin_startfactor',2);
 %
 aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms',0);
 aux.opts_geof=filldefault(aux.opts_geof,'if_keep_transforms_nestbymodel',aux.opts_geof.if_keep_transforms*abs(aux.opts_geof.if_nestbymodel));

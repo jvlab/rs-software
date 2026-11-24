@@ -33,7 +33,7 @@ aux_geofits=cell(1,ntests);
 opts_used=cell(1,ntests);
 signflips=cell(1,ntests);
 %
-test_descs{1}='transforming one animal-domain files to two other domains, all models to in dim 3, out dim 4, no shuffles, no nesting';
+test_descs{1}='transforming one animal-domain files to two other domains, all models to in dim 3, out dim 4, no shuffles, no nesting; disable multiple starts';
 filenames_in{1}={'./samples/animals/intermediate_texture_coords_S5.mat'};
 auxs{1}=auxs_force;
 aux_ins{1}=auxs_force;
@@ -47,6 +47,7 @@ auxs{1}.opts_geof.if_stats=0;
 auxs{1}.opts_geof.dimpairs_method='all';
 auxs{1}.opts_geof.dim_max_in=3;
 auxs{1}.opts_geof.dim_max_out=4;
+auxs{1}.opts_geof.persp_if_multi=0; %disable multiple starts
 %
 test_descs{2}='transforming three binary texture coordinate files to three others, mean, bogus,and procrustes models, maximal nesting, explicit dimensions';
 filenames_in{2}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_MC_sess01_10.mat','./samples/bwtextures/bgca3pt_coords_SN_sess01_10.mat'};

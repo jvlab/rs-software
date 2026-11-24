@@ -2,11 +2,13 @@
 
 import os
 import random
+import logging
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
 from copy import deepcopy
 from scipy.spatial.distance import pdist
+import src.rs_py.utils.logging as log_utils
 import src.rs_py.model.fit_geometric_models as rs
 import src.rs_py.choices.choice_likelihoods as an
 from src.rs_py.utils.helpers import create_coords_file
@@ -169,6 +171,9 @@ def fit(params):
 
     print("=" * 70)
 
+    # initialize log listener and queue
+    log_queue, log_listener = log_utils.start_parallel_logging_listener()
+
     # break up ranking responses into pairwise judgments
     pairwise_responses, pairwise_num_repeats, metadata, stim_list = read_combined_choices(params['filepath'])
     params["num_stimuli"] = len(stim_list)
@@ -218,14 +223,23 @@ def fit(params):
     dimensions = params["model_dimensions"]
     n_workers = min(os.cpu_count() or 1, len(dimensions))
 
-    with mp.get_context("spawn").Pool(n_workers) as pool:
-        fitted_models = pool.starmap(
-            fit_one_dimension,
-            [
-                (dim, subset, pairwise_num_repeats, params)
-                for dim in dimensions
-            ],
-        )
+    try:
+        # Use 'initializer' to automatically configure each core when it boots up
+        with mp.Pool(
+                processes=n_workers,
+                initializer=log_utils.configure_logging,
+                initargs=(logging.INFO, log_queue)
+        ) as pool:
+            fitted_models = pool.starmap(
+                fit_one_dimension,
+                [
+                    (dim, subset, pairwise_num_repeats, params)
+                    for dim in dimensions
+                ]
+            )
+    finally:
+        # turn off the listener when the pool is finished
+        log_listener.stop()
 
     for dim, model_coords, ll_nd in fitted_models:
         print("\n" + "=" * 60)

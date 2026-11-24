@@ -1,5 +1,9 @@
 # File conversion — Python option
 
+> **Not yet available from this repository.** The functions shown here (`rs_tools`) are being
+> integrated into `rs-software` and are not yet on its main branch. Until then, use the hosted
+> app: [File conversion, Python tools UI](file-conversion-streamlit.md).
+
 Utility functions for converting between the file formats used across this toolkit. See
 [Installation](install-comparing-conversion.md) to set this up.
 

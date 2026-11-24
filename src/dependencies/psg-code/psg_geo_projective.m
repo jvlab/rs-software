@@ -33,6 +33,7 @@ function [d,adj_model,transform,opts_used]=psg_geo_projective(ref,adj,opts)
 % opts_used: options used
 %
 % 15Dec23: added optional disabling of rank-deficient warning
+% 19Nov26: normalization fix prior to computing transform, relevant for opts.method='oneshot'
 %
 %   See also: PSG_GEOMODELS_TEST, PSG_GEOMODELS_DEFINE, PSG_GEO_GENERAL, PERSP_XFORM_FIND, PERSP_APPLY,
 %    FMINSEARCH.
@@ -81,6 +82,7 @@ end
 % intepretration of persp (variable names changed here for compatibility with psg_geo_procrustes and
 % psg_geo_affine: 
 %
+persp=persp/persp(end,end); %de-homogenize
 transform.b=1;
 transform.T=persp(1:end-1,1:end-1);
 transform.c=persp(end,1:end-1);

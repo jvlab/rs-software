@@ -2,10 +2,17 @@
     Demo to fit models of Euclidean spaces of different dimensions, from tallied similarity judgments.
     Enter '0' to use default values.
 """
+import os
 import logging
 from pathlib import Path
 from src.rs_py.utils.config import CONFIG
 from src.rs_py.scripts.model_fitting import fit
+
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
 
 def demo_inputs():
@@ -90,4 +97,3 @@ if __name__ == '__main__':
     args['noise_st_dev'] = args['sigma']
 
     fit(args)
-
