@@ -1,5 +1,5 @@
-function rs_subset_choicesets_test()
-% rs_subset_choicesets_test()
+function nfail=rs_subset_choicesets_test()
+% nfail=rs_subset_choicesets_test()
 % tests rs_subset_choicesets on four sample choice files, as loaded by load():
 %   triadic (bwtextures), tetradic (bwtextures), triadic (animals), and odd-one-out (brightness).
 % The trials that remain, their renumbering, and the stimulus names must follow the stimuli that are kept,
@@ -7,8 +7,11 @@ function rs_subset_choicesets_test()
 % independently of Python.
 %
 % Run from any folder:  rs_subset_choicesets_test
+% Returns the number of failed checks.  Called without an output (as above), it raises an error
+% if any check fails; rs_auto_test calls it with an output and reports the count.
 % In MATLAB this uses the Python interface (pyenv); in Octave it uses the command line.
-% Needs Python with numpy and scipy, and the lab's perceptual_space_geometry folders on the path
+% Needs Python with numpy and scipy (see docs/python-matlab-octave.md), and rs-software with its
+% subfolders on the path
 % (rs_subset_choicesets itself puts the rs-software folder with rs_tools on Python's path).
 %
 %  See also: RS_SUBSET_CHOICESETS, RS_SUBSET_COORDSETS_TEST.
@@ -16,7 +19,7 @@ function rs_subset_choicesets_test()
 here=fileparts(mfilename('fullpath'));
 addpath(fullfile(here,'..'));
 if isempty(which('filldefault'))
-    error('rs_subset_choicesets_test: the lab''s perceptual_space_geometry folders must be on the path (filldefault not found).');
+    error('rs_subset_choicesets_test: rs-software, with its subfolders, must be on the path (filldefault not found).');
 end
 samples=fullfile(here,'..','samples');
 %                  file                                                          label         stimulus columns  regex
@@ -45,7 +48,7 @@ for icase=1:size(cases,1)
     if aux_out.warn_bad>0 && icase==1
         % the first call is the simplest one; if it fails, nothing else can work, so stop with a clear message
         disp(aux_out.warnings);
-        error('rs_subset_choicesets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see README.txt for Python setup.');
+        error('rs_subset_choicesets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see docs/python-matlab-octave.md (Functions that use Python) for the Python setup.');
     end
     nfail=nfail+check(aux_out.warn_bad==0 && isequal(data_out,d),[tag0 ': keep_all returns every variable identical']);
     nfail=nfail+check(isequal(aux_out.kept_indices,1:n) && isequal(aux_out.ntrials,[ntrials ntrials]),[tag0 ': keep_all kept_indices and ntrials']);
@@ -143,8 +146,10 @@ nfail=nfail+check(aux_out.warn_bad==1,'input that is not a structure: warn_bad=1
 %
 if nfail==0
     disp('rs_subset_choicesets_test: ALL PASSED');
-else
+elseif nargout==0
     error('rs_subset_choicesets_test: %d check(s) FAILED',nfail);
+else
+    disp(sprintf('rs_subset_choicesets_test: %d check(s) FAILED',nfail));
 end
 end
 

@@ -1,12 +1,15 @@
-function rs_subset_coordsets_test()
-% rs_subset_coordsets_test()
+function nfail=rs_subset_coordsets_test()
+% nfail=rs_subset_coordsets_test()
 % tests rs_subset_coordsets on a `dataset structure` made from a sample coordinate file
 % (two records, combined with rs_concat_coordsets): the coordinates, stimulus names, per-stimulus
 % metadata and counts must follow the stimuli that are kept, and everything else must come back untouched.
 %
 % Run from any folder:  rs_subset_coordsets_test
+% Returns the number of failed checks.  Called without an output (as above), it raises an error
+% if any check fails; rs_auto_test calls it with an output and reports the count.
 % In MATLAB this uses the Python interface (pyenv); in Octave it uses the command line.
-% Needs Python with numpy and scipy, and the lab's perceptual_space_geometry folders on the path
+% Needs Python with numpy and scipy (see docs/python-matlab-octave.md), and rs-software with its
+% subfolders on the path
 % (rs_subset_coordsets itself puts the rs-software folder with rs_tools on Python's path).
 %
 %  See also: RS_SUBSET_COORDSETS, RS_IMPORT_COORDSETS, RS_CONCAT_COORDSETS.
@@ -14,7 +17,7 @@ function rs_subset_coordsets_test()
 here=fileparts(mfilename('fullpath'));
 addpath(fullfile(here,'..'));
 if isempty(which('filldefault'))
-    error('rs_subset_coordsets_test: the lab''s perceptual_space_geometry folders must be on the path (filldefault not found).');
+    error('rs_subset_coordsets_test: rs-software, with its subfolders, must be on the path (filldefault not found).');
 end
 samples=fullfile(here,'..','samples');
 file=fullfile(samples,'animals','image_coords_S1.mat');
@@ -35,7 +38,7 @@ for irec=1:2
         opts.opts_import.type_coords=[(1:length(labs))' 10*(1:length(labs))']; %non-square, one row per stimulus
     end
     [dat{irec},aux_imp]=rs_import_coordsets(coords,opts);
-    dat{irec}.sets{1}.pipeline=struct('note',sprintf('pipeline of record %d',irec)); %must come back untouched
+    dat{irec}.sets{1}.pipeline=struct('note',sprintf('pipeline of record %d',irec)); %must be kept inside the new pipeline entry
 end
 data_in=rs_concat_coordsets(dat{1},dat{2},struct('opts_check',struct('if_warn',0)));
 nsets=length(data_in.sets);
@@ -47,7 +50,7 @@ quiet=struct('opts_subset',struct('if_log',0),'opts_check',struct('if_warn',0));
 if aux_out.warn_bad>0
     % the first call is the simplest one; if it fails, nothing else can work, so stop with a clear message
     disp(aux_out.warnings);
-    error('rs_subset_coordsets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see README.txt for Python setup.');
+    error('rs_subset_coordsets_test: the first call failed, so the other checks cannot run. The message above is what Python reported; see docs/python-matlab-octave.md (Functions that use Python) for the Python setup.');
 end
 nfail=nfail+check(aux_out.warn_bad==0,'keep_all: no warnings');
 nfail=nfail+check(isequaln(data_out,data_in),'keep_all: the dataset structure is identical to the input');
@@ -78,11 +81,15 @@ for k=1:nsets
     nfail=nfail+check(rows_ok,[tag ': coordinate rows follow the kept stimuli']);
     nfail=nfail+check(data_out.sas{k}.nstims==length(keep) & data_out.sets{k}.nstims==length(keep),[tag ': sas.nstims and sets.nstims updated']);
     sets_same=true;
-    sets_fns=setdiff(fieldnames(data_in.sets{k}),{'nstims'});
+    sets_fns=setdiff(fieldnames(data_in.sets{k}),{'nstims','pipeline'});
     for ifn=1:length(sets_fns)
         sets_same=sets_same & isequaln(data_out.sets{k}.(sets_fns{ifn}),data_in.sets{k}.(sets_fns{ifn}));
     end
-    nfail=nfail+check(sets_same,[tag ': other set metadata (including pipeline) untouched']);
+    nfail=nfail+check(sets_same,[tag ': other set metadata untouched']);
+    pipe=data_out.sets{k}.pipeline;
+    nfail=nfail+check(strcmp(pipe.type,'subset') && isequal(pipe.opts.kept_indices,keep) && strcmp(pipe.opts.opts_subset.filter_pattern,pattern),...
+        [tag ': pipeline records the subsetting (type, kept_indices, pattern)']);
+    nfail=nfail+check(isequaln(pipe.sets{1},data_in.sets{k}),[tag ': pipeline keeps the input set metadata, with its earlier pipeline']);
     nfail=nfail+check(strcmp(class(data_out.ds{k}{end}),class(data_in.ds{k}{end})),[tag ': coordinates keep their number type']);
 end
 nfail=nfail+check(isequal(data_out.sas{1}.type_coords,data_in.sas{1}.type_coords(aux_out.kept_indices{1},:)),'regex: stimulus coordinates (type_coords) of record 1 follow the kept stimuli');
@@ -137,8 +144,10 @@ nfail=nfail+check(aux_out.warn_bad==1 && ~isempty(strfind(aux_out.warnings,'No s
 %
 if nfail==0
     disp('rs_subset_coordsets_test: ALL PASSED');
-else
+elseif nargout==0
     error('rs_subset_coordsets_test: %d check(s) FAILED',nfail);
+else
+    disp(sprintf('rs_subset_coordsets_test: %d check(s) FAILED',nfail));
 end
 end
 
