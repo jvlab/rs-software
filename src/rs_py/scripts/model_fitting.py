@@ -251,7 +251,6 @@ def fit(params):
         # (Distances computed previously; keep if useful for debugging)
         _ = pdist(model_coords)
         coords_by_dim[dim] = model_coords
-        lls_by_dim[dim] = ll_nd
 
         print("\nOptimized embedding:")
         print("-" * 60)
@@ -266,12 +265,13 @@ def fit(params):
         )
         np.save(outfilename, model_coords)
 
-        ll_nd = -ll_nd / float(total_num_triads)
-        print(f"Negative Log Likelihood per triad of the model: {ll_nd:.4f}")
+        ll_nd = -ll_nd / float(total_num_triads) # neg neg LL = LL -> per triad
+        print(f"Log Likelihood per triad of the model: {ll_nd:.4f}")
 
         result['Model'].append(model_name)
         result['Log Likelihood'].append(ll_nd)
         result['number of points'].append(params['num_stimuli'])
+        lls_by_dim[dim] = ll_nd
 
     # ---- Best and random baselines ----
     ll_best = an.best_model_ll(
