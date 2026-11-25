@@ -90,7 +90,7 @@ if isfield(opts,'vcut_specified') & isfield(opts,'acut_specified')
                     if_specified=1;
                     vcut=vcut_specified;
                     %ensure that vcut rows are unit vectors
-                    vcut=vcut./repmat(sqrt(sum(vcut,2).^2),[1 dim_x]);
+                    vcut=vcut./repmat(sqrt(sum(vcut.^2,2)),[1 dim_x]);
                     acut=acut_specified(:)';
                 end %acut has correct dims
             end %vcut has correct dims

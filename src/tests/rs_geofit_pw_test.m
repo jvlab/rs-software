@@ -15,7 +15,7 @@ for k=1:length(opts_needed)
     auxs_force.(opts_needed{k})=rs_aux_force(opts_needed{k},[],aux_force_filename);
 end
 %
-ntests=3;
+ntests=4;
 %
 test_descs=cell(1,ntests);
 filenames_in=cell(1,ntests);
@@ -33,7 +33,7 @@ aux_geofits=cell(1,ntests);
 opts_used=cell(1,ntests);
 signflips=cell(1,ntests);
 %
-test_descs{1}='transforming a binary texture coordinate files to another, selected standard nesting, leteq dims up to 4';
+test_descs{1}='transforming a binary texture coordinate files to another, selected models, standard nesting, leteq dims up to 4';
 filenames_in{1}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
 auxs{1}=auxs_force;
 aux_ins{1}=auxs_force;
@@ -65,7 +65,6 @@ auxs{2}.opts_geof.dim_max_out=4;
 auxs{2}.opts_geof.vcut_specified={-1,[0 1],[],[.5 .5 -.5 .5]}; % cutplane normals for 1-d through 4-d models; 3-d model will not be specified
 auxs{2}.opts_geof.acut_specified={.2,.3,.5,-.6}; %cutpoints for 1-d thorugh 4-d models
 %
-%
 test_descs{3}='transforming a binary texture coordinate files to another, selected models but fixed choice for two piecewise affine cuts, pw2, standard nesting, leteq dims up to 4, no shuffs';
 filenames_in{3}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
 auxs{3}=auxs_force;
@@ -82,6 +81,23 @@ auxs{3}.opts_geof.dim_max_in=4;
 auxs{3}.opts_geof.dim_max_out=4;
 auxs{3}.opts_geof.vcut_specified={[-1;1],[0 1;1 0],[],[.5 .5 -.5 .5;0 0 1 0]}; % cutplane normals for 1-d through 4-d models; 3-d model will not be specified
 auxs{3}.opts_geof.acut_specified={[.2,-.1],[.3,.4],[.5,0],[-.6,-1]}; %cutpoints for 1-d thorugh 4-d models
+%
+test_descs{4}='transforming a binary texture coordinate files to another, selected models but fixed choice for piecewise affine cuts, normal vector not unit, standard nesting, leteq dims up to 4';
+filenames_in{4}={'./samples/bwtextures/bgca3pt_coords_BL_sess01_10.mat'};
+auxs{4}=auxs_force;
+aux_ins{4}=auxs_force;
+aux_ins{4}.opts_read=setfields(auxs_force.opts_read,{'input_type','if_auto','if_log'},{1,1,1});
+aux_ins{4}.nsets=1;
+filenames_out{4}={'./samples/bwtextures/bgca3pt_coords_BL-br_sess01_10.mat'};
+aux_outs{4}=aux_ins{4};
+auxs{4}.opts_geof.model_list={'procrustes_scale_offset','affine_offset','pwaffine'};
+auxs{4}.opts_geof.dimpairs_method='din_lteq_dout';
+auxs{4}.opts_geof.if_stats=1;
+auxs{4}.opts_geof.nshuffs=3;
+auxs{4}.opts_geof.dim_max_in=4;
+auxs{4}.opts_geof.dim_max_out=4;
+auxs{4}.opts_geof.vcut_specified={-10,[0 0.8],[],[.1 .1 -.1 .1]}; % cutplane normals for 1-d through 4-d models; 3-d model will not be specified
+auxs{4}.opts_geof.acut_specified={.2,.3,.5,-.6}; %cutpoints for 1-d thorugh 4-d models
 %
 fns=cell(1,ntests);
 ifdif=cell(1,ntests);
