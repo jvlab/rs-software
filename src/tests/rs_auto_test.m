@@ -70,6 +70,13 @@ r.(rs_module).gfs=gfs;
 r.(rs_module).xs=xs;
 r.(rs_module).aux_outs=aux_geofits;
 %
+clear ifdif
+rs_geofit_pw_test;
+r.(rs_module).ifdif=ifdif;
+r.(rs_module).gfs=gfs;
+r.(rs_module).xs=xs;
+r.(rs_module).aux_outs=aux_geofits;
+%
 %graphics modules
 clear ifdif
 rs_plot_style_test;
