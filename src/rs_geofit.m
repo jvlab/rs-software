@@ -82,7 +82,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is a cell array of the names of the nested models tested
 %     - ref_dim (int): dimension of the input dataset (same as dim_out)
 %     - adj_dim (int): dimension of output dataset (same as dim_in)
-%     - opts_geofit (struct): options used for fitting
+%     - opts_geof (struct): options used for fitting
 %     - d (float 1-D array): d(m) is the normlizded error for model m, equal to the sum of the squares of the deviations of data_out.ds{k}{dim_out} from the modeled values, normalized by the sum of their distances from their centroid.
 %     Here and below, the index m denotes fits for the model type listed in model_types_def.model_types{m}; 
 %     - transforms (1-D cell array}: transforms{m} are the parameters for the transformation; see `transformation structure` for details on how these are parameterized
