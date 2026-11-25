@@ -24,6 +24,8 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %          - model_list_default (char or cell array of char): model types to be fitted when 'model_list' is not specified; default is {'procrustes_scale_offset','affine_offset','projective'};
 %            see note below regarding customization
 %          - if_center (int): 1 to center the data, i.e., subtract the mean across stimuli from `data_in` and `data_out` before fitting models, 0 to omit; default is 1;  note that if if_center=1, the transformations returned in `gfs` and `xs` apply to the centered data.
+%          - vcut_specified (cell array): if provided and model_list contains 'pwaffine' or 'pwaffine_2', then vcut_specified{idim}(icut,:) is a unit vector that is normal to cutplane 'icut' for input dimension idim; see `transformation structures` for further details; default is that this field is not provided, and the unit normals are fitted
+%          - acut_specified (cell array): if provided and model_list contains 'pwaffine' or 'pwaffine_2', then acut_specified{idim}(1,icut) specifies the position of the cutplane along vcut_specified{idim}(icut,:); see `transformation structures` for further details; default is that this field is not provided, and the plane positions are fitted
 %
 %          - **Dimension selection**
 %          - dim_max_in (int):  maximum dimension of input dataset to use, defaults to 10
@@ -80,7 +82,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %     - model_types_def (struct): model_types_def.model_types is a cell array of the models fitted; model_types_def.(model).nested is a cell array of the names of the nested models tested
 %     - ref_dim (int): dimension of the input dataset (same as dim_out)
 %     - adj_dim (int): dimension of output dataset (same as dim_in)
-%     - opts_geofit (struct): options used for fitting
+%     - opts_geof (struct): options used for fitting
 %     - d (float 1-D array): d(m) is the normlizded error for model m, equal to the sum of the squares of the deviations of data_out.ds{k}{dim_out} from the modeled values, normalized by the sum of their distances from their centroid.
 %     Here and below, the index m denotes fits for the model type listed in model_types_def.model_types{m}; 
 %     - transforms (1-D cell array}: transforms{m} are the parameters for the transformation; see `transformation structure` for details on how these are parameterized
@@ -124,7 +126,7 @@ function [gfs,xs,aux_out]=rs_geofit(data_in,data_out,aux)
 %    - The list of available model types can be obtained by getfield(psg_geomodels_define,'model_types')
 %    - To determine the model class (see `transformation structures`) for model type mt: m=psg_models_define; getfield(m.(mt),'class')
 %    - To determine the models nested in model type mt:  `m=psg_models_define; getfield(m.(mt),'nested')`
-%    - See `transformation structures` for further details on how the models are parameterized and nesting
+%    - See `transformation structures` for further details on how the models are parameterized and nested
 %
 % Note: Note regarding customization
 %    The default model list can be changed by editing the line containing generic.opts_geof.model_list_default in `rs_aux_defaults_define`, running it 
@@ -340,6 +342,12 @@ for iset=1:nsets
     opts_psgfit=opts_psgfit_base;
     opts_psgfit.dimpairs_list=z.dimpairs_list;
     opts_psgfit.if_keep_opts_model_used=0; %eliminate some un-needed fields
+    if isfield(aux.opts_geof,'vcut_specified')
+        opts_psgfit.vcut_specified=aux.opts_geof.vcut_specified;
+    end
+    if isfield(aux.opts_geof,'acut_specified')
+        opts_psgfit.acut_specified=aux.opts_geof.acut_specified;
+    end
     [gf,opts_psgfit_used]=psg_geomodels_fit(d_ref,d_adj,opts_psgfit);
     gfs{iset}.gf=gf;
     z.warnings_fit{iset}=opts_psgfit_used.warnings;

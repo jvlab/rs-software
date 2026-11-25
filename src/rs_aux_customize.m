@@ -1,7 +1,7 @@
 function aux_out=rs_aux_customize(aux,caller,aux_default_filename)
 % aux_out=rs_aux_customize(aux,caller,aux_default_filename) sets the auxiliary inputs to customized defaults
 %
-% This read a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
+% This reads a file created by `rs_aux_defaults_define` at the time of installation, and should be edited to customize the default auxiliary inputs as needed.
 %
 % Args:
 %   aux (struct): options structure, typically with subfields with names like opts_read, opts_disp, opts_knit, etc.

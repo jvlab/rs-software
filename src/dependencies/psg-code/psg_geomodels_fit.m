@@ -300,6 +300,12 @@ for iref_ptr=1:length(ref_dim_each)
                     opts_model.if_cycle=opts_geofit.persp_if_cycle;
                     opts_model.if_multi=opts_geofit.persp_if_multi;
                     opts_model.fmin_startfactor=opts_geofit.persp_fmin_startfactor;
+                    if isfield(opts_geofit,'vcut_specified')
+                        opts_model.vcut_specified=opts_geofit.vcut_specified;
+                    end
+                    if isfield(opts_geofit,'acut_specified')
+                        opts_model.acut_specified=opts_geofit.acut_specified;
+                    end
                     [d(imodel),adj_model{imodel},transforms{imodel},opts_model_used{imodel}]=psg_geo_general(ref,adj,model_class,opts_model);
                     %
                     %verify the model   

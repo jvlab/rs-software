@@ -21,6 +21,9 @@ function [d,adj_model,transform,opts_used]=psg_geo_pwaffine(ref,adj,opts)
 %    opts.tol_cut: tolerance for cutpoint (regressor set to 0 if within this amount of cutting plane)
 %    opts.no_rankwarn: 1 to disable rank-deficient warnings (default)
 %    opts.n_cuts_model: number of cutting planes in the model, defaults to 1
+%    opts.vcut_specified and opts.acut_specified are optional.  If omitted, the cutplanes are fitted.  If present, they are specified.
+%       opts.vcut_specified: cell array; vcut_specified{dim_x} is an array of size [ncuts dim_x]; cutplanes as specified by unit normals; if omitted, vcut each row is a unit vector
+%       opts.acut_specified: cell array; acut_specified{dim_x} is array of size [1 ncuts] containing the specified cutpoints
 %
 % d: goodness of fit, mean squared deviation of adj_model from res, divided by mean squared dev of ref
 % adj_model: coordinates of adj, after transformation
@@ -36,6 +39,7 @@ function [d,adj_model,transform,opts_used]=psg_geo_pwaffine(ref,adj,opts)
 %
 % 15Dec23: added optional disabling of rank-deficient warning
 % 21Dec23: begin to add option for multiple cutplanes
+% 23Nov26: begin adding vcut_specified, acut_specified
 %
 %   See also: PSG_GEOMODELS_TEST, PSG_GEOMODELS_DEFINE, PSG_GEO_GENERAL, FMINCON, REGRESS, PSG_PWAFFINE_APPLY,
 %   HSPHERE_SAMPLE, EXTORTHB, MINDEX_INV.
@@ -73,6 +77,34 @@ if dim_y<dim_x
     ref=[ref,zeros(npts,dim_x-dim_y)];
 end
 dim_xy=max(dim_x,dim_y);
+%
+%determine whether cutplanes are fitted or specified
+if_specified=0;
+if isfield(opts,'vcut_specified') & isfield(opts,'acut_specified')
+    if iscell(opts.vcut_specified) & iscell(opts.acut_specified);
+        if length(opts.vcut_specified)>=dim_x & length(opts.acut_specified)>=dim_x
+            vcut_specified=opts.vcut_specified{dim_x};
+            acut_specified=opts.acut_specified{dim_x};
+            if (size(vcut_specified,2)==dim_x) & (size(vcut_specified,1)==opts.n_cuts_model)
+                if length(acut_specified)==opts.n_cuts_model
+                    if_specified=1;
+                    vcut=vcut_specified;
+                    %ensure that vcut rows are unit vectors
+                    vcut=vcut./repmat(sqrt(sum(vcut.^2,2)),[1 dim_x]);
+                    acut=acut_specified(:)';
+                end %acut has correct dims
+            end %vcut has correct dims
+        end %suffiently long
+    end %cells
+end %fields present
+if if_specified
+    [d_specify,transform,u_specified,ou_va_specified]=psg_geo_pwaffine_va(ref,adj,vcut,acut,opts);
+    adj_model=psg_pwaffine_apply(transform,adj);
+    d_num=sum(sum((ref-adj_model).^2,1));
+    d_den=sum(sum((ref-repmat(mean(ref,1),npts,1)).^2,1));
+    d=d_num/d_den;
+    return
+end
 %
 n_cuts_init=opts.n_cuts_init; %this is a parameter for initialization
 %

@@ -43,6 +43,10 @@ jobs:
         run: python -m pytest src/rs_py/tests --cov --cov-report=term-missing --cov-fail-under=25
       - name: Coverage comment
         id: coverage_comment
+        # Posting the comment depends on the GitHub API, which sometimes fails transiently
+        # (for example a 500 on the comments endpoint). The tests and the coverage floor in
+        # the step above already decide pass or fail, so a failed comment must not fail CI.
+        continue-on-error: true
         uses: py-cov-action/python-coverage-comment-action@281cb0dcb5b15d4773037d51873558fddc5a7df8 # v4.7
         with:
           GITHUB_TOKEN: ${{ github.token }}
