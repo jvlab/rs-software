@@ -111,7 +111,6 @@ def build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name
     }
     output_path = os.path.join(output_dir, f"{exp_name}_choices_{subject}.mat")
     savemat(output_path, combined_choices)
-    print(f"Saved results to {output_path}")
 
 
 def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject):
@@ -194,7 +193,6 @@ def build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, sub
     }
     output_path = os.path.join(output_dir, f"{exp_name}_choices_{subject}.mat")
     savemat(output_path, combined_choices)
-    print(f"Saved results to {output_path}")
     return
 
 
@@ -230,10 +228,8 @@ def build_combine_choice_mat(input_mat_path, output_dir, exp_name, subject):
     colnames = [name.strip() for name in data['responses_colnames']]
     from_triadic = "ref" in colnames
     if from_triadic:
-        print("Writing combined file in three-column format (ref, s1, s2).")
         build_combine_choice_mat_triadic_format(input_mat_path, output_dir, exp_name, subject)
     else:
-        print("Writing combined file in four-column format (s1, s2, s3, s4).")
         build_combined_mat_tetradic_format(input_mat_path, output_dir, exp_name, subject)
     return
 

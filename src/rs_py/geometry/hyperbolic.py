@@ -86,4 +86,4 @@ def hyperbolic_distances(X, curvature):
     H[0, 0] = -1
     inner_product = X.T @ H @ X
     # return interstimulus_distances
-    return np.arccosh(-round(inner_product, 6)) / curvature
+    return np.arccosh(np.maximum(-inner_product, 1.0)) / curvature
