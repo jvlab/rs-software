@@ -13,6 +13,7 @@
 % rs_disp_coordsets_test2: test rs_disp_coordsets
 % rs_disp_coordsets_test3: test rs_disp_coordsets
 % rs_geofit_test: test rs_geofit
+% rs_geofit_pw_test: test rs_geofit, piecewise options
 % rs_plot_style_test: test test rs_plot_style
 % rs_vara_coordsets_test: test rs_vara_coordsets
 % rs_xform_specify_apply_test: test rs_xform_specify and rs_xform_apply

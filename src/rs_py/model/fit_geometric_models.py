@@ -78,7 +78,7 @@ def points_of_best_fit(judgments, number_repeats, args, start_points=None):
             '######## {} Iterations completed: {}. Model Dim: {}.'.format(optimal.message, optimal.nit,
                                                                           args['n_dim'])
         )
-        solution = optimal.model_coords
+        solution = optimal.x
         solution_ll = optimal.fun
     else:
         solution = gradient_descent(cost, start_params, pairs_a, pairs_b, response_counts, comp_repeats, args)

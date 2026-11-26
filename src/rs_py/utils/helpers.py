@@ -124,7 +124,7 @@ def create_coords_file(outdir, exp, subject, model_dimensions, points, lls, stim
         [float(read_out_median_bias(bias_df, d, rms_dists_by_dim[d], tolerance=tolerance, samples=samples))
          for d in model_dimensions]
     )
-    debiased_relative_lls = raw_lls - np.array([lls['best'] * len(raw_lls)]) + bias_estimate
+    debiased_relative_lls = raw_lls - lls['best'] + bias_estimate
 
     data["rawLLs"] = raw_lls
     data["biasEstimate"] = bias_estimate
