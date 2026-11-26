@@ -98,6 +98,6 @@ def spherical_distances(X, radius):
     """
     # standard inner product
     inner_product = X.T @ X  # do not make it negative
-    interstimulus_distances = (radius/2) * np.arccos(round(inner_product, 6))
+    interstimulus_distances = (radius/2) * np.arccos(np.clip(inner_product, -1.0, 1.0))
     return interstimulus_distances
 
