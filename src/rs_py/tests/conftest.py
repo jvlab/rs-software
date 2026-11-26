@@ -5,7 +5,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--no-plots",
         action="store_true",
-        default=False,
+        default=True,
         help="Run tests without creating or displaying plots.",
     )
 
