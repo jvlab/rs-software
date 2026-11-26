@@ -241,7 +241,8 @@ def test_euclidean_create_space_has_correct_dim():
 def test_euclidean_sample_space_sample_has_correct_magnitude():
     space = model.EuclideanSpace(5)
     sample = space.sample_space(8)
-    assert 8 <= np.linalg.norm(sample)
+    # scaled to length 8 exactly, so the norm is 8 up to floating-point rounding
+    assert np.isclose(np.linalg.norm(sample), 8)
 
 
 def test_euclidean_sample_space_sample_has_correct_size():
