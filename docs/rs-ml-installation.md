@@ -12,6 +12,7 @@ Clone or download the GitHub repository [https://github.com/jvlab/rs-software](h
 Navigate to `/rs_software/src`, clear the workspace, set `if_auto_skip=1`, and run `rs_auto_test`.
 
 * This will exercise several modules, produce fig and mat files, and place them in `/tests`; it will take several minutes.
+* The tests of `rs_subset_coordsets` and `rs_subset_choicesets` need Python with `numpy` and `scipy` (see [Python - MATLAB/Octave](python-matlab-octave.md#functions-that-use-python)); without Python, they are reported as skipped.
 * Early in the process, you will be asked to respond to several keyboard prompts.  If a default is supplied, then accept it (Enter key); if confirmation is requested, confirm by entering a 1.
 
 After execution, the fig files and mat files in `/tests` will be compared with files in `/benchmarks` that were downloaded from the repository.

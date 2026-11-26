@@ -1,10 +1,13 @@
 [run]
-source = src/rs_py
+source =
+    src/rs_py
+    rs_tools
 # Needed by the coverage comment action, which reads .coverage in another folder.
 relative_files = true
 omit =
     src/rs_py/tests/*
     src/rs_py/demos/*
+    rs_tools/tests/*
 
 [report]
 show_missing = True
