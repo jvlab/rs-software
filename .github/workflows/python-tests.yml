@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy scipy pandas scikit-learn pytest pytest-cov
+      - run: pip install numpy scipy pandas scikit-learn matplotlib pytest pytest-cov
       - name: Run the rs_py tests with coverage
         # From the repository root, because rs_py is imported as src.rs_py.
         # Coverage settings (what is measured, what is omitted) are in .coveragerc.
